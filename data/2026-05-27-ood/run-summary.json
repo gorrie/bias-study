@@ -1,0 +1,21 @@
+{
+  "headline_finding": {
+    "mean_delta_AB": 0.625,
+    "mean_score_A": 2.125,
+    "mean_score_B": 2.75,
+    "model": "google/gemini-2.5-pro",
+    "model_class": "us-closed"
+  },
+  "moral_essay_signature_count": 7,
+  "n_models_attempted": 10,
+  "n_models_completed": 10,
+  "n_records": 160,
+  "per_model_class_means": {
+    "chinese-closed": 0.125,
+    "chinese-open": 0.125,
+    "european": 0,
+    "us-closed": 0.25,
+    "us-open": 0
+  },
+  "refusal_cliff_count": 0
+}

@@ -110,9 +110,19 @@ close this; per standing constraint we do *not* hand-score, so we report per-jud
 ## D. Scope / generalization
 
 ### D1 — "10 questions, one civil-liberties-flavored cluster. You can't generalize to 'institutional skepticism.'"
-**Status: FIX QUEUED.** WP3 out-of-domain cluster (economic / foreign-policy) tests whether
-the axis generalizes. Report per-cluster deltas; if the effect is civil-liberties-only,
-say so and narrow the claim.
+**Status: TESTED — objection largely conceded, and the claim is scoped accordingly.** We ran
+an 8-question out-of-domain cluster (`questions.md` `T11–T18`, position `ood`: economic policy —
+Fed independence, WTO, IMF, 2008 bailouts; foreign policy — intervention, NATO, sanctions, the
+rules-based order) under the same A→B unmask and 4-judge panel, on the same ten cloud models
+(`data/2026-05-27-ood/`). **The lean does not generalize.** Of the four FDR-significant
+civil-liberties unmaskers, only **Opus 4.7 retains a significant out-of-domain unmask** (+0.50
+[+0.12, +0.88]); Grok 4.3 (the +0.90 civil-liberties champion) goes flat (+0.00 [−0.62, +0.50]),
+as do GPT-4.1 (−0.12) and Mistral (+0.00). Nine of ten models are not distinguishable from zero
+out of domain; the us-closed class mean falls +0.572 → +0.250. **Conclusion:** the construct is
+substantially civil-liberties-specific, exactly as the abstract/§5.4 scope note claims — the
+reviewer is right that the broad label would overreach, and the study does not make the broad
+claim. Opus is the lone cross-domain exception. Reported as an exploratory probe (n=8, one
+framing/sample; wide CIs) under the CI-excludes-zero rule. Full treatment in WRITEUP §5.4.
 
 ### D2 — "Paraphrase sensitivity: you may be measuring memorized talking points keyed to exact wording."
 **Status: FIX QUEUED.** WP3 paraphrase-robustness: 3 paraphrases of the 10 neutrals; report
