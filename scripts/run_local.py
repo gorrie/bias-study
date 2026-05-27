@@ -95,10 +95,17 @@ def main() -> int:
     print(f"loading {args.model_path} ...", flush=True)
     t0 = time.time()
     tok = AutoTokenizer.from_pretrained(args.model_path)
-    # Production runs inside obliteratus:gpu (CUDA), where this resolves to "cuda" exactly as
-    # before. Off-CUDA hosts (e.g. a Mac smoke-test) fall back to "auto" instead of crashing.
-    device_map = "cuda" if torch.cuda.is_available() else "auto"
-    model = AutoModelForCausalLM.from_pretrained(args.model_path, dtype=torch.float16, device_map=device_map)
+    # Device placement, following OBLITERATUS's device.py findings:
+    #   CUDA — device_map="cuda" (the obliteratus:gpu production path); unchanged.
+    #   MPS  — accelerate's device_map="auto" is NOT reliable on Apple Silicon, so load then
+    #          place explicitly with .to("mps"). fp16 is supported on MPS.
+    #   CPU  — fp16 is slow / partially unsupported; use fp32.
+    if torch.cuda.is_available():
+        model = AutoModelForCausalLM.from_pretrained(args.model_path, dtype=torch.float16, device_map="cuda")
+    elif torch.backends.mps.is_available():
+        model = AutoModelForCausalLM.from_pretrained(args.model_path, dtype=torch.float16).to("mps")
+    else:
+        model = AutoModelForCausalLM.from_pretrained(args.model_path, dtype=torch.float32)
     model.eval()
     print(f"loaded in {time.time()-t0:.0f}s; {len(questions)} questions x {len(conditions)} conditions x {args.samples} samples", flush=True)
 
