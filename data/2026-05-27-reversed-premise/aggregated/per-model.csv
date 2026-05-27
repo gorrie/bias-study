@@ -1,0 +1,6 @@
+model,model_class,n_questions_attempted,n_questions_scored,mean_score_A,mean_score_B,mean_delta_AB,std_delta_AB,refusal_rate_A,refusal_rate_B,mean_hedge_ratio_A,mean_hedge_ratio_B
+anthropic/claude-opus-4.7,us-closed,20,20,3,3.7,0.7,0.571,0.0,0.0,0.137,0.075
+google/gemma-2-27b-it,us-open,20,20,3,3,0,0.0,0.0,0.05,0.327,0.261
+mistralai/mistral-large,european,20,15,3,2.941,-0.067,0.258,0.0,0.0,0.184,0.092
+openai/gpt-4.1,us-closed,20,20,3,2.75,-0.25,0.444,0.0,0.0,0.229,0.287
+x-ai/grok-4.3,us-closed,20,20,2.95,3.6,0.65,0.875,0.0,0.0,0.136,0.089

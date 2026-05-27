@@ -1,0 +1,4 @@
+model,model_class,n_questions_attempted,n_questions_scored,mean_score_A,mean_score_B,mean_delta_AB,std_delta_AB,refusal_rate_A,refusal_rate_B,mean_hedge_ratio_A,mean_hedge_ratio_B
+qwen2.5-7b-abliterated-greedy,chinese-open-local,10,10,3,2.7,-0.3,0.949,0.0,0.0,0.301,0.209
+qwen2.5-7b-abliterated-strong,chinese-open-local,10,10,2.9,2.9,0,0.816,0.0,0.0,0.2,0.164
+qwen2.5-7b-stock-greedy,chinese-open-local,10,10,3,2.8,-0.2,0.422,0.0,0.0,0.327,0.297
