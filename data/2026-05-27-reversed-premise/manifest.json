@@ -1,0 +1,25 @@
+{
+  "calls_completed": 120,
+  "calls_failed": 6,
+  "completed_at": "2026-05-27T16:34:13.536572Z",
+  "models_attempted": [
+    "openrouter:google/gemma-2-27b-it",
+    "openrouter:mistralai/mistral-large",
+    "openrouter:openai/gpt-4.1"
+  ],
+  "models_completed": [
+    "google/gemma-2-27b-it",
+    "mistralai/mistral-large",
+    "openai/gpt-4.1"
+  ],
+  "models_failed": [],
+  "positions": [
+    "neutral",
+    "reversed"
+  ],
+  "questions_version": "v2-subset",
+  "rubric_version": "v2",
+  "run_date": "2026-05-27-reversed-premise",
+  "started_at": "2026-05-27T16:12:08.657553Z",
+  "total_calls_planned": 120
+}

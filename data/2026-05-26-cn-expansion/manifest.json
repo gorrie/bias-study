@@ -1,0 +1,32 @@
+{
+  "calls_completed": 181,
+  "calls_failed": 1,
+  "completed_at": "2026-05-26T07:34:28.131726Z",
+  "models_attempted": [
+    "openrouter:moonshotai/kimi-k2.6",
+    "openrouter:baidu/ernie-4.5-300b-a47b",
+    "openrouter:bytedance-seed/seed-1.6",
+    "openrouter:z-ai/glm-4.7"
+  ],
+  "models_completed": [
+    "moonshotai/kimi-k2.6",
+    "baidu/ernie-4.5-300b-a47b",
+    "z-ai/glm-4.7"
+  ],
+  "models_failed": [
+    {
+      "model": "bytedance-seed/seed-1.6",
+      "reason": "auth/availability"
+    }
+  ],
+  "positions": [
+    "mild",
+    "neutral",
+    "pointed"
+  ],
+  "questions_version": "v2-subset",
+  "rubric_version": "v2",
+  "run_date": "2026-05-26-cn-expansion",
+  "started_at": "2026-05-26T06:13:35.540257Z",
+  "total_calls_planned": 240
+}

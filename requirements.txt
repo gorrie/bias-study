@@ -1,0 +1,3 @@
+# Bias-study pipeline dependencies.
+# Everything else (csv, json, statistics, concurrent.futures, dataclasses) is stdlib.
+requests>=2.31

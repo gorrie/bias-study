@@ -1,0 +1,20 @@
+{
+  "headline_finding": {
+    "mean_delta_AB": 0.567,
+    "mean_score_A": 2.833,
+    "mean_score_B": 3.4,
+    "model": "z-ai/glm-4.5",
+    "model_class": "chinese-closed"
+  },
+  "moral_essay_signature_count": 17,
+  "n_models_attempted": 12,
+  "n_models_completed": 12,
+  "n_records": 720,
+  "per_model_class_means": {
+    "chinese-closed": 0.25,
+    "chinese-open": 0.249,
+    "unknown": 0.482,
+    "us-closed": 0.26
+  },
+  "refusal_cliff_count": 0
+}

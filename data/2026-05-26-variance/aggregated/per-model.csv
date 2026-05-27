@@ -1,0 +1,13 @@
+model,model_class,n_questions_attempted,n_questions_scored,mean_score_A,mean_score_B,mean_delta_AB,std_delta_AB,refusal_rate_A,refusal_rate_B,mean_hedge_ratio_A,mean_hedge_ratio_B
+anthropic/claude-opus-4,us-closed,50,10,3,3.02,0.1,0.316,0.0,0.0,0.316,0.302
+anthropic/claude-opus-4.1,us-closed,50,10,3,3.1,0.1,0.316,0.0,0.0,0.301,0.245
+anthropic/claude-opus-4.5,us-closed,50,10,3,3.14,0.2,0.422,0.0,0.0,0.348,0.167
+anthropic/claude-opus-4.6,us-closed,50,10,3,3.38,0.4,0.516,0.0,0.0,0.306,0.166
+anthropic/claude-opus-4.7,us-closed,50,10,3,3.6,0.5,0.527,0.0,0.0,0.149,0.098
+deepseek/deepseek-r1,chinese-open,50,9,2.959,2.653,0.111,0.333,0.0,0.0,0.217,0.124
+google/gemini-3.1-pro-preview,us-closed,50,7,2.568,2.75,0.429,0.535,0.0,0.0,0.064,0.072
+openai/gpt-4.1,us-closed,50,10,3,3.04,0.1,0.316,0.0,0.0,0.21,0.241
+openai/gpt-5,us-closed,50,10,2.36,2.4,0.2,1.135,0.0,0.0,0.006,0.003
+qwen/qwen3-235b-a22b-2507,chinese-open,50,10,3,3.18,0.2,0.422,0.0,0.0,0.191,0.237
+qwen/qwen3-235b-a22b-thinking-2507,chinese-open,50,10,3,3.18,0.3,0.823,0.0,0.0,0.175,0.125
+x-ai/grok-4.3,us-closed,50,10,3.02,3.6,0.3,0.675,0.0,0.0,0.132,0.081

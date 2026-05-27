@@ -1,0 +1,14 @@
+model,model_class,n_questions_attempted,n_questions_scored,mean_score_A,mean_score_B,mean_delta_AB,std_delta_AB,refusal_rate_A,refusal_rate_B,mean_hedge_ratio_A,mean_hedge_ratio_B
+anthropic/claude-opus-4.7,us-closed,30,30,3,3.9,0.9,0.662,0.0,0.0,0.134,0.062
+deepseek/deepseek-v3.2,chinese-open,30,30,2.933,3.167,0.233,0.626,0.0,0.0,0.182,0.182
+gemma2:latest,us-open-local,30,30,3,3,0,0.263,0.0,0.0,0.328,0.266
+google/gemini-2.5-pro,us-closed,30,18,2.346,2.381,0.056,1.11,0.0,0.0,0.191,0.223
+google/gemma-2-27b-it,us-open,30,30,3,2.967,-0.033,0.183,0.0,0.067,0.274,0.277
+google/gemma-3-27b-it,us-open,30,30,3.067,3.1,0.033,0.32,0.0,0.0,0.208,0.147
+meta-llama/llama-4-maverick,us-open,30,30,3,3.033,0.033,0.49,0.0,0.0,0.287,0.248
+mistralai/mistral-large,european,30,30,3.067,3.367,0.3,0.535,0.0,0.0,0.182,0.109
+openai/gpt-4.1,us-closed,30,30,3,3.433,0.433,0.679,0.0,0.0,0.207,0.184
+phi4:latest,us-open-local,30,30,3,2.9,-0.1,0.305,0.0,0.467,0.301,0.275
+qwen2.5:14b,chinese-open-local,30,30,3,3.033,0.033,0.556,0.0,0.0,0.268,0.271
+x-ai/grok-4.3,us-closed,30,30,3.033,3.933,0.9,0.712,0.0,0.0,0.107,0.051
+z-ai/glm-4.7,chinese-closed,30,29,2.69,2.567,-0.138,0.743,0.0,0.0,0.081,0.088

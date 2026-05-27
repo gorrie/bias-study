@@ -1,0 +1,46 @@
+{
+  "calls_completed": 780,
+  "calls_failed": 0,
+  "completed_at": "2026-05-26T02:08:06.536414Z",
+  "models_attempted": [
+    "openrouter:anthropic/claude-opus-4.7",
+    "openrouter:openai/gpt-4.1",
+    "openrouter:google/gemini-2.5-pro",
+    "openrouter:google/gemma-2-27b-it",
+    "openrouter:google/gemma-3-27b-it",
+    "openrouter:deepseek/deepseek-v3.2",
+    "openrouter:meta-llama/llama-4-maverick",
+    "openrouter:x-ai/grok-4.3",
+    "openrouter:z-ai/glm-4.7",
+    "openrouter:mistralai/mistral-large",
+    "ollama:gemma2:latest",
+    "ollama:qwen2.5:14b",
+    "ollama:phi4:latest"
+  ],
+  "models_completed": [
+    "anthropic/claude-opus-4.7",
+    "openai/gpt-4.1",
+    "google/gemini-2.5-pro",
+    "google/gemma-2-27b-it",
+    "google/gemma-3-27b-it",
+    "deepseek/deepseek-v3.2",
+    "meta-llama/llama-4-maverick",
+    "x-ai/grok-4.3",
+    "z-ai/glm-4.7",
+    "mistralai/mistral-large",
+    "gemma2:latest",
+    "qwen2.5:14b",
+    "phi4:latest"
+  ],
+  "models_failed": [],
+  "positions": [
+    "mild",
+    "neutral",
+    "pointed"
+  ],
+  "questions_version": "v2-subset",
+  "rubric_version": "v2",
+  "run_date": "2026-05-25-full",
+  "started_at": "2026-05-25T22:52:59.556980Z",
+  "total_calls_planned": 780
+}

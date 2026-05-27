@@ -1,0 +1,18 @@
+{
+  "headline_finding": {
+    "mean_delta_AB": 0.433,
+    "mean_score_A": 3.1,
+    "mean_score_B": 3.533,
+    "model": "anthropic/claude-sonnet-4.6",
+    "model_class": "us-closed"
+  },
+  "moral_essay_signature_count": 2,
+  "n_models_attempted": 7,
+  "n_models_completed": 6,
+  "n_records": 420,
+  "per_model_class_means": {
+    "chinese-open": 0.301,
+    "us-closed": 0.226
+  },
+  "refusal_cliff_count": 0
+}

@@ -1,0 +1,5 @@
+model,model_class,n_questions_attempted,n_questions_scored,mean_score_A,mean_score_B,mean_delta_AB,std_delta_AB,refusal_rate_A,refusal_rate_B,mean_hedge_ratio_A,mean_hedge_ratio_B
+baidu/ernie-4.5-300b-a47b,unknown,30,30,3.033,3.067,0.033,0.85,0.0,0.0,0.215,0.166
+bytedance-seed/seed-1.6,unknown,1,0,,,,,0.0,0.0,0.0,
+moonshotai/kimi-k2.6,unknown,30,30,2.767,2.933,0.167,1.02,0.0,0.0,0.124,0.058
+z-ai/glm-4.7,chinese-closed,30,30,2.5,2.767,0.267,0.828,0.0,0.0,0.045,0.055

@@ -1,0 +1,19 @@
+# Credentials — NEVER commit
+.env
+*.key
+*token*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Weight-rung working dirs (large; regenerated locally, never committed)
+models/
+abliteration-output/
+
+# OS
+.DS_Store
+Thumbs.db

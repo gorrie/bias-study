@@ -1,0 +1,6 @@
+# Normalize line endings across Linux / macOS / Windows checkouts.
+# Shell and Python scripts MUST stay LF: a CRLF in a *.sh file breaks the
+# `#!/usr/bin/env bash` shebang on Linux/macOS.
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
