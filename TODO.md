@@ -18,6 +18,10 @@ stands and what to pick up next. Keep it current as legs complete.
 - **Cross-platform tooling** — weight-rung Docker drivers auto-detect the GPU runtime and skip
   gracefully on no-NVIDIA hosts; `run_local.py` uses `cuda` when available else `auto` (commit
   `039dcbf`).
+- **On-device eval channel (macOS)** — a `dmr` channel (Docker Model Runner, Metal-backed,
+  `localhost:12434`) runs the prompt rung against large *quantized* local models (`ai/qwen3.6`
+  ~34B, `ai/qwen3-coder` ~30B, `ai/gemma4`) with no key or network (commit `44d7198`). This is a
+  prompt-rung capability only — see the note below.
 - **Construct-validity controls** — sycophancy (reversed-premise) and out-of-domain
   (economic/foreign-policy) both run. The lean is **civil-liberties-specific**; only Opus 4.7
   generalizes off-surface. `data/2026-05-27-{reversed-premise,ood}/`.
@@ -27,6 +31,12 @@ stands and what to pick up next. Keep it current as legs complete.
 The M5 is the right box for the weight rung's unfinished business — for two concrete reasons:
 unified memory removes the 24 GB fp16 cap, and a non-MKL BLAS (Accelerate) may dodge the
 Gemma-2 SVD bug.
+
+> **Note — the `dmr` channel does not cover the weight rung.** Docker Model Runner serves
+> *quantized* (Q4) models for on-device prompt-rung eval. Abliteration needs **fp16** base weights
+> (you cannot abliterate a quantized model — a hard lesson, WRITEUP §5.5), so the steps below
+> download fp16 and run OBLITERATUS natively. The 14B+ unlock is specifically *fp16 abliteration*,
+> not the Q4 locals the `dmr` channel already runs.
 
 1. **Run OBLITERATUS natively, not in the CUDA Docker image.** Apple Silicon has no CUDA, so the
    `obliteratus:gpu` image does not apply. Install OBLITERATUS natively against torch + MPS:
