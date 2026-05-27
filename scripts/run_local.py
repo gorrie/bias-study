@@ -9,18 +9,18 @@ stock open-weight model vs its abliterated variant under the same conditions.
 Reuses run_study's question loader + exact condition prompts so results are
 directly comparable to the OpenRouter cross-section.
 
-Run inside the obliteratus:gpu container (has torch+transformers+CUDA). MODELS_DIR
-and ABLIT_OUT are your local model/output dirs (default ./models, ./abliteration-output;
-obliteratus:gpu is built per the OBLITERATUS repo):
+Run inside the obliteratus:gpu container (torch+transformers+CUDA), on a Linux GPU host —
+the weight rung needs an NVIDIA GPU and does not run on macOS/Apple Silicon. MODELS_DIR and
+ABLIT_OUT are your local model/output dirs; pass them as ABSOLUTE paths (a relative source
+makes Docker create a named volume instead of bind-mounting your dir):
     docker run --rm --gpus all -e HF_HUB_OFFLINE=1 \
-      -v "$ABLIT_OUT:/output" \
-      -v "$MODELS_DIR:/models" \
+      -v "$(pwd)/abliteration-output:/output" \
+      -v "$(pwd)/models:/models" \
       -v "$(pwd):/study" \
       obliteratus:gpu \
       python /study/scripts/run_local.py --model-path /output/qwen2.5-7b-abliterated \
         --label qwen2.5-7b-abliterated --out-date 2026-05-27-abliteration --conditions A,B
-    # Windows / Git-Bash users: prefix the docker run with MSYS_NO_PATHCONV=1 so MSYS
-    # does not rewrite the -v host:/container volume paths.
+    # Windows / Git-Bash only: prefix with MSYS_NO_PATHCONV=1 so MSYS leaves -v paths intact.
 
 Usage:
     --model-path PATH   local HF model dir
@@ -95,7 +95,10 @@ def main() -> int:
     print(f"loading {args.model_path} ...", flush=True)
     t0 = time.time()
     tok = AutoTokenizer.from_pretrained(args.model_path)
-    model = AutoModelForCausalLM.from_pretrained(args.model_path, dtype=torch.float16, device_map="cuda")
+    # Production runs inside obliteratus:gpu (CUDA), where this resolves to "cuda" exactly as
+    # before. Off-CUDA hosts (e.g. a Mac smoke-test) fall back to "auto" instead of crashing.
+    device_map = "cuda" if torch.cuda.is_available() else "auto"
+    model = AutoModelForCausalLM.from_pretrained(args.model_path, dtype=torch.float16, device_map=device_map)
     model.eval()
     print(f"loaded in {time.time()-t0:.0f}s; {len(questions)} questions x {len(conditions)} conditions x {args.samples} samples", flush=True)
 

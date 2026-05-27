@@ -23,9 +23,23 @@ MODELS_VOL="${MODELS_DIR:-$(pwd)/models}"
 ABL_VOL="${ABLIT_OUT:-$(pwd)/abliteration-output}"
 STUDY_VOL="$(pwd)"
 
-# Windows/Git-Bash users: prefix the docker invocation with MSYS_NO_PATHCONV=1 so MSYS
-# does not rewrite the -v host:/container volume paths (e.g. export MSYS_NO_PATHCONV=1).
-drun() { docker run --rm --gpus all -e HF_HUB_OFFLINE=1 \
+# Platform: the weight rung needs Docker + an NVIDIA GPU (CUDA) and runs on a Linux GPU
+# host. It cannot run on macOS/Apple Silicon (Docker Desktop has no GPU passthrough). The
+# GPU flag is auto-detected; override with DOCKER_GPU_FLAG (DOCKER_GPU_FLAG='' forces CPU,
+# or pass a custom runtime). Windows Git-Bash: export MSYS_NO_PATHCONV=1 so MSYS leaves the
+# -v host:/container paths intact.
+command -v docker >/dev/null 2>&1 || { echo "ERROR: docker not found — the weight rung needs Docker + an NVIDIA GPU (run on a Linux GPU host)."; exit 3; }
+if [ -n "${DOCKER_GPU_FLAG+x}" ]; then
+  GPU_FLAG="$DOCKER_GPU_FLAG"
+elif docker info --format '{{json .Runtimes}}' 2>/dev/null | grep -q nvidia || command -v nvidia-smi >/dev/null 2>&1; then
+  GPU_FLAG="--gpus all"
+else
+  echo "ERROR: no NVIDIA GPU/runtime detected — the weight rung requires CUDA and cannot run" >&2
+  echo "       here (e.g. macOS/Apple Silicon). Run it on a Linux GPU host, or set" >&2
+  echo "       DOCKER_GPU_FLAG to override (DOCKER_GPU_FLAG='' forces CPU)." >&2
+  exit 3
+fi
+drun() { docker run --rm $GPU_FLAG -e HF_HUB_OFFLINE=1 \
   -v "$MODELS_VOL:/models" -v "$ABL_VOL:/output" -v "$STUDY_VOL:/study" "$IMG" "$@"; }
 
 echo "================ A2b: temp=0 greedy isolation (Qwen stock vs advanced-abliterated) ================"
@@ -54,7 +68,7 @@ from transformers import AutoModelForCausalLM,AutoTokenizer
 p='/output/qwen2.5-7b-abliterated-aggressive'
 try:
     tok=AutoTokenizer.from_pretrained(p)
-    m=AutoModelForCausalLM.from_pretrained(p,dtype=torch.float16,device_map='cuda'); m.eval()
+    m=AutoModelForCausalLM.from_pretrained(p,dtype=torch.float16,device_map=('cuda' if torch.cuda.is_available() else 'auto')); m.eval()
     t=tok.apply_chat_template([{'role':'user','content':'In one sentence, what is the capital of France?'}],add_generation_prompt=True,tokenize=False)
     i=tok(t,return_tensors='pt').to(m.device)
     o=m.generate(**i,max_new_tokens=40,do_sample=False)

@@ -28,6 +28,15 @@ while [ $# -gt 0 ]; do case "$1" in
   --models) shift; MODELS="$1";; *) echo "unknown arg: $1";; esac; shift; done
 [ $DO_PROMPT -eq 0 ] && [ $DO_WEIGHTS -eq 0 ] && { echo "pick --prompt, --weights, or --all"; exit 2; }
 
+# Weight rung needs Docker + an NVIDIA GPU (CUDA). Detect up front so we skip it with a
+# clear message on non-GPU hosts (e.g. macOS) instead of failing cryptically mid-run.
+have_docker_gpu() {
+  command -v docker >/dev/null 2>&1 || return 1
+  [ -n "${DOCKER_GPU_FLAG:-}" ] && return 0
+  docker info --format '{{json .Runtimes}}' 2>/dev/null | grep -q nvidia && return 0
+  command -v nvidia-smi >/dev/null 2>&1
+}
+
 echo "===== BAROMETER PASS $RUN (prompt=$DO_PROMPT weights=$DO_WEIGHTS) ====="
 
 # 0. pre-flight (known-good state)
@@ -46,8 +55,15 @@ fi
 
 # 2. WEIGHT RUNG — abliteration sweep over open-weight families (GPU + obliteratus:gpu)
 if [ $DO_WEIGHTS -eq 1 ]; then
-  echo "[2] weight rung: abliteration sweep (edit SWEEP=() in run_abliteration_sweep.sh to add families)"
-  OUT_DATE="$RUN" bash scripts/run_abliteration_sweep.sh || echo "  weight-rung sweep had failures (continuing)"
+  if have_docker_gpu; then
+    echo "[2] weight rung: abliteration sweep (edit SWEEP=() in run_abliteration_sweep.sh to add families)"
+    OUT_DATE="$RUN" bash scripts/run_abliteration_sweep.sh || echo "  weight-rung sweep had failures (continuing)"
+  else
+    echo "[2] weight rung SKIPPED — needs Docker + an NVIDIA GPU (CUDA), not available here."
+    echo "    It runs only on a Linux GPU host; macOS/Apple Silicon cannot abliterate locally."
+    echo "    Run on a GPU box, or set DOCKER_GPU_FLAG to override the detection."
+    DO_WEIGHTS=0
+  fi
 fi
 
 # 3. SCORE (4-judge ULTRAPLINIAN median)

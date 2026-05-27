@@ -42,9 +42,16 @@ possible on open-weight models** — the transparency-asymmetry finding.
 | OBLITERATUS | upstream <https://github.com/elder-plinius/OBLITERATUS> (CLI: `python -m obliteratus.cli`) — cited, not vendored |
 | G0DM0D3 | upstream <https://github.com/elder-plinius/G0DM0D3> (OpenAI-compatible server) — cited, not vendored |
 
-**Windows/Git-Bash note:** on Linux/macOS the `docker run -v` examples below work as written. Under
-Windows Git-Bash/MSYS, if drive-letter `-v` mounts get path-mangled, prefix the command with
-`MSYS_NO_PATHCONV=1`.
+**Platform note (read before the weight rung):** the weight rung needs Docker **and an NVIDIA
+GPU (CUDA)** — it runs on a Linux GPU host. It **cannot run on macOS/Apple Silicon**: Docker
+Desktop there has no GPU passthrough, so `--gpus all` is unavailable. The driver scripts
+(`run_abliteration_sweep.sh`, `run_abliteration_controls.sh`, `run_barometer.sh`) detect this
+and exit/skip with a clear message rather than failing cryptically; override the detection with
+`DOCKER_GPU_FLAG` (e.g. `DOCKER_GPU_FLAG=''` to force CPU, or a custom runtime string). The
+prompt rung and all scoring/analysis are pure Python + API calls and run fine on any platform.
+Always pass **absolute** host paths to `-v` (a relative source like `./models` makes Docker
+create a *named volume* instead of bind-mounting your directory). Windows Git-Bash only: prefix
+`docker run` with `MSYS_NO_PATHCONV=1` so MSYS doesn't rewrite the `-v` paths.
 
 ---
 
@@ -87,14 +94,16 @@ Run labels in play: `2026-05-2x-*` (prompt-rung cross-section), `2026-05-27-abli
 - **`run_local.py`** — runs the question set against a LOCAL transformers model (stock or
   abliterated), writing raw JSONL in study schema. Runs **inside** `obliteratus:gpu`:
   ```bash
-  MSYS_NO_PATHCONV=1 docker run --rm --gpus all -e HF_HUB_OFFLINE=1 \
-    -v $MODELS_DIR:/models -v $ABLIT_OUT:/output \
+  docker run --rm --gpus all -e HF_HUB_OFFLINE=1 \
+    -v "$(pwd)/models:/models" -v "$(pwd)/abliteration-output:/output" \
     -v "$(pwd):/study" obliteratus:gpu \
     python /study/scripts/run_local.py \
       --model-path /output/qwen2.5-7b-abliterated \   # or /models/<stock>
       --label qwen2.5-7b-abliterated --out-date 2026-05-27-abliteration \
       --conditions A,B --samples 1 --temperature 0.7   # --temperature 0 = greedy/deterministic
   ```
+  (Linux GPU host; see the platform note in §1. Set `MODELS_DIR`/`ABLIT_OUT` to absolute paths
+  to relocate the mounts. Windows Git-Bash: prefix with `MSYS_NO_PATHCONV=1`.)
 - **`dl_model.py`** — robust HF downloader, **host-side** (NOT in Docker — WSL2 NAT
   strangles large LFS pulls). Range-resume + per-shard safetensors validation, looped until
   valid. `huggingface_hub`/`hf` is unreliable for big shards; this is the answer.
@@ -110,8 +119,8 @@ Run labels in play: `2026-05-2x-*` (prompt-rung cross-section), `2026-05-27-abli
 ### Abliteration itself (OBLITERATUS)
 The CLI is `python -m obliteratus.cli obliterate` (NOT `app.py`, which is the Gradio UI).
 ```bash
-MSYS_NO_PATHCONV=1 docker run --rm --gpus all -e HF_HUB_OFFLINE=1 \
-  -v $MODELS_DIR:/models -v $ABLIT_OUT:/output \
+docker run --rm --gpus all -e HF_HUB_OFFLINE=1 \
+  -v "$(pwd)/models:/models" -v "$(pwd)/abliteration-output:/output" \
   obliteratus:gpu \
   python -m obliteratus.cli obliterate /models/<name> \
     --output-dir /output/<name>-abliterated \
