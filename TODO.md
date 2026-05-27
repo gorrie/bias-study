@@ -79,10 +79,6 @@ python scripts/abliteration_effect_check.py --out-date <run>
 
 - **Paraphrase robustness (D2)** — the last planned rigor footnote (WRITEUP §8): 3 paraphrases of
   the 10 neutrals, report delta stability. API-only, runnable anywhere.
-- **Reconcile the §5.4 sycophancy table** — the prose cell values drift ≈0.15 from the current
-  `aggregate.py` output (e.g. Opus reversed-B 3.90 in prose vs 3.70 aggregated). The conclusion
-  (all framing gaps < 0.40 → genuine lean, not sycophancy) is unaffected; the table should be
-  reconciled to the reproducible numbers.
 - **Quarterly re-run** — re-run the prompt rung and `scripts/drift_report.py` to extend the
   time-series as new model versions ship.
 - **Community contributions** — finding / model-request / reproduction submissions via the issue

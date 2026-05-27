@@ -15,7 +15,7 @@ sections (§3.1, §5.2, §5.5–5.7) are the public-facing subset of this.
 ### A1 — "The abliteration null is underpowered; you can't tell 'no effect' from 'an effect you can't see.'"
 n=10 questions × 1 sample per cell per model. With σ≈1 on a 1–5 scale, the per-model
 delta CI is roughly ±0.6. A flat mean is not proof of zero movement.
-**Status: FIX QUEUED + reframe.** (a) Report every abliteration delta with a bootstrap
+**Status: DONE.** Executed — abliteration deltas carry bootstrap CIs (`ci_analysis.py`; §4.2 reports the per-family CIs include zero at n=10), framed as *no stance movement detectable at this n*, not *proven un-ablatable*; the dissociation is stated as the defensible version (text heavily perturbed, stance flat within CI). The plan, as carried out: (a) Report every abliteration delta with a bootstrap
 CI via `ci_analysis.py`; state the finding as *"no movement detectable at this n (CI
 ±X)"*, never "proven un-ablatable." (b) Pool across vendor families (Qwen, Mistral,
 Llama, +DeepSeek) to tighten the pooled estimate. (c) The claim is downgraded from
@@ -34,10 +34,11 @@ is a *real* dissociation, not a dead ablation. (Pending A2b below.)
 ### A2b — "Temp=0.7 inflates that text-difference; some of the 0.30 Jaccard is sampling noise, not ablation."
 At temperature 0.7 the *same* model resampled would already score Jaccard < 1.0, so
 stock-vs-abliterated divergence is confounded with stochastic decoding.
-**Status: FIX QUEUED.** Run a temp=0 (greedy, deterministic) stock-vs-abliterated pass on
-one model (Qwen): any text difference is then *purely* the ablation. Also add a
-stock-vs-stock resample baseline to quantify the sampling floor. Report the ablation
-effect net of that floor.
+**Status: DONE.** Ran a temp=0 (greedy, deterministic) Qwen stock-vs-abliterated pass
+(`data/2026-05-27-abliteration-controls/`). §4.2: stock 3.00/2.90 vs abliterated 3.00/3.00 —
+stance flat — while the text rewrite persists (Jaccard 0.306 at temp 0, essentially identical to
+the temp-0.7 value). So the divergence is the ablation, not stochastic decoding, and the flat
+stance is real.
 
 ### A3 — "Open 7–9B instruct models sit at ~3.0 (balanced) already — floor/ceiling. There's nowhere to move."
 If the stock model is already neutral, a null post-ablation is mechanical, not meaningful.
@@ -47,7 +48,7 @@ sharpens §B: the abliteration-auditable models are precisely the low-lean ones.
 
 ### A4 — "You used the *conservative* 'advanced' method (norm-preserving, reg=0.3). You just didn't push hard enough."
 A gentle ablation that barely perturbs refusal obviously won't move a subtle prior.
-**Status: FIX QUEUED.** Dose-response on ablation *strength*: re-ablate Qwen at
+**Status: DONE.** Ran the ablation-strength dose-response (`data/2026-05-27-abliteration-controls/`; §4.2): a stronger SVD ablation (8 refusal directions vs 4) does not move the stance toward skepticism (stays ~3.0-3.2), and pushing further degrades coherence (token loops) before the stance relocates — the functionality ceiling arrives first, so the null is not "didn't push hard enough." Original plan: dose-response on ablation *strength*: re-ablate Qwen at
 `aggressive`/`nuclear`, re-score, show whether the political null holds at max strength —
 with the coherence guard (a model degraded into noise must not be scored as "max
 skepticism"). The ablation-strength ceiling is itself a reportable result (mirrors the
@@ -87,12 +88,14 @@ not the typical, case.
 ### C2 — "A→B removes a fairness instruction AND adds 'what do you think?'. You're measuring opinionatedness, not institutional skepticism." ← TOP KILLSHOT
 Strip a hedging instruction and any model takes more positions on *any* axis. Nothing
 ties the movement to *institutional* skepticism specifically.
-**Status: FIX QUEUED — elevated from optional to REQUIRED.** The reversed-premise /
+**Status: DONE — killshot answered (see below).** The reversed-premise /
 sycophancy control (WP3) is the only thing that discriminates "genuine institutional lean"
 from "general agreeableness/opinionatedness": re-ask a subset with the institutional
 premise *flipped*. If the unmask delta flips with the framing → agreeableness. If it holds
-→ genuine lean. Until this runs, the prompt-rung claim is not defensible. This now gates
-the writeup's main claim.
+→ genuine lean. **It ran** (4-judge, `data/2026-05-27-reversed-premise/`; WRITEUP §5.4):
+all five neutral-vs-reversed framing gaps stay under 0.40 (largest GPT-4.1 +0.35), and Opus
+holds *more* skeptical under the deferential framing (−0.10). The unmask does not track framing
+— a genuine institutional lean, not agreeableness. Killshot answered.
 
 ### C3 — "Your 4 LLM judges carry the same lean they're scoring — the instrument is contaminated."
 If judges share the institutional prior, they'll systematically code skepticism as
