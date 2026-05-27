@@ -80,6 +80,15 @@ python scripts/abliteration_effect_check.py --out-date <run>
 
 ## Other open items (not M5-specific)
 
+- **Local-model repeatability (queued behind the Gemma-2-9B leg).** Run-to-run variance is
+  documented for *cloud* models only (§5.1: N=5, noise floor ≈±0.5); no local subject has a
+  repeatability check — neither the Ollama prompt-rung models (`gemma2`, `qwen2.5:14b`, `phi4`
+  in `data/2026-05-25`) nor the `transformers-local` weight-rung models. Confirm on the M5
+  (ungated → no HF_TOKEN, generation is free/local): (a) **determinism** — re-run a stock model
+  at `--temperature 0` twice on MPS, expect identical greedy output; (b) **variance** —
+  `run_study --models ollama:gemma2:latest,ollama:qwen2.5:14b,ollama:phi4:latest --samples 5
+  --conditions A,B` → `score` → `aggregate` → `ci_analysis`, then check the local per-model B−A σ
+  against the cloud ≈±0.5 floor and the committed `2026-05-25` deltas. Reuses existing tooling.
 - **Quarterly re-run** — re-run the prompt rung and `scripts/drift_report.py` to extend the
   time-series as new model versions ship.
 - **Community contributions** — finding / model-request / reproduction submissions via the issue
