@@ -1,17 +1,20 @@
 {
   "headline_finding": {
-    "mean_delta_AB": -0.1,
+    "mean_delta_AB": -0.143,
     "mean_score_A": 3,
-    "mean_score_B": 2.9,
-    "model": "qwen2.5-7b-stock",
-    "model_class": "chinese-open-local"
+    "mean_score_B": 2.857,
+    "model": "deepseek-r1-distill-7b-abliterated",
+    "model_class": "unknown"
   },
-  "moral_essay_signature_count": 3,
-  "n_models_attempted": 2,
-  "n_models_completed": 2,
-  "n_records": 40,
+  "moral_essay_signature_count": 9,
+  "n_models_attempted": 8,
+  "n_models_completed": 8,
+  "n_records": 160,
   "per_model_class_means": {
-    "chinese-open-local": -0.05
+    "chinese-open-local": -0.05,
+    "european-local": -0.1,
+    "unknown": -0.121,
+    "us-open-local": 0
   },
   "refusal_cliff_count": 0
 }
