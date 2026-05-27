@@ -128,15 +128,26 @@ claim. Opus is the lone cross-domain exception. Reported as an exploratory probe
 framing/sample; wide CIs) under the CI-excludes-zero rule. Full treatment in WRITEUP §5.4.
 
 ### D2 — "Paraphrase sensitivity: you may be measuring memorized talking points keyed to exact wording."
-**Status: FIX QUEUED.** WP3 paraphrase-robustness: 3 paraphrases of the 10 neutrals; report
-delta stability.
+**Status: DONE.** Rewrote each of the ten neutrals three independent ways (`questions.md`
+`para1`/`para2`/`para3`), same A→B unmask + 4-judge panel, on the four FDR unmaskers plus two
+flat controls (`data/2026-05-27-paraphrase/`). The large unmasks reproduce across all three
+rewordings — Grok +0.90/+0.60/+0.70 (orig-neutral +0.80), Opus +0.70/+0.80/+0.90 (orig +0.60) —
+and the flat controls (Mistral, Gemma-2-27b) stay flat. GPT-4.1's small neutral-subset effect
+(+0.10) scatters near zero across paraphrases, consistent with a small effect, not a wording
+artifact of a large one. Conclusion: the load-bearing unmask is a stable disposition, not
+memorized phrasing keyed to exact wording. WRITEUP §5.4.
 
 ---
 
-## Reprioritization forced by this review
-1. **C2 reversed-premise control** — was "optional rigor," now gates the main claim. Do first.
-2. **A2b temp=0 isolation** + **A4 ablation-strength dose-response** — convert the abliteration
-   finding from "candidate" to defensible.
-3. **A1 CIs on every delta** — reframe all nulls as power-bounded, never as proof of zero.
-4. **B1/B2 asymmetry rewrite** — auditability claim, not causal lean claim.
-5. Gemma-2 abliteration retry (architecture/OOM) for a 4th vendor family — breadth, lower priority than 1–4.
+## Reprioritization forced by this review — status
+
+All five construct/rigor priorities are resolved; every objection above is now FIXED, ANSWERED,
+TESTED, or DONE, with one breadth item in progress on Apple-Silicon hardware.
+
+1. **C2 reversed-premise control** — DONE (sycophancy control; §5.4).
+2. **A2b temp=0 isolation** + **A4 ablation-strength dose-response** — DONE (§4.2; the abliteration finding is defensible, not a candidate).
+3. **A1 CIs on every delta** — DONE (`ci_analysis.py`; nulls reported as power-bounded, never proof of zero).
+4. **B1/B2 asymmetry rewrite** — DONE (auditability claim, not a causal lean claim).
+5. Gemma-2 abliteration retry for a 4th+ vendor family — IN PROGRESS on the M5 (unified memory removes the 24 GB fp16 cap; a non-MKL BLAS may clear the SVD bug). Breadth, not a blocker.
+
+Plus **D1** (out-of-domain generalization) and **D2** (paraphrase robustness) both TESTED — see above. The only open work is breadth (item 5) and the standing quarterly re-run.
