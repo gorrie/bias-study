@@ -12,8 +12,11 @@ Writes:
 Usage:
     python run_study.py --positions neutral --models default-frontier
     python run_study.py --positions all --models <custom-list>
+    python run_study.py --models local-large       # on-device 30-34B via Docker Model Runner, no API key
 
 Default model set targets fast-comparable signal: 10 cloud + 3 local.
+Channels: openrouter (cloud), ollama (local :11434), dmr (Docker Model Runner :12434,
+OpenAI-compatible, on-device — runs on Apple Silicon GPU, no key/network).
 """
 from __future__ import annotations
 
@@ -38,6 +41,7 @@ ENV_PATHS = [STUDY_DIR / ".env"]
 # Constants
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 OLLAMA_BASE = "http://localhost:11434"
+DMR_BASE = "http://localhost:12434/engines/v1"  # Docker Model Runner — OpenAI-compatible, on-device (Metal on Apple Silicon)
 
 FAIRNESS_PROMPT = (
     "Please answer the following question in a balanced manner. "
@@ -89,6 +93,21 @@ DEFAULT_FRONTIER = [
     ("ollama", "qwen2.5:14b"),
     ("ollama", "phi4:latest"),
 ]
+
+# Local large open-weight models via Docker Model Runner (OpenAI-compatible, on-device).
+# 30-34B at 4-bit fit in ~32 GB unified memory — beyond a 24 GB CUDA card's fp16 reach, so
+# this extends the open-weight class with bigger locals than the Windows/4090 box could host.
+# qwen3-coder is coder-tuned: a valid open-weight data point, but read its framing accordingly.
+LOCAL_LARGE = [
+    ("dmr", "ai/qwen3.6"),       # ~34B MoE (Q4) — general
+    ("dmr", "ai/qwen3-coder"),   # ~30B MoE (Q4) — coder-tuned
+    ("dmr", "ai/gemma4"),        # ~7B (Q4) — small local anchor for the size contrast
+]
+
+MODEL_SETS = {
+    "default-frontier": DEFAULT_FRONTIER,
+    "local-large": LOCAL_LARGE,
+}
 
 
 def load_env() -> dict:
@@ -205,6 +224,43 @@ def call_ollama(model: str, messages: list[dict], timeout: int = 120) -> dict:
         return {"ok": False, "error": str(e)[:300], "latency_ms": latency_ms}
 
 
+def call_dmr(model: str, messages: list[dict], timeout: int = 300) -> dict:
+    """Local on-device inference via Docker Model Runner's OpenAI-compatible endpoint.
+    No API key (it's local). Larger default timeout than cloud — big local models on a
+    Mac's GPU are slower per token than a hosted API."""
+    start = time.time()
+    try:
+        r = requests.post(
+            f"{DMR_BASE}/chat/completions",
+            headers={"Content-Type": "application/json"},
+            json={
+                "model": model,
+                "messages": messages,
+                "temperature": 0.7,
+                "max_tokens": 800,
+            },
+            timeout=timeout,
+        )
+        latency_ms = int((time.time() - start) * 1000)
+        if not r.ok:
+            return {"ok": False, "error": f"HTTP {r.status_code}: {r.text[:300]}", "latency_ms": latency_ms}
+        d = r.json()
+        choice = d.get("choices", [{}])[0]
+        text = choice.get("message", {}).get("content", "") or ""
+        usage = d.get("usage", {})
+        return {
+            "ok": True,
+            "response_text": text,
+            "latency_ms": latency_ms,
+            "tokens_in": usage.get("prompt_tokens"),
+            "tokens_out": usage.get("completion_tokens"),
+            "vendor_response_id": d.get("id"),
+        }
+    except Exception as e:
+        latency_ms = int((time.time() - start) * 1000)
+        return {"ok": False, "error": str(e)[:300], "latency_ms": latency_ms}
+
+
 def safe_filename(model: str) -> str:
     return model.replace("/", "__").replace(":", "_")
 
@@ -238,6 +294,8 @@ def run_one(channel: str, model: str, question: dict, condition: str, api_key: s
         result = call_openrouter(model, messages, api_key)
     elif channel == "ollama":
         result = call_ollama(model, messages)
+    elif channel == "dmr":
+        result = call_dmr(model, messages)
     else:
         raise ValueError(f"unknown channel {channel!r}")
 
@@ -262,7 +320,9 @@ def main() -> int:
     parser.add_argument("--positions", default="neutral",
                         help="Comma-separated positions to include (mild,neutral,pointed,all). Default: neutral (v1 baseline)")
     parser.add_argument("--models", default="default-frontier",
-                        help="Model set name or comma-separated 'channel:model' pairs. Default: default-frontier (13 models)")
+                        help="Model set name (default-frontier | local-large) or comma-separated "
+                             "'channel:model' pairs, channel in {openrouter,ollama,dmr}. "
+                             "Default: default-frontier (13 models)")
     parser.add_argument("--date", default=None,
                         help="Run date (default: today). Format YYYY-MM-DD.")
     parser.add_argument("--conditions", default="A,B",
@@ -274,10 +334,6 @@ def main() -> int:
 
     env = load_env()
     api_key = env.get("OPENROUTER_API_KEY")
-    if not api_key:
-        print("ERROR: OPENROUTER_API_KEY not set. Export it or put it in a repo-root .env "
-              "(see .env.example).", file=sys.stderr)
-        return 2
 
     positions = args.positions.split(",") if args.positions != "all" else ["mild", "neutral", "pointed"]
     questions = load_questions(positions)
@@ -285,10 +341,18 @@ def main() -> int:
         print(f"ERROR: no questions matched positions={positions}", file=sys.stderr)
         return 2
 
-    if args.models == "default-frontier":
-        models = DEFAULT_FRONTIER
+    if args.models in MODEL_SETS:
+        models = MODEL_SETS[args.models]
     else:
         models = [tuple(s.split(":", 1)) for s in args.models.split(",")]
+
+    # OpenRouter key is only required when the run actually includes cloud models — a
+    # local-only run (dmr/ollama, e.g. on a Mac) needs no API key or network.
+    if any(ch == "openrouter" for ch, _ in models) and not api_key:
+        print("ERROR: OPENROUTER_API_KEY not set, but the model set includes openrouter models. "
+              "Export it or put it in a repo-root .env (see .env.example), or run a local-only "
+              "set (e.g. --models local-large).", file=sys.stderr)
+        return 2
 
     run_date = args.date or datetime.date.today().isoformat()
     run_dir = STUDY_DIR / "data" / run_date

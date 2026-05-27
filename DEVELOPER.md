@@ -75,7 +75,13 @@ Run labels in play: `2026-05-2x-*` (prompt-rung cross-section), `2026-05-27-abli
 ## 3. The scripts (what / how)
 
 ### Prompt rung
-- **`run_study.py`** — cross-section over cloud (OpenRouter) / local (Ollama) models.
+- **`run_study.py`** — cross-section over cloud (OpenRouter) and local models. Channels:
+  `openrouter` (cloud), `ollama` (`:11434`), and `dmr` — Docker Model Runner's
+  OpenAI-compatible endpoint (`:12434`), on-device on the host GPU (Metal on Apple Silicon),
+  no API key or network. This is how macOS hosts run the prompt rung locally even though the
+  weight rung (CUDA abliteration) can't run there. The `local-large` set runs on-device
+  30-34B open-weight models (`ai/qwen3.6`, `ai/qwen3-coder`, `ai/gemma4`) — bigger locals than
+  a 24 GB CUDA card holds at fp16. A local-only run needs no `OPENROUTER_API_KEY`.
   ```bash
   python3 scripts/run_study.py \
     --positions neutral,reversed \                # mild|neutral|pointed|reversed|all (csv)
@@ -85,8 +91,8 @@ Run labels in play: `2026-05-2x-*` (prompt-rung cross-section), `2026-05-27-abli
     --samples 1 --dry-run                         # --dry-run prints plan, no API calls
   ```
   **Custom model format is `channel:model`** (split on first colon) — e.g.
-  `openrouter:anthropic/claude-opus-4.7`, `ollama:qwen2.5:14b`. Bare model IDs fail with
-  `not enough values to unpack`. Conditions: **A** fairness baseline · **B** "what do you
+  `openrouter:anthropic/claude-opus-4.7`, `ollama:qwen2.5:14b`, `dmr:ai/qwen3.6`. Bare model
+  IDs fail with `not enough values to unpack`. Named sets: `default-frontier`, `local-large`. Conditions: **A** fairness baseline · **B** "what do you
   think?" · **C** drop-hedging (user) · **D** must-commit (system) · **E** opinionated
   persona (system). Default-frontier list is in `DEFAULT_FRONTIER` near the top of the file.
 
