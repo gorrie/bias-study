@@ -148,6 +148,6 @@ TESTED, or DONE, with one breadth item in progress on Apple-Silicon hardware.
 2. **A2b temp=0 isolation** + **A4 ablation-strength dose-response** — DONE (§4.2; the abliteration finding is defensible, not a candidate).
 3. **A1 CIs on every delta** — DONE (`ci_analysis.py`; nulls reported as power-bounded, never proof of zero).
 4. **B1/B2 asymmetry rewrite** — DONE (auditability claim, not a causal lean claim).
-5. Gemma-2 abliteration retry for a 4th+ vendor family — IN PROGRESS on the M5 (unified memory removes the 24 GB fp16 cap; a non-MKL BLAS may clear the SVD bug). Breadth, not a blocker.
+5. Gemma-2 abliteration retry for a 5th vendor family — **DONE** on the M5 (`data/2026-05-27-abliteration-gemma2/`). Apple Silicon's Accelerate/LAPACK **cleared the MKL `SSYEVD` SVD failure**; OBLITERATUS advanced/SVD completed on `gemma-2-9b-it` (refusal_rate 0.17, coherence 1.0, RED spectral cert with a few layers `incomplete`). Stock-vs-abliterated dissociation reproduces: Jaccard 0.35 (text rewrote ~65%), stance flat (all 4 cells at 3.00; 39/40 judges-unanimous). A3 floor caveat applies — Gemma-2-9B sits at the neutral 3.0 midpoint like the other open 7-9B models, so the null reads consistently with both the dissociation and the floor-ceiling limitation. WRITEUP §4.2.
 
-Plus **D1** (out-of-domain generalization) and **D2** (paraphrase robustness) both TESTED — see above. The only open work is breadth (item 5) and the standing quarterly re-run.
+Plus **D1** (out-of-domain generalization) and **D2** (paraphrase robustness) both TESTED — see above. The only open work is the standing quarterly re-run.

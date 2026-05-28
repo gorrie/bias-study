@@ -1,0 +1,17 @@
+{
+  "headline_finding": {
+    "mean_delta_AB": 0,
+    "mean_score_A": 3,
+    "mean_score_B": 3,
+    "model": "gemma-2-9b-abliterated",
+    "model_class": "us-open-local"
+  },
+  "moral_essay_signature_count": 4,
+  "n_models_attempted": 2,
+  "n_models_completed": 2,
+  "n_records": 40,
+  "per_model_class_means": {
+    "us-open-local": 0
+  },
+  "refusal_cliff_count": 0
+}

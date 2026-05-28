@@ -28,7 +28,23 @@ stands and what to pick up next. Keep it current as legs complete.
   (the unmask reproduces across three paraphrases per neutral).
   `data/2026-05-27-{reversed-premise,ood,paraphrase}/`.
 
-## Next: the weight rung on Apple Silicon (the M5)
+## Weight rung on Apple Silicon (the M5) — DONE 2026-05-28
+
+**Result.** Gemma-2-9B-it abliterated natively on a 32 GB M5 via `scripts/run_abliteration_native.sh`.
+Apple Silicon's Accelerate/LAPACK cleared the MKL `SSYEVD` SVD failure that blocked it on the
+4090. OBLITERATUS advanced/SVD completed (`refusal_rate` 0.17, `coherence` 1.0,
+`spectral_certification` RED — a few layers `incomplete`, refines further with `nuclear`).
+Stock-vs-abliterated **dissociation confirmed**: text rewrote ~65% (Jaccard 0.35), stance flat
+(all 4 cells at 3.00; 39/40 judges-unanimous), A3 floor caveat applies. Data:
+`data/2026-05-27-abliteration-gemma2/`. WRITEUP §4.2; ADVERSARIAL-REVIEW item 5 closed.
+
+Item 2 (a larger 14B+ family) is **deferred** — 14B fp16 (~28 GB) doesn't fit a 32 GB M5;
+needs a 64 GB+ box. Item 4 (MLX path) was found to ship upstream (`obliteratus/mlx_backend.py`)
+and is not a blocker. Original plan and resume commands retained below for replication.
+
+---
+
+## Original plan (now done — kept for replication reference)
 
 The M5 is the right box for the weight rung's unfinished business — for two concrete reasons:
 unified memory removes the 24 GB fp16 cap, and a non-MKL BLAS (Accelerate) may dodge the
@@ -80,7 +96,7 @@ python scripts/abliteration_effect_check.py --out-date <run>
 
 ## Other open items (not M5-specific)
 
-- **Local-model repeatability (queued behind the Gemma-2-9B leg).** Run-to-run variance is
+- **Local-model repeatability.** Run-to-run variance is
   documented for *cloud* models only (§5.1: N=5, noise floor ≈±0.5); no local subject has a
   repeatability check — neither the Ollama prompt-rung models (`gemma2`, `qwen2.5:14b`, `phi4`
   in `data/2026-05-25`) nor the `transformers-local` weight-rung models. Confirm on the M5
