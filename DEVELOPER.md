@@ -40,6 +40,7 @@ possible on open-weight models** — the transparency-asymmetry finding.
 | Base models | `$MODELS_DIR` (default `./models`) — where base-model weights are downloaded |
 | Abliterated outputs | `$ABLIT_OUT` (default `./abliteration-output`) |
 | OBLITERATUS | upstream <https://github.com/elder-plinius/OBLITERATUS> (CLI: `python -m obliteratus.cli`) — cited, not vendored |
+| Native (Apple Silicon) install | No GPU image — install the weight-rung stack into a venv: `pip install -r requirements.txt -r requirements-weightrung.txt`, then `pip install -e <OBLITERATUS-path> --no-deps` (skips its CUDA-only `bitsandbytes` pin), then (optional) `pip install -r <OBLITERATUS-path>/requirements-apple.txt` for the MLX backend. Drive via `scripts/run_abliteration_native.sh`. |
 | G0DM0D3 | upstream <https://github.com/elder-plinius/G0DM0D3> (OpenAI-compatible server) — cited, not vendored |
 
 **Platform note (read before the weight rung):** the weight rung needs Docker **and an NVIDIA
@@ -57,10 +58,10 @@ create a *named volume* instead of bind-mounting your directory). Windows Git-Ba
 
 ## 2. Run-data layout
 
-Every run is immutable under `runs/<date-or-label>/`:
+Every run is immutable under `data/<date-or-label>/`:
 
 ```
-runs/<run>/
+data/<run>/
 ├── raw/<model>.jsonl       # one record per (model,question,condition,sample) — run_study/run_local output
 ├── scored/<model>.jsonl    # raw + score_classifier (+ per-judge) — score.py output
 └── aggregated/*.csv        # per-model / per-topic / per-question — aggregate.py output
@@ -121,6 +122,11 @@ Run labels in play: `2026-05-2x-*` (prompt-rung cross-section), `2026-05-27-abli
   GPU-sequential. Edit the `SWEEP=(...)` array to add families.
 - **`run_abliteration_controls.sh`** — the A2b (temp=0 isolation) + A4 (aggressive-strength
   dose-response, with coherence guard) robustness controls from the adversarial review.
+- **`run_abliteration_native.sh`** — Apple-Silicon analog of the Docker sweep. Runs
+  OBLITERATUS directly on torch+MPS (no Docker, no CUDA) with `PYTORCH_ENABLE_MPS_FALLBACK=1`
+  so the SVD `eigh` routes through Accelerate/LAPACK — the path that clears Gemma-2's MKL
+  `SSYEVD` failure. Same per-family loop as the Docker sweep; uses the venv built from
+  `requirements-weightrung.txt` (see §1).
 
 ### Abliteration itself (OBLITERATUS)
 The CLI is `python -m obliteratus.cli obliterate` (NOT `app.py`, which is the Gradio UI).
@@ -132,6 +138,13 @@ docker run --rm --gpus all -e HF_HUB_OFFLINE=1 \
     --output-dir /output/<name>-abliterated \
     --device auto --dtype float16 --method advanced
 ```
+Or natively on Apple Silicon (no Docker — Apple has no GPU passthrough, so the `obliteratus:gpu` CUDA image doesn't apply):
+```bash
+PYTORCH_ENABLE_MPS_FALLBACK=1 python -m obliteratus.cli obliterate models/<name> \
+  --output-dir abliteration-output/<name>-abliterated \
+  --device auto --dtype float16 --method advanced
+```
+The MPS fallback routes ops MPS doesn't implement (notably `linalg.eigh` used in the SVD step) through Accelerate/LAPACK — which is what clears Gemma-2's MKL `SSYEVD` failure on the 4090.
 - `--method`: `basic|advanced|aggressive|spectral_cascade|informed|surgical|optimized|inverted|nuclear`. Main sweep uses **advanced** (norm-preserving SVD, 4 directions, reg 0.3, 2 refinement passes — see any model's `abliteration_metadata.json`).
 - Writes shards + `abliteration_metadata.json`. Verifies refusal-rate drop on a harmful test set.
 - **Hard lessons:** (1) you **cannot abliterate a quantized** model — needs fp16; a 14B at bf16 (~28 GB) exceeds a 24 GB 4090, so use ~7–9B at fp16. (2) Gemma-2 currently **fails** the SVD step (`Intel oneMKL ERROR: ... SSYEVD`) — architecture-specific; open. (3) A download that *starts* is not one that *finishes* — `dl_model.py` validates shards before compute.
@@ -139,7 +152,11 @@ docker run --rm --gpus all -e HF_HUB_OFFLINE=1 \
 ### Scoring & analysis
 - **`score.py <run> --judge "<csv>"`** — ULTRAPLINIAN. Multiple judges ⇒ parallel call,
   **median** = canonical `score_classifier`, with per-judge scores + disagreement retained.
-  Reads `OPENROUTER_API_KEY` from `~/.claude/agents/.env`. The canonical 4-judge panel:
+  Reads `OPENROUTER_API_KEY` from `~/.claude/agents/.env`. **Idempotent by default**: skips
+  any `raw/*.jsonl` whose `scored/*.jsonl` already exists, so re-running on a run that
+  gained a new model only scores the new file (committed scored data isn't re-judged and
+  can't shift from judge non-determinism). Pass `--rescore` to force re-scoring everything.
+  The canonical 4-judge panel:
   ```bash
   python3 scripts/score.py 2026-05-27-abliteration \
     --judge "anthropic/claude-haiku-4.5,openai/gpt-4.1,google/gemini-2.5-flash,deepseek/deepseek-v3.2"
@@ -179,6 +196,29 @@ python scripts/abliteration_effect_check.py --out-date <run>
 ```
 Or just run the drivers: `bash scripts/run_abliteration_sweep.sh` then
 `bash scripts/run_abliteration_controls.sh`.
+
+### Weight rung — Apple Silicon (no CUDA, native MPS)
+
+The `obliteratus:gpu` Docker image doesn't apply on Apple Silicon (no GPU passthrough); the
+native path uses the host's torch + MPS stack instead. Memory note: a 9B at fp16 (~18.5 GB)
+fits a 32 GB unified-memory Mac; 14B (~28 GB) needs a 64 GB+ machine.
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt -r requirements-weightrung.txt
+git clone https://github.com/elder-plinius/OBLITERATUS.git ../OBLITERATUS
+pip install -e ../OBLITERATUS --no-deps                       # skip CUDA-only bitsandbytes
+pip install -r ../OBLITERATUS/requirements-apple.txt          # MLX backend (mlx, mlx-lm)
+
+export HF_TOKEN=...              # gated base-model downloads (e.g. gemma-2)
+export OPENROUTER_API_KEY=...    # judges
+
+python scripts/dl_model.py google/gemma-2-9b-it ./models/gemma-2-9b-it
+bash scripts/run_abliteration_native.sh                       # edit NATIVE_SWEEP=() to add families
+python scripts/score.py <run> --judge "<4-panel>"             # idempotent by default
+python scripts/aggregate.py <run>
+python scripts/abliteration_effect_check.py --out-date <run>
+```
 
 ---
 
