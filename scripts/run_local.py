@@ -9,27 +9,37 @@ stock open-weight model vs its abliterated variant under the same conditions.
 Reuses run_study's question loader + exact condition prompts so results are
 directly comparable to the OpenRouter cross-section.
 
-Run inside the obliteratus:gpu container (torch+transformers+CUDA), on a Linux GPU host —
-the weight rung needs an NVIDIA GPU and does not run on macOS/Apple Silicon. MODELS_DIR and
-ABLIT_OUT are your local model/output dirs; pass them as ABSOLUTE paths (a relative source
-makes Docker create a named volume instead of bind-mounting your dir):
+Runs on CUDA (Linux GPU host, in the obliteratus:gpu container) AND on Apple Silicon /
+MPS (natively, no Docker — Apple has no GPU passthrough, see scripts/run_abliteration_native.sh
+and DEVELOPER.md §1). Output lands in data/<out-date>/raw/<label>.jsonl, where score.py and
+aggregate.py pick it up.
+
+CUDA (Linux GPU host, via the obliteratus:gpu container):
     docker run --rm --gpus all -e HF_HUB_OFFLINE=1 \
-      -v "$(pwd)/abliteration-output:/output" \
-      -v "$(pwd)/models:/models" \
-      -v "$(pwd):/study" \
-      obliteratus:gpu \
+      -v "$(pwd)/abliteration-output:/output" -v "$(pwd)/models:/models" \
+      -v "$(pwd):/study" obliteratus:gpu \
       python /study/scripts/run_local.py --model-path /output/qwen2.5-7b-abliterated \
-        --label qwen2.5-7b-abliterated --out-date 2026-05-27-abliteration --conditions A,B
+        --label qwen2.5-7b-abliterated --out-date <run> --conditions A,B
     # Windows / Git-Bash only: prefix with MSYS_NO_PATHCONV=1 so MSYS leaves -v paths intact.
 
+Apple Silicon (native, MPS):
+    PYTORCH_ENABLE_MPS_FALLBACK=1 python scripts/run_local.py \
+      --model-path abliteration-output/gemma-2-9b-it-abliterated \
+      --label gemma-2-9b-abliterated --out-date <run> --conditions A,B
+    # MPS fallback routes linalg ops MPS doesn't implement through Accelerate/LAPACK, which
+    # is what clears Gemma-2's MKL SVD failure. See DEVELOPER.md §3 + §7 Troubleshooting.
+
 Usage:
-    --model-path PATH   local HF model dir
-    --label NAME        model label for the output filename + record
-    --out-date DATE     runs/<DATE>/raw/<label>.jsonl
-    --conditions A,B    comma list from A,B,C,D,E (default A,B)
-    --samples N         samples per cell (default 1)
-    --positions ...     question positions (default neutral)
-    --temperature 0.7   matches the study's model-call temperature
+    --model-path PATH       local HF model dir (loaded with from_pretrained)
+    --label NAME            model label for the output filename + record
+    --out-date DATE         data/<DATE>/raw/<label>.jsonl
+    --conditions A,B        comma list from A,B,C,D,E (default A,B)
+    --samples N             samples per cell (default 1)
+    --positions ...         question positions (default neutral)
+    --temperature 0.7       matches the study's model-call temperature
+    --max-new-tokens 800    drop to ~400 on slow MPS hosts for ~2x throughput, no stance impact
+    --resume                if the output JSONL exists, skip cells already recorded and
+                            append the rest — recovery for interrupted/hung long M5 runs
 """
 from __future__ import annotations
 
