@@ -220,6 +220,23 @@ python scripts/aggregate.py <run>
 python scripts/abliteration_effect_check.py --out-date <run>
 ```
 
+### Weight rung — tuning for limited-GPU hosts
+
+If a long A/B gets interrupted, pass `--resume` to `run_local.py` — it loads cells already
+recorded in the output JSONL, skips them, and appends new records. Difference between
+restarting a 3-hour job from scratch and resuming the last 20 minutes.
+
+For throughput on a slow GPU host (e.g. 32 GB Apple Silicon running a 9B at fp16), the
+cheapest win is `--max-new-tokens 400` (default 800). Observed mean response length is
+~350–430 words ≈ 500–600 tokens, so 400 still captures the answer body while roughly halving
+per-call wall time, with no change to the stance signal. Local rungs only; doesn't touch
+the cloud cross-section's protocol.
+
+`run_local.py` runs an MPS-warmup `generate()` before the main loop so first-call kernel
+compilation (which we've seen as ~7 min on Apple Silicon, steady-state ~80 s) is amortized
+off the recorded latencies, and logs per-record progress with the actual `generate()` time
+so a stall is distinguishable from slow-but-progressing without `pgrep` + `tail` gymnastics.
+
 ---
 
 ## 5. Reviewer objections → where each is handled

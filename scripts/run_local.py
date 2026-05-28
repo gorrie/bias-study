@@ -80,6 +80,10 @@ def main() -> int:
     ap.add_argument("--positions", default="neutral")
     ap.add_argument("--temperature", type=float, default=0.7)
     ap.add_argument("--max-new-tokens", type=int, default=800)
+    ap.add_argument("--resume", action="store_true",
+                    help="If the output JSONL already exists, skip cells already recorded "
+                         "and append new ones (don't truncate). Useful when a long M5 run is "
+                         "interrupted — don't throw away the prior hour of work.")
     args = ap.parse_args()
 
     import torch
@@ -110,12 +114,39 @@ def main() -> int:
     model.eval()
     print(f"loaded in {time.time()-t0:.0f}s; {len(questions)} questions x {len(conditions)} conditions x {args.samples} samples", flush=True)
 
+    # Warmup: amortize first-call kernel/shader compilation off the recorded latencies. On
+    # MPS the first generate has been observed at ~7 min while steady-state is ~80 s for a
+    # 9B at fp16; one throwaway generate moves that cost out of the per-record timings.
+    try:
+        warm = tok("hi", return_tensors="pt").to(model.device)
+        with torch.no_grad():
+            _ = model.generate(**warm, max_new_tokens=1, do_sample=False)
+        print(f"  warmup done ({time.time()-t0:.0f}s since load start)", flush=True)
+    except Exception as e:
+        print(f"  warmup skipped: {e}", flush=True)
+
     out_dir = rs.STUDY_DIR / "data" / args.out_date / "raw"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{rs.safe_filename(args.label)}.jsonl"
 
-    n = 0
-    with open(out_path, "w", encoding="utf-8") as fh:
+    # --resume: load already-recorded cells and skip them, appending new records. Without
+    # --resume we truncate as before (backward-compatible).
+    done = set()
+    file_mode = "w"
+    if args.resume and out_path.exists() and out_path.stat().st_size > 0:
+        try:
+            for line in out_path.open("r", encoding="utf-8"):
+                r = json.loads(line)
+                done.add((r["question_id"], r["condition"], r.get("sample_idx", 0)))
+            file_mode = "a"
+            print(f"  --resume: {len(done)} cells already recorded, skipping those", flush=True)
+        except Exception as e:
+            print(f"  --resume: failed to parse existing file ({e}); starting fresh", flush=True)
+            done = set()
+
+    n = len(done)
+    total = len(questions) * len(conditions) * args.samples
+    with open(out_path, file_mode, encoding="utf-8") as fh:
         for q in questions:
             for cond in conditions:
                 msgs, system_text, user_text = build_messages(q, cond)
@@ -142,6 +173,8 @@ def main() -> int:
                     text = tok.apply_chat_template(merged, add_generation_prompt=True, tokenize=False)
                 inp = tok(text, return_tensors="pt").to(model.device)
                 for s in range(args.samples):
+                    if (q["id"], cond, s) in done:
+                        continue
                     start = time.time()
                     with torch.no_grad():
                         gen_kwargs = dict(max_new_tokens=args.max_new_tokens)
@@ -177,8 +210,7 @@ def main() -> int:
                     fh.write(json.dumps(rec) + "\n")
                     fh.flush()
                     n += 1
-                    if n % 10 == 0:
-                        print(f"  {n} done ({q['id']} {cond})", flush=True)
+                    print(f"  [{n}/{total}] {q['id']} {cond}#{s} ({rec['latency_ms']/1000:.1f}s)", flush=True)
     print(f"DONE: {n} records -> {out_path}", flush=True)
     return 0
 
