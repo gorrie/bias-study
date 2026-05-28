@@ -147,7 +147,7 @@ PYTORCH_ENABLE_MPS_FALLBACK=1 python -m obliteratus.cli obliterate models/<name>
 The MPS fallback routes ops MPS doesn't implement (notably `linalg.eigh` used in the SVD step) through Accelerate/LAPACK — which is what clears Gemma-2's MKL `SSYEVD` failure on the 4090.
 - `--method`: `basic|advanced|aggressive|spectral_cascade|informed|surgical|optimized|inverted|nuclear`. Main sweep uses **advanced** (norm-preserving SVD, 4 directions, reg 0.3, 2 refinement passes — see any model's `abliteration_metadata.json`).
 - Writes shards + `abliteration_metadata.json`. Verifies refusal-rate drop on a harmful test set.
-- **Hard lessons:** (1) you **cannot abliterate a quantized** model — needs fp16; a 14B at bf16 (~28 GB) exceeds a 24 GB 4090, so use ~7–9B at fp16. (2) Gemma-2 currently **fails** the SVD step (`Intel oneMKL ERROR: ... SSYEVD`) — architecture-specific; open. (3) A download that *starts* is not one that *finishes* — `dl_model.py` validates shards before compute.
+- **Hard lessons:** (1) you **cannot abliterate a quantized** model — needs fp16; a 14B at bf16 (~28 GB) exceeds a 24 GB 4090, so use ~7–9B at fp16. (2) Gemma-2's SVD step (`linalg.eigh` / Intel oneMKL `SSYEVD`) fails on MKL — architecture-specific. **It clears on Apple Silicon's Accelerate/LAPACK** via `scripts/run_abliteration_native.sh` (`PYTORCH_ENABLE_MPS_FALLBACK=1` routes `eigh` through Accelerate, not MKL). Verified on `gemma-2-9b-it` (fp16, 32 GB M5, advanced method): `refusal_rate` 0.17, `coherence` 1.0, `spectral_certification` RED (a few layers flagged `incomplete` — refines further with the `nuclear` method). (3) A download that *starts* is not one that *finishes* — `dl_model.py` validates shards before compute.
 
 ### Scoring & analysis
 - **`score.py <run> --judge "<csv>"`** — ULTRAPLINIAN. Multiple judges ⇒ parallel call,
@@ -263,3 +263,47 @@ protocol/rubric/schema move from "planned, null" to real. **Keep the docs matchi
 actually run.** Never describe a leg that wasn't executed as if it were. The writeup's
 findings list and `rubric.md` §4 condition tags are split into *executed* vs *planned* for
 exactly this reason.
+
+---
+
+## 7. Troubleshooting
+
+Common errors seen during replication + their fixes — keep current as the toolchain evolves.
+
+- **`jinja2.exceptions.TemplateError: System role not supported`** in `run_local.py`. The
+  model's chat template has no system role (Gemma family). Handled automatically —
+  `run_local.py` catches this and folds the system content into the first user turn. Caveat
+  for the writeup: for such models, the condition-A fairness instruction is delivered in
+  the user role rather than a system role.
+
+- **MPS hang mid-generation on a long M5 run.** Output file's mtime stops advancing while
+  the process appears alive (R state, low CPU, no new progress lines). Kill the stalled
+  process and re-launch with `--resume` — it loads cells already recorded, skips them, and
+  appends new records. `run_local.py` flushes the MPS cache after every record to relieve
+  the memory-pressure pattern correlated with these hangs. See §4 "Tuning for limited-GPU
+  hosts."
+
+- **`Intel oneMKL ERROR: SSYEVD`** during the Gemma-2 SVD step on an Intel/MKL host.
+  Architecture-specific to MKL. Use `scripts/run_abliteration_native.sh` on Apple Silicon
+  — the MPS fallback routes `eigh` through Apple's Accelerate/LAPACK, which clears it.
+
+- **`huggingface_hub.errors.GatedRepoError: 401`** when downloading a gated HF model
+  (`google/gemma-2-9b-it`, `meta-llama/*`, etc.). Get an HF token at huggingface.co, accept
+  the model's license on its page, then `export HF_TOKEN=...` or drop it in
+  `~/.claude/agents/.env`. `dl_model.py` reads it transparently.
+
+- **`fatal: could not read Password for 'https://...@gitlab.com'`** on `git fetch`/`push`.
+  Wire glab as git's credential helper for gitlab.com:
+  `git config --global 'credential.https://gitlab.com.helper' '!glab auth git-credential'`.
+  Do **not** pin `credential.username` for gitlab — glab authenticates as `oauth2`, and a
+  forced username makes its helper reject the request. (GitHub multi-account is the
+  opposite — pin `credential.https://github.com.username` per-tree so the right account's
+  token is fetched from the keychain.)
+
+- **`score.py` re-judging committed families** when scoring a run that's gained a new
+  model. Default is now skip-if-existing — only new raw files get scored. Pass `--rescore`
+  to force re-judging everything (changing judges, reproducibility audit, etc.).
+
+- **14B fp16 OOM on a 32 GB M5.** A 14B at fp16 is ~28 GB of weights alone; abliteration
+  peaks higher than that. Doesn't fit. Gemma-2-9B (~18.5 GB) fits with care; 14B+ needs a
+  64 GB+ machine.
