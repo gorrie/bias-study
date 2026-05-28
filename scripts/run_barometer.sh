@@ -66,9 +66,13 @@ if [ $DO_WEIGHTS -eq 1 ]; then
   fi
 fi
 
-# 3. SCORE (4-judge ULTRAPLINIAN median)
+# 3. SCORE (4-judge ULTRAPLINIAN median) — only if a rung produced raw data to score
 echo "[3] score (4-judge panel)"
-$PY scripts/score.py "$RUN" --judge "$JUDGES" || { echo "  scoring failed"; exit 1; }
+if ls "data/$RUN/raw/"*.jsonl >/dev/null 2>&1; then
+  $PY scripts/score.py "$RUN" --judge "$JUDGES" || { echo "  scoring failed"; exit 1; }
+else
+  echo "  no raw data in data/$RUN/raw/ — nothing to score, skipping."
+fi
 
 # 4. REPORT — CIs, FDR, length control, agreement, abliteration effect-check (bias-study-report)
 echo "[4] report: CIs / FDR / agreement / effect-check"

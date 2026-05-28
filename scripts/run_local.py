@@ -96,20 +96,21 @@ def main() -> int:
     t0 = time.time()
     tok = AutoTokenizer.from_pretrained(args.model_path)
     # Device placement, following OBLITERATUS's device.py findings:
-    #   CUDA — device_map="cuda" (the obliteratus:gpu production path); unchanged.
+    #   CUDA — device_map="cuda" (the obliteratus:gpu production path).
     #   MPS  — accelerate's device_map="auto" is NOT reliable on Apple Silicon, so load then
     #          place explicitly with .to("mps"). fp16 is supported on MPS.
-    #   CPU  — fp16 is slow / partially unsupported; use fp32.
+    # The weight rung needs a GPU; there's no CPU fallback (a 9B at fp16 on CPU is impractical).
     if torch.cuda.is_available():
         model = AutoModelForCausalLM.from_pretrained(args.model_path, dtype=torch.float16, device_map="cuda")
     elif torch.backends.mps.is_available():
         model = AutoModelForCausalLM.from_pretrained(args.model_path, dtype=torch.float16).to("mps")
     else:
-        model = AutoModelForCausalLM.from_pretrained(args.model_path, dtype=torch.float32)
+        print("ERROR: no GPU (CUDA or MPS) available. Weight-rung inference needs a GPU.", file=sys.stderr)
+        return 3
     model.eval()
     print(f"loaded in {time.time()-t0:.0f}s; {len(questions)} questions x {len(conditions)} conditions x {args.samples} samples", flush=True)
 
-    out_dir = rs.STUDY_DIR / "runs" / args.out_date / "raw"
+    out_dir = rs.STUDY_DIR / "data" / args.out_date / "raw"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{rs.safe_filename(args.label)}.jsonl"
 
@@ -118,7 +119,27 @@ def main() -> int:
         for q in questions:
             for cond in conditions:
                 msgs, system_text, user_text = build_messages(q, cond)
-                text = tok.apply_chat_template(msgs, add_generation_prompt=True, tokenize=False)
+                try:
+                    text = tok.apply_chat_template(msgs, add_generation_prompt=True, tokenize=False)
+                except Exception as e:
+                    # Some chat templates (e.g. Gemma-2) have no system role. Fold the system
+                    # content into the first user turn and retry so the fairness instruction
+                    # (condition A) is still delivered. For such models the instruction is
+                    # presented in the user turn rather than a system turn — noted in the writeup.
+                    if "system" not in str(e).lower():
+                        raise
+                    merged, carry = [], None
+                    for m in msgs:
+                        if m["role"] == "system":
+                            carry = m["content"]
+                        elif m["role"] == "user" and carry:
+                            merged.append({"role": "user", "content": carry + "\n\n" + m["content"]})
+                            carry = None
+                        else:
+                            merged.append(m)
+                    if carry:
+                        merged.append({"role": "user", "content": carry})
+                    text = tok.apply_chat_template(merged, add_generation_prompt=True, tokenize=False)
                 inp = tok(text, return_tensors="pt").to(model.device)
                 for s in range(args.samples):
                     start = time.time()

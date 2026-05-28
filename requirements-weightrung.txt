@@ -1,0 +1,35 @@
+# Weight-rung (native, host-side abliteration + local inference) dependencies.
+# NOT needed for the prompt rung. Install on top of requirements.txt:
+#
+#   pip install -r requirements.txt -r requirements-weightrung.txt
+#
+# Plus OBLITERATUS itself (cited, not vendored — see DEVELOPER.md §1):
+#
+#   pip install -e <path-to-OBLITERATUS> --no-deps
+#
+# (--no-deps skips bitsandbytes, which OBLITERATUS lists in its own requirements.txt but
+#  only uses on CUDA — its `device.py` gates it. On Apple Silicon bitsandbytes installs
+#  poorly and isn't needed for fp16 abliteration; OBLITERATUS's other deps are covered below.)
+#
+# On Apple Silicon, additionally install the MLX backend for OBLITERATUS:
+#
+#   pip install -r <path-to-OBLITERATUS>/requirements-apple.txt   # mlx, mlx-lm
+
+# Core inference + weight handling
+torch>=2.0
+transformers>=4.40
+accelerate>=0.24
+safetensors>=0.4
+numpy>=1.24
+huggingface_hub>=0.20
+
+# OBLITERATUS runtime deps (so obliteratus.cli + abliterate.py import cleanly)
+datasets>=2.14
+pyyaml>=6.0
+rich>=13.0
+matplotlib>=3.7
+seaborn>=0.12
+pandas>=2.0
+scikit-learn>=1.3
+scipy>=1.11
+tqdm>=4.64

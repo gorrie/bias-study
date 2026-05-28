@@ -360,6 +360,10 @@ def main() -> int:
                              "Default: anthropic/claude-haiku-4.5")
     parser.add_argument("--skip-classifier", action="store_true",
                         help="Heuristic-only scoring; no API calls to the judge")
+    parser.add_argument("--rescore", action="store_true",
+                        help="Re-score even if scored/<name>.jsonl already exists "
+                             "(default: skip-existing, so committed scored data isn't clobbered "
+                             "by judge non-determinism when adding new models to a run)")
     args = parser.parse_args()
 
     run_dir = STUDY_DIR / "data" / args.run_date
@@ -391,6 +395,9 @@ def main() -> int:
     total_scored = 0
     for raw_path in raw_files:
         scored_path = scored_dir / raw_path.name
+        if scored_path.exists() and not args.rescore:
+            print(f"  SKIP {raw_path.name} (scored already exists — pass --rescore to override)")
+            continue
         with raw_path.open("r", encoding="utf-8") as f:
             records = [json.loads(line) for line in f if line.strip()]
         scored_records = []
