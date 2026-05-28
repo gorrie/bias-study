@@ -222,9 +222,13 @@ python scripts/abliteration_effect_check.py --out-date <run>
 
 ### Weight rung — tuning for limited-GPU hosts
 
-If a long A/B gets interrupted, pass `--resume` to `run_local.py` — it loads cells already
+If a long A/B gets interrupted **or hangs** (we've seen MPS occasionally freeze mid-generation
+on a 9B at fp16 — the output file's mtime stops advancing while the process *appears* alive),
+kill the stalled process and pass `--resume` to `run_local.py`: it loads the cells already
 recorded in the output JSONL, skips them, and appends new records. Difference between
-restarting a 3-hour job from scratch and resuming the last 20 minutes.
+restarting a 3-hour job from scratch and resuming the last 20 minutes. `run_local.py` also
+flushes the MPS cache after every record, which relieves the memory-pressure pattern that's
+been correlated with these hangs.
 
 For throughput on a slow GPU host (e.g. 32 GB Apple Silicon running a 9B at fp16), the
 cheapest win is `--max-new-tokens 400` (default 800). Observed mean response length is

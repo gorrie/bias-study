@@ -146,6 +146,7 @@ def main() -> int:
 
     n = len(done)
     total = len(questions) * len(conditions) * args.samples
+    latencies = []   # per-record generate() latencies in ms, for the summary at the end
     with open(out_path, file_mode, encoding="utf-8") as fh:
         for q in questions:
             for cond in conditions:
@@ -210,8 +211,19 @@ def main() -> int:
                     fh.write(json.dumps(rec) + "\n")
                     fh.flush()
                     n += 1
+                    latencies.append(rec["latency_ms"])
                     print(f"  [{n}/{total}] {q['id']} {cond}#{s} ({rec['latency_ms']/1000:.1f}s)", flush=True)
+                    # Flush the MPS cache after each record to relieve accumulating GPU memory
+                    # pressure — correlated with the long-run hangs we've observed on the M5.
+                    if hasattr(torch, "mps") and hasattr(torch.mps, "empty_cache"):
+                        torch.mps.empty_cache()
     print(f"DONE: {n} records -> {out_path}", flush=True)
+    if latencies:
+        ls = sorted(latencies)
+        mean_s, med_s = sum(ls) / len(ls) / 1000, ls[len(ls)//2] / 1000
+        print(f"  per-record latency: mean {mean_s:.1f}s | median {med_s:.1f}s "
+              f"| min {ls[0]/1000:.1f}s | max {ls[-1]/1000:.1f}s | wall {(time.time()-t0)/60:.1f}min",
+              flush=True)
     return 0
 
 
