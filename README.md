@@ -62,11 +62,14 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 - **GPT-5 retracted / indeterminate.** GPT-5's delta is not distinguishable from zero and
   it is the study's noisiest model (σ = 1.14, 2× any other). The earlier "GPT-4.1 → GPT-5
   reversal" is **not supported** — GPT-5 is indeterminate, not reversed.
-- **Weight-rung dissociation.** Abliterating the refusal direction from four open-weight
-  families (fp16, OBLITERATUS `advanced` SVD) removes refusals and rewrites **~70% of the
-  political wording** (word-set Jaccard ≈ 0.3, confirmed deterministic at temperature 0)
-  yet moves the institutional-skepticism **stance ≤ 0.10**. The refusal direction and the
-  institutional lean are **dissociable.**
+- **Weight-rung dissociation.** Abliterating the refusal direction from five open-weight
+  families (fp16, OBLITERATUS `advanced` SVD — Qwen2.5-7B, Mistral-7B-v0.3, Llama-3.1-8B,
+  DeepSeek-R1-Distill-Qwen-7B on a 24 GB CUDA GPU; Gemma-2-9B-it added natively on Apple
+  Silicon's Accelerate/LAPACK, which cleared the MKL `SSYEVD` SVD failure that blocked
+  Gemma-2 on the 4090) removes refusals and rewrites **~70% of the political wording**
+  (word-set Jaccard ≈ 0.3, confirmed deterministic at temperature 0) yet moves the
+  institutional-skepticism **stance ≤ 0.10**. The refusal direction and the institutional
+  lean are **dissociable.**
 - **Sycophancy control.** A reversed-premise pass (topics reframed to *invite* deference)
   shows **all five tested models hold within ≤ 0.40** of their neutral-framing stance —
   the unmask measures a genuine institutional lean, not generic agreeableness.
@@ -111,12 +114,15 @@ zero API calls.
 
 ### Full toolchain (weight + pipeline rungs)
 
-The weight rung (OBLITERATUS abliteration) needs a 24 GB GPU, Docker, and the fp16 base
-weights; the pipeline rung needs the G0DM0D3 server. **`scripts/run_barometer.sh`** drives
-the full escalation ladder end to end, and **`DEVELOPER.md`** documents every script, the
-exact commands, and the hard constraints (you cannot abliterate a quantized model; a 24 GB
-GPU caps abliteration at ~7–9B at fp16). Hostile peer review and the
-objection→fix map are in **`ADVERSARIAL-REVIEW.md`**.
+The weight rung (OBLITERATUS abliteration) needs the fp16 base weights and either (a) a
+24 GB CUDA GPU + Docker (`obliteratus:gpu`, driven by `scripts/run_abliteration_sweep.sh`)
+or (b) a 32 GB+ Apple Silicon Mac running OBLITERATUS natively (`scripts/run_abliteration_native.sh`,
+which routes the SVD `eigh` through Accelerate/LAPACK via `PYTORCH_ENABLE_MPS_FALLBACK=1`).
+The pipeline rung needs the G0DM0D3 server. **`scripts/run_barometer.sh`** drives the full
+escalation ladder end to end, and **`DEVELOPER.md`** documents every script, the exact
+commands, and the hard constraints (you cannot abliterate a quantized model; a 24 GB GPU
+caps abliteration at ~7–9B at fp16; a 32 GB M5 fits up to ~9B but not 14B+). Hostile peer
+review and the objection→fix map are in **`ADVERSARIAL-REVIEW.md`**.
 
 ## Repository layout
 
