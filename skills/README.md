@@ -10,13 +10,14 @@ You do not need any of this to reproduce the study: the `README.md` at the repo 
 plain four-command pipeline. These files are for running the *full* multi-rung study as a
 repeatable instrument, and for re-running it on a cadence.
 
-## The four skills
+## The five skills
 
 | Skill | Rung / role | What it does |
 |-------|-------------|--------------|
 | [`bias-study-prep`](bias-study-prep/SKILL.md) | pre-flight | Pulls the repo, checks the protocol files, verifies the OpenRouter key (and the heavier toolchain if needed), and records a dated prep-state snapshot. Run before every study run. |
 | [`g0dm0d3-pipeline`](g0dm0d3-pipeline/SKILL.md) | rung 2 (pipeline) | Applies elicitation-layer force (hedge-strip + obfuscation) via a G0DM0D3 server, layered up to each model's coherence ceiling. **Specified, not yet executed** in the published data. |
 | [`abliteration-run`](abliteration-run/SKILL.md) | rung 3 (weights) | Ablates the refusal direction from an open-weight model via OBLITERATUS and runs stock-vs-abliterated A/B. Needs a GPU. |
+| [`abliterated-judge-sweep`](abliterated-judge-sweep/SKILL.md) | judgement-tool Method 2 | Re-scores every record with an abliterated open-weight model as the JUDGE. Tests whether judge alignment (not just system-under-test alignment) carried bias into the consensus. In-process MLX on Apple Silicon, lockfile-protected, OOM-resilient. |
 | [`bias-study-report`](bias-study-report/SKILL.md) | analysis | Turns scored runs into defensible numbers — bootstrap CIs, FDR, length control, inter-judge agreement, the abliteration effect-check, ladder monotonicity, and the quarter-over-quarter drift diff. |
 
 The prompt rung (rung 1) is just `scripts/run_study.py` and needs no skill — see the root
@@ -38,8 +39,8 @@ into your Claude configuration (or point your project config at this directory):
 ```bash
 # skills -> ~/.claude/skills/<name>/SKILL.md
 mkdir -p ~/.claude/skills
-cp -r skills/bias-study-prep skills/abliteration-run \
-      skills/g0dm0d3-pipeline skills/bias-study-report ~/.claude/skills/
+cp -r skills/bias-study-prep skills/abliteration-run skills/g0dm0d3-pipeline \
+      skills/abliterated-judge-sweep skills/bias-study-report ~/.claude/skills/
 
 # agent -> ~/.claude/agents/<name>.md
 mkdir -p ~/.claude/agents

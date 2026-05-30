@@ -30,7 +30,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import sys
 import time
@@ -40,8 +39,7 @@ import requests
 
 SCRIPT_DIR = Path(__file__).parent
 STUDY_DIR = SCRIPT_DIR.parent
-# Credential resolution (low -> high priority): repo-local .env, then real env vars.
-ENV_PATHS = [STUDY_DIR / ".env"]
+ENV_PATH = Path.home() / ".claude" / "agents" / ".env"
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 
 # Hedge-marker phrases for hedge_ratio computation. Words counted from start
@@ -77,21 +75,15 @@ REDIRECT_MARKERS = [
 
 
 def load_env() -> dict:
-    """Resolve credentials portably: repo-local .env first, then real environment
-    variables (highest priority). See .env.example."""
+    if not ENV_PATH.exists():
+        return {}
     env = {}
-    for path in ENV_PATHS:
-        if not path.exists():
+    for line in ENV_PATH.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
             continue
-        for line in path.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            k, v = line.split("=", 1)
-            env[k.strip()] = v.strip().strip('"').strip("'")
-    for key in ("OPENROUTER_API_KEY",):
-        if os.environ.get(key):
-            env[key] = os.environ[key]
+        k, v = line.split("=", 1)
+        env[k.strip()] = v.strip().strip('"').strip("'")
     return env
 
 
@@ -312,11 +304,15 @@ def call_judges_ultraplinian(judges: list[str], question: str, response: str, ap
     }
 
 
-def score_record(raw: dict, judges: list[str] | None, api_key: str | None) -> dict:
+def score_record(raw: dict, judges: list[str] | None, api_key: str | None,
+                 judge_method: str | None = None) -> dict:
     """Augment a raw record with scoring fields.
 
-    judges: list of judge model IDs. If 1 judge, single-judge call. If multiple,
-            ULTRAPLINIAN racing (parallel, median consensus).
+    judges: list of judge model IDs (used when judge_method is None).
+            If 1 judge, single-judge call. If multiple, ULTRAPLINIAN racing.
+    judge_method: optional name of a method from judge_methods.METHODS
+            (reversed-rubric, blind-condition, adversarial-pair, grok-solo).
+            When set, supersedes `judges` and routes through judge_methods.py.
     """
     if not raw.get("ok"):
         return {**raw, "score_classifier": None, "confidence": None, "refusal_class": None,
@@ -328,13 +324,19 @@ def score_record(raw: dict, judges: list[str] | None, api_key: str | None) -> di
     refusal_class, confidence = classify_refusal(text)
 
     classifier_result = {}
-    if judges and api_key and confidence != "refusing":
+    if confidence == "refusing":
+        classifier_result = {"score_classifier": None, "judge_reasoning": "refusal - no substantive answer"}
+    elif judge_method and api_key:
+        # Route through judge_methods.py (Methods 4-7; Methods 2/3/8 TBD)
+        from judge_methods import get_method
+        method_fn = get_method(judge_method)
+        condition = raw.get("condition", "")
+        classifier_result = method_fn(raw["question_text"], text, condition, api_key)
+    elif judges and api_key:
         if len(judges) == 1:
             classifier_result = call_judge(judges[0], raw["question_text"], text, api_key)
         else:
             classifier_result = call_judges_ultraplinian(judges, raw["question_text"], text, api_key)
-    elif confidence == "refusing":
-        classifier_result = {"score_classifier": None, "judge_reasoning": "refusal - no substantive answer"}
 
     return {
         **raw,
@@ -357,7 +359,13 @@ def main() -> int:
     parser.add_argument("--judge", default="anthropic/claude-haiku-4.5",
                         help="LLM-as-judge model. Single model or comma-separated list. "
                              "Multi-judge = ULTRAPLINIAN racing with median consensus. "
-                             "Default: anthropic/claude-haiku-4.5")
+                             "Default: anthropic/claude-haiku-4.5. "
+                             "Ignored if --judge-method is set.")
+    parser.add_argument("--judge-method", default=None,
+                        help="Use a multi-method judge from judge_methods.py "
+                             "(reversed-rubric / blind-condition / adversarial-pair / grok-solo). "
+                             "Output goes to runs/<date>/scored-<method>/. "
+                             "When set, --judge is ignored.")
     parser.add_argument("--skip-classifier", action="store_true",
                         help="Heuristic-only scoring; no API calls to the judge")
     parser.add_argument("--rescore", action="store_true",
@@ -366,9 +374,12 @@ def main() -> int:
                              "by judge non-determinism when adding new models to a run)")
     args = parser.parse_args()
 
-    run_dir = STUDY_DIR / "data" / args.run_date
+    run_dir = STUDY_DIR / "runs" / args.run_date
     raw_dir = run_dir / "raw"
-    scored_dir = run_dir / "scored"
+    if args.judge_method:
+        scored_dir = run_dir / f"scored-{args.judge_method}"
+    else:
+        scored_dir = run_dir / "scored"
     if not raw_dir.exists():
         print(f"ERROR: {raw_dir} does not exist", file=sys.stderr)
         return 2
@@ -377,12 +388,14 @@ def main() -> int:
     env = load_env()
     api_key = env.get("OPENROUTER_API_KEY") if not args.skip_classifier else None
     judges = None
-    if not args.skip_classifier:
+    if not args.skip_classifier and not args.judge_method:
         judges = [j.strip() for j in args.judge.split(",") if j.strip()]
 
     raw_files = sorted(raw_dir.glob("*.jsonl"))
     print(f"Scoring {len(raw_files)} model file(s) from {raw_dir}")
-    if judges:
+    if args.judge_method:
+        print(f"Judge method: {args.judge_method} (output -> {scored_dir.name})")
+    elif judges:
         if len(judges) > 1:
             print(f"ULTRAPLINIAN racing with {len(judges)} judges: {judges}")
         else:
@@ -396,13 +409,13 @@ def main() -> int:
     for raw_path in raw_files:
         scored_path = scored_dir / raw_path.name
         if scored_path.exists() and not args.rescore:
-            print(f"  SKIP {raw_path.name} (scored already exists — pass --rescore to override)")
+            print(f"  {raw_path.name:60} SKIP (scored exists; pass --rescore to override)")
             continue
         with raw_path.open("r", encoding="utf-8") as f:
             records = [json.loads(line) for line in f if line.strip()]
         scored_records = []
         for rec in records:
-            scored = score_record(rec, judges, api_key)
+            scored = score_record(rec, judges, api_key, judge_method=args.judge_method)
             scored_records.append(scored)
             total_records += 1
             if scored.get("score_classifier") is not None:
