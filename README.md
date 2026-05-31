@@ -165,8 +165,8 @@ skills/     Operator runbooks for re-running the study (the quarterly barometer)
 
 Clone these from upstream at the pinned commits to reproduce the pipeline and weight rungs:
 
-- **OBLITERATUS** — refusal-direction abliteration. <https://github.com/elder-plinius/OBLITERATUS> (pinned `d6af36f`, 2026-04-01).
-- **G0DM0D3** — elicitation / jailbreak reference (STM hedge-strip, Parseltongue). <https://github.com/elder-plinius/G0DM0D3> (pinned `4d4b3e0`, 2026-03-25).
+- **OBLITERATUS** — refusal-direction abliteration. <https://github.com/elder-plinius/OBLITERATUS> (pinned [`d6af36f`](https://github.com/elder-plinius/OBLITERATUS/commit/d6af36f), 2026-04-01).
+- **G0DM0D3** — elicitation / jailbreak reference (STM hedge-strip, Parseltongue). <https://github.com/elder-plinius/G0DM0D3> (pinned [`4d4b3e0`](https://github.com/elder-plinius/G0DM0D3/commit/4d4b3e0), 2026-03-25).
 - **Arditi et al. (2024)**, *Refusal in Language Models Is Mediated by a Single Direction*, arXiv:[2406.11717](https://arxiv.org/abs/2406.11717) — the refusal-direction method the weight rung ablates.
 - **OpenRouter** — multi-vendor API gateway, <https://openrouter.ai/>.
 
