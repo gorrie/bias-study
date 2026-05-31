@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import pathlib
 from pathlib import Path
 
 import matplotlib
@@ -34,8 +35,14 @@ import matplotlib.pyplot as plt
 
 SCRIPT_DIR = Path(__file__).parent
 STUDY_DIR = SCRIPT_DIR.parent
-WEBSITE_DIR = STUDY_DIR.parent.parent / "website"  # study/research/bias-study -> series/website
-CHART_DIR = WEBSITE_DIR / "static" / "images" / "bias-study"
+# Two directory conventions in the project:
+#   - publication-canonical (github.com/gorrie/bias-study) uses `data/<run>/`
+#   - internal working copy at evil-robots-series/research/bias-study/ uses `runs/<run>/`
+# Auto-detect which one this checkout uses.
+RUN_DIR_NAME = "data" if (STUDY_DIR / "data").is_dir() else "runs"
+# Default chart output: release-local `results/charts/` (works for any clone).
+# Overridden by --out flag; the upstream Hugo path is no longer a default.
+DEFAULT_CHART_DIR = STUDY_DIR / "results" / "charts"
 
 # Evil Robots brand chrome
 BG = "#0c0c0f"
@@ -76,7 +83,7 @@ def short_model(model: str) -> str:
 
 def chart_forest_plot(run_date: str, out_path: Path) -> bool:
     """Per-model A->B delta forest plot under baseline vs anchor method."""
-    summary = load_json(STUDY_DIR / "runs" / run_date / "cross-method" / "per-method-summary.json")
+    summary = load_json(STUDY_DIR / RUN_DIR_NAME / run_date / "cross-method" / "per-method-summary.json")
     if not summary:
         print(f"  SKIP forest-plot: no summary at {run_date}")
         return False
@@ -124,7 +131,7 @@ def chart_forest_plot(run_date: str, out_path: Path) -> bool:
 
 def chart_agreement_heatmap(run_date: str, out_path: Path) -> bool:
     """Methods × methods exact-match heatmap."""
-    agreement = load_json(STUDY_DIR / "runs" / run_date / "cross-method" / "cross-method-agreement.json")
+    agreement = load_json(STUDY_DIR / RUN_DIR_NAME / run_date / "cross-method" / "cross-method-agreement.json")
     if not agreement or "agreement" not in agreement:
         print(f"  SKIP agreement-heatmap: no agreement at {run_date}")
         return False
@@ -168,7 +175,7 @@ def chart_agreement_heatmap(run_date: str, out_path: Path) -> bool:
 
 def chart_contamination_delta(run_date: str, out_path: Path) -> bool:
     """Per-model |grok-solo - ULTRAPLINIAN| bar chart with CI error bars."""
-    contam = load_json(STUDY_DIR / "runs" / run_date / "cross-method" / "contamination-delta.json")
+    contam = load_json(STUDY_DIR / RUN_DIR_NAME / run_date / "cross-method" / "contamination-delta.json")
     if not contam or "per_model" not in contam:
         print(f"  SKIP contamination-delta: no contam at {run_date}")
         return False
@@ -204,7 +211,7 @@ def chart_paraphrase_robustness(out_path: Path) -> bool:
     # Re-uses robustness_checks.within_leg_fdr via direct script invocation
     sys.path.insert(0, str(SCRIPT_DIR))
     from robustness_checks import within_leg_fdr
-    result = within_leg_fdr(STUDY_DIR / "runs" / "2026-05-27-paraphrase", "position", q=0.05)
+    result = within_leg_fdr(STUDY_DIR / RUN_DIR_NAME / "2026-05-27-paraphrase", "position", q=0.05)
     pm = result.get("per_model", {})
     if not pm:
         print("  SKIP paraphrase-robustness: no data")
@@ -239,24 +246,27 @@ def main() -> int:
     parser.add_argument("run_date", nargs="?", help="Run date (default: 2026-05-25-full)")
     parser.add_argument("--all-charts", action="store_true",
                         help="Generate all chart types from all applicable runs")
+    parser.add_argument("--out", type=pathlib.Path, default=None,
+                        help="Override output directory (default: results/charts/)")
     args = parser.parse_args()
 
-    CHART_DIR.mkdir(parents=True, exist_ok=True)
-    print(f"Output dir: {CHART_DIR}")
+    chart_dir = args.out if args.out else DEFAULT_CHART_DIR
+    chart_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Output dir: {chart_dir}")
 
     if args.all_charts:
         # Main-study charts
-        chart_forest_plot("2026-05-25-full", CHART_DIR / "forest-plot-per-model.png")
-        chart_agreement_heatmap("2026-05-25-full", CHART_DIR / "agreement-heatmap.png")
-        chart_contamination_delta("2026-05-25-full", CHART_DIR / "contamination-delta.png")
+        chart_forest_plot("2026-05-25-full", chart_dir / "forest-plot-per-model.png")
+        chart_agreement_heatmap("2026-05-25-full", chart_dir / "agreement-heatmap.png")
+        chart_contamination_delta("2026-05-25-full", chart_dir / "contamination-delta.png")
         # Paraphrase chart (uses its own analysis path)
-        chart_paraphrase_robustness(CHART_DIR / "paraphrase-robustness.png")
+        chart_paraphrase_robustness(chart_dir / "paraphrase-robustness.png")
         return 0
 
     run_date = args.run_date or "2026-05-25-full"
-    chart_forest_plot(run_date, CHART_DIR / f"forest-plot-{run_date}.png")
-    chart_agreement_heatmap(run_date, CHART_DIR / f"agreement-heatmap-{run_date}.png")
-    chart_contamination_delta(run_date, CHART_DIR / f"contamination-delta-{run_date}.png")
+    chart_forest_plot(run_date, chart_dir / f"forest-plot-{run_date}.png")
+    chart_agreement_heatmap(run_date, chart_dir / f"agreement-heatmap-{run_date}.png")
+    chart_contamination_delta(run_date, chart_dir / f"contamination-delta-{run_date}.png")
     return 0
 
 
