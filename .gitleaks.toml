@@ -1,0 +1,31 @@
+# Gitleaks configuration for github.com/gorrie/bias-study.
+#
+# Inherits the default gitleaks ruleset and adds allowlists for known-safe
+# patterns: .env.example placeholders, docstrings showing example calls,
+# and code that checks for `.startswith('sk-or-')` (a defensive validator,
+# not a leaked key).
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Templates, docstrings, and validator code that intentionally contain key-shaped patterns"
+
+# Files that are documentation / templates by design.
+paths = [
+  '''\.env\.example$''',
+  '''CONTRIBUTING\.md$''',
+  '''DEVELOPER\.md$''',
+  '''README\.md$''',
+  '''skills/.*/SKILL\.md$''',
+]
+
+# Lines that contain key-shaped strings but are clearly placeholders.
+regexes = [
+  '''REPLACE_WITH_YOUR_OWN_KEY''',
+  '''REPLACE_WITH_YOUR_OWN_TOKEN''',
+  '''startswith\(['"]sk-or-['"]\)''',
+  '''startswith\(['"]hf_['"]\)''',
+  '''sk-or-\.\.\.''',
+  '''sk-or-v1-XXX''',
+]
