@@ -32,48 +32,76 @@ stands and what to pick up next. Keep it current as legs complete.
 - **On-device eval channel (macOS)** — a `dmr` channel (Docker Model Runner, Metal-backed,
   `localhost:12434`) runs the prompt rung against large *quantized* local models with no
   key or network. Prompt-rung only — the weight rung still needs fp16 base weights.
-- **Method 2 judgement-tool sweep (abliterated open-weight judge) — DONE on M5.** All 7 runs
-  re-scored using abliterated Gemma-2-9B-IT as the JUDGE (refusal direction surgically removed
-  via OBLITERATUS, MLX-converted for in-process Apple-Silicon inference). 53/53 files, 1,780
-  records, 1,726 classified (97.0%). Data committed in upstream `evil-robots-series` master
-  at `06a9ceb`. The direct test of ADVERSARIAL-REVIEW C3/E5 ("judges share alignment with
-  systems-under-test"): if `cross_method_report.py` shows median |Δ vs ULTRAPLINIAN-4| ≤ 0.10,
-  the original consensus is robust to judge-alignment contamination. Pre-registered rubric
-  4.10 — highest among implementable methods.
+- **Method 2 judgement-tool sweep (abliterated open-weight judge) — DONE on M5 (2026-05-30).**
+  All 7 pre-registered runs re-scored using abliterated Gemma-2-9B-IT as the JUDGE (refusal
+  direction surgically removed via OBLITERATUS, MLX-converted for in-process Apple-Silicon
+  inference). 53/53 files, 1,780 records, 1,726 classified (97.0%). Data committed in
+  upstream `evil-robots-series` master at `06a9ceb`. The direct test of ADVERSARIAL-REVIEW
+  C3/E5 ("judges share alignment with systems-under-test"): if `cross_method_report.py`
+  shows median |Δ vs ULTRAPLINIAN-4| ≤ 0.10, the original consensus is robust to
+  judge-alignment contamination. Pre-registered rubric 4.10 — highest among implementable
+  methods.
+- **Methods 4–7 API sweep — DONE on 4090 (2026-05-28 → 2026-05-29).** `grok-solo`,
+  `adversarial-pair`, `reversed-rubric`, `blind-condition` all scored across the 7
+  pre-registered runs; 53/53 files for each method. Log:
+  `runs/_aggregated/judge-methods-run.log`. The full coverage matrix is reproducible at
+  any time via `scripts/sweep_status.py` (single source of truth from the data, not from
+  prose).
 - **Reproducible tooling and operator skills landed**: `scripts/score_inproc_gemma.py`
   (single-instance lockfile, Metal-OOM-resilient, empty-raw fast-path, skip-existing
   default); `scripts/score.py --rescore` flag; `scripts/judge_methods.py` extended with
   abliterated-gemma; `scripts/cross_method_report.py` + `scripts/generate_charts.py`;
-  `scripts/run_all_judge_methods.sh`. Four new operator skills added (`abliterated-judge-sweep`,
-  `api-judge-sweep`, `cross-method-analysis`, `mlx-weight-prep`) so the procedure is
-  reproducible without rediscovering the bear traps. Commits 9935d0a and ae1a40b on this
-  repo's `main`.
+  `scripts/run_all_judge_methods.sh`; `scripts/sweep_status.py` (the new ground-truth
+  state-check). Four new operator skills added (`abliterated-judge-sweep`,
+  `api-judge-sweep`, `cross-method-analysis`, `mlx-weight-prep`).
 - Per **ADVERSARIAL-REVIEW.md**, every objection is FIXED / ANSWERED / TESTED / DONE.
 
-## To resume the judgement-tool sweep (in-progress, single-machine handoff)
+## Process discipline: run `sweep_status.py` BEFORE updating this doc
 
-The five-method judgement-tool sweep is half done. Method 2 (M5/MLX) is complete and
-committed; Methods 4–7 (API-based, OpenRouter) still need to run on the 4090 (or any host
-with network + an OpenRouter key — Method 2 used local GPU, no conflict). To resume:
+This file has been wrong before — it lagged reality and told an operator to re-run a
+completed sweep. The ground truth is the data, not the prose. Always run
 
-1. **On the 4090 (or any API host)**: pull both repos, then invoke the `api-judge-sweep`
-   skill (or run it by hand via `bash scripts/run_all_judge_methods.sh`). Skip-existing is
-   on by default; an interrupted sweep can be re-launched with the same command and will
-   pick up where it stopped. ETA on the 4090: 4-8 hours depending on OpenRouter rate
-   limits.
-2. **When Methods 4–7 finish** on the 4090, sync the `scored-{grok-solo,adversarial-pair,
-   reversed-rubric,blind-condition}/` directories under `runs/<date>/` back to this repo
-   and the upstream `evil-robots-series` book repo.
-3. **Then on either host**: invoke the `cross-method-analysis` skill (or run
-   `scripts/cross_method_report.py --all-runs` followed by `scripts/generate_charts.py
-   --all-charts`). Produces the contamination-delta JSON, the per-method comparison table,
-   and the regenerated charts. The verdict-against-the-pre-registered-0.10-bound goes into
+```bash
+python scripts/sweep_status.py
+```
+
+before editing this status section or planning the next step. The script reads each
+`runs/<date>/scored-<method>/` directory and reports completion per method × per run,
+plus the actual next step. Pre-registered run set is hard-coded to match
+`scripts/run_all_judge_methods.sh`.
+
+`scripts/sweep_status.py --json` for machine output. `--all-runs` to include auxiliary
+runs (variance, timeseries, etc.) that are NOT part of the pre-registered cross-method
+analysis but are useful as a separate diagnostic.
+
+## NEXT STEP: run cross-method-analysis
+
+All five methods (M1 baseline + M2 abliterated-gemma + M4 grok-solo + M5 adversarial-pair
++ M6 reversed-rubric + M7 blind-condition) are complete across all 7 pre-registered runs.
+The contamination-delta JSON and charts have NOT yet been produced. Invoke the
+`cross-method-analysis` skill (or run by hand):
+
+1. **Cross-method analysis** — run from the upstream `evil-robots-series/research/bias-study/`
+   directory (where the data lives — the mirror only has the scripts):
+   ```bash
+   /c/Python314/python.exe scripts/cross_method_report.py --all-runs > runs/_aggregated/cross-method-report.json
+   /c/Python314/python.exe scripts/generate_charts.py --all-charts --out results/charts/
+   ```
+   Produces the contamination-delta JSON, the per-method comparison table, and the
+   regenerated charts. The verdict-against-the-pre-registered-0.10-bound goes into
    `WRITEUP-2026-05-26.md` §5 and the `ai-bias-audit` permalink.
-4. **Final publish**: `bias-study-report` skill for the remaining CI / FDR / agreement
-   stats, then the gated publish step on the Hugo site.
+2. **`bias-study-report` skill** — remaining CI / FDR / agreement stats.
+3. **Final publish** — gated step on the Hugo site.
 
-Don't re-run Method 2 on the 4090 — its `transformers` install is CPU-only and the M5 MLX
-path is the only one that survives. The data is already committed (06a9ceb on upstream).
+**Why upstream, not the mirror**: the canonical script set is identical between
+`bias-study-release` (this repo, public) and `evil-robots-series/research/bias-study/`
+(upstream, where the data lives). Pre-flight sweep_status.py already verified — same
+content, only line endings differ. The data files live ONLY upstream; the analysis
+scripts read `runs/<date>/scored-<method>/*.jsonl` relative to the working directory,
+so the analysis must run from upstream.
+
+Don't re-run any of the six scoring methods — they're done. If sweep_status.py shows
+something different, something has been deleted; investigate before re-running.
 
 ## Open items (next quarterly cycle, ~3 months out)
 
