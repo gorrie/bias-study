@@ -1,0 +1,175 @@
+[
+  {
+    "run": "2026-05-25",
+    "status": "ok",
+    "methods_with_data": [
+      "ultraplinian-4"
+    ],
+    "n_pairwise_agreements": 0,
+    "contamination_models": 0,
+    "out_dir": "runs\\2026-05-25\\cross-method"
+  },
+  {
+    "run": "2026-05-25-full",
+    "status": "ok",
+    "methods_with_data": [
+      "ultraplinian-4",
+      "grok-solo",
+      "adversarial-pair",
+      "reversed-rubric",
+      "blind-condition",
+      "abliterated-gemma"
+    ],
+    "n_pairwise_agreements": 15,
+    "contamination_models": 13,
+    "out_dir": "runs\\2026-05-25-full\\cross-method"
+  },
+  {
+    "run": "2026-05-26",
+    "status": "ok",
+    "methods_with_data": [],
+    "n_pairwise_agreements": 0,
+    "contamination_models": 0,
+    "out_dir": "runs\\2026-05-26\\cross-method"
+  },
+  {
+    "run": "2026-05-26-augmentation",
+    "status": "ok",
+    "methods_with_data": [
+      "ultraplinian-4"
+    ],
+    "n_pairwise_agreements": 0,
+    "contamination_models": 0,
+    "out_dir": "runs\\2026-05-26-augmentation\\cross-method"
+  },
+  {
+    "run": "2026-05-26-cn-expansion",
+    "status": "ok",
+    "methods_with_data": [
+      "ultraplinian-4"
+    ],
+    "n_pairwise_agreements": 0,
+    "contamination_models": 0,
+    "out_dir": "runs\\2026-05-26-cn-expansion\\cross-method"
+  },
+  {
+    "run": "2026-05-26-timeseries",
+    "status": "ok",
+    "methods_with_data": [
+      "ultraplinian-4"
+    ],
+    "n_pairwise_agreements": 0,
+    "contamination_models": 0,
+    "out_dir": "runs\\2026-05-26-timeseries\\cross-method"
+  },
+  {
+    "run": "2026-05-26-unmask-gradient",
+    "status": "ok",
+    "methods_with_data": [
+      "ultraplinian-4"
+    ],
+    "n_pairwise_agreements": 0,
+    "contamination_models": 0,
+    "out_dir": "runs\\2026-05-26-unmask-gradient\\cross-method"
+  },
+  {
+    "run": "2026-05-26-variance",
+    "status": "ok",
+    "methods_with_data": [
+      "ultraplinian-4"
+    ],
+    "n_pairwise_agreements": 0,
+    "contamination_models": 0,
+    "out_dir": "runs\\2026-05-26-variance\\cross-method"
+  },
+  {
+    "run": "2026-05-27-abliteration",
+    "status": "ok",
+    "methods_with_data": [
+      "ultraplinian-4",
+      "grok-solo",
+      "adversarial-pair",
+      "reversed-rubric",
+      "blind-condition",
+      "abliterated-gemma"
+    ],
+    "n_pairwise_agreements": 15,
+    "contamination_models": 8,
+    "out_dir": "runs\\2026-05-27-abliteration\\cross-method"
+  },
+  {
+    "run": "2026-05-27-abliteration-controls",
+    "status": "ok",
+    "methods_with_data": [
+      "ultraplinian-4",
+      "grok-solo",
+      "adversarial-pair",
+      "reversed-rubric",
+      "blind-condition",
+      "abliterated-gemma"
+    ],
+    "n_pairwise_agreements": 15,
+    "contamination_models": 3,
+    "out_dir": "runs\\2026-05-27-abliteration-controls\\cross-method"
+  },
+  {
+    "run": "2026-05-27-g0dm0d3",
+    "status": "ok",
+    "methods_with_data": [
+      "ultraplinian-4",
+      "grok-solo",
+      "adversarial-pair",
+      "reversed-rubric",
+      "blind-condition",
+      "abliterated-gemma"
+    ],
+    "n_pairwise_agreements": 15,
+    "contamination_models": 2,
+    "out_dir": "runs\\2026-05-27-g0dm0d3\\cross-method"
+  },
+  {
+    "run": "2026-05-27-ood",
+    "status": "ok",
+    "methods_with_data": [
+      "ultraplinian-4",
+      "grok-solo",
+      "adversarial-pair",
+      "reversed-rubric",
+      "blind-condition",
+      "abliterated-gemma"
+    ],
+    "n_pairwise_agreements": 15,
+    "contamination_models": 10,
+    "out_dir": "runs\\2026-05-27-ood\\cross-method"
+  },
+  {
+    "run": "2026-05-27-paraphrase",
+    "status": "ok",
+    "methods_with_data": [
+      "ultraplinian-4",
+      "grok-solo",
+      "adversarial-pair",
+      "reversed-rubric",
+      "blind-condition",
+      "abliterated-gemma"
+    ],
+    "n_pairwise_agreements": 15,
+    "contamination_models": 6,
+    "out_dir": "runs\\2026-05-27-paraphrase\\cross-method"
+  },
+  {
+    "run": "2026-05-27-reversed-premise",
+    "status": "ok",
+    "methods_with_data": [
+      "ultraplinian-4",
+      "grok-solo",
+      "adversarial-pair",
+      "reversed-rubric",
+      "blind-condition",
+      "abliterated-gemma"
+    ],
+    "n_pairwise_agreements": 15,
+    "contamination_models": 5,
+    "out_dir": "runs\\2026-05-27-reversed-premise\\cross-method"
+  }
+]

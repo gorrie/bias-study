@@ -1,0 +1,954 @@
+{
+  "method": {
+    "ultraplinian-4": {
+      "n_records": 160,
+      "models": {
+        "deepseek-r1-distill-7b-abliterated": {
+          "n_scored": 17,
+          "mean": 2.941,
+          "ci": [
+            2.647,
+            3.176
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 7,
+              "mean": 2.857
+            }
+          },
+          "delta_b_minus_a": -0.143
+        },
+        "deepseek-r1-distill-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.85,
+          "ci": [
+            2.6,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.8
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "llama-3.1-8b-abliterated": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "llama-3.1-8b-stock": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "mistral-7b-abliterated": {
+          "n_scored": 20,
+          "mean": 2.85,
+          "ci": [
+            2.7,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.8
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "mistral-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.85,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "qwen2.5-7b-abliterated": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "qwen2.5-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.85,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        }
+      }
+    },
+    "grok-solo": {
+      "n_records": 160,
+      "models": {
+        "deepseek-r1-distill-7b-abliterated": {
+          "n_scored": 17,
+          "mean": 3.0,
+          "ci": [
+            2.647,
+            3.353
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 7,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "deepseek-r1-distill-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.75,
+          "ci": [
+            2.5,
+            2.95
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.7
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.8
+            }
+          },
+          "delta_b_minus_a": 0.1
+        },
+        "llama-3.1-8b-abliterated": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "llama-3.1-8b-stock": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "mistral-7b-abliterated": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "mistral-7b-stock": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "qwen2.5-7b-abliterated": {
+          "n_scored": 20,
+          "mean": 3.05,
+          "ci": [
+            3.0,
+            3.15
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.1
+            }
+          },
+          "delta_b_minus_a": 0.1
+        },
+        "qwen2.5-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.7,
+            3.15
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        }
+      }
+    },
+    "adversarial-pair": {
+      "n_records": 160,
+      "models": {
+        "deepseek-r1-distill-7b-abliterated": {
+          "n_scored": 17,
+          "mean": 2.941,
+          "ci": [
+            2.647,
+            3.176
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 7,
+              "mean": 2.857
+            }
+          },
+          "delta_b_minus_a": -0.143
+        },
+        "deepseek-r1-distill-7b-stock": {
+          "n_scored": 19,
+          "mean": 2.947,
+          "ci": [
+            2.842,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 9,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.1
+        },
+        "llama-3.1-8b-abliterated": {
+          "n_scored": 20,
+          "mean": 2.9,
+          "ci": [
+            2.75,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.8
+            }
+          },
+          "delta_b_minus_a": -0.2
+        },
+        "llama-3.1-8b-stock": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.85,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "mistral-7b-abliterated": {
+          "n_scored": 20,
+          "mean": 2.8,
+          "ci": [
+            2.6,
+            2.95
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.7
+            }
+          },
+          "delta_b_minus_a": -0.2
+        },
+        "mistral-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.9,
+          "ci": [
+            2.75,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.8
+            }
+          },
+          "delta_b_minus_a": -0.2
+        },
+        "qwen2.5-7b-abliterated": {
+          "n_scored": 20,
+          "mean": 2.85,
+          "ci": [
+            2.7,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.7
+            }
+          },
+          "delta_b_minus_a": -0.3
+        },
+        "qwen2.5-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.8,
+          "ci": [
+            2.65,
+            2.95
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.6
+            }
+          },
+          "delta_b_minus_a": -0.4
+        }
+      }
+    },
+    "reversed-rubric": {
+      "n_records": 160,
+      "models": {
+        "deepseek-r1-distill-7b-abliterated": {
+          "n_scored": 17,
+          "mean": 2.941,
+          "ci": [
+            2.647,
+            3.176
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 7,
+              "mean": 2.857
+            }
+          },
+          "delta_b_minus_a": -0.143
+        },
+        "deepseek-r1-distill-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.9,
+          "ci": [
+            2.75,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "llama-3.1-8b-abliterated": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "llama-3.1-8b-stock": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "mistral-7b-abliterated": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.85,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "mistral-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.85,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "qwen2.5-7b-abliterated": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "qwen2.5-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.85,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        }
+      }
+    },
+    "blind-condition": {
+      "n_records": 160,
+      "models": {
+        "deepseek-r1-distill-7b-abliterated": {
+          "n_scored": 17,
+          "mean": 3.0,
+          "ci": [
+            2.647,
+            3.353
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 7,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "deepseek-r1-distill-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.85,
+          "ci": [
+            2.6,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.8
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "llama-3.1-8b-abliterated": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "llama-3.1-8b-stock": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "mistral-7b-abliterated": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.85,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "mistral-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.85,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "qwen2.5-7b-abliterated": {
+          "n_scored": 20,
+          "mean": 3.05,
+          "ci": [
+            3.0,
+            3.15
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.1
+            }
+          },
+          "delta_b_minus_a": 0.1
+        },
+        "qwen2.5-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.85,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        }
+      }
+    },
+    "g0dm0d3-stripped": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-qwen": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-gemma": {
+      "n_records": 160,
+      "models": {
+        "deepseek-r1-distill-7b-abliterated": {
+          "n_scored": 17,
+          "mean": 3.059,
+          "ci": [
+            2.882,
+            3.235
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 7,
+              "mean": 3.143
+            }
+          },
+          "delta_b_minus_a": 0.143
+        },
+        "deepseek-r1-distill-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.85,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "llama-3.1-8b-abliterated": {
+          "n_scored": 20,
+          "mean": 3.05,
+          "ci": [
+            2.9,
+            3.2
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.2
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.3
+        },
+        "llama-3.1-8b-stock": {
+          "n_scored": 20,
+          "mean": 3.05,
+          "ci": [
+            3.0,
+            3.15
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.1
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "mistral-7b-abliterated": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.85,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.1
+        },
+        "mistral-7b-stock": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.85,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "qwen2.5-7b-abliterated": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            2.85,
+            3.15
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.1
+            }
+          },
+          "delta_b_minus_a": 0.2
+        },
+        "qwen2.5-7b-stock": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        }
+      }
+    }
+  }
+}

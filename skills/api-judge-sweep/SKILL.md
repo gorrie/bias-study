@@ -35,9 +35,10 @@ All four reuse the same raw records as Method 2 — only the JUDGE changes. Outp
 0. **RUN `scripts/sweep_status.py` FIRST.** If it reports the methods you're about to run
    as COMPLETE, do NOT re-run them — the work is already done. The state-check reads
    ground truth from the data, not from prose; trust it.
-1. **Working directory is the upstream `evil-robots-series/research/bias-study/`** — not
-   the public mirror. The mirror has identical scripts but NO data; the data lives only
-   upstream. `sweep_status.py` auto-locates the right directory if you forget.
+1. **Working directory is this repository (publication-canonical: `data/<run>/`).** The
+   internal working copy at `evil-robots-series/research/bias-study/` uses `runs/<run>/`
+   instead and exists only for in-flight development. `sweep_status.py` auto-detects
+   either directory convention.
 2. `OPENROUTER_API_KEY` resolvable from environment, repo-root `.env`, or
    `~/.claude/agents/.env` (in that order). Without it, every record errors out.
 3. `scripts/judge_methods.py` and `scripts/run_all_judge_methods.sh` present (since

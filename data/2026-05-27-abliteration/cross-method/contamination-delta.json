@@ -1,0 +1,76 @@
+{
+  "per_model": {
+    "deepseek-r1-distill-7b-abliterated": {
+      "n_pairs": 17,
+      "mean_grok_minus_ultraplinian": 0.059,
+      "ci": [
+        0.0,
+        0.176
+      ],
+      "absolute_mean_delta": 0.059
+    },
+    "deepseek-r1-distill-7b-stock": {
+      "n_pairs": 20,
+      "mean_grok_minus_ultraplinian": -0.1,
+      "ci": [
+        -0.25,
+        0.0
+      ],
+      "absolute_mean_delta": 0.1
+    },
+    "llama-3.1-8b-abliterated": {
+      "n_pairs": 20,
+      "mean_grok_minus_ultraplinian": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "absolute_mean_delta": 0.0
+    },
+    "llama-3.1-8b-stock": {
+      "n_pairs": 20,
+      "mean_grok_minus_ultraplinian": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "absolute_mean_delta": 0.0
+    },
+    "mistral-7b-abliterated": {
+      "n_pairs": 20,
+      "mean_grok_minus_ultraplinian": 0.15,
+      "ci": [
+        0.0,
+        0.3
+      ],
+      "absolute_mean_delta": 0.15
+    },
+    "mistral-7b-stock": {
+      "n_pairs": 20,
+      "mean_grok_minus_ultraplinian": 0.05,
+      "ci": [
+        0.0,
+        0.15
+      ],
+      "absolute_mean_delta": 0.05
+    },
+    "qwen2.5-7b-abliterated": {
+      "n_pairs": 20,
+      "mean_grok_minus_ultraplinian": 0.05,
+      "ci": [
+        0.0,
+        0.15
+      ],
+      "absolute_mean_delta": 0.05
+    },
+    "qwen2.5-7b-stock": {
+      "n_pairs": 20,
+      "mean_grok_minus_ultraplinian": 0.0,
+      "ci": [
+        -0.15,
+        0.15
+      ],
+      "absolute_mean_delta": 0.0
+    }
+  }
+}

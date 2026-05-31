@@ -1,0 +1,395 @@
+==========================================
+judge-methods sweep started: 2026-05-28T22:31:41Z
+==========================================
+[22:31:41] RUN  grok-solo × 2026-05-25-full (expected 13 files)
+Scoring 13 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-25-full\raw
+Judge method: grok-solo (output -> scored-grok-solo)
+
+  anthropic__claude-opus-4.7.jsonl                              60 records   60 classified   0 refused
+  deepseek__deepseek-v3.2.jsonl                                 60 records   60 classified   0 refused
+  gemma2_latest.jsonl                                           60 records   60 classified   0 refused
+  google__gemini-2.5-pro.jsonl                                  60 records   29 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  60 records   60 classified   2 refused
+  google__gemma-3-27b-it.jsonl                                  60 records   60 classified   0 refused
+  meta-llama__llama-4-maverick.jsonl                            60 records   60 classified   0 refused
+  mistralai__mistral-large.jsonl                                60 records   60 classified   0 refused
+  openai__gpt-4.1.jsonl                                         60 records   60 classified   0 refused
+  phi4_latest.jsonl                                             60 records   59 classified  14 refused
+  qwen2.5_14b.jsonl                                             60 records   60 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          60 records   60 classified   0 refused
+  z-ai__glm-4.7.jsonl                                           60 records   31 classified   0 refused
+
+Total: 780 records, 719 classified
+[23:42:30] DONE grok-solo × 2026-05-25-full (rc=0, 4249s)
+[23:42:30] RUN  grok-solo × 2026-05-27-paraphrase (expected 6 files)
+Scoring 6 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-paraphrase\raw
+Judge method: grok-solo (output -> scored-grok-solo)
+
+  anthropic__claude-opus-4.7.jsonl                              60 records   60 classified   0 refused
+  deepseek__deepseek-v3.2.jsonl                                 60 records   60 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  60 records   60 classified   3 refused
+  mistralai__mistral-large.jsonl                                60 records   60 classified   0 refused
+  openai__gpt-4.1.jsonl                                         60 records   60 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          60 records   60 classified   0 refused
+
+Total: 360 records, 360 classified
+[00:06:43] DONE grok-solo × 2026-05-27-paraphrase (rc=0, 1453s)
+[00:06:43] RUN  grok-solo × 2026-05-27-ood (expected 10 files)
+Scoring 10 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-ood\raw
+Judge method: grok-solo (output -> scored-grok-solo)
+
+  anthropic__claude-opus-4.7.jsonl                              16 records   16 classified   0 refused
+  deepseek__deepseek-v3.2.jsonl                                 16 records   16 classified   0 refused
+  google__gemini-2.5-pro.jsonl                                  16 records    8 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  16 records   16 classified   0 refused
+  google__gemma-3-27b-it.jsonl                                  16 records   16 classified   0 refused
+  meta-llama__llama-4-maverick.jsonl                            16 records   16 classified   0 refused
+  mistralai__mistral-large.jsonl                                16 records   16 classified   0 refused
+  openai__gpt-4.1.jsonl                                         16 records   16 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          16 records   16 classified   0 refused
+  z-ai__glm-4.7.jsonl                                           16 records    6 classified   0 refused
+
+Total: 160 records, 142 classified
+[00:21:34] DONE grok-solo × 2026-05-27-ood (rc=0, 891s)
+[00:21:34] RUN  grok-solo × 2026-05-27-reversed-premise (expected 5 files)
+Scoring 5 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-reversed-premise\raw
+Judge method: grok-solo (output -> scored-grok-solo)
+
+  anthropic__claude-opus-4.7.jsonl                              40 records   40 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  40 records   40 classified   1 refused
+  mistralai__mistral-large.jsonl                                40 records   34 classified   0 refused
+  openai__gpt-4.1.jsonl                                         40 records   40 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          40 records   40 classified   0 refused
+
+Total: 200 records, 194 classified
+[00:35:44] DONE grok-solo × 2026-05-27-reversed-premise (rc=0, 850s)
+[00:35:44] RUN  grok-solo × 2026-05-27-abliteration (expected 10 files)
+Scoring 10 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-abliteration\raw
+Judge method: grok-solo (output -> scored-grok-solo)
+
+  deepseek-r1-distill-7b-abliterated.jsonl                      20 records   17 classified   0 refused
+  deepseek-r1-distill-7b-stock.jsonl                            20 records   20 classified   0 refused
+  gemma-2-9b-abliterated.jsonl                                   0 records    0 classified   0 refused
+  gemma-2-9b-stock.jsonl                                         0 records    0 classified   0 refused
+  llama-3.1-8b-abliterated.jsonl                                20 records   20 classified   0 refused
+  llama-3.1-8b-stock.jsonl                                      20 records   20 classified   0 refused
+  mistral-7b-abliterated.jsonl                                  20 records   20 classified   0 refused
+  mistral-7b-stock.jsonl                                        20 records   20 classified   0 refused
+  qwen2.5-7b-abliterated.jsonl                                  20 records   20 classified   0 refused
+  qwen2.5-7b-stock.jsonl                                        20 records   20 classified   0 refused
+
+Total: 160 records, 157 classified
+[00:48:24] DONE grok-solo × 2026-05-27-abliteration (rc=0, 760s)
+[00:48:24] SKIP grok-solo × 2026-05-27-g0dm0d3 (6/6 files done)
+[00:48:24] RUN  grok-solo × 2026-05-27-abliteration-controls (expected 3 files)
+Scoring 3 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-abliteration-controls\raw
+Judge method: grok-solo (output -> scored-grok-solo)
+
+  qwen2.5-7b-abliterated-greedy.jsonl                           20 records   20 classified   0 refused
+  qwen2.5-7b-abliterated-strong.jsonl                           20 records   20 classified   0 refused
+  qwen2.5-7b-stock-greedy.jsonl                                 20 records   20 classified   0 refused
+
+Total: 60 records, 60 classified
+[00:52:58] DONE grok-solo × 2026-05-27-abliteration-controls (rc=0, 274s)
+[00:52:58] RUN  adversarial-pair × 2026-05-25-full (expected 13 files)
+Scoring 13 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-25-full\raw
+Judge method: adversarial-pair (output -> scored-adversarial-pair)
+
+  anthropic__claude-opus-4.7.jsonl                              60 records   60 classified   0 refused
+  deepseek__deepseek-v3.2.jsonl                                 60 records   60 classified   0 refused
+  gemma2_latest.jsonl                                           60 records   60 classified   0 refused
+  google__gemini-2.5-pro.jsonl                                  60 records    2 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  60 records   60 classified   2 refused
+  google__gemma-3-27b-it.jsonl                                  60 records   60 classified   0 refused
+  meta-llama__llama-4-maverick.jsonl                            60 records   60 classified   0 refused
+  mistralai__mistral-large.jsonl                                60 records   60 classified   0 refused
+  openai__gpt-4.1.jsonl                                         60 records   60 classified   0 refused
+  phi4_latest.jsonl                                             60 records   60 classified  14 refused
+  qwen2.5_14b.jsonl                                             60 records   60 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          60 records   60 classified   0 refused
+  z-ai__glm-4.7.jsonl                                           60 records   26 classified   0 refused
+
+Total: 780 records, 688 classified
+[01:41:40] DONE adversarial-pair × 2026-05-25-full (rc=0, 2922s)
+[01:41:40] RUN  adversarial-pair × 2026-05-27-paraphrase (expected 6 files)
+Scoring 6 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-paraphrase\raw
+Judge method: adversarial-pair (output -> scored-adversarial-pair)
+
+  anthropic__claude-opus-4.7.jsonl                              60 records   60 classified   0 refused
+  deepseek__deepseek-v3.2.jsonl                                 60 records   60 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  60 records   60 classified   3 refused
+  mistralai__mistral-large.jsonl                                60 records   60 classified   0 refused
+  openai__gpt-4.1.jsonl                                         60 records   60 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          60 records   60 classified   0 refused
+
+Total: 360 records, 360 classified
+[01:58:35] DONE adversarial-pair × 2026-05-27-paraphrase (rc=0, 1015s)
+[01:58:35] RUN  adversarial-pair × 2026-05-27-ood (expected 10 files)
+Scoring 10 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-ood\raw
+Judge method: adversarial-pair (output -> scored-adversarial-pair)
+
+  anthropic__claude-opus-4.7.jsonl                              16 records   16 classified   0 refused
+  deepseek__deepseek-v3.2.jsonl                                 16 records   16 classified   0 refused
+  google__gemini-2.5-pro.jsonl                                  16 records    3 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  16 records   16 classified   0 refused
+  google__gemma-3-27b-it.jsonl                                  16 records   16 classified   0 refused
+  meta-llama__llama-4-maverick.jsonl                            16 records   16 classified   0 refused
+  mistralai__mistral-large.jsonl                                16 records   16 classified   0 refused
+  openai__gpt-4.1.jsonl                                         16 records   16 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          16 records   16 classified   0 refused
+  z-ai__glm-4.7.jsonl                                           16 records    5 classified   0 refused
+
+Total: 160 records, 136 classified
+[02:08:27] DONE adversarial-pair × 2026-05-27-ood (rc=0, 592s)
+[02:08:27] RUN  adversarial-pair × 2026-05-27-reversed-premise (expected 5 files)
+Scoring 5 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-reversed-premise\raw
+Judge method: adversarial-pair (output -> scored-adversarial-pair)
+
+  anthropic__claude-opus-4.7.jsonl                              40 records   40 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  40 records   40 classified   1 refused
+  mistralai__mistral-large.jsonl                                40 records   34 classified   0 refused
+  openai__gpt-4.1.jsonl                                         40 records   40 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          40 records   39 classified   0 refused
+
+Total: 200 records, 193 classified
+[02:17:52] DONE adversarial-pair × 2026-05-27-reversed-premise (rc=0, 565s)
+[02:17:52] RUN  adversarial-pair × 2026-05-27-abliteration (expected 10 files)
+Scoring 10 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-abliteration\raw
+Judge method: adversarial-pair (output -> scored-adversarial-pair)
+
+  deepseek-r1-distill-7b-abliterated.jsonl                      20 records   17 classified   0 refused
+  deepseek-r1-distill-7b-stock.jsonl                            20 records   19 classified   0 refused
+  gemma-2-9b-abliterated.jsonl                                   0 records    0 classified   0 refused
+  gemma-2-9b-stock.jsonl                                         0 records    0 classified   0 refused
+  llama-3.1-8b-abliterated.jsonl                                20 records   20 classified   0 refused
+  llama-3.1-8b-stock.jsonl                                      20 records   20 classified   0 refused
+  mistral-7b-abliterated.jsonl                                  20 records   20 classified   0 refused
+  mistral-7b-stock.jsonl                                        20 records   20 classified   0 refused
+  qwen2.5-7b-abliterated.jsonl                                  20 records   20 classified   0 refused
+  qwen2.5-7b-stock.jsonl                                        20 records   20 classified   0 refused
+
+Total: 160 records, 156 classified
+[02:26:20] DONE adversarial-pair × 2026-05-27-abliteration (rc=0, 508s)
+[02:26:20] SKIP adversarial-pair × 2026-05-27-g0dm0d3 (6/6 files done)
+[02:26:20] RUN  adversarial-pair × 2026-05-27-abliteration-controls (expected 3 files)
+Scoring 3 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-abliteration-controls\raw
+Judge method: adversarial-pair (output -> scored-adversarial-pair)
+
+  qwen2.5-7b-abliterated-greedy.jsonl                           20 records   20 classified   0 refused
+  qwen2.5-7b-abliterated-strong.jsonl                           20 records   19 classified   0 refused
+  qwen2.5-7b-stock-greedy.jsonl                                 20 records   20 classified   0 refused
+
+Total: 60 records, 59 classified
+[02:29:20] DONE adversarial-pair × 2026-05-27-abliteration-controls (rc=0, 180s)
+[02:29:20] RUN  reversed-rubric × 2026-05-25-full (expected 13 files)
+Scoring 13 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-25-full\raw
+Judge method: reversed-rubric (output -> scored-reversed-rubric)
+
+  anthropic__claude-opus-4.7.jsonl                              60 records   60 classified   0 refused
+  deepseek__deepseek-v3.2.jsonl                                 60 records   60 classified   0 refused
+  gemma2_latest.jsonl                                           60 records   60 classified   0 refused
+  google__gemini-2.5-pro.jsonl                                  60 records   41 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  60 records   60 classified   2 refused
+  google__gemma-3-27b-it.jsonl                                  60 records   60 classified   0 refused
+  meta-llama__llama-4-maverick.jsonl                            60 records   60 classified   0 refused
+  mistralai__mistral-large.jsonl                                60 records   60 classified   0 refused
+  openai__gpt-4.1.jsonl                                         60 records   60 classified   0 refused
+  phi4_latest.jsonl                                             60 records   60 classified  14 refused
+  qwen2.5_14b.jsonl                                             60 records   60 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          60 records   60 classified   0 refused
+  z-ai__glm-4.7.jsonl                                           60 records   57 classified   0 refused
+
+Total: 780 records, 758 classified
+[03:54:44] DONE reversed-rubric × 2026-05-25-full (rc=0, 5124s)
+[03:54:44] RUN  reversed-rubric × 2026-05-27-paraphrase (expected 6 files)
+Scoring 6 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-paraphrase\raw
+Judge method: reversed-rubric (output -> scored-reversed-rubric)
+
+  anthropic__claude-opus-4.7.jsonl                              60 records   60 classified   0 refused
+  deepseek__deepseek-v3.2.jsonl                                 60 records   60 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  60 records   60 classified   3 refused
+  mistralai__mistral-large.jsonl                                60 records   60 classified   0 refused
+  openai__gpt-4.1.jsonl                                         60 records   60 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          60 records   60 classified   0 refused
+
+Total: 360 records, 360 classified
+[04:31:09] DONE reversed-rubric × 2026-05-27-paraphrase (rc=0, 2184s)
+[04:31:09] RUN  reversed-rubric × 2026-05-27-ood (expected 10 files)
+Scoring 10 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-ood\raw
+Judge method: reversed-rubric (output -> scored-reversed-rubric)
+
+  anthropic__claude-opus-4.7.jsonl                              16 records   16 classified   0 refused
+  deepseek__deepseek-v3.2.jsonl                                 16 records   16 classified   0 refused
+  google__gemini-2.5-pro.jsonl                                  16 records   15 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  16 records   16 classified   0 refused
+  google__gemma-3-27b-it.jsonl                                  16 records   16 classified   0 refused
+  meta-llama__llama-4-maverick.jsonl                            16 records   16 classified   0 refused
+  mistralai__mistral-large.jsonl                                16 records   16 classified   0 refused
+  openai__gpt-4.1.jsonl                                         16 records   16 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          16 records   16 classified   0 refused
+  z-ai__glm-4.7.jsonl                                           16 records   14 classified   0 refused
+
+Total: 160 records, 157 classified
+[04:48:35] DONE reversed-rubric × 2026-05-27-ood (rc=0, 1046s)
+[04:48:35] RUN  reversed-rubric × 2026-05-27-reversed-premise (expected 5 files)
+Scoring 5 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-reversed-premise\raw
+Judge method: reversed-rubric (output -> scored-reversed-rubric)
+
+  anthropic__claude-opus-4.7.jsonl                              40 records   40 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  40 records   40 classified   1 refused
+  mistralai__mistral-large.jsonl                                40 records   34 classified   0 refused
+  openai__gpt-4.1.jsonl                                         40 records   40 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          40 records   40 classified   0 refused
+
+Total: 200 records, 194 classified
+[05:08:40] DONE reversed-rubric × 2026-05-27-reversed-premise (rc=0, 1204s)
+[05:08:40] RUN  reversed-rubric × 2026-05-27-abliteration (expected 10 files)
+Scoring 10 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-abliteration\raw
+Judge method: reversed-rubric (output -> scored-reversed-rubric)
+
+  deepseek-r1-distill-7b-abliterated.jsonl                      20 records   17 classified   0 refused
+  deepseek-r1-distill-7b-stock.jsonl                            20 records   20 classified   0 refused
+  gemma-2-9b-abliterated.jsonl                                   0 records    0 classified   0 refused
+  gemma-2-9b-stock.jsonl                                         0 records    0 classified   0 refused
+  llama-3.1-8b-abliterated.jsonl                                20 records   20 classified   0 refused
+  llama-3.1-8b-stock.jsonl                                      20 records   20 classified   0 refused
+  mistral-7b-abliterated.jsonl                                  20 records   20 classified   0 refused
+  mistral-7b-stock.jsonl                                        20 records   20 classified   0 refused
+  qwen2.5-7b-abliterated.jsonl                                  20 records   20 classified   0 refused
+  qwen2.5-7b-stock.jsonl                                        20 records   20 classified   0 refused
+
+Total: 160 records, 157 classified
+[05:25:31] DONE reversed-rubric × 2026-05-27-abliteration (rc=0, 1011s)
+[05:25:31] RUN  reversed-rubric × 2026-05-27-g0dm0d3 (expected 6 files)
+Scoring 6 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-g0dm0d3\raw
+Judge method: reversed-rubric (output -> scored-reversed-rubric)
+
+  anthropic__claude-opus-4.7__B-Layered.jsonl                   10 records   10 classified   0 refused
+  anthropic__claude-opus-4.7__B-Parseltongue.jsonl              10 records   10 classified   0 refused
+  anthropic__claude-opus-4.7__B-STM.jsonl                       10 records   10 classified   0 refused
+  x-ai__grok-4.3__B-Layered.jsonl                               10 records   10 classified   0 refused
+  x-ai__grok-4.3__B-Parseltongue.jsonl                          10 records   10 classified   0 refused
+  x-ai__grok-4.3__B-STM.jsonl                                   10 records   10 classified   0 refused
+
+Total: 60 records, 60 classified
+[05:31:31] DONE reversed-rubric × 2026-05-27-g0dm0d3 (rc=0, 360s)
+[05:31:31] RUN  reversed-rubric × 2026-05-27-abliteration-controls (expected 3 files)
+Scoring 3 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-abliteration-controls\raw
+Judge method: reversed-rubric (output -> scored-reversed-rubric)
+
+  qwen2.5-7b-abliterated-greedy.jsonl                           20 records   20 classified   0 refused
+  qwen2.5-7b-abliterated-strong.jsonl                           20 records   20 classified   0 refused
+  qwen2.5-7b-stock-greedy.jsonl                                 20 records   20 classified   0 refused
+
+Total: 60 records, 60 classified
+[05:37:40] DONE reversed-rubric × 2026-05-27-abliteration-controls (rc=0, 369s)
+[05:37:40] RUN  blind-condition × 2026-05-25-full (expected 13 files)
+Scoring 13 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-25-full\raw
+Judge method: blind-condition (output -> scored-blind-condition)
+
+  anthropic__claude-opus-4.7.jsonl                              60 records   60 classified   0 refused
+  deepseek__deepseek-v3.2.jsonl                                 60 records   60 classified   0 refused
+  gemma2_latest.jsonl                                           60 records   60 classified   0 refused
+  google__gemini-2.5-pro.jsonl                                  60 records   57 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  60 records   60 classified   2 refused
+  google__gemma-3-27b-it.jsonl                                  60 records   60 classified   0 refused
+  meta-llama__llama-4-maverick.jsonl                            60 records   60 classified   0 refused
+  mistralai__mistral-large.jsonl                                60 records   60 classified   0 refused
+  openai__gpt-4.1.jsonl                                         60 records   60 classified   0 refused
+  phi4_latest.jsonl                                             60 records   60 classified  14 refused
+  qwen2.5_14b.jsonl                                             60 records   60 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          60 records   60 classified   0 refused
+  z-ai__glm-4.7.jsonl                                           60 records   26 classified   0 refused
+
+Total: 780 records, 743 classified
+[07:03:01] DONE blind-condition × 2026-05-25-full (rc=0, 5120s)
+[07:03:01] RUN  blind-condition × 2026-05-27-paraphrase (expected 6 files)
+Scoring 6 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-paraphrase\raw
+Judge method: blind-condition (output -> scored-blind-condition)
+
+  anthropic__claude-opus-4.7.jsonl                              60 records   60 classified   0 refused
+  deepseek__deepseek-v3.2.jsonl                                 60 records   60 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  60 records   60 classified   3 refused
+  mistralai__mistral-large.jsonl                                60 records   60 classified   0 refused
+  openai__gpt-4.1.jsonl                                         60 records   60 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          60 records   60 classified   0 refused
+
+Total: 360 records, 360 classified
+[07:42:54] DONE blind-condition × 2026-05-27-paraphrase (rc=0, 2393s)
+[07:42:54] RUN  blind-condition × 2026-05-27-ood (expected 10 files)
+[08:04:40] DONE blind-condition × 2026-05-27-ood (rc=0, 1306s)
+[08:04:40] RUN  blind-condition × 2026-05-27-reversed-premise (expected 5 files)
+Scoring 5 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-reversed-premise\raw
+Judge method: blind-condition (output -> scored-blind-condition)
+
+  anthropic__claude-opus-4.7.jsonl                              40 records   40 classified   0 refused
+  google__gemma-2-27b-it.jsonl                                  40 records   40 classified   1 refused
+  mistralai__mistral-large.jsonl                                40 records   34 classified   0 refused
+  openai__gpt-4.1.jsonl                                         40 records   40 classified   0 refused
+  x-ai__grok-4.3.jsonl                                          40 records   40 classified   0 refused
+
+Total: 200 records, 194 classified
+[08:32:42] DONE blind-condition × 2026-05-27-reversed-premise (rc=0, 1682s)
+[08:32:42] RUN  blind-condition × 2026-05-27-abliteration (expected 10 files)
+Scoring 10 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-abliteration\raw
+Judge method: blind-condition (output -> scored-blind-condition)
+
+  deepseek-r1-distill-7b-abliterated.jsonl                      20 records   17 classified   0 refused
+  deepseek-r1-distill-7b-stock.jsonl                            20 records   20 classified   0 refused
+  gemma-2-9b-abliterated.jsonl                                   0 records    0 classified   0 refused
+  gemma-2-9b-stock.jsonl                                         0 records    0 classified   0 refused
+  llama-3.1-8b-abliterated.jsonl                                20 records   20 classified   0 refused
+  llama-3.1-8b-stock.jsonl                                      20 records   20 classified   0 refused
+  mistral-7b-abliterated.jsonl                                  20 records   20 classified   0 refused
+  mistral-7b-stock.jsonl                                        20 records   20 classified   0 refused
+  qwen2.5-7b-abliterated.jsonl                                  20 records   20 classified   0 refused
+  qwen2.5-7b-stock.jsonl                                        20 records   20 classified   0 refused
+
+Total: 160 records, 157 classified
+[08:50:09] DONE blind-condition × 2026-05-27-abliteration (rc=0, 1047s)
+[08:50:09] RUN  blind-condition × 2026-05-27-g0dm0d3 (expected 6 files)
+Scoring 6 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-g0dm0d3\raw
+Judge method: blind-condition (output -> scored-blind-condition)
+
+  anthropic__claude-opus-4.7__B-Layered.jsonl                   10 records   10 classified   0 refused
+  anthropic__claude-opus-4.7__B-Parseltongue.jsonl              10 records   10 classified   0 refused
+  anthropic__claude-opus-4.7__B-STM.jsonl                       10 records   10 classified   0 refused
+  x-ai__grok-4.3__B-Layered.jsonl                               10 records   10 classified   0 refused
+  x-ai__grok-4.3__B-Parseltongue.jsonl                          10 records   10 classified   0 refused
+  x-ai__grok-4.3__B-STM.jsonl                                   10 records   10 classified   0 refused
+
+Total: 60 records, 60 classified
+[08:56:05] DONE blind-condition × 2026-05-27-g0dm0d3 (rc=0, 356s)
+[08:56:05] RUN  blind-condition × 2026-05-27-abliteration-controls (expected 3 files)
+Scoring 3 model file(s) from <workspace>\evil-robots-series\research\bias-study\runs\2026-05-27-abliteration-controls\raw
+Judge method: blind-condition (output -> scored-blind-condition)
+
+  qwen2.5-7b-abliterated-greedy.jsonl                           20 records   20 classified   0 refused
+  qwen2.5-7b-abliterated-strong.jsonl                           20 records   20 classified   0 refused
+  qwen2.5-7b-stock-greedy.jsonl                                 20 records   20 classified   0 refused
+
+Total: 60 records, 60 classified
+[09:02:10] DONE blind-condition × 2026-05-27-abliteration-controls (rc=0, 365s)
+[09:02:11] sweep complete
+
+===========================================
+Method 2 abliterated-gemma sweep on M5 (catch-up entry, written 2026-05-30 from upstream commit 06a9ceb)
+===========================================
+[2026-05-30T18:36] M5 MLX in-process abliterated-gemma-2-9b-it sweep completed
+  All 7 pre-registered runs scored:
+    2026-05-25-full             13/13 files
+    2026-05-27-paraphrase        6/6 files
+    2026-05-27-ood              10/10 files
+    2026-05-27-reversed-premise  5/5 files
+    2026-05-27-abliteration     10/10 files
+    2026-05-27-g0dm0d3           6/6 files
+    2026-05-27-abliteration-controls 3/3 files
+  Total: 53/53 files, 1,780 records, 1,726 classified (97.0%)
+  Output: runs/<run>/scored-abliterated-gemma/<model>.jsonl
+  Data committed in evil-robots-series master at 06a9ceb (2026-05-30)
+  Reproducer: skills/abliterated-judge-sweep + scripts/score_inproc_gemma.py
+[2026-05-30T18:52] Cross-method analysis ran (cross_method_report.py --all-runs + generate_charts.py --all-charts)
+  Per-run cross-method/ dirs landed for all 7 pre-registered runs
+  Charts regenerated at evil-robots-series/website/static/images/bias-study/
+  Headline: median contamination delta 0.062 across 47 model-runs, inside pre-registered 0.10 robust band
+===========================================

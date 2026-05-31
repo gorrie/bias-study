@@ -1,0 +1,49 @@
+{
+  "per_model": {
+    "anthropic/claude-opus-4.7": {
+      "n_pairs": 40,
+      "mean_grok_minus_ultraplinian": 0.2,
+      "ci": [
+        0.075,
+        0.35
+      ],
+      "absolute_mean_delta": 0.2
+    },
+    "google/gemma-2-27b-it": {
+      "n_pairs": 40,
+      "mean_grok_minus_ultraplinian": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "absolute_mean_delta": 0.0
+    },
+    "mistralai/mistral-large": {
+      "n_pairs": 34,
+      "mean_grok_minus_ultraplinian": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "absolute_mean_delta": 0.0
+    },
+    "openai/gpt-4.1": {
+      "n_pairs": 40,
+      "mean_grok_minus_ultraplinian": 0.025,
+      "ci": [
+        -0.05,
+        0.125
+      ],
+      "absolute_mean_delta": 0.025
+    },
+    "x-ai/grok-4.3": {
+      "n_pairs": 40,
+      "mean_grok_minus_ultraplinian": 0.2,
+      "ci": [
+        0.05,
+        0.35
+      ],
+      "absolute_mean_delta": 0.2
+    }
+  }
+}
