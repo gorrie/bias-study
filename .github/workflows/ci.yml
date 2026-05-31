@@ -1,0 +1,59 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  pre-commit:
+    name: pre-commit hooks (gitleaks + hygiene)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history so gitleaks can scan all commits
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: install pre-commit
+        run: pip install pre-commit
+
+      - name: run pre-commit on the full tree
+        # Runs every hook on every file: gitleaks, large-file cap, yaml/toml
+        # syntax, merge-conflict detection, private-key detection, EOL +
+        # trailing-whitespace fixers. Same hooks every local commit runs.
+        run: pre-commit run --all-files --show-diff-on-failure
+
+  sweep-state-check:
+    name: sweep status — data integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: state check (data, not prose)
+        # The publication-canonical check: read each data/<run>/scored-<method>/
+        # directory and assert all six methods × seven pre-registered runs are
+        # COMPLETE. Fails if anyone deletes a scored file or breaks parity.
+        run: |
+          python scripts/sweep_status.py --json > /tmp/state.json
+          python -c "
+          import json, sys
+          d = json.load(open('/tmp/state.json'))
+          methods = d['summary']['methods']
+          incomplete = [k for k, v in methods.items() if not v['complete_all_runs']]
+          if incomplete:
+              print('INCOMPLETE methods:', incomplete, file=sys.stderr)
+              sys.exit(1)
+          print('OK — all 6 methods × 7 pre-registered runs complete')
+          "
