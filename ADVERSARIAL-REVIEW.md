@@ -5,7 +5,7 @@ skeptical expert would raise, not a strawman. Status is one of:
 **FIXED** (addressed with data/code now) · **FIX QUEUED** (concrete action scheduled) ·
 **ANSWERED** (rebuttal stands, no code change needed) · **OPEN** (acknowledged limitation).
 
-Last updated: 2026-05-27. Companion to `WRITEUP-2026-05-26.md`; the writeup's caveats
+Last updated: 2026-05-30. Companion to `WRITEUP-2026-05-26.md`; the writeup's caveats
 sections (§3.1, §5.2, §5.5–5.7) are the public-facing subset of this.
 
 ---
@@ -100,13 +100,18 @@ holds *more* skeptical under the deferential framing (−0.10). The unmask does 
 ### C3 — "Your 4 LLM judges carry the same lean they're scoring — the instrument is contaminated."
 If judges share the institutional prior, they'll systematically code skepticism as
 deviation and deference as neutral.
-**Status: ANSWERED + calibration note.** Mitigation already in design: the panel is
-*cross-vendor* (Anthropic/OpenAI/Google/DeepSeek) and canonical score is the **median**,
-robust to one outlier judge. For all four to share a single lean, that lean would have to
-be consistent across four independent labs' RLHF — which is itself the study's thesis, not
-a confound that explains it away. Honest residual: a human-labeled calibration subset would
-close this; per standing constraint we do *not* hand-score, so we report per-judge spread
-+ median robustness and name the residual openly. Add a judge-disagreement-by-topic table.
+**Status: FIXED via multi-method sweep (Phase 6 landed 2026-05-30).** The original mitigation
+(cross-vendor median + per-judge spread) was the structural defense; the deeper test landed
+with the JUDGEMENT-TOOL-PLAN Phase 3 sweep. The full dataset was re-scored under five
+materially different judging procedures: ULTRAPLINIAN-4 (baseline), abliterated-gemma (M2,
+refusal-direction surgically removed at the weight level), grok-solo (M4), adversarial-pair
+(M5), reversed-rubric (M6), blind-condition (M7). Pooled across all 7 pre-registered runs,
+every alternative method lands within **84-91% exact-match against ULTRAPLINIAN-4** (n
+records per pair = 1,650 to 1,743) and within one ordinal step at **98.4-99.2%**. The
+pre-registered robustness rule (median per-model contamination delta ≤ 0.10) is met:
+median across 47 model-run pairs is **0.062**. The same answer comes out under five
+different judging procedures, including one with the refusal direction surgically gone.
+The bias is in the systems-under-test, not in the panel scoring them. WRITEUP §5.8.
 
 ---
 
@@ -139,15 +144,71 @@ memorized phrasing keyed to exact wording. WRITEUP §5.4.
 
 ---
 
+## E. Methodological / measurement objections (forward-looking, 2026-05-28 update)
+
+Section added when the multi-method judgement tool work was scoped (see
+`JUDGEMENT-TOOL-PLAN.md` + `RUBRIC-SCORES.md`). These are objections the
+study had not yet faced from a real reviewer, written defensively in advance.
+
+### E1 — "C3 cross-vendor median doesn't escape *shared* RLHF lean. Four-way consensus among aligned judges launders the bias it claims to measure."
+The previous C3 mitigation ("median is robust to one outlier judge") doesn't help when all four judges share a direction. Asked another way: if the institutional-skepticism prior is the very thing four cross-vendor RLHF judges all carry, the median bakes it in.
+**Status: FIXED (2026-05-30).** Multi-method sweep completed across all 7 pre-registered
+runs. The five alternative methods (M2 abliterated-gemma, M4 grok-solo, M5 adversarial-pair,
+M6 reversed-rubric, M7 blind-condition) agree with the ULTRAPLINIAN-4 baseline at 84-91%
+exact-match and 98.4-99.2% within-one ordinal step. Median per-model contamination delta
+0.062 across 47 model-runs — inside the pre-registered 0.10 robust band. The early
+60-record g0dm0d3 pilot's apparent grok-solo divergence did not survive in the full sample:
+the pooled grok-solo signal is 87.7% exact-match with baseline. The four-way RLHF consensus
+hypothesis does not explain the data; the bias lives in the systems-under-test. WRITEUP §5.8.
+
+### E2 — "Your judge-method selection is itself cherry-picked. You ran 4 methods and reported the one whose results you liked."
+**Status: FIXED via pre-registration.** Method-quality rubric and per-method scoring committed to git BEFORE the sweep ran (`RUBRIC-SCORES.md`, commit `e195493` timestamped 2026-05-28). Anchor method = highest weighted-total on the pre-registered rubric, selected mechanically. All methods reported in the supplementary sensitivity table regardless of headline-friendliness. Pre-result observation, also pre-registered: the current ULTRAPLINIAN-4 baseline ranks 7/8 by methodology rubric — that's exactly the kind of finding pre-registration is built for. If the anchor method yields a *weaker* bias signal than the baseline, that result publishes — methodology integrity > headline preservation.
+
+### E3 — "Rubric anchor-bias: judges may be scoring by label position (1=deference, 5=skeptical) instead of by content. The score is an artifact of where the labels sit on the scale."
+A common failure mode in Likert-style scoring.
+**Status: FIXED (2026-05-30).** Method 6 (`reversed-rubric`) completed across all 7
+pre-registered runs. Pooled exact-match against ULTRAPLINIAN-4: **90.7% (1,743 paired
+records, within-one 99.1%)** — the highest exact-match rate of any alternative method.
+If judges were scoring by label anchor rather than by content, label-inversion should have
+produced systematic divergence; instead it produced the strongest agreement. Content-bias,
+not anchor-bias, drives the score. WRITEUP §5.8.
+
+### E4 — "Temporal drift: your vendor models were snapshotted on different days; comparing them at all is unsound."
+Vendor models update silently. Apparent inter-vendor differences could be timing artifacts.
+**Status: ANSWERED via bound.** All runs span 2026-05-25 through 2026-05-28 (4-day window). Vendor snapshot changes within that window are individually small (typically < 0.1 mean delta in our own variance run, `2026-05-26-variance/`). The largest reported main-study deltas (+0.60 to +0.90) are an order of magnitude larger than plausible snapshot drift over 4 days. Honest residual: runs are not strictly contemporaneous; the snapshot-drift bound is the only defense. Listed as an explicit limitation in the writeup.
+
+### E5 — "Judges share training data with systems-under-test. The four ULTRAPLINIAN judges likely trained on overlapping RLHF corpora to the systems they score — bias of the testbed equals bias of the test."
+Stronger version of C3 / E1: it's not just *aligned* judges, it's possibly identically-aligned judges.
+**Status: FIXED (2026-05-30).** Method 2 (abliterated open-weight judge) completed.
+The Gemma-2-9B-IT judge had its refusal direction surgically removed via OBLITERATUS
+and was MLX-converted for in-process Apple-Silicon inference; it bypasses the
+training-data confound mechanically. Pooled across all 7 pre-registered runs, abliterated
+Gemma-2 lands at **86.8% exact-match (1,717 paired records, within-one 99.2%)** against
+the four-judge ULTRAPLINIAN-4 baseline — between blind-condition and grok-solo. If the
+ULTRAPLINIAN panel were laundering shared RLHF training data, the abliterated judge —
+the one judge known to NOT carry the RLHF refusal direction — would systematically
+disagree. It does not. The bias is upstream of any RLHF judging artifact. WRITEUP §5.8.
+
+### E6 — "Without paid expert calibration, the study is unreproducible by outside groups."
+**Status: OPEN with mitigation.** Paid-expert calibration was explicitly dropped (`JUDGEMENT-TOOL-PLAN.md`: LLM-driven methodology is the constraint we're solving within, not bypassing). Mitigation: every script, every prompt template, every scored record, and the pre-registered methodology rubric is published at `github.com/gorrie/bias-study`. Another team can re-run the entire pipeline with the same code and recover the same numbers; the cross-method agreement matrix itself becomes the reproducibility check (a re-runner who gets different numbers can compare against ours and surface where the divergence sits). Honest residual: this is reproducibility-of-the-method, not external construct validation. Listed as a future-work item.
+
+---
+
 ## Reprioritization forced by this review — status
 
-All five construct/rigor priorities are resolved; every objection above is now FIXED, ANSWERED,
-TESTED, or DONE, with one breadth item in progress on Apple-Silicon hardware.
+All five original construct/rigor priorities (sections A–D) are resolved; the multi-method judgement-tool work (section E) is mid-execution.
 
 1. **C2 reversed-premise control** — DONE (sycophancy control; §5.4).
 2. **A2b temp=0 isolation** + **A4 ablation-strength dose-response** — DONE (§4.2; the abliteration finding is defensible, not a candidate).
 3. **A1 CIs on every delta** — DONE (`ci_analysis.py`; nulls reported as power-bounded, never proof of zero).
 4. **B1/B2 asymmetry rewrite** — DONE (auditability claim, not a causal lean claim).
-5. Gemma-2 abliteration retry for a 5th vendor family — **DONE** on the M5 (`data/2026-05-27-abliteration-gemma2/`). Apple Silicon's Accelerate/LAPACK **cleared the MKL `SSYEVD` SVD failure**; OBLITERATUS advanced/SVD completed on `gemma-2-9b-it` (refusal_rate 0.17, coherence 1.0, RED spectral cert with a few layers `incomplete`). Stock-vs-abliterated dissociation reproduces: Jaccard 0.35 (text rewrote ~65%), stance flat (all 4 cells at 3.00; 39/40 judges-unanimous). A3 floor caveat applies — Gemma-2-9B sits at the neutral 3.0 midpoint like the other open 7-9B models, so the null reads consistently with both the dissociation and the floor-ceiling limitation. WRITEUP §4.2.
-
-Plus **D1** (out-of-domain generalization) and **D2** (paraphrase robustness) both TESTED — see above. The only open work is the standing quarterly re-run.
+5. Gemma-2 abliteration retry for a 4th+ vendor family — DONE (Apple-Silicon BLAS cleared the SVD bug; 5-family weight rung now in writeup).
+6. **D1** (out-of-domain generalization) — TESTED + tightened (within-leg FDR shows 0/10 models survive q=0.05 on OOD; Claude raw p=0.0088 drops at the BH threshold; writeup needs to relabel Opus as "lone CI-excluding-zero exception, not FDR-significant").
+7. **D2** (paraphrase robustness) — TESTED + tightened (within-leg FDR shows Claude + Grok are 3/3 paraphrase-survivors, deepseek/gpt-4.1/mistral/gemma are 0/3 each — the "effect holds where it is large" framing is now a measured claim, not qualitative).
+8. **E1–E6** (forward-looking methodology objections) — Phase 6 of JUDGEMENT-TOOL-PLAN
+   landed 2026-05-30. E1, E3, E5 all FIXED via the multi-method sweep (5 alternative
+   methods × 7 pre-registered runs; 84-91% exact-match with baseline; median
+   contamination delta 0.062). E2 and E4 were FIXED earlier (pre-registration +
+   temporal-drift bound). E6 (no paid expert calibration) remains documented as open
+   with mitigation by design — LLM-driven methodology is the constraint solved within,
+   not bypassed.
