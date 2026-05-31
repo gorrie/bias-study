@@ -7,12 +7,12 @@ of truth — re-run the generator.
 
 ## Files
 
-| File | What it shows | Source |
-|------|---------------|--------|
-| `forest-plot-per-model.png` | Per-model A→B stance delta, baseline (ULTRAPLINIAN-4) vs anchor judge method, primary run | `data/2026-05-25-full/cross-method/per-method-summary.json` |
-| `agreement-heatmap.png` | Pairwise exact-match agreement matrix across all six judging methods, primary run | `data/2026-05-25-full/cross-method/cross-method-agreement.json` |
-| `contamination-delta.png` | Per-model contamination delta (grok-solo − ULTRAPLINIAN-4) with bootstrap 95% CI error bars, primary run | `data/2026-05-25-full/cross-method/contamination-delta.json` |
-| `paraphrase-robustness.png` | Within-leg BH-FDR survivors across three paraphrases per neutral question | `data/2026-05-27-paraphrase/` |
+| File | What it shows | Source | Embedded in writeup |
+|------|---------------|--------|---------------------|
+| `forest-plot-per-model.png` | Per-model A→B stance delta, baseline (ULTRAPLINIAN-4) vs anchor judge method, primary run | `data/2026-05-25-full/cross-method/per-method-summary.json` | [Rung 1 — the prompt](https://evilrobots.lol/research/ai-bias-audit/#prompt) |
+| `agreement-heatmap.png` | Pairwise exact-match agreement matrix across all six judging methods, primary run | `data/2026-05-25-full/cross-method/cross-method-agreement.json` | — |
+| `contamination-delta.png` | Per-model contamination delta (grok-solo − ULTRAPLINIAN-4) with bootstrap 95% CI error bars, primary run | `data/2026-05-25-full/cross-method/contamination-delta.json` | [The judges are not laundering the result](https://evilrobots.lol/research/ai-bias-audit/#judges) |
+| `paraphrase-robustness.png` | Within-leg BH-FDR survivors across three paraphrases per neutral question | `data/2026-05-27-paraphrase/` | — |
 
 The per-run `-2026-05-27-g0dm0d3.png` variants are the same three charts
 computed against the pipeline-rung run instead of the main study; kept for
