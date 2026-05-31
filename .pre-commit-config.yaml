@@ -1,0 +1,45 @@
+# Pre-commit hooks for github.com/gorrie/bias-study.
+#
+# Install once per clone:
+#   python -m pip install pre-commit
+#   python -m pre_commit install
+#
+# Then every `git commit` runs these checks before the commit lands.
+# To run manually against all files (not just staged):
+#   python -m pre_commit run --all-files
+#
+# Primary: gitleaks (open-source, fast, sees the entire diff including
+# moved/renamed files). The repo's own ADVERSARIAL-REVIEW and bias-barometer
+# spec both call out "secrets never ship" as a hard rule — this is the
+# mechanical enforcement layer.
+#
+# The .env.example template intentionally contains placeholder text like
+# `sk-or-v1-REPLACE_WITH_YOUR_OWN_KEY` — that pattern is allowlisted in
+# .gitleaks.toml so it does not fail the hook.
+
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+        name: Detect leaked credentials
+        description: >
+          Scan staged content for API keys, tokens, and other secret patterns.
+          Configuration in .gitleaks.toml (allowlists templates / docs / test
+          fixtures that intentionally show key-shaped placeholders).
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=5000']
+        # 5MB cap — scored JSONL files are typically <100KB but chart PNGs
+        # can be larger. Hard ceiling, not a stylistic preference.
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: end-of-file-fixer
+        exclude: '\.env$|\.env\.example$'
+      - id: trailing-whitespace
+        exclude: '\.env$|\.env\.example$'
