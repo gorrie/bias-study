@@ -13,6 +13,14 @@ the alignment-training layer. The mask comes off in proportion to the force appl
 it, *except where it is bolted in at the weights, where force does nothing.* The study's
 spine is that **force-escalation ladder**:
 
+The result is also robust to the obvious reviewer attack on LLM-as-judge studies. The same
+data was re-scored under five materially different judging procedures, including one with
+the **refusal direction surgically removed from the judge's weights** (abliterated
+Gemma-2-9B-IT). Median per-model contamination delta against the cross-vendor baseline is
+**0.062** across 47 model-runs — inside the pre-registered 0.10 robust band. The bias is
+in the systems being scored, not in the panel scoring them. Full multi-method analysis in
+§5.8 of the writeup.
+
 | Rung | Force | Tooling | Result |
 |------|-------|---------|--------|
 | **1. Prompt** | remove the fairness instruction; A→E unmask gradient | OpenRouter / Ollama | the lean unmasks, dose-responsively |
@@ -25,8 +33,17 @@ This repository is meant to be **re-run, not just read** — a *bias measurement
 The protocol is built to re-run on a roughly quarterly cadence so the public record tracks how
 model framing **drifts** as new versions ship. The Anthropic Opus arc (+0.27 → +0.90 from 4.0 to
 4.7, inside a single year) is the case in point: a one-time snapshot catches the level; only the
-cadence catches the slope. Contributions are welcome and expected — reproduce a run, add a model
-or topic, or submit a finding. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
+cadence catches the slope.
+
+**Contributions and challenges are the whole point.** If you find a number you can't
+reproduce, a model whose lean changed since the run shipped, a topic the study should be
+testing, a methodological objection it doesn't already address — open an issue:
+[github.com/gorrie/bias-study/issues](https://github.com/gorrie/bias-study/issues). The
+adversarial-review file ([`ADVERSARIAL-REVIEW.md`](ADVERSARIAL-REVIEW.md)) is structured
+exactly so a new objection can land as a tracked item and either get FIXED with a re-run
+or get rebutted in writing. The cross-method agreement matrix is the reproducibility check:
+a re-runner who gets different numbers can compare against the committed JSON and surface
+exactly where the divergence sits. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
 [issue templates](.github/ISSUE_TEMPLATE/). The `agents/` + `skills/` directories hold the
 orchestration for running the full ladder as a repeatable instrument.
 
@@ -73,6 +90,13 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 - **Sycophancy control.** A reversed-premise pass (topics reframed to *invite* deference)
   shows **all five tested models hold within ≤ 0.40** of their neutral-framing stance —
   the unmask measures a genuine institutional lean, not generic agreeableness.
+- **Judge-method robustness.** Re-scoring the entire study under five alternative judging
+  procedures — abliterated open-weight judge (M2), grok-solo (M4), adversarial-pair (M5),
+  reversed-rubric (M6), blind-condition (M7) — produces 84–91% exact-match against the
+  ULTRAPLINIAN-4 baseline across 1,650–1,743 paired records each. Median per-model
+  contamination delta is **0.062** across 47 model-run pairs, inside the pre-registered
+  ≤ 0.10 robust band. The judges are not laundering the result; the bias is in the
+  systems-under-test, not the panel scoring them.
 - **Transparency-asymmetry.** Weight-level verification is *only possible on open weights.*
   The closed frontier models that show the largest prompt-rung unmask are
   un-abliteratable by construction — an accountability gap independent of which way any

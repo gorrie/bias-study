@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you cite this study, please use the metadata below."
+title: "The Hedge Is the Bias: A Multi-Vendor, Multi-Generation Audit of LLM Institutional-Skepticism Framing"
+abstract: >
+  A reproducible audit of how 36+ frontier large language models from 13 vendor
+  families shift their framing on contested-institution topics when a fairness
+  instruction is removed, and a test of where that framing lives, by escalating
+  force from prompt edits, to elicitation pipelines, to refusal-direction
+  ablation in the model weights. The study finds (a) US-closed frontier models
+  exhibit the largest masked institutional-skepticism lean, (b) the
+  Anthropic Opus arc shows roughly 3x growth from 4.0 to 4.7 inside a single
+  year, (c) the refusal direction and the institutional lean are dissociable
+  at the weight level (Jaccard ~0.3 text rewrite, stance change <=0.1),
+  (d) the lean does not generalize beyond civil-liberties topics except for
+  Opus 4.7, and (e) the result survives re-scoring under five materially
+  different judging procedures (84-91 percent exact-match against the
+  cross-vendor baseline, including a judge with the refusal direction
+  surgically removed from its weights).
+authors:
+  - family-names: Gorrie
+    given-names: Ian
+    affiliation: "4LULZ Press / locked.net"
+type: software
+date-released: 2026-05-26
+version: "v2-2026-05-30"
+license: MIT
+repository-code: "https://github.com/gorrie/bias-study"
+url: "https://evilrobots.lol/research/ai-bias-audit/"
+keywords:
+  - large language models
+  - llm bias
+  - rlhf
+  - alignment
+  - abliteration
+  - judgement-tool
+  - institutional skepticism
+  - reproducibility
