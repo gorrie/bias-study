@@ -32,29 +32,52 @@ All four reuse the same raw records as Method 2 — only the JUDGE changes. Outp
   methods are validators of that median — they need it to exist first.
 
 ## Preconditions
-1. `OPENROUTER_API_KEY` resolvable from environment, repo-root `.env`, or
+0. **RUN `scripts/sweep_status.py` FIRST.** If it reports the methods you're about to run
+   as COMPLETE, do NOT re-run them — the work is already done. The state-check reads
+   ground truth from the data, not from prose; trust it.
+1. **Working directory is the upstream `evil-robots-series/research/bias-study/`** — not
+   the public mirror. The mirror has identical scripts but NO data; the data lives only
+   upstream. `sweep_status.py` auto-locates the right directory if you forget.
+2. `OPENROUTER_API_KEY` resolvable from environment, repo-root `.env`, or
    `~/.claude/agents/.env` (in that order). Without it, every record errors out.
-2. `scripts/judge_methods.py` and `scripts/run_all_judge_methods.sh` present (since
+3. `scripts/judge_methods.py` and `scripts/run_all_judge_methods.sh` present (since
    commit 9935d0a). Update via `git pull` if you don't see them.
-3. The raw records exist (`runs/<date>/raw/*.jsonl`). Re-running `run_study.py` is
+4. The raw records exist (`runs/<date>/raw/*.jsonl`). Re-running `run_study.py` is
    *not* needed.
-4. Network: OpenRouter requires ~100–500 records × 4 methods worth of API calls. Budget
-   accordingly. A full 7-run sweep is roughly 4,000–8,000 API calls.
+5. Network: OpenRouter requires ~100–500 records × 4 methods worth of API calls. Budget
+   accordingly. A full 7-run sweep is roughly 4,000–8,000 API calls. ETA ~10 hours
+   sequential on a single host.
 
 ## Procedure (verified before the next — no walk-away)
+
+### 0. State check (do this first, every time)
+
+```bash
+cd "$(scripts/sweep_status.py --json 2>/dev/null | python -c 'import json,sys; print(json.load(sys.stdin)["data_dir"])')" || cd <workspace>/evil-robots-series/research/bias-study
+/c/Python314/python.exe scripts/sweep_status.py
+```
+
+If the state-check reports any API method as COMPLETE across all 7 pre-registered runs,
+the work is done — skip directly to `cross-method-analysis`. The state-check is the
+single source of truth for what needs to run.
 
 ### 1. Confirm key is loadable
 
 ```bash
-cd ~/bias-study
-# Pick the first source that has it; fail loudly if none do.
-python -c "
+/c/Python314/python.exe -c "
 import os, pathlib
-key = (os.environ.get('OPENROUTER_API_KEY')
-       or next((line.split('=',1)[1].strip() for line in pathlib.Path('.env').read_text().splitlines()
-                if line.startswith('OPENROUTER_API_KEY=')), None) if pathlib.Path('.env').exists() else None)
+def resolve():
+    k = os.environ.get('OPENROUTER_API_KEY')
+    if k: return ('env', k)
+    for path in (pathlib.Path('.env'), pathlib.Path.home() / '.claude/agents/.env'):
+        if path.exists():
+            for line in path.read_text().splitlines():
+                if line.startswith('OPENROUTER_API_KEY='):
+                    return (str(path), line.split('=', 1)[1].strip().strip('\"').strip(\"'\"))
+    return (None, None)
+src, key = resolve()
 assert key and key.startswith('sk-or-'), 'OPENROUTER_API_KEY not set'
-print('key resolves OK')
+print(f'key resolves OK (from {src})')
 "
 ```
 
