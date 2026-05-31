@@ -1,0 +1,22 @@
+{
+  "per_model": {
+    "anthropic/claude-opus-4.7": {
+      "n_pairs": 30,
+      "mean_grok_minus_ultraplinian": 0.3,
+      "ci": [
+        0.133,
+        0.467
+      ],
+      "absolute_mean_delta": 0.3
+    },
+    "x-ai/grok-4.3": {
+      "n_pairs": 30,
+      "mean_grok_minus_ultraplinian": 0.467,
+      "ci": [
+        0.267,
+        0.7
+      ],
+      "absolute_mean_delta": 0.467
+    }
+  }
+}

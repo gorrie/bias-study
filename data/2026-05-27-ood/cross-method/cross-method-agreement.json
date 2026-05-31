@@ -1,0 +1,87 @@
+{
+  "methods": [
+    "ultraplinian-4",
+    "grok-solo",
+    "adversarial-pair",
+    "reversed-rubric",
+    "blind-condition",
+    "abliterated-gemma"
+  ],
+  "agreement": {
+    "ultraplinian-4 vs grok-solo": {
+      "n_pairs": 142,
+      "exact_match_rate": 0.923,
+      "within_one_rate": 0.986
+    },
+    "ultraplinian-4 vs adversarial-pair": {
+      "n_pairs": 136,
+      "exact_match_rate": 0.912,
+      "within_one_rate": 0.985
+    },
+    "ultraplinian-4 vs reversed-rubric": {
+      "n_pairs": 157,
+      "exact_match_rate": 0.943,
+      "within_one_rate": 0.981
+    },
+    "ultraplinian-4 vs blind-condition": {
+      "n_pairs": 149,
+      "exact_match_rate": 0.946,
+      "within_one_rate": 0.98
+    },
+    "ultraplinian-4 vs abliterated-gemma": {
+      "n_pairs": 149,
+      "exact_match_rate": 0.919,
+      "within_one_rate": 0.987
+    },
+    "grok-solo vs adversarial-pair": {
+      "n_pairs": 134,
+      "exact_match_rate": 0.903,
+      "within_one_rate": 0.978
+    },
+    "grok-solo vs reversed-rubric": {
+      "n_pairs": 142,
+      "exact_match_rate": 0.93,
+      "within_one_rate": 0.993
+    },
+    "grok-solo vs blind-condition": {
+      "n_pairs": 141,
+      "exact_match_rate": 0.908,
+      "within_one_rate": 0.986
+    },
+    "grok-solo vs abliterated-gemma": {
+      "n_pairs": 140,
+      "exact_match_rate": 0.886,
+      "within_one_rate": 0.986
+    },
+    "adversarial-pair vs reversed-rubric": {
+      "n_pairs": 136,
+      "exact_match_rate": 0.926,
+      "within_one_rate": 0.985
+    },
+    "adversarial-pair vs blind-condition": {
+      "n_pairs": 136,
+      "exact_match_rate": 0.897,
+      "within_one_rate": 0.978
+    },
+    "adversarial-pair vs abliterated-gemma": {
+      "n_pairs": 136,
+      "exact_match_rate": 0.882,
+      "within_one_rate": 0.963
+    },
+    "reversed-rubric vs blind-condition": {
+      "n_pairs": 148,
+      "exact_match_rate": 0.959,
+      "within_one_rate": 0.993
+    },
+    "reversed-rubric vs abliterated-gemma": {
+      "n_pairs": 149,
+      "exact_match_rate": 0.919,
+      "within_one_rate": 0.993
+    },
+    "blind-condition vs abliterated-gemma": {
+      "n_pairs": 145,
+      "exact_match_rate": 0.903,
+      "within_one_rate": 1.0
+    }
+  }
+}

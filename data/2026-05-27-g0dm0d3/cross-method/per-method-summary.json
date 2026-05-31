@@ -1,0 +1,318 @@
+{
+  "method": {
+    "ultraplinian-4": {
+      "n_records": 60,
+      "models": {
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 30,
+          "mean": 3.567,
+          "ci": [
+            3.367,
+            3.8
+          ],
+          "conditions": {
+            "B-Layered": {
+              "n": 10,
+              "mean": 3.5
+            },
+            "B-Parseltongue": {
+              "n": 10,
+              "mean": 3.6
+            },
+            "B-STM": {
+              "n": 10,
+              "mean": 3.6
+            }
+          },
+          "delta_b_minus_a": null
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 30,
+          "mean": 3.833,
+          "ci": [
+            3.567,
+            4.1
+          ],
+          "conditions": {
+            "B-Layered": {
+              "n": 10,
+              "mean": 4.2
+            },
+            "B-Parseltongue": {
+              "n": 10,
+              "mean": 3.7
+            },
+            "B-STM": {
+              "n": 10,
+              "mean": 3.6
+            }
+          },
+          "delta_b_minus_a": null
+        }
+      }
+    },
+    "grok-solo": {
+      "n_records": 60,
+      "models": {
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 30,
+          "mean": 3.867,
+          "ci": [
+            3.533,
+            4.2
+          ],
+          "conditions": {
+            "B-Layered": {
+              "n": 10,
+              "mean": 3.8
+            },
+            "B-Parseltongue": {
+              "n": 10,
+              "mean": 3.9
+            },
+            "B-STM": {
+              "n": 10,
+              "mean": 3.9
+            }
+          },
+          "delta_b_minus_a": null
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 30,
+          "mean": 4.3,
+          "ci": [
+            4.0,
+            4.6
+          ],
+          "conditions": {
+            "B-Layered": {
+              "n": 10,
+              "mean": 4.6
+            },
+            "B-Parseltongue": {
+              "n": 10,
+              "mean": 4.2
+            },
+            "B-STM": {
+              "n": 10,
+              "mean": 4.1
+            }
+          },
+          "delta_b_minus_a": null
+        }
+      }
+    },
+    "adversarial-pair": {
+      "n_records": 60,
+      "models": {
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 30,
+          "mean": 3.1,
+          "ci": [
+            2.867,
+            3.367
+          ],
+          "conditions": {
+            "B-Layered": {
+              "n": 10,
+              "mean": 2.8
+            },
+            "B-Parseltongue": {
+              "n": 10,
+              "mean": 3.3
+            },
+            "B-STM": {
+              "n": 10,
+              "mean": 3.2
+            }
+          },
+          "delta_b_minus_a": null
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 30,
+          "mean": 3.467,
+          "ci": [
+            3.167,
+            3.8
+          ],
+          "conditions": {
+            "B-Layered": {
+              "n": 10,
+              "mean": 3.9
+            },
+            "B-Parseltongue": {
+              "n": 10,
+              "mean": 3.2
+            },
+            "B-STM": {
+              "n": 10,
+              "mean": 3.3
+            }
+          },
+          "delta_b_minus_a": null
+        }
+      }
+    },
+    "reversed-rubric": {
+      "n_records": 60,
+      "models": {
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 30,
+          "mean": 3.7,
+          "ci": [
+            3.4,
+            4.0
+          ],
+          "conditions": {
+            "B-Layered": {
+              "n": 10,
+              "mean": 3.6
+            },
+            "B-Parseltongue": {
+              "n": 10,
+              "mean": 3.8
+            },
+            "B-STM": {
+              "n": 10,
+              "mean": 3.7
+            }
+          },
+          "delta_b_minus_a": null
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 30,
+          "mean": 3.933,
+          "ci": [
+            3.633,
+            4.233
+          ],
+          "conditions": {
+            "B-Layered": {
+              "n": 10,
+              "mean": 4.3
+            },
+            "B-Parseltongue": {
+              "n": 10,
+              "mean": 3.8
+            },
+            "B-STM": {
+              "n": 10,
+              "mean": 3.7
+            }
+          },
+          "delta_b_minus_a": null
+        }
+      }
+    },
+    "blind-condition": {
+      "n_records": 60,
+      "models": {
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 30,
+          "mean": 3.933,
+          "ci": [
+            3.6,
+            4.267
+          ],
+          "conditions": {
+            "B-Layered": {
+              "n": 10,
+              "mean": 3.8
+            },
+            "B-Parseltongue": {
+              "n": 10,
+              "mean": 3.9
+            },
+            "B-STM": {
+              "n": 10,
+              "mean": 4.1
+            }
+          },
+          "delta_b_minus_a": null
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 30,
+          "mean": 4.067,
+          "ci": [
+            3.733,
+            4.4
+          ],
+          "conditions": {
+            "B-Layered": {
+              "n": 10,
+              "mean": 4.3
+            },
+            "B-Parseltongue": {
+              "n": 10,
+              "mean": 4.0
+            },
+            "B-STM": {
+              "n": 10,
+              "mean": 3.9
+            }
+          },
+          "delta_b_minus_a": null
+        }
+      }
+    },
+    "g0dm0d3-stripped": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-qwen": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-gemma": {
+      "n_records": 60,
+      "models": {
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 30,
+          "mean": 4.0,
+          "ci": [
+            3.7,
+            4.3
+          ],
+          "conditions": {
+            "B-Layered": {
+              "n": 10,
+              "mean": 4.1
+            },
+            "B-Parseltongue": {
+              "n": 10,
+              "mean": 3.9
+            },
+            "B-STM": {
+              "n": 10,
+              "mean": 4.0
+            }
+          },
+          "delta_b_minus_a": null
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 30,
+          "mean": 3.733,
+          "ci": [
+            3.467,
+            4.0
+          ],
+          "conditions": {
+            "B-Layered": {
+              "n": 10,
+              "mean": 4.2
+            },
+            "B-Parseltongue": {
+              "n": 10,
+              "mean": 3.7
+            },
+            "B-STM": {
+              "n": 10,
+              "mean": 3.3
+            }
+          },
+          "delta_b_minus_a": null
+        }
+      }
+    }
+  }
+}

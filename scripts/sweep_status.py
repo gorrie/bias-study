@@ -52,28 +52,39 @@ PRE_REGISTERED_RUNS = [
     "2026-05-27-abliteration-controls",
 ]
 
-# Pin the canonical upstream location as the fallback.
-UPSTREAM_FALLBACK = Path("evil-robots-series/research/bias-study")
+# Two directory conventions exist in this project:
+#   - bias-study-release (github.com/gorrie/bias-study) uses `data/`
+#   - the internal evil-robots-series working copy uses `runs/`
+# Probe in publication-first order: release convention before working-copy convention.
+RUN_DIR_CANDIDATES = ("data", "runs")
 
 
-def locate_data_dir(explicit: Path | None) -> Path:
+def _has_runs(root: Path) -> str | None:
+    """Return the run-dir name (data or runs) if root contains pre-registered raw data."""
+    for name in RUN_DIR_CANDIDATES:
+        if (root / name).is_dir() and any((root / name).glob("*/raw/*.jsonl")):
+            return name
+    return None
+
+
+def locate_data_dir(explicit: Path | None) -> tuple[Path, str]:
+    """Return (study_root, run_dir_name) — e.g. (bias-study-release, 'data')."""
     if explicit:
-        return explicit.resolve()
+        root = explicit.resolve()
+        name = _has_runs(root)
+        if name:
+            return root, name
+        raise FileNotFoundError(f"{root} has no data/<run>/raw/ or runs/<run>/raw/ children")
     here = Path(__file__).resolve().parent
-    # Try the current repo first
+    # Walk up from the script's location.
     for candidate in (here.parent, *here.parents):
-        if (candidate / "runs").is_dir() and any(
-            (candidate / "runs").glob("*/raw/*.jsonl")
-        ):
-            return candidate
-    # Fall back to the known upstream
-    if (UPSTREAM_FALLBACK / "runs").is_dir() and any(
-        (UPSTREAM_FALLBACK / "runs").glob("*/raw/*.jsonl")
-    ):
-        return UPSTREAM_FALLBACK
+        name = _has_runs(candidate)
+        if name:
+            return candidate, name
     raise FileNotFoundError(
-        "Could not locate bias-study data. Pass --data-dir or run from "
-        "a directory whose ancestor contains runs/<date>/raw/*.jsonl."
+        "Could not locate bias-study data. Pass --data-dir or run from a directory "
+        "whose ancestor contains data/<date>/raw/*.jsonl (release convention) or "
+        "runs/<date>/raw/*.jsonl (upstream convention)."
     )
 
 
@@ -104,20 +115,20 @@ def count_classified(d: Path) -> int:
     return total
 
 
-def gather_runs(data_dir: Path, all_runs: bool = False) -> list[Path]:
+def gather_runs(data_dir: Path, run_dir_name: str, all_runs: bool = False) -> list[Path]:
+    base = data_dir / run_dir_name
     if all_runs:
         return sorted([
-            p for p in (data_dir / "runs").iterdir()
+            p for p in base.iterdir()
             if p.is_dir() and (p / "raw").is_dir() and not p.name.startswith("_")
         ])
-    # Default: pre-registered set only
-    return [data_dir / "runs" / name for name in PRE_REGISTERED_RUNS
-            if (data_dir / "runs" / name / "raw").is_dir()]
+    return [base / name for name in PRE_REGISTERED_RUNS if (base / name / "raw").is_dir()]
 
 
-def collect(data_dir: Path, all_runs: bool = False) -> dict:
-    runs = gather_runs(data_dir, all_runs=all_runs)
-    out: dict = {"data_dir": str(data_dir), "runs": {}, "summary": {},
+def collect(data_dir: Path, run_dir_name: str, all_runs: bool = False) -> dict:
+    runs = gather_runs(data_dir, run_dir_name, all_runs=all_runs)
+    out: dict = {"data_dir": str(data_dir), "run_dir": run_dir_name,
+                 "runs": {}, "summary": {},
                  "scope": "all-runs" if all_runs else "pre-registered"}
     for run in runs:
         raw_n = count_jsonl(run / "raw")
@@ -166,12 +177,17 @@ def collect(data_dir: Path, all_runs: bool = False) -> dict:
         }
     out["summary"]["methods"] = method_complete
 
-    # Cross-method analysis output check
-    aggregated = data_dir / "runs" / "_aggregated"
+    # Cross-method analysis output check — probe both naming conventions for charts dir
+    aggregated = data_dir / run_dir_name / "_aggregated"
+    charts_candidates = [
+        data_dir / "results" / "charts",
+        data_dir / "charts",
+        data_dir / "website" / "static" / "images" / "bias-study",  # upstream Hugo path
+    ]
     out["summary"]["cross_method_outputs"] = {
-        "cross_method_report.json": (aggregated / "cross-method-report.json").exists(),
-        "contamination_delta.json": (aggregated / "contamination-delta.json").exists(),
-        "results_charts_dir": (data_dir / "results" / "charts").is_dir(),
+        "cross-method-runs-index.json": (aggregated / "cross-method-runs-index.json").exists(),
+        "judge-methods-run.log": (aggregated / "judge-methods-run.log").exists(),
+        "charts_dir": next((str(p) for p in charts_candidates if p.is_dir()), "MISSING"),
     }
 
     return out
@@ -185,7 +201,7 @@ def print_table(state: dict, gaps_only: bool = False) -> None:
                   if state["scope"] == "pre-registered"
                   else "ALL RUNS (includes auxiliary; not pre-registered)")
     print(f"# Sweep state ({scope_note})")
-    print(f"# Data dir: {state['data_dir']}")
+    print(f"# Data dir: {state['data_dir']} (run subdir: {state['run_dir']}/)")
     print()
     print("## Per-method per-run coverage")
     print()
@@ -262,12 +278,12 @@ def main() -> int:
     args = p.parse_args()
 
     try:
-        data_dir = locate_data_dir(args.data_dir)
+        data_dir, run_dir_name = locate_data_dir(args.data_dir)
     except FileNotFoundError as e:
         print(str(e), file=sys.stderr)
         return 2
 
-    state = collect(data_dir, all_runs=args.all_runs)
+    state = collect(data_dir, run_dir_name, all_runs=args.all_runs)
     if args.json:
         print(json.dumps(state, indent=2))
     else:

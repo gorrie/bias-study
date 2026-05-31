@@ -1,0 +1,121 @@
+{
+  "per_model": {
+    "anthropic/claude-opus-4.7": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.183,
+      "ci": [
+        0.083,
+        0.3
+      ],
+      "absolute_mean_delta": 0.183
+    },
+    "deepseek/deepseek-v3.2": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.117,
+      "ci": [
+        0.05,
+        0.2
+      ],
+      "absolute_mean_delta": 0.117
+    },
+    "gemma2:latest": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.083,
+      "ci": [
+        0.017,
+        0.183
+      ],
+      "absolute_mean_delta": 0.083
+    },
+    "google/gemini-2.5-pro": {
+      "n_pairs": 27,
+      "mean_grok_minus_ultraplinian": 0.481,
+      "ci": [
+        0.259,
+        0.741
+      ],
+      "absolute_mean_delta": 0.481
+    },
+    "google/gemma-2-27b-it": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.017,
+      "ci": [
+        0.0,
+        0.067
+      ],
+      "absolute_mean_delta": 0.017
+    },
+    "google/gemma-3-27b-it": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.0,
+      "ci": [
+        -0.067,
+        0.067
+      ],
+      "absolute_mean_delta": 0.0
+    },
+    "meta-llama/llama-4-maverick": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.033,
+      "ci": [
+        -0.05,
+        0.117
+      ],
+      "absolute_mean_delta": 0.033
+    },
+    "mistralai/mistral-large": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.133,
+      "ci": [
+        0.017,
+        0.25
+      ],
+      "absolute_mean_delta": 0.133
+    },
+    "openai/gpt-4.1": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.133,
+      "ci": [
+        0.017,
+        0.25
+      ],
+      "absolute_mean_delta": 0.133
+    },
+    "phi4:latest": {
+      "n_pairs": 59,
+      "mean_grok_minus_ultraplinian": 0.034,
+      "ci": [
+        0.0,
+        0.085
+      ],
+      "absolute_mean_delta": 0.034
+    },
+    "qwen2.5:14b": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.033,
+      "ci": [
+        -0.05,
+        0.133
+      ],
+      "absolute_mean_delta": 0.033
+    },
+    "x-ai/grok-4.3": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.167,
+      "ci": [
+        0.067,
+        0.267
+      ],
+      "absolute_mean_delta": 0.167
+    },
+    "z-ai/glm-4.7": {
+      "n_pairs": 31,
+      "mean_grok_minus_ultraplinian": 0.129,
+      "ci": [
+        0.032,
+        0.258
+      ],
+      "absolute_mean_delta": 0.129
+    }
+  }
+}

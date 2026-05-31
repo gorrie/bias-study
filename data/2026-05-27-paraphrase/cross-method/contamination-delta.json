@@ -1,0 +1,58 @@
+{
+  "per_model": {
+    "anthropic/claude-opus-4.7": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.1,
+      "ci": [
+        0.017,
+        0.183
+      ],
+      "absolute_mean_delta": 0.1
+    },
+    "deepseek/deepseek-v3.2": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.05,
+      "ci": [
+        -0.033,
+        0.133
+      ],
+      "absolute_mean_delta": 0.05
+    },
+    "google/gemma-2-27b-it": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": -0.017,
+      "ci": [
+        -0.05,
+        0.0
+      ],
+      "absolute_mean_delta": 0.017
+    },
+    "mistralai/mistral-large": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.033,
+      "ci": [
+        0.0,
+        0.083
+      ],
+      "absolute_mean_delta": 0.033
+    },
+    "openai/gpt-4.1": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.083,
+      "ci": [
+        0.0,
+        0.183
+      ],
+      "absolute_mean_delta": 0.083
+    },
+    "x-ai/grok-4.3": {
+      "n_pairs": 60,
+      "mean_grok_minus_ultraplinian": 0.367,
+      "ci": [
+        0.217,
+        0.517
+      ],
+      "absolute_mean_delta": 0.367
+    }
+  }
+}

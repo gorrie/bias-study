@@ -1,0 +1,384 @@
+{
+  "method": {
+    "ultraplinian-4": {
+      "n_records": 60,
+      "models": {
+        "qwen2.5-7b-abliterated-greedy": {
+          "n_scored": 20,
+          "mean": 2.85,
+          "ci": [
+            2.55,
+            3.1
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.7
+            }
+          },
+          "delta_b_minus_a": -0.3
+        },
+        "qwen2.5-7b-abliterated-strong": {
+          "n_scored": 20,
+          "mean": 2.9,
+          "ci": [
+            2.7,
+            3.05
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "qwen2.5-7b-stock-greedy": {
+          "n_scored": 20,
+          "mean": 2.9,
+          "ci": [
+            2.75,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.8
+            }
+          },
+          "delta_b_minus_a": -0.2
+        }
+      }
+    },
+    "grok-solo": {
+      "n_records": 60,
+      "models": {
+        "qwen2.5-7b-abliterated-greedy": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.6,
+            3.3
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "qwen2.5-7b-abliterated-strong": {
+          "n_scored": 20,
+          "mean": 2.85,
+          "ci": [
+            2.65,
+            3.05
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.8
+            }
+          },
+          "delta_b_minus_a": -0.1
+        },
+        "qwen2.5-7b-stock-greedy": {
+          "n_scored": 20,
+          "mean": 2.95,
+          "ci": [
+            2.85,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": -0.1
+        }
+      }
+    },
+    "adversarial-pair": {
+      "n_records": 60,
+      "models": {
+        "qwen2.5-7b-abliterated-greedy": {
+          "n_scored": 20,
+          "mean": 2.85,
+          "ci": [
+            2.7,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.7
+            }
+          },
+          "delta_b_minus_a": -0.3
+        },
+        "qwen2.5-7b-abliterated-strong": {
+          "n_scored": 19,
+          "mean": 2.789,
+          "ci": [
+            2.579,
+            2.947
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 9,
+              "mean": 2.667
+            }
+          },
+          "delta_b_minus_a": -0.233
+        },
+        "qwen2.5-7b-stock-greedy": {
+          "n_scored": 20,
+          "mean": 2.8,
+          "ci": [
+            2.6,
+            2.95
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.7
+            }
+          },
+          "delta_b_minus_a": -0.2
+        }
+      }
+    },
+    "reversed-rubric": {
+      "n_records": 60,
+      "models": {
+        "qwen2.5-7b-abliterated-greedy": {
+          "n_scored": 20,
+          "mean": 2.9,
+          "ci": [
+            2.65,
+            3.1
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.8
+            }
+          },
+          "delta_b_minus_a": -0.2
+        },
+        "qwen2.5-7b-abliterated-strong": {
+          "n_scored": 20,
+          "mean": 3.1,
+          "ci": [
+            3.0,
+            3.25
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.1
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.1
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "qwen2.5-7b-stock-greedy": {
+          "n_scored": 20,
+          "mean": 2.9,
+          "ci": [
+            2.75,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.8
+            }
+          },
+          "delta_b_minus_a": -0.2
+        }
+      }
+    },
+    "blind-condition": {
+      "n_records": 60,
+      "models": {
+        "qwen2.5-7b-abliterated-greedy": {
+          "n_scored": 20,
+          "mean": 2.85,
+          "ci": [
+            2.55,
+            3.1
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.7
+            }
+          },
+          "delta_b_minus_a": -0.3
+        },
+        "qwen2.5-7b-abliterated-strong": {
+          "n_scored": 20,
+          "mean": 2.9,
+          "ci": [
+            2.75,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.9
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "qwen2.5-7b-stock-greedy": {
+          "n_scored": 20,
+          "mean": 2.9,
+          "ci": [
+            2.75,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.8
+            }
+          },
+          "delta_b_minus_a": -0.2
+        }
+      }
+    },
+    "g0dm0d3-stripped": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-qwen": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-gemma": {
+      "n_records": 60,
+      "models": {
+        "qwen2.5-7b-abliterated-greedy": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            2.8,
+            3.2
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "qwen2.5-7b-abliterated-strong": {
+          "n_scored": 20,
+          "mean": 2.8,
+          "ci": [
+            2.6,
+            2.95
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 2.9
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.7
+            }
+          },
+          "delta_b_minus_a": -0.2
+        },
+        "qwen2.5-7b-stock-greedy": {
+          "n_scored": 20,
+          "mean": 2.9,
+          "ci": [
+            2.75,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 2.8
+            }
+          },
+          "delta_b_minus_a": -0.2
+        }
+      }
+    }
+  }
+}

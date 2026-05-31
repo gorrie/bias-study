@@ -36,7 +36,7 @@ stands and what to pick up next. Keep it current as legs complete.
   All 7 pre-registered runs re-scored using abliterated Gemma-2-9B-IT as the JUDGE (refusal
   direction surgically removed via OBLITERATUS, MLX-converted for in-process Apple-Silicon
   inference). 53/53 files, 1,780 records, 1,726 classified (97.0%). Data committed in
-  upstream `evil-robots-series` master at `06a9ceb`. The direct test of ADVERSARIAL-REVIEW
+  internal working copy master at `06a9ceb`. The direct test of ADVERSARIAL-REVIEW
   C3/E5 ("judges share alignment with systems-under-test"): if `cross_method_report.py`
   shows median |Δ vs ULTRAPLINIAN-4| ≤ 0.10, the original consensus is robust to
   judge-alignment contamination. Pre-registered rubric 4.10 — highest among implementable
@@ -81,11 +81,12 @@ All five methods (M1 baseline + M2 abliterated-gemma + M4 grok-solo + M5 adversa
 The contamination-delta JSON and charts have NOT yet been produced. Invoke the
 `cross-method-analysis` skill (or run by hand):
 
-1. **Cross-method analysis** — run from the upstream `evil-robots-series/research/bias-study/`
-   directory (where the data lives — the mirror only has the scripts):
+1. **Cross-method analysis** — run from this repository (publication-canonical home of
+   the data: `data/<run>/`). The internal working copy uses `runs/<run>/` but the
+   scripts auto-detect either convention:
    ```bash
-   /c/Python314/python.exe scripts/cross_method_report.py --all-runs > runs/_aggregated/cross-method-report.json
-   /c/Python314/python.exe scripts/generate_charts.py --all-charts --out results/charts/
+   /c/Python314/python.exe scripts/cross_method_report.py --all-runs > data/_aggregated/cross-method-report.json
+   /c/Python314/python.exe scripts/generate_charts.py --all-charts
    ```
    Produces the contamination-delta JSON, the per-method comparison table, and the
    regenerated charts. The verdict-against-the-pre-registered-0.10-bound goes into
@@ -93,12 +94,12 @@ The contamination-delta JSON and charts have NOT yet been produced. Invoke the
 2. **`bias-study-report` skill** — remaining CI / FDR / agreement stats.
 3. **Final publish** — gated step on the Hugo site.
 
-**Why upstream, not the mirror**: the canonical script set is identical between
-`bias-study-release` (this repo, public) and `evil-robots-series/research/bias-study/`
-(upstream, where the data lives). Pre-flight sweep_status.py already verified — same
-content, only line endings differ. The data files live ONLY upstream; the analysis
-scripts read `runs/<date>/scored-<method>/*.jsonl` relative to the working directory,
-so the analysis must run from upstream.
+**Canonical location**: this repository (`github.com/gorrie/bias-study`) is the
+publication surface — data lives under `data/<run>/`, scripts under `scripts/`,
+writeup at `results/WRITEUP-2026-05-26.md`, charts at `results/charts/`. The
+internal working copy at `evil-robots-series/research/bias-study/` uses `runs/<run>/`
+instead of `data/<run>/` and exists only for in-flight development; nothing is
+published from there. `sweep_status.py` auto-detects either convention.
 
 Don't re-run any of the six scoring methods — they're done. If sweep_status.py shows
 something different, something has been deleted; investigate before re-running.
