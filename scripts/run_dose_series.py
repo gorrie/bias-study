@@ -67,12 +67,13 @@ def run_one_dose(
     device: str, dtype: str,
 ) -> int:
     # Late import so a bad --base / --out-root errors out before the model is
-    # touched.
-    from obliteratus.abliterate import Abliterator
+    # touched. The CLI also instantiates AbliterationPipeline (cli.py:734),
+    # which is the right entry point — `Abliterator` is not exported.
+    from obliteratus.abliterate import AbliterationPipeline
 
     print(f"=== n_directions={n_directions} -> {out_dir} ===", flush=True)
     t0 = time.time()
-    ab = Abliterator(
+    pipeline = AbliterationPipeline(
         model_name=str(base),
         output_dir=str(out_dir),
         device=device,
@@ -81,9 +82,7 @@ def run_one_dose(
         max_seq_length=max_seq_length,  # the load-bearing override
         **SPINE_DEFAULTS,
     )
-    # Abliterator.run() returns the abliteration result; we just need the
-    # side-effect (output dir + metadata).
-    ab.run()
+    pipeline.run()  # returns the output Path; side-effect is what we want
     elapsed = time.time() - t0
     print(f"  n_directions={n_directions} produced in {elapsed/60:.1f} min", flush=True)
     return 0
