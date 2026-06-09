@@ -73,7 +73,52 @@ Expect three lines printing versions and `mps: True`. If `mps: False`, the
 torch install is wrong (probably the Linux wheel) — reinstall from the Apple
 Silicon arm64 wheel.
 
-### 2. Run the dose-series driver
+### 2. Run the dose-series — supervised (recommended for hands-off runs)
+
+```bash
+PYTORCH_ENABLE_MPS_FALLBACK=1 \
+  nohup .venv/bin/python scripts/supervised_dose_series.py \
+  --base /path/to/models/gemma-2-9b-it \
+  --out-root abliteration-output \
+  --doses 1,2,8 \
+  --max-seq-length 512 \
+  --stall-timeout 600 \
+  --max-attempts 3 \
+  > supervisor.log 2>&1 &
+disown
+```
+
+The supervisor wraps the bare `run_dose_series.py` driver and adds the
+recovery logic the driver doesn't have on its own. Failure-kind handling:
+
+| Kind | Detection | Policy |
+|---|---|---|
+| **crash** | subprocess exits non-zero after the startup grace window | retry up to `--max-attempts`; skip-existing recovers |
+| **hang** | no new log line for `--stall-timeout` seconds | SIGKILL the process group, retry up to `--max-attempts` |
+| **smoke_fail** | driver exited non-zero AND a `*-FAILED-*` dir was created | HALT — broken model needs human attention, retry would just produce another broken model |
+| **startup** | subprocess crashed within first 60 s (ImportError, TypeError, …) | HALT — code bug or environment problem, not transient |
+
+State persists to `<out-root>/.dose-supervisor-state.json` and a heartbeat
+file updates every 5 s — so a different shell, a fresh Claude session, or
+an external cron job can read state cold without re-deriving anything:
+
+```bash
+.venv/bin/python scripts/supervised_dose_series.py --status \
+  --state-dir abliteration-output
+```
+
+To resume after fixing the root cause of a halt:
+
+```bash
+.venv/bin/python scripts/supervised_dose_series.py \
+  --base ... --out-root abliteration-output --doses 1,2,8 \
+  --resume-halted
+```
+
+### 2a. Run the dose-series — unsupervised (debugging only)
+
+When you actively want to watch a single run finish or fail (debugging the
+abliteration itself, not the supervisor), bypass the supervisor:
 
 ```bash
 PYTORCH_ENABLE_MPS_FALLBACK=1 \
@@ -84,10 +129,8 @@ PYTORCH_ENABLE_MPS_FALLBACK=1 \
   --max-seq-length 512
 ```
 
-The driver iterates each dose **sequentially** (MPS contention prevents
-parallel runs), invokes the smoke gate after each, and aborts the series
-loudly if any dose fails the gate. Skip-existing is on by default — a
-restarted run picks up where the last one stopped.
+Same skip-existing, same smoke gate. No hang detection, no retry budget,
+no state file. **Not** the right entry point for an overnight run.
 
 **Why `--max-seq-length 512`?** The OBLITERATUS CLI has no flag to set this
 and the internal default drops to **128** when free RAM looks tight — which
