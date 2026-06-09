@@ -204,6 +204,20 @@ flinch calibration.
   fixed the root cause; give this dose three fresh attempts." If you do NOT
   want that semantic, use `--reset` (which wipes the whole state file) or
   edit the JSON by hand.
+- **`knee_cosmic` layer selection varies the projected-layer count per
+  n_directions** — on Gemma-2-9B it picked 22 layers at `n_dir=1` and 18 at
+  `n_dir=4`. Projecting one direction across 22 layers (vs four across 18)
+  destroyed the model: perplexity=∞, coherence=0, empty generations.
+  **Pin `--strong-layers 24-41`** (the reference spine's range) across the
+  whole dose-series so the dose-response measures `n_directions` alone, not
+  `n_directions + algorithm-picked layer count`. Default in
+  `scripts/run_dose_series.py` and `scripts/supervised_dose_series.py` is
+  `24-41`; the driver monkey-patches `_select_layers_knee` /
+  `_select_layers_cosmic` / `_select_layers_middle60` / `_select_layers_all`
+  on the pipeline instance so whichever selection_method the underlying
+  algorithm picks, the forced list wins. Pass an empty string `--strong-layers
+  ""` only when you specifically WANT the OBLITERATUS heuristic to choose
+  (e.g. for a new base model where you don't have a reference layer set).
 - **Quantization is not a workaround on M5.** `--quantization 4bit/8bit`
   requires bitsandbytes, which is CUDA-only and silently disables on MPS.
 - **`PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0` does NOT fix the degradation.**

@@ -145,6 +145,7 @@ def run_one_dose_supervised(
     dose: int, base: Path, out_root: Path, max_seq_length: int,
     device: str, dtype: str, stall_timeout: float,
     log_path: Path, heartbeat_path: Path,
+    strong_layers: str = "",
 ) -> tuple[str, str]:
     """Run one dose under supervision.
 
@@ -167,6 +168,8 @@ def run_one_dose_supervised(
         "--device", device,
         "--dtype", dtype,
     ]
+    if strong_layers:
+        cmd.extend(["--strong-layers", strong_layers])
     log_fp = log_path.open("a")
     log_fp.write(f"\n=== supervisor run: dose={dose} started at {utcnow_iso()} ===\n")
     log_fp.write(f"cmd: {' '.join(cmd)}\n")
@@ -350,6 +353,7 @@ def supervised_main(args: argparse.Namespace) -> int:
                 max_seq_length=args.max_seq_length, device=args.device,
                 dtype=args.dtype, stall_timeout=args.stall_timeout,
                 log_path=log_path, heartbeat_path=heartbeat_path,
+                strong_layers=args.strong_layers,
             )
             print(f"dose={dose} attempt {attempt}: {outcome} ({detail})",
                   flush=True)
@@ -416,6 +420,13 @@ def main() -> int:
                         "on Gemma-2-9B with no stdout writes (rich.live updates "
                         "the terminal in place); 600s was too aggressive and "
                         "produced false-positive hangs that killed working processes.")
+    p.add_argument("--strong-layers", default="24-41",
+                   help="Layer-index spec ('24-41' or '24,25,...') passed through "
+                        "to the driver. Pinned across the dose-series so the "
+                        "dose-response measures n_directions cleanly (default "
+                        "knee_cosmic varies the layer count per n_dir, which "
+                        "broke n_dir=1 while n_dir=4 reference survived). Pass "
+                        "an empty string to let OBLITERATUS pick.")
     p.add_argument("--max-attempts", default=3, type=int,
                    help="Per-dose retry budget for retryable failures (default 3)")
     args = p.parse_args()

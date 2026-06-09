@@ -62,9 +62,27 @@ def parse_doses(arg: str) -> list[int]:
     return [int(x) for x in arg.split(",") if x.strip()]
 
 
+def parse_layer_spec(arg: str) -> list[int] | None:
+    """Parse '24-41' or '24,25,26,...' into a sorted layer-index list."""
+    s = (arg or "").strip()
+    if not s:
+        return None
+    out: set[int] = set()
+    for part in s.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if "-" in part:
+            lo, hi = part.split("-", 1)
+            out.update(range(int(lo), int(hi) + 1))
+        else:
+            out.add(int(part))
+    return sorted(out)
+
+
 def run_one_dose(
     base: Path, out_dir: Path, n_directions: int, max_seq_length: int,
-    device: str, dtype: str,
+    device: str, dtype: str, strong_layers: list[int] | None = None,
 ) -> int:
     # Late import so a bad --base / --out-root errors out before the model is
     # touched. The CLI also instantiates AbliterationPipeline (cli.py:734),
@@ -80,8 +98,30 @@ def run_one_dose(
         dtype=dtype,
         n_directions=n_directions,
         max_seq_length=max_seq_length,  # the load-bearing override
+        layer_selection="knee" if strong_layers else None,
         **SPINE_DEFAULTS,
     )
+
+    # Pin strong_layers across the entire dose-series so the dose-response
+    # measures n_directions cleanly, not n_directions + knee_cosmic's varying
+    # layer count. Default knee_cosmic picks 22 layers at n_dir=1 vs 18 at
+    # n_dir=4 on Gemma-2-9B — a confound that broke the n_dir=1 abliteration
+    # while the reference n_dir=4 spine survived. Without this override, you
+    # cannot attribute coherence collapse to dose strength alone.
+    #
+    # We override the internal _select_layers_knee method (and its cousins)
+    # so whichever selection_method the pipeline picks at run-time, the
+    # forced list wins. Set layer_selection="knee" above so the dispatch
+    # lands on a path we control.
+    if strong_layers:
+        forced = list(strong_layers)
+        print(f"  pinning strong_layers to {forced[0]}..{forced[-1]} "
+              f"(n={len(forced)})", flush=True)
+        pipeline._select_layers_knee = lambda *a, **kw: forced
+        pipeline._select_layers_cosmic = lambda *a, **kw: []  # disable COSMIC fusion
+        pipeline._select_layers_middle60 = lambda *a, **kw: forced
+        pipeline._select_layers_all = lambda *a, **kw: forced
+
     pipeline.run()  # returns the output Path; side-effect is what we want
     elapsed = time.time() - t0
     print(f"  n_directions={n_directions} produced in {elapsed/60:.1f} min", flush=True)
@@ -117,6 +157,15 @@ def main() -> int:
                         "to 128 that produces broken abliterations.")
     p.add_argument("--device", default="mps", help="torch device (default mps on M5)")
     p.add_argument("--dtype", default="float16")
+    p.add_argument("--strong-layers", default="24-41",
+                   help="Layer indices to project the refusal direction out of, "
+                        "as a comma list ('24,25,...,41') or a hyphen-range "
+                        "('24-41'). Pinned across the dose-series so the "
+                        "dose-response measures n_directions cleanly. Default "
+                        "matches the reference Gemma-2-9B n_dir=4 spine. Pass "
+                        "an empty string '' to let OBLITERATUS pick (NOT "
+                        "recommended for dose-response studies — confounds "
+                        "n_directions with knee_cosmic's varying layer count).")
     p.add_argument("--skip-existing", action="store_true", default=True,
                    help="If a dose dir already has abliteration_metadata.json, "
                         "skip it (default on; pass --no-skip-existing to force)")
@@ -149,7 +198,8 @@ def main() -> int:
             continue
 
         rc = run_one_dose(args.base, out_dir, n, args.max_seq_length,
-                          args.device, args.dtype)
+                          args.device, args.dtype,
+                          strong_layers=parse_layer_spec(args.strong_layers))
         if rc != 0:
             print(f"FATAL: dose {n} abliteration returned {rc}", file=sys.stderr)
             return rc
