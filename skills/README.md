@@ -10,14 +10,15 @@ You do not need any of this to reproduce the study: the `README.md` at the repo 
 plain four-command pipeline. These files are for running the *full* multi-rung study as a
 repeatable instrument, and for re-running it on a cadence.
 
-## The eight skills
+## The nine skills
 
 | Skill | Rung / role | What it does |
 |-------|-------------|--------------|
 | [`bias-study-prep`](bias-study-prep/SKILL.md) | pre-flight | Pulls the repo, checks the protocol files, verifies the OpenRouter key (and the heavier toolchain if needed), and records a dated prep-state snapshot. Run before every study run. |
 | [`g0dm0d3-pipeline`](g0dm0d3-pipeline/SKILL.md) | rung 2 (pipeline) | Applies elicitation-layer force (hedge-strip + obfuscation) via a G0DM0D3 server, layered up to each model's coherence ceiling. **Specified, not yet executed** in the published data. |
-| [`abliteration-run`](abliteration-run/SKILL.md) | rung 3 (weights) | Ablates the refusal direction from an open-weight model via OBLITERATUS and runs stock-vs-abliterated A/B. Needs a GPU. |
-| [`mlx-weight-prep`](mlx-weight-prep/SKILL.md) | weights → macOS | Converts HF safetensors (from `abliteration-run`) into MLX fp16 on Apple Silicon. Documents the path that cleared the Gemma-2 SVD bug on M5. |
+| [`abliteration-run`](abliteration-run/SKILL.md) | rung 3 (weights, CUDA) | Ablates the refusal direction via OBLITERATUS in the Docker/CUDA path. Use on Linux/Windows with a working CUDA GPU. |
+| [`abliteration-on-mps`](abliteration-on-mps/SKILL.md) | rung 3 (weights, Apple Silicon) | Same end-product as `abliteration-run`, but the Python-driver path that survives the M5's silent CLI degradation. Required for Gemma-2 (the 4090's MKL SVD fails). |
+| [`mlx-weight-prep`](mlx-weight-prep/SKILL.md) | weights → macOS | Converts HF safetensors (from either abliteration skill) into MLX fp16 on Apple Silicon. |
 | [`abliterated-judge-sweep`](abliterated-judge-sweep/SKILL.md) | judgement-tool Method 2 | Re-scores every record with an abliterated open-weight model as the JUDGE. Tests whether judge alignment (not just system-under-test alignment) carried bias into the consensus. In-process MLX on Apple Silicon, lockfile-protected, OOM-resilient. |
 | [`api-judge-sweep`](api-judge-sweep/SKILL.md) | judgement-tool Methods 4–7 | Runs grok-solo, adversarial-pair, reversed-rubric, and blind-condition methods via OpenRouter. Sibling to abliterated-judge-sweep; can run in parallel on a different host. |
 | [`cross-method-analysis`](cross-method-analysis/SKILL.md) | judgement-tool synthesis | Consumes all judgement-tool methods' outputs and produces the contamination-delta tables, charts, and the pre-registered "consensus robust / not robust" verdict. |

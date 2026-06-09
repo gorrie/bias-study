@@ -47,6 +47,13 @@ stands and what to pick up next. Keep it current as legs complete.
   `runs/_aggregated/judge-methods-run.log`. The full coverage matrix is reproducible at
   any time via `scripts/sweep_status.py` (single source of truth from the data, not from
   prose).
+- **The Wash dose-series tooling landed (2026-05-30)**: `scripts/run_dose_series.py` +
+  `scripts/dose_smoke_gate.py` codify the M5 Apple-Silicon abliteration path with a
+  pinned `max_seq_length=512` (defeats OBLITERATUS's CLI silent-degradation on M5) and a
+  two-gate metadata + generation smoke check. New skill: `abliteration-on-mps` (sibling
+  to `abliteration-run` — Linux/CUDA path stays unchanged). Pre-registered for The Wash
+  Experiment 1 (dose-response, n_directions ∈ {1,2,4,8} for Gemma-2-9B-IT). Reference
+  n_dir=4 spine is reused as-is. See `evil-robots-series/research/the-wash/HANDOFF-M5.md`.
 - **Reproducible tooling and operator skills landed**: `scripts/score_inproc_gemma.py`
   (single-instance lockfile, Metal-OOM-resilient, empty-raw fast-path, skip-existing
   default); `scripts/score.py --rescore` flag; `scripts/judge_methods.py` extended with
