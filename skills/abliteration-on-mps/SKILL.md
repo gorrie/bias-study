@@ -187,6 +187,23 @@ flinch calibration.
 - **The Python `max_seq_length=512` kwarg is the one knob that matters.** Do
   not refactor the driver to "simplify" by calling the CLI; you will
   reintroduce the silent failure.
+- **OBLITERATUS writes to stdout via `rich.live`** during its compute phases,
+  which updates a single terminal line in place and writes nothing new to the
+  log file for the full duration of activation collection + verify. The
+  verify stage alone takes ~800s on Gemma-2-9B with zero new log lines. A
+  log-mtime-only stall watchdog declares hang on a process that is computing
+  flat-out. The supervisor uses BOTH log-mtime AND subprocess CPU-time
+  activity (via `psutil.Process.cpu_times().user` walked across the process
+  tree) — only declares hang when both are static, which is the actual
+  invariant. Default `--stall-timeout` was raised from 600s to **1500s** for
+  the same reason; do not lower it without first measuring how long the
+  verify stage takes for your specific base model + n_directions combo.
+- **The supervisor's `--resume-halted` resets per-dose attempt counters.**
+  Without that reset, a halted-then-resumed run walks straight back into
+  "exhausted" on the same dose because attempts is sticky. Resume = "I have
+  fixed the root cause; give this dose three fresh attempts." If you do NOT
+  want that semantic, use `--reset` (which wipes the whole state file) or
+  edit the JSON by hand.
 - **Quantization is not a workaround on M5.** `--quantization 4bit/8bit`
   requires bitsandbytes, which is CUDA-only and silently disables on MPS.
 - **`PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0` does NOT fix the degradation.**

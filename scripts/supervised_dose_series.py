@@ -63,6 +63,15 @@ STATE_FILENAME = ".dose-supervisor-state.json"
 LOG_FILENAME_TPL = ".dose-supervisor-run-{ts}.log"
 STARTUP_GRACE_S = 60.0  # crash within this window counts as startup-error
 
+# OBLITERATUS uses rich.live for progress display, which updates a single
+# terminal line in place and writes NOTHING new to stdout/the log file during
+# multi-minute compute phases (notably the verify step, which on Gemma-2-9B
+# takes ~800s). Log-mtime alone says "hang" while the process is actually
+# computing flat-out. The CPU-time delta below catches that case — a process
+# burning >= MIN_CPU_PROGRESS_S of CPU between polls is making progress
+# even when its stdout is silent.
+MIN_CPU_PROGRESS_S = 0.5  # min user-CPU seconds per poll to count as alive
+
 
 def utcnow_iso() -> str:
     return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
@@ -168,6 +177,33 @@ def run_one_dose_supervised(
         # New process group so we can SIGKILL the whole subtree on hang
         preexec_fn=os.setsid,
     )
+    # CPU-activity-aware stall detection. OBLITERATUS goes silent on stdout
+    # during long compute phases; relying on log-mtime alone produces
+    # false-positive hangs. We track total user-CPU consumed by the subprocess
+    # tree (the driver + its child obliteratus + that one's children) and
+    # only declare hang when BOTH the log AND the CPU clock have been static.
+    try:
+        import psutil
+        psproc = psutil.Process(proc.pid)
+    except (ImportError, psutil.NoSuchProcess):
+        psproc = None
+    last_cpu_advance_t = started
+    last_total_cpu = 0.0
+
+    def tree_cpu_time() -> float:
+        if psproc is None:
+            return 0.0
+        total = 0.0
+        try:
+            for p in [psproc] + psproc.children(recursive=True):
+                try:
+                    total += p.cpu_times().user
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
+        return total
+
     try:
         while True:
             rc = proc.poll()
@@ -189,17 +225,27 @@ def run_one_dose_supervised(
                     return ("smoke_fail",
                             f"exit {rc}; FAILED dir at {failed_dirs[-1].name}")
                 return ("crash", f"exit {rc} in {wall:.0f}s")
-            # Stall check: log file mtime
+            # Combined stall check: log-mtime AND cpu-time-delta.
             try:
                 log_age = now - log_path.stat().st_mtime
             except FileNotFoundError:
                 log_age = 0
-            if log_age > stall_timeout:
-                log_fp.write(f"=== HANG: log idle for {log_age:.0f}s, killing ===\n")
+            cur_cpu = tree_cpu_time()
+            if cur_cpu - last_total_cpu >= MIN_CPU_PROGRESS_S:
+                last_cpu_advance_t = now
+                last_total_cpu = cur_cpu
+            cpu_idle_age = now - last_cpu_advance_t
+            # Declare hang only if BOTH signals say idle.
+            if log_age > stall_timeout and cpu_idle_age > stall_timeout:
+                log_fp.write(
+                    f"=== HANG: log idle {log_age:.0f}s + CPU idle "
+                    f"{cpu_idle_age:.0f}s (cpu_total {cur_cpu:.0f}s), "
+                    f"killing ===\n"
+                )
                 log_fp.flush()
                 os.killpg(proc.pid, signal.SIGKILL)
                 proc.wait(timeout=10)
-                return ("hang", f"log idle {log_age:.0f}s")
+                return ("hang", f"log+cpu idle {log_age:.0f}s")
             time.sleep(POLL_INTERVAL_S)
     finally:
         log_fp.close()
@@ -250,6 +296,18 @@ def supervised_main(args: argparse.Namespace) -> int:
               f"(pass --resume-halted to override)", file=sys.stderr)
         return 2
 
+    # On --resume-halted, reset doses with attempts at/above --max-attempts
+    # so they can actually retry. Without this, a halted-then-resumed run
+    # walks straight back into 'exhausted' on the same dose because the
+    # attempt counter is sticky. Doses already at status='ok' stay ok.
+    if args.resume_halted:
+        for k, info in state.get("doses", {}).items():
+            if info.get("status") == "ok":
+                continue
+            info["attempts"] = 0
+            info["status"] = "pending"
+            info["last_failure"] = (info.get("last_failure") or "") + " [resumed]"
+        print("(resume-halted: cleared attempts for non-ok doses)", flush=True)
     state["phase"] = "running"
     state["halt_reason"] = None
     save_state(state_dir, state)
@@ -352,8 +410,12 @@ def main() -> int:
     p.add_argument("--max-seq-length", default=512, type=int)
     p.add_argument("--device", default="mps")
     p.add_argument("--dtype", default="float16")
-    p.add_argument("--stall-timeout", default=600.0, type=float,
-                   help="Seconds without log output before declaring hang (default 600)")
+    p.add_argument("--stall-timeout", default=1500.0, type=float,
+                   help="Seconds with BOTH log idle AND CPU idle before declaring "
+                        "hang. Default 1500. OBLITERATUS's verify stage runs ~800s "
+                        "on Gemma-2-9B with no stdout writes (rich.live updates "
+                        "the terminal in place); 600s was too aggressive and "
+                        "produced false-positive hangs that killed working processes.")
     p.add_argument("--max-attempts", default=3, type=int,
                    help="Per-dose retry budget for retryable failures (default 3)")
     args = p.parse_args()
