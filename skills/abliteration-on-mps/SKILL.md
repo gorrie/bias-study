@@ -218,6 +218,20 @@ flinch calibration.
   algorithm picks, the forced list wins. Pass an empty string `--strong-layers
   ""` only when you specifically WANT the OBLITERATUS heuristic to choose
   (e.g. for a new base model where you don't have a reference layer set).
+- **Memory pressure produces a non-terminating swap-thrash failure mode.**
+  Observed: dose-1 attempt ran 1h29m at 7% CPU, MPS reporting 0 GB allocated,
+  20 GB safetensors I/O grinding through 868 MB free swap, log idle 88 min.
+  The CPU-aware watchdog saw "CPU advancing" and stayed its hand — but the
+  process would never have finished in this lifetime. Two defenses:
+  (1) **Pre-flight memory check**: supervisor refuses to start a dose unless
+  `--min-free-gb` (default 25) is free, waits 60s for a transient consumer
+  to release, then halts. (2) **Wall-clock backstop** at `MAX_WALL_CLOCK_S`
+  (60 min, 4× the observed 15-min clean run): kills any attempt past that
+  even if CPU was advancing. The CPU-aware watchdog catches genuine silent
+  compute; the wall-clock backstop catches the "alive but functionally
+  non-terminating" case the CPU watchdog can't see. Before launching, quit
+  Discord / Claude desktop / browsers with heavy tabs — these are the usual
+  memory consumers that push the M5 from "enough" to "swapping."
 - **Quantization is not a workaround on M5.** `--quantization 4bit/8bit`
   requires bitsandbytes, which is CUDA-only and silently disables on MPS.
 - **`PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0` does NOT fix the degradation.**

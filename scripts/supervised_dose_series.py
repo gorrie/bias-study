@@ -72,9 +72,32 @@ STARTUP_GRACE_S = 60.0  # crash within this window counts as startup-error
 # even when its stdout is silent.
 MIN_CPU_PROGRESS_S = 0.5  # min user-CPU seconds per poll to count as alive
 
+# Even with CPU-aware idle detection, a process making slow progress under
+# heavy swap pressure looks "alive" (CPU advancing) but cannot finish in
+# any reasonable time. A successful Gemma-2-9B dose runs ~15 min wall clock;
+# 1h29m of "alive but slow" is swap thrash, not real progress. The wall-clock
+# upper bound below is the backstop that catches that case — it kills the
+# attempt even when the CPU-idle detector says everything's fine.
+MAX_WALL_CLOCK_S = 3600.0  # 60 minutes per attempt; 4x the observed clean run
+
+# Pre-flight check: refuse to start a dose attempt unless this much RAM is
+# free. The Gemma-2-9B model is ~19 GB at fp16; activation collection adds
+# another few GB. 25 GB free is the minimum safe margin on a 34 GB M5.
+MIN_FREE_GB = 25.0
+
 
 def utcnow_iso() -> str:
     return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
+
+
+def free_ram_gb() -> float:
+    """Available RAM in GB. psutil.virtual_memory().available is the right
+    signal — counts memory that COULD be reclaimed without swapping."""
+    try:
+        import psutil
+        return psutil.virtual_memory().available / (1024 ** 3)
+    except ImportError:
+        return float("inf")  # graceful fallback
 
 
 # ---------------------------------------------------------------------------
@@ -238,7 +261,12 @@ def run_one_dose_supervised(
                 last_cpu_advance_t = now
                 last_total_cpu = cur_cpu
             cpu_idle_age = now - last_cpu_advance_t
-            # Declare hang only if BOTH signals say idle.
+            wall_age = now - started
+            # Declare hang on EITHER:
+            #   - both signals idle (the classic case), OR
+            #   - wall clock past MAX_WALL_CLOCK_S (the swap-thrash backstop —
+            #     CPU is still advancing but progress is so slow the process
+            #     will never finish in reasonable time)
             if log_age > stall_timeout and cpu_idle_age > stall_timeout:
                 log_fp.write(
                     f"=== HANG: log idle {log_age:.0f}s + CPU idle "
@@ -249,6 +277,19 @@ def run_one_dose_supervised(
                 os.killpg(proc.pid, signal.SIGKILL)
                 proc.wait(timeout=10)
                 return ("hang", f"log+cpu idle {log_age:.0f}s")
+            if wall_age > MAX_WALL_CLOCK_S:
+                log_fp.write(
+                    f"=== WALL-CLOCK BACKSTOP: {wall_age:.0f}s > "
+                    f"{MAX_WALL_CLOCK_S:.0f}s "
+                    f"(cpu_total {cur_cpu:.0f}s, free_ram {free_ram_gb():.1f} GB) "
+                    f"-- killing; almost certainly swap thrash ===\n"
+                )
+                log_fp.flush()
+                os.killpg(proc.pid, signal.SIGKILL)
+                proc.wait(timeout=10)
+                return ("hang",
+                        f"wall {wall_age:.0f}s > {MAX_WALL_CLOCK_S:.0f}s "
+                        f"(free_ram {free_ram_gb():.1f}GB)")
             time.sleep(POLL_INTERVAL_S)
     finally:
         log_fp.close()
@@ -340,13 +381,44 @@ def supervised_main(args: argparse.Namespace) -> int:
             continue
 
         while state["doses"][key]["attempts"] < args.max_attempts:
+            # Pre-flight memory check. Refuse to launch under memory pressure
+            # because the result is swap thrash — slow but technically alive,
+            # which used to fool both the user AND the watchdog. Wait briefly
+            # in case a transient consumer (browser tab opened, build job)
+            # is about to release memory.
+            free_gb = free_ram_gb()
+            if free_gb < args.min_free_gb:
+                print(f"dose={dose}: WAITING for memory — "
+                      f"{free_gb:.1f} GB free < {args.min_free_gb} GB required. "
+                      f"Free RAM by closing apps. Retry check in 60s.",
+                      flush=True)
+                time.sleep(60)
+                free_gb = free_ram_gb()
+                if free_gb < args.min_free_gb:
+                    state["doses"][key]["status"] = "halted"
+                    state["doses"][key]["last_failure"] = (
+                        f"pre-flight: free_ram {free_gb:.1f}GB < "
+                        f"{args.min_free_gb}GB")
+                    state["phase"] = "halted"
+                    state["halt_reason"] = (
+                        f"dose {dose}: insufficient RAM "
+                        f"({free_gb:.1f}GB free). Close other memory consumers "
+                        f"(Discord, browsers, IDEs) and resume with "
+                        f"--resume-halted. The model needs ~19 GB headroom "
+                        f"alone; swap thrash makes the abliteration "
+                        f"functionally non-terminating.")
+                    save_state(state_dir, state)
+                    print(state["halt_reason"], file=sys.stderr, flush=True)
+                    return 5
+
             state["doses"][key]["attempts"] += 1
             state["doses"][key]["status"] = "running"
             state["doses"][key]["last_attempt_at"] = utcnow_iso()
             save_state(state_dir, state)
 
             attempt = state["doses"][key]["attempts"]
-            print(f"dose={dose} attempt {attempt}/{args.max_attempts} ...",
+            print(f"dose={dose} attempt {attempt}/{args.max_attempts} "
+                  f"(free RAM {free_gb:.1f} GB)...",
                   flush=True)
             outcome, detail = run_one_dose_supervised(
                 dose=dose, base=args.base, out_root=args.out_root,
@@ -427,6 +499,11 @@ def main() -> int:
                         "knee_cosmic varies the layer count per n_dir, which "
                         "broke n_dir=1 while n_dir=4 reference survived). Pass "
                         "an empty string to let OBLITERATUS pick.")
+    p.add_argument("--min-free-gb", default=MIN_FREE_GB, type=float,
+                   help=f"Minimum free RAM (GB) required to start a dose "
+                        f"attempt. Default {MIN_FREE_GB}. Below this the "
+                        f"supervisor waits 60s then halts; abliteration "
+                        f"under swap thrash is functionally non-terminating.")
     p.add_argument("--max-attempts", default=3, type=int,
                    help="Per-dose retry budget for retryable failures (default 3)")
     args = p.parse_args()
