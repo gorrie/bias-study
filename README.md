@@ -170,6 +170,10 @@ Clone these from upstream at the pinned commits to reproduce the pipeline and we
 - **Arditi et al. (2024)**, *Refusal in Language Models Is Mediated by a Single Direction*, arXiv:[2406.11717](https://arxiv.org/abs/2406.11717) — the refusal-direction method the weight rung ablates.
 - **OpenRouter** — multi-vendor API gateway, <https://openrouter.ai/>.
 
+## Companion projects
+
+- **[ratchet-mcp](https://github.com/gorrie/ratchet-mcp)** — MCP server + curated dataset of named persons & institutions across the US legal / regulatory / financial / multilateral control grid (401 persons / 351 institutions / 844 edges at v0.1; every record cites ≥ 2 primary sources; CI-gated). The institutional-infrastructure side of the same argument this bias study makes at the model layer — the people, the pipelines, and the documented adjacencies the closed-vocabulary plays system makes queryable. Companion to *The Ratchet: How Safety Infrastructure Became the Control Grid*. Re-sampled periodically as a longitudinal bias-drift instrument.
+
 ## License
 
 Code: MIT (see [`LICENSE`](LICENSE)). Data and writeup are released for open reproduction and review.
