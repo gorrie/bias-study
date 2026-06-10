@@ -36,6 +36,7 @@ Returns the same shape as call_judges_ultraplinian() in score.py:
 from __future__ import annotations
 
 import concurrent.futures
+import os
 import sys
 from pathlib import Path
 
@@ -164,7 +165,7 @@ def _call_abliterated(prompt: str, retries: int = 1) -> dict:
 # first entry is used). Loaded at runtime so no key ever appears on a CLI.
 
 G0DM0D3_DEFAULT_ENDPOINT = "http://127.0.0.1:7860/v1"
-G0DM0D3_ENV_FILE = r"<home>/claude/G0DM0D3/.env"  # Windows path for Python
+G0DM0D3_ENV_FILE = os.environ.get("G0DM0D3_ENV_FILE", "")  # path to G0DM0D3 .env; else G0DM0D3_API_KEY env var is used
 
 
 def _load_g0dm0d3_key() -> str | None:
