@@ -107,6 +107,34 @@ an external cron job can read state cold without re-deriving anything:
   --state-dir abliteration-output
 ```
 
+### 2b. Watch it durably — DO NOT hand-roll the wakeup chain
+
+The supervisor handles abliteration-specific retry. For the *watch* — getting
+a notification + a findings file when the run finishes or fails, surviving a
+Claude-session restart — use the durable watcher, never a `Monitor` tool or a
+`ScheduleWakeup` chain. Those are session-bound: they die on restart and the
+run goes unwatched (this bit us on 2026-06-09/10).
+
+```bash
+nohup .venv/bin/python scripts/monitor_experiment.py \
+  --name dose-series-gemma2 \
+  --launch "PYTORCH_ENABLE_MPS_FALLBACK=1 .venv/bin/python scripts/supervised_dose_series.py --base /path/to/models/gemma-2-9b-it --out-root abliteration-output --doses 1,2,8 --max-seq-length 512 --max-attempts 3" \
+  --log supervisor.log \
+  --success "ALL DOSES COMPLETE|=== series complete" \
+  --fail "phase.*halted|FATAL" \
+  --findings-dir abliteration-output/findings \
+  --on-success "pkill -f mlx_lm" \
+  > monitor-dose-series.log 2>&1 &
+disown
+```
+
+`monitor_experiment.py` is pure-Python stdlib — identical behavior on M5
+(macOS), the 4090 (Windows/Git-Bash), and Linux. It launches the supervisor
+as its own child, polls `supervisor.log`, and writes
+`abliteration-output/findings/dose-series-gemma2-<ts>.md` on completion. The
+`experiment-monitor` agent wraps this same call; invoke that agent rather
+than assembling the flags by hand. See its worked example.
+
 To resume after fixing the root cause of a halt:
 
 ```bash
