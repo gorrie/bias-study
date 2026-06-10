@@ -117,7 +117,25 @@ def main() -> int:
             f"name: {args.name}\nphase: {phase}\ndetail: {detail}\n"
             f"updated: {ts()}\nlog: {args.log}\nlaunch: {args.launch}\n"))
 
+    # Stale-log immunity. A prior run's log may already contain the success
+    # pattern (it did once → instant false 0s "success" against the OLD artifact).
+    # `watch["baseline"]` = log size at launch. We refuse to match until we've
+    # OBSERVED the run truncate the file (size drops below baseline) — run scripts
+    # do `> log`, so this fires on the first poll after launch. Sticky: once
+    # truncation is seen, scan the whole (now this-run-owned) file, even as it
+    # grows past the old size. If there was no stale log (baseline 0), there is
+    # nothing to be fooled by, so we scan immediately.
+    watch = {"baseline": 0, "truncated": True}
+
     def log_matches(rx: re.Pattern) -> bool:
+        try:
+            size = log_path.stat().st_size
+        except FileNotFoundError:
+            return False
+        if size < watch["baseline"]:
+            watch["truncated"] = True
+        if not watch["truncated"]:
+            return False
         try:
             with log_path.open("r", encoding="utf-8", errors="replace") as f:
                 for line in f:
@@ -146,6 +164,16 @@ def main() -> int:
     #    in the background under this watcher; the watcher itself is what the
     #    caller nohup'd, so both survive session death.
     write_state("launching")
+    # Record any pre-existing log size; require an observed truncation before
+    # matching, so stale prior-run content can't trigger a false success.
+    try:
+        watch["baseline"] = log_path.stat().st_size if log_path.exists() else 0
+    except OSError:
+        watch["baseline"] = 0
+    watch["truncated"] = watch["baseline"] == 0
+    if watch["baseline"]:
+        print(f"{ts()} note: pre-existing log of {watch['baseline']}B — ignoring "
+              "until this run truncates it", flush=True)
     print(f"{ts()} launching: {args.launch}", flush=True)
     try:
         subprocess.Popen(args.launch, shell=True)
