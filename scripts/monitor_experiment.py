@@ -94,6 +94,12 @@ def main() -> int:
     p.add_argument("--smoke-sec", type=float, default=600.0,
                    help="warn once (do not kill) if the log is empty/absent this "
                         "long after launch — flags a silent early death")
+    p.add_argument("--rel-root", default="",
+                   help="paths written into the findings/state files are made "
+                        "relative to this root so the committed record carries no "
+                        "absolute machine path (release gate 5d). Default: the git "
+                        "repo containing --findings-dir; $HOME is scrubbed to ~ as "
+                        "a backstop for paths outside the root.")
     args = p.parse_args()
 
     findings = Path(args.findings_dir)
@@ -103,10 +109,13 @@ def main() -> int:
     success_re = re.compile(args.success)
     fail_re = re.compile(args.fail)
 
+    rel_root = Path(args.rel_root).resolve() if args.rel_root else _find_repo_root(findings)
+    scrub = _make_scrubber(rel_root)
+
     def write_state(phase: str, detail: str = "") -> None:
-        state_path.write_text(
+        state_path.write_text(scrub(
             f"name: {args.name}\nphase: {phase}\ndetail: {detail}\n"
-            f"updated: {ts()}\nlog: {args.log}\nlaunch: {args.launch}\n")
+            f"updated: {ts()}\nlog: {args.log}\nlaunch: {args.launch}\n"))
 
     def log_matches(rx: re.Pattern) -> bool:
         try:
@@ -182,7 +191,7 @@ def main() -> int:
                         body += ["## Artifact (failed validation)", "", "```",
                                  Path(art).read_text(encoding="utf-8", errors="replace"),
                                  "```"]
-                    diag.write_text("\n".join(body))
+                    diag.write_text(scrub("\n".join(body)))
                     print(f"{ts()} VALIDATE FAILED — diagnostic: {diag}", flush=True)
                     write_state("done", f"diagnostic: {diag}")
                     return 1
@@ -206,7 +215,7 @@ def main() -> int:
             else:
                 tail = _tail(log_path, 25)
                 body += ["## Log tail (no artifact glob matched)", "", "```", tail, "```"]
-            result.write_text("\n".join(body))
+            result.write_text(scrub("\n".join(body)))
             print(f"{ts()} SUCCESS — result: {result}", flush=True)
             write_state("done", f"result: {result}")
             if args.on_success:
@@ -218,7 +227,7 @@ def main() -> int:
             write_state("failed", f"matched: {args.fail}")
             diag = findings / f"{args.name}-{stamp()}-FAILED.md"
             tail = _tail(log_path, 40)
-            diag.write_text("\n".join([
+            diag.write_text(scrub("\n".join([
                 f"# {args.name} — FAILED {ts()}", "",
                 f"- launch: `{args.launch}`",
                 f"- wall time before failure: {elapsed/60:.1f} min ({elapsed:.0f}s)",
@@ -226,7 +235,7 @@ def main() -> int:
                 f"- log: `{args.log}`", "",
                 "## Log tail (last 40 lines)", "", "```", tail, "```", "",
                 "Not auto-restarted. Operator decides transient-vs-bug.",
-            ]))
+            ])))
             print(f"{ts()} FAILURE — diagnostic: {diag}", flush=True)
             write_state("done", f"diagnostic: {diag}")
             return 1
@@ -241,6 +250,39 @@ def main() -> int:
             smoke_warned = True
 
         time.sleep(args.poll)
+
+
+def _find_repo_root(start: Path) -> Path:
+    """Nearest ancestor containing .git; else `start` itself. Anchors path
+    relativization so findings records are repo-relative, not absolute."""
+    cur = start.resolve()
+    for p in (cur, *cur.parents):
+        if (p / ".git").exists():
+            return p
+    return cur
+
+
+def _make_scrubber(root: Path):
+    """Return scrub(s): rewrite absolute paths under `root` to repo-relative, and
+    any remaining $HOME-prefixed path to ~/… as a backstop. Longest-prefix first
+    so the more-specific root match wins over the home match."""
+    home = Path(os.path.expanduser("~")).resolve()
+    root = root.resolve()
+    subs = [
+        (str(root) + os.sep, ""),
+        (str(root), "."),
+        (str(home) + os.sep, "~" + os.sep),
+        (str(home), "~"),
+    ]
+    # Apply longest source first to avoid a shorter (home) prefix pre-empting root.
+    subs.sort(key=lambda ab: len(ab[0]), reverse=True)
+
+    def scrub(s: str) -> str:
+        for a, b in subs:
+            s = s.replace(a, b)
+        return s
+
+    return scrub
 
 
 def _tail(path: Path, n: int) -> str:
