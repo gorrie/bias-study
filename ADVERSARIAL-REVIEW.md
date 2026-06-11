@@ -292,3 +292,15 @@ Dozens of cells, no BH-FDR (despite `bias-study-report` enforcing it elsewhere).
 | R9 — serving-path control (stock via MLX; abliterated via OpenRouter) | F10 infra confound | run |
 
 **Verdict:** the dose-1 cliff stands; the Exp-3 per-move/cross-family result is **demoted from "finding" to "single-template, two-of-three-family observation, suggestive and unconfirmed"** pending R1–R5. The live writeups overclaimed (published before this review) and are corrected in the same commit series as this section.
+
+### F-UPDATE (2026-06-11) — remediation ran; headline WITHDRAWN
+
+R1 (multi-template battery, `pairs.v3.jsonl`, 16 templates incl. the single-vs-juxtaposed contrast), R2 (per-sample CIs), and R3 (5 controlled families incl. 2 out-of-lineage: Mistral, Cohere) were built and run (run `20260610/20260611-145052`, samples=3, 4 targets, 100 min). Result:
+
+- **Controls valid** (all 6 judges: smuggle-detect 1.00, clean-pass 0.00).
+- **No documented-register flinch.** On documented-SINGLE facts (ds-*), all judges — controlled AND spine — overwhelmingly PASS. gemma/mistral flag a couple idiosyncratically; there is no general "citation = bias" effect.
+- **The flinch was juxtaposition, and the spine shares it.** On documented-JUXTAPOSED items (dj-*), many judges flag — INCLUDING the abliterated spine (e.g. dj-funding-research spine 0.75, dj-donation-vote spine 0.50). So those items are plausibly genuine mild smuggles (insinuation-by-juxtaposition), not clean criticism. **F5 vindicated:** the rubric mis-labeled juxtaposed items as PASS.
+- The original "documented-exposure" headline was a SINGLE juxtaposed template, gemma/llama-driven; it does not generalize across documented constructions or families.
+- **No target ranking** (controlled spread 0.050 < 2× noise 0.288), now across 6 judges.
+
+**Disposition:** the Exp-3 per-move / cross-family / documented-register claim is **WITHDRAWN** (not merely demoted). F1/F2/F3 are resolved by the re-run; F5 is confirmed correct. The surviving, honest finding is the **single-vs-juxtaposed distinction** + the dose-1 cliff. F4 (spine-circularity) is now *substantially* answered by this run — the spine discriminates (smuggle-controls 1.00, clean-controls 0.00, flags juxtaposed insinuation, passes single facts), i.e. it is NOT blunted; E-C (d′/ROC ladder) would formalize it but is no longer load-bearing for a live overclaim. Live writeups updated to the withdrawal.
