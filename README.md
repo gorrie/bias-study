@@ -19,7 +19,9 @@ the **refusal direction surgically removed from the judge's weights** (abliterat
 Gemma-2-9B-IT). Median per-model contamination delta against the cross-vendor baseline is
 **0.062** across 47 model-runs — inside the pre-registered 0.10 robust band. The bias is
 in the systems being scored, not in the panel scoring them. Full multi-method analysis in
-§5.8 of the writeup.
+§5.8 of the writeup; the abliterated judge that leg relies on is characterized on its own
+terms — dose-response, refusal/flinch decoupling, and a cross-family per-move flinch result —
+in [`results/THE-WASH-2026-06-10.md`](results/THE-WASH-2026-06-10.md).
 
 | Rung | Force | Tooling | Result |
 |------|-------|---------|--------|
@@ -173,6 +175,7 @@ Clone these from upstream at the pinned commits to reproduce the pipeline and we
 ## Companion projects
 
 - **[ratchet-mcp](https://github.com/gorrie/ratchet-mcp)** — MCP server + curated dataset of named persons & institutions across the US legal / regulatory / financial / multilateral control grid (401 persons / 351 institutions / 844 edges at v0.1; every record cites ≥ 2 primary sources; CI-gated). The institutional-infrastructure side of the same argument this bias study makes at the model layer — the people, the pipelines, and the documented adjacencies the closed-vocabulary plays system makes queryable. Companion to *The Ratchet: How Safety Infrastructure Became the Control Grid*. Re-sampled periodically as a longitudinal bias-drift instrument.
+- **The Wash** ([`results/THE-WASH-2026-06-10.md`](results/THE-WASH-2026-06-10.md)) — the symmetric framing-detector built on this study's abliterated-judge spine (the §5.8 Method-2 anchor). Characterizes the abliterated judge directly: the abliteration dose-response and its coherence cliff, the refusal/flinch decoupling, and the per-move "documented-exposure" flinch that an aligned judge shows and the spine does not — replicated across the Gemma and Llama families. Same instrument, turned on the judge.
 
 ## License
 
