@@ -304,3 +304,16 @@ R1 (multi-template battery, `pairs.v3.jsonl`, 16 templates incl. the single-vs-j
 - **No target ranking** (controlled spread 0.050 < 2× noise 0.288), now across 6 judges.
 
 **Disposition:** the Exp-3 per-move / cross-family / documented-register claim is **WITHDRAWN** (not merely demoted). F1/F2/F3 are resolved by the re-run; F5 is confirmed correct. The surviving, honest finding is the **single-vs-juxtaposed distinction** + the dose-1 cliff. F4 (spine-circularity) is now *substantially* answered by this run — the spine discriminates (smuggle-controls 1.00, clean-controls 0.00, flags juxtaposed insinuation, passes single facts), i.e. it is NOT blunted; E-C (d′/ROC ladder) would formalize it but is no longer load-bearing for a live overclaim. Live writeups updated to the withdrawal.
+
+### F-UPDATE-2 (2026-06-11, same day) — CORRECTION: the flinch is CONFIRMED, not withdrawn
+
+F-UPDATE above called the headline "withdrawn." That was a hasty read of the per-item *modal* table (single facts looked ~0.00). Pooling the R2 per-sample votes with Wilson 95% CIs (`single_vs_juxtaposed.py`) corrects it — the flinch is **real and significant**:
+
+| subtype | spine [95% CI] | controlled (5 families pooled) [95% CI] | gap |
+|---|---|---|---|
+| documented-single (plain attributed fact) | 0.00 [0.00,0.06] | 0.16 [0.13,0.21] | +0.16, CIs disjoint |
+| documented-juxtaposed | 0.31 [0.20,0.45] | 0.55 [0.49,0.61] | +0.24, CIs disjoint |
+| declared-thesis / clean-control | 0.00 | ~0.00 | 0 |
+| smuggle-control | 1.00 | 1.00 | 0 |
+
+**Corrected disposition:** the Exp-3 documented-register flinch is **CONFIRMED** in refined, CI-backed form across 16 templates and 5 families. Aligned judges over-flag documented institutional criticism the spine passes; it is specific (opinion + plain facts pass both; smuggles caught by both) and the spine is a validated discriminator (F4 answered, smuggle 1.00 / clean 0.00). What the review legitimately corrected was the **magnitude** (+0.16–0.24, not the single-template "1.00") and the cleanest operationalization (the single-fact contrast, since juxtaposition is itself a partial smuggle the spine also flags at 0.31). F1/F2/F3 resolved by the multi-template/multi-family/per-sample-CI re-run; the finding survives them. Live writeups corrected from "withdrawn" to this.
