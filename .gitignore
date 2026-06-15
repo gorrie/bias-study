@@ -17,3 +17,5 @@ abliteration-output/
 # OS
 .DS_Store
 Thumbs.db
+data/_aggregated/*.log
+data/_aggregated/cross-method-report.json

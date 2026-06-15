@@ -36,6 +36,7 @@ Returns the same shape as call_judges_ultraplinian() in score.py:
 from __future__ import annotations
 
 import concurrent.futures
+import os
 import sys
 from pathlib import Path
 
@@ -159,12 +160,12 @@ def _call_abliterated(prompt: str, retries: int = 1) -> dict:
 # judge's hedging behavior was inflating consensus scores.
 #
 # Lives at http://127.0.0.1:7860/v1/chat/completions by default (the docker-
-# compose stack at /c/Users/micro/claude/G0DM0D3/). Auth key in
-# /c/Users/micro/claude/G0DM0D3/.env under GODMODE_API_KEYS (comma-separated;
+# compose stack at <home>/claude/G0DM0D3/). Auth key in
+# <home>/claude/G0DM0D3/.env under GODMODE_API_KEYS (comma-separated;
 # first entry is used). Loaded at runtime so no key ever appears on a CLI.
 
 G0DM0D3_DEFAULT_ENDPOINT = "http://127.0.0.1:7860/v1"
-G0DM0D3_ENV_FILE = r"C:/Users/micro/claude/G0DM0D3/.env"  # Windows path for Python
+G0DM0D3_ENV_FILE = os.environ.get("G0DM0D3_ENV_FILE", "")  # path to G0DM0D3 .env; else G0DM0D3_API_KEY env var is used
 
 
 def _load_g0dm0d3_key() -> str | None:
@@ -241,7 +242,7 @@ def _call_g0dm0d3_judge(judge_model: str, question: str, response: str,
         except requests.exceptions.ConnectionError:
             return {"score_classifier": None,
                     "judge_error": f"G0DM0D3 endpoint unreachable ({endpoint}): "
-                                   f"start docker-compose at /c/Users/micro/claude/G0DM0D3/"}
+                                   f"start docker-compose at <home>/claude/G0DM0D3/"}
         except Exception as e:
             if attempt < retries:
                 time.sleep(2)
@@ -263,7 +264,7 @@ def score_g0dm0d3_stripped(question: str, response: str, condition: str, api_key
     """
     g0dm0d3_key = _load_g0dm0d3_key()
     if not g0dm0d3_key:
-        err = "G0DM0D3 API key not loadable (check /c/Users/micro/claude/G0DM0D3/.env GODMODE_API_KEYS or G0DM0D3_API_KEY env var)"
+        err = "G0DM0D3 API key not loadable (check <home>/claude/G0DM0D3/.env GODMODE_API_KEYS or G0DM0D3_API_KEY env var)"
         return {
             "score_classifier": None,
             "score_classifier_judges": [{"judge": j, "score": None, "error": err} for j in ULTRAPLINIAN_JUDGES],

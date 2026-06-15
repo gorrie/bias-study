@@ -54,7 +54,7 @@ All four reuse the same raw records as Method 2 — only the JUDGE changes. Outp
 ### 0. State check (do this first, every time)
 
 ```bash
-cd "$(scripts/sweep_status.py --json 2>/dev/null | python -c 'import json,sys; print(json.load(sys.stdin)["data_dir"])')" || cd C:/Users/micro/eureka\ projects/evil-robots-series/research/bias-study
+cd "$(scripts/sweep_status.py --json 2>/dev/null | python -c 'import json,sys; print(json.load(sys.stdin)["data_dir"])')" || cd <workspace>/evil-robots-series/research/bias-study
 /c/Python314/python.exe scripts/sweep_status.py
 ```
 

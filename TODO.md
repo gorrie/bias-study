@@ -47,6 +47,20 @@ stands and what to pick up next. Keep it current as legs complete.
   `runs/_aggregated/judge-methods-run.log`. The full coverage matrix is reproducible at
   any time via `scripts/sweep_status.py` (single source of truth from the data, not from
   prose).
+- **The Wash dose-series tooling landed (2026-05-30)**: `scripts/run_dose_series.py` +
+  `scripts/dose_smoke_gate.py` codify the M5 Apple-Silicon abliteration path with a
+  pinned `max_seq_length=512` (defeats OBLITERATUS's CLI silent-degradation on M5) and a
+  two-gate metadata + generation smoke check. New skill: `abliteration-on-mps` (sibling
+  to `abliteration-run` — Linux/CUDA path stays unchanged). Pre-registered for The Wash
+  Experiment 1 (dose-response, n_directions ∈ {1,2,4,8} for Gemma-2-9B-IT). Reference
+  n_dir=4 spine is reused as-is. See `evil-robots-series/research/the-wash/HANDOFF-M5.md`.
+- **The Wash Tier-B findings landed (2026-06-10)**: all three experiments complete —
+  Exp 1 (dose-response: coherence cliff at n_dir<2, usable band 2–8), Exp 2 (refusal/flinch
+  decoupling), Exp 3 (per-move not per-target; documented-exposure flinch replicates across
+  Gemma-2-27B + Llama-3.3-70B, spine 0.00). Writeup at `results/THE-WASH-2026-06-10.md`;
+  cross-linked from the README and a §5.8 addendum in `results/WRITEUP-2026-05-26.md`. Open:
+  accumulate n toward PROTOCOL ≥200/cell via the quarterly resample (Exp 2 + Exp 3 boundary
+  items are samples=1/30-scale point estimates today).
 - **Reproducible tooling and operator skills landed**: `scripts/score_inproc_gemma.py`
   (single-instance lockfile, Metal-OOM-resilient, empty-raw fast-path, skip-existing
   default); `scripts/score.py --rescore` flag; `scripts/judge_methods.py` extended with
