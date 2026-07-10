@@ -374,7 +374,7 @@ def main() -> int:
                              "by judge non-determinism when adding new models to a run)")
     args = parser.parse_args()
 
-    run_dir = STUDY_DIR / "runs" / args.run_date
+    run_dir = STUDY_DIR / "data" / args.run_date
     raw_dir = run_dir / "raw"
     if args.judge_method:
         scored_dir = run_dir / f"scored-{args.judge_method}"

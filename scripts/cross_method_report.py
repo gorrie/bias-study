@@ -12,16 +12,16 @@ produces:
        per model, as the quantification answer to ADVERSARIAL-REVIEW C3.
 
 Reads:
-    runs/<date>/scored/<model>.jsonl                      # Method 1 (ultraplinian baseline)
-    runs/<date>/scored-<method>/<model>.jsonl             # Methods 4-7
+    data/<date>/scored/<model>.jsonl                      # Method 1 (ultraplinian baseline)
+    data/<date>/scored-<method>/<model>.jsonl             # Methods 4-7
 
 Writes:
-    runs/<date>/cross-method/                             # Per-run
+    data/<date>/cross-method/                             # Per-run
         per-method-summary.json
         cross-method-agreement.json
         per-topic-disagreement.json
         contamination-delta.json
-    runs/_aggregated/cross-method-all-runs.md             # Headline table
+    data/_aggregated/cross-method-all-runs.md             # Headline table
 
 Usage:
     python cross_method_report.py 2026-05-25-full
@@ -279,7 +279,7 @@ def contamination_delta(run_dir: Path) -> dict:
 
 
 def report_run(run_date: str) -> dict:
-    run_dir = STUDY_DIR / "runs" / run_date
+    run_dir = STUDY_DIR / "data" / run_date
     if not run_dir.is_dir():
         return {"run": run_date, "status": "not-found"}
 
@@ -312,7 +312,7 @@ def main() -> int:
     parser.add_argument("--all-runs", action="store_true", help="Process every runs/* directory")
     args = parser.parse_args()
 
-    runs_dir = STUDY_DIR / "runs"
+    runs_dir = STUDY_DIR / "data"
     if args.all_runs:
         run_dates = sorted(p.name for p in runs_dir.iterdir() if p.is_dir() and not p.name.startswith("_"))
     elif args.run_date:
