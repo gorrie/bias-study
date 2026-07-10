@@ -72,7 +72,9 @@ def release_lock() -> None:
     except OSError:
         pass
 
-MODEL_PATH = "~/models-mlx/gemma-2-9b-it-abliterated-mlx"
+MODEL_PATH = os.path.expanduser(
+    os.environ.get("ABLITERATED_MODEL_PATH", "~/models-mlx/gemma-2-9b-it-abliterated-mlx")
+)
 MODEL_LABEL = "gemma-2-9b-it-abliterated"
 
 DEFAULT_RUNS = [
