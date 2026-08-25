@@ -29,6 +29,9 @@ from pathlib import Path
 
 STUDY_DIR = Path(__file__).resolve().parent.parent
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from studypaths import runs_root  # noqa: E402
+
 # Single-instance lockfile. Two concurrent scorers fight for Metal/GPU and
 # slow each other to ~0.01 rec/s. The lockfile makes the collision a loud
 # failure-at-startup instead of a silent slowdown that's only diagnosable
@@ -168,8 +171,8 @@ def main() -> int:
     # Survey work first so we know exactly what's ahead
     work: list[tuple[str, Path, Path]] = []  # (run, raw_path, scored_path)
     for run in args.runs:
-        raw_dir = STUDY_DIR / "runs" / run / "raw"
-        scored_dir = STUDY_DIR / "runs" / run / "scored-abliterated-gemma"
+        raw_dir = runs_root() / run / "raw"
+        scored_dir = runs_root() / run / "scored-abliterated-gemma"
         scored_dir.mkdir(parents=True, exist_ok=True)
         if not raw_dir.exists():
             log(f"  WARN: {raw_dir} does not exist, skipping run")

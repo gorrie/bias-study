@@ -118,6 +118,45 @@ published from there. `sweep_status.py` auto-detects either convention.
 Don't re-run any of the six scoring methods — they're done. If sweep_status.py shows
 something different, something has been deleted; investigate before re-running.
 
+## Before the next run: the self-test gate must be green
+
+    python scripts/selftest_analysis.py
+
+Eight assertions over the committed May data, zero API cost, and a `pre-push` hook. No
+quarter's API budget is spent until all eight pass, because the analysis half of this
+pipeline could previously fail **silently**: `ci_analysis.py` and `robustness_checks.py`
+read a directory this repo does not ship, printed `[skip]` to stderr and exited **0**, so
+a finished study produced no confidence intervals and no FDR correction while
+`run_barometer.sh` reported a complete pass. Commit `4087bb7` did that same `runs/`→`data/`
+pass on two other scripts and missed these.
+
+| Gate | Asserts |
+|---|---|
+| G1 | `ci_analysis 2026-05-25-full` reproduces §5.6 exactly — 13 rows, 5 significant, every bound an equality |
+| G2 | `robustness_checks` reproduces the BH-FDR outcome — Opus, Grok, GPT-4.1, Mistral survive; DeepSeek drops |
+| G3 | raw pairwise agreement is 0.824 / 0.700 / 0.239 over 740 items, and α is a labelled footnote |
+| G4 | three argument orders give byte-identical output |
+| G5 | the key resolves from the process environment, and its absence is exit 2 rather than a silent heuristic pass |
+| G6 | a missing run exits non-zero in both analysis scripts and propagates through the barometer |
+| G7 | every protocol file the prep gate names exists and is non-empty |
+| G8 | `validate_runs.py` reports exactly the known manifest defects and nothing else |
+
+Each gate was verified to **fail** when the thing it guards is broken, before being
+shipped: reverting the RNG fails G4 at 24 of 46 cells, restoring the `runs/` hardcode fails
+G1 and G6, deleting `protocol/vendor-enrollment-brief.md` fails G7, and silencing one
+`validate_runs` check fails G8.
+
+Also new: `scripts/validate_runs.py` compares every manifest against the files on disk.
+It currently reports six findings — four run directories with no manifest, and
+`2026-05-27-reversed-premise` claiming 3 models / 120 calls against 5 model files / 200
+records on disk, because `run_study.py` wrote the manifest with mode `w` and a second
+invocation replaced the first's record. `run_study.py` merges now; the old manifest is
+**annotated rather than corrected**, per the anti-misuse rule that a defect stays in the
+run that had it.
+
+See `results/WRITEUP-2026-05-26.md` §10a for the erratum the seed fix produced: 12 of 46
+cells move, all by ≤0.13 on one bound, no verdict changes.
+
 ## Open items (next quarterly cycle, ~3 months out)
 
 - **Quarterly re-run.** Re-run the prompt rung and `scripts/drift_report.py` to extend the

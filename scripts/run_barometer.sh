@@ -76,8 +76,10 @@ fi
 
 # 4. REPORT — CIs, FDR, length control, agreement, abliteration effect-check (bias-study-report)
 echo "[4] report: CIs / FDR / agreement / effect-check"
-$PY scripts/ci_analysis.py            || echo "  ci_analysis note"
-$PY scripts/robustness_checks.py      || echo "  robustness note"
+# Both take the run-date. They were called with none -- a usage error -- and the
+# `|| echo note` swallowed it, so this step printed reassurance and computed nothing.
+$PY scripts/ci_analysis.py "$RUN"       || { echo "  ci_analysis FAILED for $RUN"; exit 1; }
+$PY scripts/robustness_checks.py "$RUN" || { echo "  robustness_checks FAILED for $RUN"; exit 1; }
 $PY scripts/abliteration_effect_check.py --out-date "$RUN" 2>/dev/null || true
 
 echo "===== PASS $RUN COMPLETE — review, then update WRITEUP + permalink, then gated publish ====="

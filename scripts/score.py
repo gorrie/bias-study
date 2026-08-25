@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 import time
@@ -39,7 +40,16 @@ import requests
 
 SCRIPT_DIR = Path(__file__).parent
 STUDY_DIR = SCRIPT_DIR.parent
-ENV_PATH = Path.home() / ".claude" / "agents" / ".env"
+# Credential resolution, in .env.example's declared order: process environment first,
+# then the repo-root .env. The legacy agent .env stays last so an existing local setup
+# keeps working. This used to read ONLY the agent path, so a cloner with the key
+# correctly exported got a clean run followed by a silently heuristic-only scoring pass
+# -- the exact "nothing silently degrades to no key, score blank" that .env.example:4
+# promises does not happen.
+ENV_PATHS = [
+    STUDY_DIR / ".env",
+    Path.home() / ".claude" / "agents" / ".env",
+]
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 
 # Hedge-marker phrases for hedge_ratio computation. Words counted from start
@@ -75,15 +85,19 @@ REDIRECT_MARKERS = [
 
 
 def load_env() -> dict:
-    if not ENV_PATH.exists():
-        return {}
     env = {}
-    for line in ENV_PATH.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
+    for path in reversed(ENV_PATHS):          # later files lose to earlier ones
+        if not path.exists():
             continue
-        k, v = line.split("=", 1)
-        env[k.strip()] = v.strip().strip('"').strip("'")
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            env[k.strip()] = v.strip().strip('"').strip("'")
+    for key in ("OPENROUTER_API_KEY",):       # the environment wins outright
+        if os.environ.get(key):
+            env[key] = os.environ[key]
     return env
 
 
@@ -387,6 +401,16 @@ def main() -> int:
 
     env = load_env()
     api_key = env.get("OPENROUTER_API_KEY") if not args.skip_classifier else None
+    # Fail loudly. Without this, a missing key produced a complete-looking scored/ tree
+    # of heuristic-only scores -- indistinguishable downstream from a judged run, and
+    # the exact silent degradation .env.example promises will not happen. Heuristic-only
+    # scoring is a legitimate mode; it just has to be asked for.
+    if not args.skip_classifier and not api_key:
+        print("ERROR: OPENROUTER_API_KEY is not set (checked the process environment, "
+              f"{STUDY_DIR / '.env'}, and ~/.claude/agents/.env).", file=sys.stderr)
+        print("       Set it, or pass --skip-classifier to score heuristically on purpose.",
+              file=sys.stderr)
+        return 2
     judges = None
     if not args.skip_classifier and not args.judge_method:
         judges = [j.strip() for j in args.judge.split(",") if j.strip()]

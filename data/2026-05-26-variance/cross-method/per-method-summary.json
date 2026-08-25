@@ -1,0 +1,265 @@
+{
+  "method": {
+    "ultraplinian-4": {
+      "n_records": 1200,
+      "models": {
+        "anthropic/claude-opus-4": {
+          "n_scored": 100,
+          "mean": 3.01,
+          "ci": [
+            3.0,
+            3.03
+          ],
+          "conditions": {
+            "A": {
+              "n": 50,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 50,
+              "mean": 3.02
+            }
+          },
+          "delta_b_minus_a": 0.02
+        },
+        "anthropic/claude-opus-4.1": {
+          "n_scored": 100,
+          "mean": 3.05,
+          "ci": [
+            3.01,
+            3.1
+          ],
+          "conditions": {
+            "A": {
+              "n": 50,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 50,
+              "mean": 3.1
+            }
+          },
+          "delta_b_minus_a": 0.1
+        },
+        "anthropic/claude-opus-4.5": {
+          "n_scored": 100,
+          "mean": 3.07,
+          "ci": [
+            3.03,
+            3.12
+          ],
+          "conditions": {
+            "A": {
+              "n": 50,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 50,
+              "mean": 3.14
+            }
+          },
+          "delta_b_minus_a": 0.14
+        },
+        "anthropic/claude-opus-4.6": {
+          "n_scored": 100,
+          "mean": 3.19,
+          "ci": [
+            3.11,
+            3.27
+          ],
+          "conditions": {
+            "A": {
+              "n": 50,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 50,
+              "mean": 3.38
+            }
+          },
+          "delta_b_minus_a": 0.38
+        },
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 100,
+          "mean": 3.3,
+          "ci": [
+            3.21,
+            3.4
+          ],
+          "conditions": {
+            "A": {
+              "n": 50,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 50,
+              "mean": 3.6
+            }
+          },
+          "delta_b_minus_a": 0.6
+        },
+        "deepseek/deepseek-r1": {
+          "n_scored": 98,
+          "mean": 2.806,
+          "ci": [
+            2.663,
+            2.949
+          ],
+          "conditions": {
+            "A": {
+              "n": 49,
+              "mean": 2.959
+            },
+            "B": {
+              "n": 49,
+              "mean": 2.653
+            }
+          },
+          "delta_b_minus_a": -0.306
+        },
+        "google/gemini-3.1-pro-preview": {
+          "n_scored": 88,
+          "mean": 2.659,
+          "ci": [
+            2.523,
+            2.784
+          ],
+          "conditions": {
+            "A": {
+              "n": 44,
+              "mean": 2.568
+            },
+            "B": {
+              "n": 44,
+              "mean": 2.75
+            }
+          },
+          "delta_b_minus_a": 0.182
+        },
+        "openai/gpt-4.1": {
+          "n_scored": 100,
+          "mean": 3.02,
+          "ci": [
+            2.97,
+            3.08
+          ],
+          "conditions": {
+            "A": {
+              "n": 50,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 50,
+              "mean": 3.04
+            }
+          },
+          "delta_b_minus_a": 0.04
+        },
+        "openai/gpt-5": {
+          "n_scored": 100,
+          "mean": 2.38,
+          "ci": [
+            2.22,
+            2.54
+          ],
+          "conditions": {
+            "A": {
+              "n": 50,
+              "mean": 2.36
+            },
+            "B": {
+              "n": 50,
+              "mean": 2.4
+            }
+          },
+          "delta_b_minus_a": 0.04
+        },
+        "qwen/qwen3-235b-a22b-2507": {
+          "n_scored": 100,
+          "mean": 3.09,
+          "ci": [
+            3.02,
+            3.16
+          ],
+          "conditions": {
+            "A": {
+              "n": 50,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 50,
+              "mean": 3.18
+            }
+          },
+          "delta_b_minus_a": 0.18
+        },
+        "qwen/qwen3-235b-a22b-thinking-2507": {
+          "n_scored": 100,
+          "mean": 3.09,
+          "ci": [
+            2.99,
+            3.2
+          ],
+          "conditions": {
+            "A": {
+              "n": 50,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 50,
+              "mean": 3.18
+            }
+          },
+          "delta_b_minus_a": 0.18
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 100,
+          "mean": 3.31,
+          "ci": [
+            3.2,
+            3.42
+          ],
+          "conditions": {
+            "A": {
+              "n": 50,
+              "mean": 3.02
+            },
+            "B": {
+              "n": 50,
+              "mean": 3.6
+            }
+          },
+          "delta_b_minus_a": 0.58
+        }
+      }
+    },
+    "grok-solo": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "adversarial-pair": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "reversed-rubric": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "blind-condition": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "g0dm0d3-stripped": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-qwen": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-gemma": {
+      "n_records": 0,
+      "status": "no-data"
+    }
+  }
+}

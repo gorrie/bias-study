@@ -43,3 +43,25 @@ repos:
         exclude: '\.env$|\.env\.example$'
       - id: trailing-whitespace
         exclude: '\.env$|\.env\.example$'
+
+  # The analysis self-test. Zero API cost, runs against the committed May data.
+  #
+  # This exists because the analysis half of the pipeline could fail SILENTLY:
+  # ci_analysis.py and robustness_checks.py read a directory the repo does not ship,
+  # printed [skip] to stderr, and exited 0 -- so a finished study produced no
+  # confidence intervals and no FDR correction while the run script reported success.
+  # Eight assertions reproduce the published table, the FDR outcome, the agreement
+  # figures, argv-order independence, credential resolution, loud failure on a missing
+  # run, protocol-file presence, and the known manifest defects.
+  #
+  # Runs on push rather than on every commit: G1 and G4 do real bootstrap work and take
+  # about a minute together, which is too slow to sit in front of a one-line edit but
+  # exactly right in front of a publish.
+  - repo: local
+    hooks:
+      - id: selftest-analysis
+        name: Analysis self-test (G1-G8)
+        entry: python scripts/selftest_analysis.py
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

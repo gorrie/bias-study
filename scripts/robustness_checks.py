@@ -18,19 +18,21 @@ Usage:
 """
 from __future__ import annotations
 
-import random
 import statistics
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from ci_analysis import load_scored, per_model_deltas, STUDY_DIR  # noqa: E402
+from ci_analysis import load_scored, per_model_deltas  # noqa: E402
+from studypaths import (  # noqa: E402
+    STUDY_DIR, RunNotFound, analysis_seed, resolve_run, stream)
 
-random.seed(20260527)
+# No module-level seed. See studypaths: one global stream made each model's p-value
+# depend on how many models had been processed before it.
 BOOTSTRAP_N = 10000
 
 
-def bootstrap_p_two_sided(deltas: list[float], n: int = BOOTSTRAP_N) -> float:
+def bootstrap_p_two_sided(deltas: list[float], rng, n: int = BOOTSTRAP_N) -> float:
     """Bootstrap two-sided p-value for H0: mean delta = 0.
     p = 2 * min(P(boot mean <= 0), P(boot mean >= 0))."""
     k = len(deltas)
@@ -40,7 +42,7 @@ def bootstrap_p_two_sided(deltas: list[float], n: int = BOOTSTRAP_N) -> float:
     for _ in range(n):
         s = 0.0
         for _ in range(k):
-            s += deltas[random.randrange(k)]
+            s += deltas[rng.randrange(k)]
         m = s / k
         if m <= 0:
             le += 1
@@ -97,17 +99,26 @@ def length_control(recs: list[dict]):
 
 
 def main() -> int:
+    failed = 0
     for rd in sys.argv[1:]:
-        run_dir = STUDY_DIR / "runs" / rd
-        if not (run_dir / "scored").exists():
-            print(f"[skip] {rd}", file=sys.stderr)
+        try:
+            run_dir = resolve_run(rd)
+        except RunNotFound as e:
+            # Was `[skip]` + exit 0, so a missing run reported success with no FDR done.
+            print(f"[error] {rd}: {e}", file=sys.stderr)
+            failed += 1
             continue
+        seed = analysis_seed(rd)
         recs = load_scored(run_dir)
         print(f"\n=== {rd} ===")
         dbm = per_model_deltas(recs)
-        pvals = {m: bootstrap_p_two_sided(d) for m, d in dbm.items() if len(d) >= 2}
+        pvals = {m: bootstrap_p_two_sided(d, stream(seed, rd, m, "p"))
+                 for m, d in dbm.items() if len(d) >= 2}
         survive = benjamini_hochberg(pvals, q=0.05)
-        n_raw = sum(1 for m, d in dbm.items() if len(d) >= 2 and bootstrap_p_two_sided(d) < 0.05)
+        # n_raw used to call bootstrap_p_two_sided a SECOND time per model, drawing
+        # fresh from the global stream, so the uncorrected count could disagree with
+        # the p-values printed directly below it. Reuse the ones actually reported.
+        n_raw = sum(1 for p in pvals.values() if p < 0.05)
         n_fdr = sum(survive.values())
         print(f"  multiple-comparisons (BH-FDR q=0.05 over {len(pvals)} per-model tests):")
         for m in sorted(pvals, key=lambda k: pvals[k]):
@@ -119,7 +130,8 @@ def main() -> int:
         if wa and wb:
             print(f"    mean word_count  A={wa:.0f}  B={wb:.0f}  (diff={wb-wa:+.0f}) "
                   f"-> {'similar lengths; unmask not length-driven' if abs(wb-wa) < 0.15*wa else 'length differs; check confound'}")
-    return 0
+        print(f"  [raw] {n_raw}/{len(pvals)} uncorrected p<0.05   [seed] analysis_seed={seed}")
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":

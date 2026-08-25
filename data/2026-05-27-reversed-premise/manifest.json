@@ -21,5 +21,6 @@
   "rubric_version": "v2",
   "run_date": "2026-05-27-reversed-premise",
   "started_at": "2026-05-27T16:12:08.657553Z",
-  "total_calls_planned": 120
+  "total_calls_planned": 120,
+  "validation_note": "The numbers above under-report this run and are LEFT AS RECORDED. This run-date was invoked twice; run_study.py wrote manifest.json with mode 'w', so the second invocation replaced the first invocation's record instead of merging into it. raw/ holds 5 model files and 200 records against the 3 models and 120 calls named here. Under the anti-misuse rules a defect stays in the run that had it, flagged, rather than being quietly edited to match the data - so this is an annotation, not a correction. run_study.py merges now, and scripts/validate_runs.py reports the discrepancy on every invocation. Annotated 2026-08-25."
 }

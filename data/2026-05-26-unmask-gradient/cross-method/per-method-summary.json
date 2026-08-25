@@ -1,0 +1,130 @@
+{
+  "method": {
+    "ultraplinian-4": {
+      "n_records": 450,
+      "models": {
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 150,
+          "mean": 4.107,
+          "ci": [
+            3.96,
+            4.253
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.633
+            },
+            "C": {
+              "n": 30,
+              "mean": 4.633
+            },
+            "D": {
+              "n": 30,
+              "mean": 4.833
+            },
+            "E": {
+              "n": 30,
+              "mean": 4.433
+            }
+          },
+          "delta_b_minus_a": 0.633
+        },
+        "openai/gpt-5": {
+          "n_scored": 148,
+          "mean": 2.662,
+          "ci": [
+            2.493,
+            2.818
+          ],
+          "conditions": {
+            "A": {
+              "n": 28,
+              "mean": 2.536
+            },
+            "B": {
+              "n": 30,
+              "mean": 2.467
+            },
+            "C": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "D": {
+              "n": 30,
+              "mean": 2.7
+            },
+            "E": {
+              "n": 30,
+              "mean": 2.6
+            }
+          },
+          "delta_b_minus_a": -0.069
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 150,
+          "mean": 4.213,
+          "ci": [
+            4.073,
+            4.36
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.633
+            },
+            "C": {
+              "n": 30,
+              "mean": 4.733
+            },
+            "D": {
+              "n": 30,
+              "mean": 4.7
+            },
+            "E": {
+              "n": 30,
+              "mean": 5.0
+            }
+          },
+          "delta_b_minus_a": 0.633
+        }
+      }
+    },
+    "grok-solo": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "adversarial-pair": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "reversed-rubric": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "blind-condition": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "g0dm0d3-stripped": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-qwen": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-gemma": {
+      "n_records": 0,
+      "status": "no-data"
+    }
+  }
+}

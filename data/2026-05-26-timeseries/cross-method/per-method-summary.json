@@ -1,0 +1,265 @@
+{
+  "method": {
+    "ultraplinian-4": {
+      "n_records": 720,
+      "models": {
+        "anthropic/claude-opus-4": {
+          "n_scored": 60,
+          "mean": 3.133,
+          "ci": [
+            3.05,
+            3.217
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.267
+            }
+          },
+          "delta_b_minus_a": 0.267
+        },
+        "anthropic/claude-opus-4.1": {
+          "n_scored": 60,
+          "mean": 3.2,
+          "ci": [
+            3.1,
+            3.317
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.4
+            }
+          },
+          "delta_b_minus_a": 0.4
+        },
+        "anthropic/claude-opus-4.5": {
+          "n_scored": 60,
+          "mean": 3.117,
+          "ci": [
+            3.033,
+            3.2
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.233
+            }
+          },
+          "delta_b_minus_a": 0.233
+        },
+        "anthropic/claude-opus-4.6": {
+          "n_scored": 60,
+          "mean": 3.233,
+          "ci": [
+            3.133,
+            3.35
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.033
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.433
+            }
+          },
+          "delta_b_minus_a": 0.4
+        },
+        "deepseek/deepseek-chat": {
+          "n_scored": 60,
+          "mean": 3.133,
+          "ci": [
+            2.95,
+            3.333
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 2.933
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.333
+            }
+          },
+          "delta_b_minus_a": 0.4
+        },
+        "deepseek/deepseek-chat-v3.1": {
+          "n_scored": 60,
+          "mean": 3.133,
+          "ci": [
+            3.033,
+            3.25
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.267
+            }
+          },
+          "delta_b_minus_a": 0.267
+        },
+        "google/gemini-2.0-flash-001": {
+          "n_scored": 60,
+          "mean": 3.033,
+          "ci": [
+            3.0,
+            3.083
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.033
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.033
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "moonshotai/kimi-k2": {
+          "n_scored": 58,
+          "mean": 3.293,
+          "ci": [
+            3.069,
+            3.534
+          ],
+          "conditions": {
+            "A": {
+              "n": 29,
+              "mean": 3.034
+            },
+            "B": {
+              "n": 29,
+              "mean": 3.552
+            }
+          },
+          "delta_b_minus_a": 0.518
+        },
+        "moonshotai/kimi-k2-thinking": {
+          "n_scored": 60,
+          "mean": 3.217,
+          "ci": [
+            3.083,
+            3.367
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 2.967
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.467
+            }
+          },
+          "delta_b_minus_a": 0.5
+        },
+        "qwen/qwen-2.5-72b-instruct": {
+          "n_scored": 55,
+          "mean": 2.909,
+          "ci": [
+            2.782,
+            3.036
+          ],
+          "conditions": {
+            "A": {
+              "n": 28,
+              "mean": 2.893
+            },
+            "B": {
+              "n": 27,
+              "mean": 2.926
+            }
+          },
+          "delta_b_minus_a": 0.033
+        },
+        "z-ai/glm-4.5": {
+          "n_scored": 60,
+          "mean": 3.117,
+          "ci": [
+            2.967,
+            3.283
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 2.833
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.4
+            }
+          },
+          "delta_b_minus_a": 0.567
+        },
+        "z-ai/glm-4.6": {
+          "n_scored": 60,
+          "mean": 2.7,
+          "ci": [
+            2.517,
+            2.85
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 2.733
+            },
+            "B": {
+              "n": 30,
+              "mean": 2.667
+            }
+          },
+          "delta_b_minus_a": -0.066
+        }
+      }
+    },
+    "grok-solo": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "adversarial-pair": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "reversed-rubric": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "blind-condition": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "g0dm0d3-stripped": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-qwen": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-gemma": {
+      "n_records": 0,
+      "status": "no-data"
+    }
+  }
+}

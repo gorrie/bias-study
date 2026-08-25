@@ -383,7 +383,41 @@ def main() -> int:
         "models_completed": [],
         "models_failed": [],
         "total_calls_planned": total_calls,
+        # Declared HERE, at run start, before a single response exists. The analysis
+        # bootstrap reads it (see scripts/studypaths.py). A seed picked after the
+        # intervals are visible is a researcher degree of freedom; pinning it before
+        # any data exists forecloses that mechanically, the same way the rubric is
+        # committed before the sweep.
+        "analysis_seed": int(re.sub(r"[^0-9]", "", run_date)[:8] or "0") or 20260527,
     }
+
+    # Merge, do not clobber. This was opened "w" at the end of the run, so a second
+    # invocation into the same run-date overwrote the first invocation's record
+    # wholesale: data/2026-05-27-reversed-premise/manifest.json claims 3 models and
+    # 120 calls while the directory holds 5 model files and 200 records.
+    prior_path = run_dir / "manifest.json"
+    prior = {}
+    if prior_path.is_file():
+        try:
+            prior = json.loads(prior_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            prior = {}
+    if prior:
+        print(f"NOTE: {prior_path.name} already exists — merging this invocation into it "
+              f"rather than replacing it.")
+        manifest["started_at"] = prior.get("started_at", manifest["started_at"])
+        manifest["analysis_seed"] = prior.get("analysis_seed", manifest["analysis_seed"])
+        manifest["invocations"] = (prior.get("invocations") or 1) + 1
+        for key in ("models_attempted", "models_completed", "models_failed"):
+            seen, merged = set(), []
+            for item in (prior.get(key) or []) + manifest[key]:
+                k = json.dumps(item, sort_keys=True)
+                if k not in seen:
+                    seen.add(k)
+                    merged.append(item)
+            manifest[key] = merged
+        manifest["total_calls_planned"] = (prior.get("total_calls_planned") or 0) + total_calls
+        manifest["prior_calls_completed"] = prior.get("calls_completed", 0)
 
     completed = 0
     fail_count = 0
@@ -422,7 +456,7 @@ def main() -> int:
             manifest["models_completed"].append(model)
 
     manifest["completed_at"] = datetime.datetime.utcnow().isoformat() + "Z"
-    manifest["calls_completed"] = completed
+    manifest["calls_completed"] = completed + manifest.pop("prior_calls_completed", 0)
     manifest["calls_failed"] = fail_count
 
     with (run_dir / "manifest.json").open("w", encoding="utf-8") as f:

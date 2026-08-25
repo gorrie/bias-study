@@ -35,11 +35,14 @@ import matplotlib.pyplot as plt
 
 SCRIPT_DIR = Path(__file__).parent
 STUDY_DIR = SCRIPT_DIR.parent
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from studypaths import runs_root  # noqa: E402
 # Two directory conventions in the project:
 #   - publication-canonical (github.com/gorrie/bias-study) uses `data/<run>/`
 #   - internal working copy at evil-robots-series/research/bias-study/ uses `runs/<run>/`
 # Auto-detect which one this checkout uses.
-RUN_DIR_NAME = "data" if (STUDY_DIR / "data").is_dir() else "runs"
+RUN_DIR_NAME = runs_root().name
 # Default chart output: release-local `results/charts/` (works for any clone).
 # Overridden by --out flag; the upstream Hugo path is no longer a default.
 DEFAULT_CHART_DIR = STUDY_DIR / "results" / "charts"

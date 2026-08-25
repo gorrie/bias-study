@@ -1,0 +1,94 @@
+{
+  "method": {
+    "ultraplinian-4": {
+      "n_records": 181,
+      "models": {
+        "baidu/ernie-4.5-300b-a47b": {
+          "n_scored": 60,
+          "mean": 3.05,
+          "ci": [
+            2.9,
+            3.2
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.033
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.067
+            }
+          },
+          "delta_b_minus_a": 0.034
+        },
+        "moonshotai/kimi-k2.6": {
+          "n_scored": 60,
+          "mean": 2.85,
+          "ci": [
+            2.65,
+            3.05
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 2.767
+            },
+            "B": {
+              "n": 30,
+              "mean": 2.933
+            }
+          },
+          "delta_b_minus_a": 0.166
+        },
+        "z-ai/glm-4.7": {
+          "n_scored": 60,
+          "mean": 2.633,
+          "ci": [
+            2.45,
+            2.817
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 2.5
+            },
+            "B": {
+              "n": 30,
+              "mean": 2.767
+            }
+          },
+          "delta_b_minus_a": 0.267
+        }
+      }
+    },
+    "grok-solo": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "adversarial-pair": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "reversed-rubric": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "blind-condition": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "g0dm0d3-stripped": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-qwen": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-gemma": {
+      "n_records": 0,
+      "status": "no-data"
+    }
+  }
+}

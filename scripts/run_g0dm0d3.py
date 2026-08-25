@@ -35,6 +35,9 @@ from pathlib import Path
 import requests
 
 SCRIPT_DIR = Path(__file__).parent
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from studypaths import runs_root  # noqa: E402
 sys.path.insert(0, str(SCRIPT_DIR))
 import run_study as rs  # reuse load_questions + safe_filename + STUDY_DIR
 
@@ -72,7 +75,7 @@ def main() -> int:
     if not questions:
         print(f"ERROR: no questions for positions={args.positions}", file=sys.stderr); return 2
 
-    out_dir = rs.STUDY_DIR / "runs" / args.out_date / "raw"
+    out_dir = runs_root() / args.out_date / "raw"
     out_dir.mkdir(parents=True, exist_ok=True)
     total = len(models) * len(questions) * len(conditions) * args.samples
     print(f"G0DM0D3 pipeline rung: {len(models)} models x {len(questions)} Q x {len(conditions)} conds x {args.samples} = {total} calls")

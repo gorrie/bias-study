@@ -1,0 +1,151 @@
+{
+  "method": {
+    "ultraplinian-4": {
+      "n_records": 420,
+      "models": {
+        "anthropic/claude-sonnet-4.6": {
+          "n_scored": 60,
+          "mean": 3.317,
+          "ci": [
+            3.183,
+            3.45
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.1
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.533
+            }
+          },
+          "delta_b_minus_a": 0.433
+        },
+        "deepseek/deepseek-r1": {
+          "n_scored": 59,
+          "mean": 2.932,
+          "ci": [
+            2.746,
+            3.119
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 2.867
+            },
+            "B": {
+              "n": 29,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.133
+        },
+        "google/gemini-3.1-pro-preview": {
+          "n_scored": 45,
+          "mean": 2.689,
+          "ci": [
+            2.444,
+            2.933
+          ],
+          "conditions": {
+            "A": {
+              "n": 23,
+              "mean": 2.565
+            },
+            "B": {
+              "n": 22,
+              "mean": 2.818
+            }
+          },
+          "delta_b_minus_a": 0.253
+        },
+        "openai/gpt-5": {
+          "n_scored": 60,
+          "mean": 2.55,
+          "ci": [
+            2.35,
+            2.717
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 2.633
+            },
+            "B": {
+              "n": 30,
+              "mean": 2.467
+            }
+          },
+          "delta_b_minus_a": -0.166
+        },
+        "qwen/qwen3-235b-a22b-2507": {
+          "n_scored": 60,
+          "mean": 3.167,
+          "ci": [
+            3.017,
+            3.333
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.333
+            }
+          },
+          "delta_b_minus_a": 0.333
+        },
+        "qwen/qwen3-235b-a22b-thinking-2507": {
+          "n_scored": 60,
+          "mean": 3.217,
+          "ci": [
+            3.033,
+            3.417
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.433
+            }
+          },
+          "delta_b_minus_a": 0.433
+        }
+      }
+    },
+    "grok-solo": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "adversarial-pair": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "reversed-rubric": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "blind-condition": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "g0dm0d3-stripped": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-qwen": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-gemma": {
+      "n_records": 0,
+      "status": "no-data"
+    }
+  }
+}
