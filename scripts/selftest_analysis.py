@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""selftest_analysis.py — eight assertions over the committed May data. Zero API cost.
+"""selftest_analysis.py — nine assertions over the committed May data. Zero API cost.
 
 This is the gate that has to be green before any quarter's API budget is spent. It
 exists because the analysis half of this pipeline could fail *silently*: `ci_analysis`
@@ -16,11 +16,13 @@ study's own rule is that a delta is reportable only when its CI excludes zero.
   G6  a missing run is a non-zero exit, not a quiet no-op
   G7  every protocol file the prep gate requires exists and is non-empty
   G8  validate_runs reports exactly the known manifest defects, and nothing else
+  G9  paired_analysis clusters on the template, so extra samples of the same template
+      are not counted as extra evidence
 
 G4 currently fails on the unfixed code, and that failure is the proof the seed fix is
 real: with one global RNG, reversing the argument order moved 10 of 46 cells.
 
-    python selftest_analysis.py           # all eight
+    python selftest_analysis.py           # all nine
     python selftest_analysis.py G1 G4     # named gates
     python selftest_analysis.py --list
 """
@@ -275,7 +277,29 @@ def g8():
     return True, f"{len(found)} findings, exactly the known set"
 
 
-GATES = {"G1": g1, "G2": g2, "G3": g3, "G4": g4, "G5": g5, "G6": g6, "G7": g7, "G8": g8}
+def g9():
+    """paired_analysis clusters on the template, and its own synthetic checks pass.
+
+    Phase 2 is a matched-pair design, and matched-pair records flow through the existing
+    estimator without complaint while being analysed wrongly: bootstrap_ci resamples a
+    flat i.i.d. list, which counts three samples of one template as three independent
+    observations. That is the pseudoreplication a prior substitution pass was killed for
+    in adversarial review. This gate runs paired_analysis's synthetic suite, which
+    recovers a planted gap, keeps a null null, shows the flat bootstrap understating the
+    interval by roughly half on clustered data, and confirms the sign test agrees.
+    """
+    p = run(["scripts/paired_analysis.py", "--selftest"], timeout=600)
+    if p.returncode != 0:
+        fails = [l.strip() for l in p.stdout.splitlines() if l.strip().startswith("FAIL")]
+        return False, "; ".join(fails)[:220] or f"exit {p.returncode}"
+    m = re.search(r"flat i\.i\.d\. bootstrap understates by (\d+)%", p.stdout)
+    if not m or int(m.group(1)) < 25:
+        return False, "the clustered and flat estimators are not measurably different"
+    return True, f"4 synthetic checks pass; flat i.i.d. understates by {m.group(1)}%"
+
+
+GATES = {"G1": g1, "G2": g2, "G3": g3, "G4": g4, "G5": g5, "G6": g6, "G7": g7, "G8": g8,
+         "G9": g9}
 
 
 def main(argv: list[str]) -> int:
@@ -298,7 +322,7 @@ def main(argv: list[str]) -> int:
         failures += 0 if ok else 1
     print(f"\n{len(names) - failures}/{len(names)} gates pass")
     if failures:
-        print("Phase 2 spends no API budget until all eight are green.", file=sys.stderr)
+        print("Phase 2 spends no API budget until all nine are green.", file=sys.stderr)
     return 1 if failures else 0
 
 
