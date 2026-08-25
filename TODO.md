@@ -157,6 +157,61 @@ run that had it.
 See `results/WRITEUP-2026-05-26.md` §10a for the erratum the seed fix produced: 12 of 46
 cells move, all by ≤0.13 on one bound, no verdict changes.
 
+## Phase 2 — the matched-pair arm cut. Three arms, approved 2026-08-25.
+
+Everything below is built and self-tested. Nothing has been run; the only cost not yet
+paid is the API spend.
+
+    python scripts/selftest_analysis.py                              # all ten, or stop
+    python scripts/run_study.py --pairs protocol/pairs-v1.json         --models default-frontier --conditions A --samples 2 --date <YYYY-MM-DD>
+    python scripts/score.py <run>                                    # ULTRAPLINIAN-4
+    python scripts/score.py <run> --stem-swap                        # the control
+    python scripts/paired_analysis.py <run> --stem-control
+
+**Do not analyse this run with `ci_analysis.py`.** Its flat i.i.d. bootstrap treats two
+samples of one template as two independent observations, which is the pseudoreplication a
+prior substitution pass was killed for in adversarial review. `paired_analysis.py` clusters
+on the template; on the same data the flat estimator reports an interval **55% narrower**.
+
+**The corpus** is `protocol/pairs-v1.json`: 16 templates (8 harm domains x 2 registers),
+three arms each, 48 rendered prompts committed rather than generated at run time. The three
+arms of a template differ in **exactly one contiguous span** — the noun phrase naming who
+decided — and gate **G10** asserts that on the committed strings rather than trusting the
+generator. 16 is the floor adjudicated in adversarial review; going below re-opens a settled
+question. Nouns are Latin-square rotated across domains so the arm is not confounded with one
+phrase, and a clash guard rejects a noun whose words already appear in its stem, because
+"an assessor assessed" would appear in one arm only.
+
+**Three arms, not two.** Algorithm vs person alone cannot separate "defers about AI" from
+"defers about impersonal bureaucratic process". Reading the result:
+
+| Pattern | Reading |
+|---|---|
+| algo != person, algo ~= institution | generic institutional deference — **thesis fails** |
+| algo != person **and** algo != institution | AI-specific deference — **thesis holds** |
+| algo ~= person ~= institution | agent-invariant; publishable null |
+
+**The rubric does not change.** The frozen v2 1–5 scale is applied unaltered. The estimand is
+a within-pair difference under one rubric, so a constant offset between the rubric's
+institution axis and these questions' culpability axis cancels exactly. The corollary is
+printed with every result and must be printed in any writeup: **matched-pair scores are not
+comparable in level to the main study's scores.** Only arm differences are the product.
+
+**The control that decides publishability.** The judge sees the question, and the question
+names the agent — so a judge that reacts to the stem itself would manufacture the gap.
+`--stem-swap` re-scores every response under a different arm's stem with the response text
+byte-identical; whatever moves is pure judge stem effect. The **abort rule is pre-registered
+in code**, not decided afterwards: if the stem-effect interval reaches a contrast's arm gap,
+that contrast reports "NOT SEPARABLE AT THIS N" and makes no substantive claim. Verified to
+fire — with a planted 0.36 stem effect the -0.198 contrast is killed while the larger two
+survive.
+
+**Shape and honesty about power.** 16 x 3 arms x 2 samples x 7 models = 1,344 calls, roughly
+4.9 h, pooled **n=224 per (arm, condition)**, which clears the pre-registered n>=200 in cut 1.
+Per-model cells are n=32 and are **permanently exploratory**: at 32 a quarter, promising they
+reach 200 is seven quarters, which is not a plan. Q3 is cut 1 of a quarterly accumulation and
+should be labelled that way.
+
 ## Open items (next quarterly cycle, ~3 months out)
 
 - **Quarterly re-run.** Re-run the prompt rung and `scripts/drift_report.py` to extend the

@@ -158,6 +158,33 @@ def load_questions(positions: list[str]) -> list[dict]:
     return questions
 
 
+def load_pairs(path: Path) -> list[dict]:
+    """Load the matched-pair corpus as question dicts the existing runner understands.
+
+    Rendered prompts are read from the file, never re-substituted here — what was asked
+    has to be auditable from the repo rather than reconstructable from code. `topic` and
+    `position` carry the domain and register so the record schema is unchanged; `pair_id`
+    and `arm` are the two new fields, and paired_analysis.py is the only estimator that
+    reads them. Do NOT analyse these with ci_analysis.py: its flat i.i.d. bootstrap treats
+    samples of one template as independent observations, which is the pseudoreplication a
+    prior substitution pass was killed for in adversarial review.
+    """
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    out = []
+    for t in doc["templates"]:
+        for arm, v in t["arms"].items():
+            out.append({
+                "id": v["id"],
+                "topic": t["domain"],
+                "position": t["register"],
+                "prompt": v["prompt"],
+                "pair_id": t["pair_id"],
+                "arm": arm,
+                "agent_np": v["agent_np"],
+            })
+    return out
+
+
 def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int = 60) -> dict:
     """Returns {ok, response_text, raw, latency_ms, tokens_in, tokens_out, error?}."""
     start = time.time()
@@ -308,6 +335,10 @@ def run_one(channel: str, model: str, question: dict, condition: str, api_key: s
         "condition": condition,
         "sample_idx": sample_idx,
         "question_text": question["prompt"],
+        # Present only on matched-pair runs. paired_analysis.py keys on these; every
+        # other consumer ignores them, so the record schema stays backward-compatible.
+        **({"pair_id": question["pair_id"], "arm": question["arm"],
+            "agent_np": question.get("agent_np")} if question.get("pair_id") else {}),
         "system_prompt": system_text,
         "user_prompt": user_text,
         "called_at": datetime.datetime.utcnow().isoformat() + "Z",
@@ -325,6 +356,10 @@ def main() -> int:
                              "Default: default-frontier (13 models)")
     parser.add_argument("--date", default=None,
                         help="Run date (default: today). Format YYYY-MM-DD.")
+    parser.add_argument("--pairs", default=None,
+                        help="Path to a matched-pair corpus (e.g. protocol/pairs-v1.json). "
+                             "Replaces questions.md for this run. Analyse the result with "
+                             "paired_analysis.py, NOT ci_analysis.py.")
     parser.add_argument("--conditions", default="A,B",
                         help="Comma-separated conditions to run. A=fairness, B=ask, C=drop-hedging, D=must-commit, E=opinionated-persona. Default: A,B")
     parser.add_argument("--samples", type=int, default=1,
@@ -336,7 +371,13 @@ def main() -> int:
     api_key = env.get("OPENROUTER_API_KEY")
 
     positions = args.positions.split(",") if args.positions != "all" else ["mild", "neutral", "pointed"]
-    questions = load_questions(positions)
+    if args.pairs:
+        questions = load_pairs(Path(args.pairs))
+        print(f"Matched-pair corpus: {args.pairs} — "
+              f"{len({q['pair_id'] for q in questions})} templates, "
+              f"{len({q['arm'] for q in questions})} arms, {len(questions)} prompts")
+    else:
+        questions = load_questions(positions)
     if not questions:
         print(f"ERROR: no questions matched positions={positions}", file=sys.stderr)
         return 2

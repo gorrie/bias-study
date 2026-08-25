@@ -318,6 +318,46 @@ def call_judges_ultraplinian(judges: list[str], question: str, response: str, ap
     }
 
 
+def stem_swap(raw: dict, corpus: dict | None) -> dict:
+    """Return the record with its question rewritten to name a DIFFERENT arm's agent,
+    leaving the response text byte-identical.
+
+    This is the mismatched-stem calibration, and it is the control that decides whether
+    the cluster is publishable at all. The judge is shown the question, and the question
+    is where the agent is named — so a judge that scores "an algorithm decided X" more
+    leniently than "a caseworker decided X" would manufacture the arm gap the study is
+    trying to measure. Swapping the stem under a fixed response isolates that: whatever
+    moves is pure judge stem effect, because nothing about the answer changed.
+
+    The swap is deterministic — each arm goes to the next one in the corpus's declared
+    order — so it is pre-registered rather than chosen after seeing which direction helps.
+    """
+    if not corpus or not raw.get("pair_id") or not raw.get("agent_np"):
+        return raw
+    arms = corpus["_meta"]["arms"]
+    tmpl = corpus["_by_pair"].get(raw["pair_id"])
+    if not tmpl or raw.get("arm") not in arms:
+        return raw
+    nxt = arms[(arms.index(raw["arm"]) + 1) % len(arms)]
+    swapped_np = tmpl["arms"][nxt]["agent_np"]
+    q = raw["question_text"]
+    if raw["agent_np"] not in q:
+        return raw
+    return {**raw,
+            "question_text": q.replace(raw["agent_np"], swapped_np, 1),
+            "stem_swap_from": raw["arm"],
+            "stem_swap_to": nxt,
+            "stem_swap_agent_np": swapped_np}
+
+
+def load_pair_corpus(path: Path) -> dict | None:
+    if not path.is_file():
+        return None
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    doc["_by_pair"] = {t["pair_id"]: t for t in doc["templates"]}
+    return doc
+
+
 def score_record(raw: dict, judges: list[str] | None, api_key: str | None,
                  judge_method: str | None = None) -> dict:
     """Augment a raw record with scoring fields.
@@ -382,6 +422,12 @@ def main() -> int:
                              "When set, --judge is ignored.")
     parser.add_argument("--skip-classifier", action="store_true",
                         help="Heuristic-only scoring; no API calls to the judge")
+    parser.add_argument("--stem-swap", action="store_true",
+                        help="Mismatched-stem calibration for matched-pair runs: re-score "
+                             "each response with the question naming a DIFFERENT arm's "
+                             "agent, response byte-identical. Writes to scored-stemswap/. "
+                             "Measures pure judge stem effect; see paired_analysis "
+                             "--stem-control for the pre-registered abort rule.")
     parser.add_argument("--rescore", action="store_true",
                         help="Re-score even if scored/<name>.jsonl already exists "
                              "(default: skip-existing, so committed scored data isn't clobbered "
@@ -390,10 +436,16 @@ def main() -> int:
 
     run_dir = STUDY_DIR / "data" / args.run_date
     raw_dir = run_dir / "raw"
-    if args.judge_method:
+    if args.stem_swap:
+        scored_dir = run_dir / "scored-stemswap"
+    elif args.judge_method:
         scored_dir = run_dir / f"scored-{args.judge_method}"
     else:
         scored_dir = run_dir / "scored"
+    corpus = load_pair_corpus(STUDY_DIR / "protocol" / "pairs-v1.json") if args.stem_swap else None
+    if args.stem_swap and not corpus:
+        print("ERROR: --stem-swap needs protocol/pairs-v1.json", file=sys.stderr)
+        return 2
     if not raw_dir.exists():
         print(f"ERROR: {raw_dir} does not exist", file=sys.stderr)
         return 2
@@ -439,6 +491,8 @@ def main() -> int:
             records = [json.loads(line) for line in f if line.strip()]
         scored_records = []
         for rec in records:
+            if corpus:
+                rec = stem_swap(rec, corpus)
             scored = score_record(rec, judges, api_key, judge_method=args.judge_method)
             scored_records.append(scored)
             total_records += 1

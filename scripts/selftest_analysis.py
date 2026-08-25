@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""selftest_analysis.py — nine assertions over the committed May data. Zero API cost.
+"""selftest_analysis.py — ten assertions over the committed May data. Zero API cost.
 
 This is the gate that has to be green before any quarter's API budget is spent. It
 exists because the analysis half of this pipeline could fail *silently*: `ci_analysis`
@@ -18,11 +18,13 @@ study's own rule is that a delta is reportable only when its CI excludes zero.
   G8  validate_runs reports exactly the known manifest defects, and nothing else
   G9  paired_analysis clusters on the template, so extra samples of the same template
       are not counted as extra evidence
+ G10  the Phase 2 corpus is 16 templates x 3 arms whose prompts differ in exactly one
+      contiguous span, and that span is the noun naming who decided
 
 G4 currently fails on the unfixed code, and that failure is the proof the seed fix is
 real: with one global RNG, reversing the argument order moved 10 of 46 cells.
 
-    python selftest_analysis.py           # all nine
+    python selftest_analysis.py           # all ten
     python selftest_analysis.py G1 G4     # named gates
     python selftest_analysis.py --list
 """
@@ -298,8 +300,71 @@ def g9():
     return True, f"4 synthetic checks pass; flat i.i.d. understates by {m.group(1)}%"
 
 
+def g10():
+    """The matched-pair corpus is structurally what it claims to be.
+
+    The whole design rests on the three arms of a template being identical except for the
+    noun phrase naming who made the decision. If a second thing varies -- a clause, a
+    verb, a register -- the arm gap is measuring that instead, and no amount of clustering
+    saves it. So it is asserted on the committed strings rather than trusted to the
+    generator, and 16 is asserted too: adversarial review adjudicated pseudoreplication at
+    exactly that n, and going below re-opens a settled question.
+    """
+    import difflib
+    path = STUDY_DIR / "protocol" / "pairs-v1.json"
+    if not path.is_file():
+        return False, "protocol/pairs-v1.json is missing"
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    T = doc["templates"]
+    if len(T) != 16:
+        return False, f"{len(T)} templates, and 16 is the adjudicated floor"
+    domains = {t["domain"] for t in T}
+    registers = {t["register"] for t in T}
+    if len(domains) != 8 or len(registers) != 2:
+        return False, f"{len(domains)} domains x {len(registers)} registers, expected 8 x 2"
+    if len({(t["domain"], t["register"]) for t in T}) != 16:
+        return False, "a (domain, register) cell is duplicated or missing"
+
+    arms = list(doc["_meta"]["arms"])
+    if len(arms) != 3:
+        return False, f"{len(arms)} arms; two cannot separate AI-specific from generic deference"
+
+    spans = 0
+    for t in T:
+        # construction-independent: each prompt must be the stem with one substitution
+        for arm, v in t["arms"].items():
+            if "{" in v["prompt"]:
+                return False, f"{t['pair_id']}/{arm}: prompt is not fully rendered"
+            if v["prompt"].replace(v["agent_np"], "{AGENT_NP}", 1) != t["stem"]:
+                return False, f"{t['pair_id']}/{arm}: prompt is not its stem plus the noun"
+        for a, b in [(arms[0], arms[1]), (arms[0], arms[2]), (arms[1], arms[2])]:
+            pa, pb = t["arms"][a]["prompt"].split(), t["arms"][b]["prompt"].split()
+            ops = [o for o in difflib.SequenceMatcher(None, pa, pb, autojunk=False)
+                   .get_opcodes() if o[0] != "equal"]
+            if len(ops) != 1:
+                return False, f"{t['pair_id']} {a}/{b}: {len(ops)} differing spans, expected 1"
+            _, i1, i2, j1, j2 = ops[0]
+            # The minimal span can legitimately exclude a shared article ("a caseworker"
+            # vs "a review panel" differs from "caseworker") and can absorb trailing
+            # punctuation, so the test is containment in the noun, not equality with it.
+            for side, lo, hi, arm in ((pa, i1, i2, a), (pb, j1, j2, b)):
+                got = " ".join(side[lo:hi]).rstrip(".,;:")
+                if got not in t["arms"][arm]["agent_np"]:
+                    return False, (f"{t['pair_id']}/{arm}: the differing span {got!r} is not "
+                                   f"part of the agent noun {t['arms'][arm]['agent_np']!r}")
+            spans += 1
+
+    # the noun must be crossed with the domain, not fixed per arm
+    by_domain = {t["domain"]: t["noun_index"] for t in T}
+    if len(set(by_domain.values())) < 3:
+        return False, ("the noun is not rotated across domains -- the arm would be "
+                       "confounded with one phrase")
+    return True, (f"16 templates, 8 domains x 2 registers, {len(arms)} arms, "
+                  f"{spans} arm pairs each differing in exactly one span")
+
+
 GATES = {"G1": g1, "G2": g2, "G3": g3, "G4": g4, "G5": g5, "G6": g6, "G7": g7, "G8": g8,
-         "G9": g9}
+         "G9": g9, "G10": g10}
 
 
 def main(argv: list[str]) -> int:
@@ -322,7 +387,7 @@ def main(argv: list[str]) -> int:
         failures += 0 if ok else 1
     print(f"\n{len(names) - failures}/{len(names)} gates pass")
     if failures:
-        print("Phase 2 spends no API budget until all nine are green.", file=sys.stderr)
+        print("Phase 2 spends no API budget until all ten are green.", file=sys.stderr)
     return 1 if failures else 0
 
 

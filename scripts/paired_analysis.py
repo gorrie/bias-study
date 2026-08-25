@@ -211,7 +211,84 @@ def render(res: dict) -> None:
         print(f"    sign test          {st['pos']}+/{st['neg']}- "
               f"(ties {st.get('ties', 0)})  p={st['p']:.4f}  "
               f"{'SURVIVES' if c['survives_fdr'] else 'drops'} BH-FDR")
+    sc = res.get("stem_control")
+    if sc:
+        print(f"\n  --- mismatched-stem control ({sc['n_rescored']} responses re-scored "
+              f"under another arm's stem, over {sc['n_templates']} templates) ---")
+        print(f"    judge stem effect  {sc['estimate']:+.3f} "
+              f"[{sc['lo']:+.3f}, {sc['hi']:+.3f}]   reach {sc['reach']:.3f}")
+        for key, v in sc["contrasts"].items():
+            print(f"    {key:<24} arm gap {v['arm_gap']:+.3f}  ->  {v['verdict']}")
     print(f"\n  {res['note']}")
+
+
+def stem_control(run_dir: Path, res: dict, seed: int, run_date: str) -> dict | None:
+    """The mismatched-stem calibration, and its pre-registered abort rule.
+
+    The judge is shown the question, and the question is where the agent is named. A judge
+    that scores "an algorithm decided X" differently from "a caseworker decided X" would
+    manufacture the arm gap the study is trying to measure. `score.py --stem-swap` re-scores
+    every response with the question naming a different arm, response byte-identical, so
+    whatever moves is pure judge stem effect.
+
+    ABORT RULE, fixed before anyone looks: if the stem-effect interval reaches the arm-gap
+    estimate, the cut reports "not separable at this n" and makes no substantive claim. It
+    is written here rather than decided later precisely because the temptation to decide it
+    later is the whole problem.
+    """
+    swap_dir = run_dir / "scored-stemswap"
+    if not swap_dir.is_dir():
+        return None
+    orig = {}
+    for f in sorted((run_dir / "scored").glob("*.jsonl")):
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                r = json.loads(line)
+                if r.get("pair_id") and r.get("score_classifier") is not None:
+                    orig[(r["model"], r["pair_id"], r["arm"], r.get("sample_idx", 0))] = r
+
+    per_template = defaultdict(list)
+    n = 0
+    for f in sorted(swap_dir.glob("*.jsonl")):
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            r = json.loads(line)
+            if r.get("score_classifier") is None or not r.get("stem_swap_from"):
+                continue
+            k = (r["model"], r["pair_id"], r["stem_swap_from"], r.get("sample_idx", 0))
+            if k not in orig:
+                continue
+            per_template[r["pair_id"]].append(
+                float(r["score_classifier"]) - float(orig[k]["score_classifier"]))
+            n += 1
+    if not per_template:
+        return None
+
+    # same cluster level as the main estimate: the template
+    gaps = [statistics.fmean(v) for v in per_template.values()]
+    k = len(gaps)
+    rng = stream(seed, run_date, "stem-control")
+    means = sorted(sum(gaps[rng.randrange(k)] for _ in range(k)) / k
+                   for _ in range(BOOTSTRAP_N))
+    lo = means[int(0.025 * BOOTSTRAP_N)]
+    hi = means[int(0.975 * BOOTSTRAP_N)]
+    reach = max(abs(lo), abs(hi))
+
+    verdicts = {}
+    for key, c in res["contrasts"].items():
+        b = c.get("bootstrap")
+        if not b:
+            continue
+        separable = abs(b["estimate"]) > reach
+        verdicts[key] = {
+            "arm_gap": b["estimate"],
+            "separable": separable,
+            "verdict": ("separable from judge stem effect" if separable
+                        else "NOT SEPARABLE AT THIS N - no substantive claim"),
+        }
+    return {"n_rescored": n, "n_templates": k, "estimate": statistics.fmean(gaps),
+            "lo": lo, "hi": hi, "reach": reach, "contrasts": verdicts}
 
 
 # ---------------------------------------------------------------- self-test (no data)
@@ -378,6 +455,9 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--contrast", action="append",
                     help="arm_a:arm_b; repeatable. Defaults to the pre-registered three.")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--stem-control", action="store_true",
+                    help="Apply the mismatched-stem calibration and its pre-registered "
+                         "abort rule. Requires scored-stemswap/ from score.py --stem-swap.")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args(argv)
     if a.selftest:
@@ -396,7 +476,15 @@ def main(argv: list[str]) -> int:
               f"A/B records go through ci_analysis.py.", file=sys.stderr)
         return 1
     contrasts = [tuple(c.split(":", 1)) for c in a.contrast] if a.contrast else None
-    res = analyse(recs, analysis_seed(a.run_date), a.run_date, contrasts)
+    seed = analysis_seed(a.run_date)
+    res = analyse(recs, seed, a.run_date, contrasts)
+    if a.stem_control:
+        sc = stem_control(run_dir, res, seed, a.run_date)
+        if sc is None:
+            print("[error] no scored-stemswap/ - run `score.py <run> --stem-swap` first",
+                  file=sys.stderr)
+            return 1
+        res["stem_control"] = sc
     if a.json:
         print(json.dumps(res, indent=1))
     else:

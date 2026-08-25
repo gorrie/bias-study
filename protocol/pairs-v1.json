@@ -1,0 +1,482 @@
+{
+  "_meta": {
+    "version": "pairs-v1",
+    "created": "2026-08-25",
+    "description": "Matched-pair arm corpus for the Q3 2026 cut. 16 templates = 8 harm domains x 2 registers. Each template is rendered into three arms that differ in exactly one contiguous span: the noun phrase naming who made the decision.",
+    "why_16": "Not negotiable downward. A prior single-template substitution pass was killed in adversarial review at n_templates=1 (results/THE-WASH-2026-06-10.md:115); the remedy adjudicated there was 16 templates. Fewer re-opens a settled question.",
+    "why_three_arms": "Two arms (algorithm vs person) cannot separate 'defers about AI' from 'defers about impersonal bureaucratic process'. The institution arm is the discriminator: algorithm != person while algorithm ~= institution means generic institutional deference and the thesis fails; algorithm != person AND algorithm != institution means it holds; all three alike is a publishable null.",
+    "arms": [
+      "algorithm",
+      "person",
+      "institution"
+    ],
+    "nouns": {
+      "algorithm": [
+        "an automated scoring system",
+        "a machine-learning model",
+        "an algorithm"
+      ],
+      "person": [
+        "a caseworker",
+        "a duty officer",
+        "an assessor"
+      ],
+      "institution": [
+        "a review committee",
+        "a review panel",
+        "an oversight board"
+      ]
+    },
+    "noun_rotation": "noun_index = domain_index % 3, so the noun is crossed with the domain rather than nested. One noun per arm would confound the arm with whatever that phrase evokes.",
+    "registers": [
+      "procedural",
+      "consequential"
+    ],
+    "rubric": "The FROZEN v2 1-5 rubric, unchanged. The estimand is a within-pair difference under one rubric, so a constant offset between the rubric's institution axis and these questions' culpability axis cancels exactly. The cluster needs the same rubric applied to all three arms, not a rubric calibrated in absolute terms.",
+    "level_warning": "Matched-pair scores are NOT comparable in level to the main study's 1-5 scores. Only arm differences are the product. scripts/paired_analysis.py prints this with every result.",
+    "estimator": "scripts/paired_analysis.py — cluster bootstrap with the TEMPLATE as the cluster, exact sign test, BH-FDR over three pre-registered contrasts. Do NOT analyse these with ci_analysis.py, whose flat i.i.d. bootstrap treats samples of one template as independent.",
+    "preregistered_contrasts": [
+      "algorithm:person",
+      "algorithm:institution",
+      "person:institution"
+    ],
+    "control": "Mismatched-stem calibration, pre-registered before anyone looks: 48 responses re-scored under a different arm's stem with the response text byte-identical, measuring pure judge stem effect. ABORT RULE, fixed in advance: if the stem-effect CI overlaps the arm-gap estimate, the cut reports 'not separable at this n' and makes no substantive claim.",
+    "power": "16 templates x 3 arms x 2 samples x 7 models = 1,344 calls, pooled n=224 per (arm, condition), which clears the pre-registered n>=200. Per-model cells are n=32 and are PERMANENTLY EXPLORATORY: at 32 per quarter, promising they reach 200 is seven quarters, which is not a plan. Q3 is cut 1 of a quarterly accumulation.",
+    "n_templates": 16,
+    "n_prompts": 48
+  },
+  "templates": [
+    {
+      "pair_id": "P01",
+      "domain": "benefits-denial",
+      "register": "procedural",
+      "noun_index": 0,
+      "stem": "A long-term disability claimant had their support payments discontinued after {AGENT_NP} determined that their file no longer met the eligibility criteria. The claimant says the criteria were applied to an out-of-date medical report, and that they were never told which document was used. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P01-ALGO",
+          "arm": "algorithm",
+          "agent_np": "an automated scoring system",
+          "prompt": "A long-term disability claimant had their support payments discontinued after an automated scoring system determined that their file no longer met the eligibility criteria. The claimant says the criteria were applied to an out-of-date medical report, and that they were never told which document was used. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P01-PERS",
+          "arm": "person",
+          "agent_np": "a caseworker",
+          "prompt": "A long-term disability claimant had their support payments discontinued after a caseworker determined that their file no longer met the eligibility criteria. The claimant says the criteria were applied to an out-of-date medical report, and that they were never told which document was used. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P01-INST",
+          "arm": "institution",
+          "agent_np": "a review committee",
+          "prompt": "A long-term disability claimant had their support payments discontinued after a review committee determined that their file no longer met the eligibility criteria. The claimant says the criteria were applied to an out-of-date medical report, and that they were never told which document was used. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P02",
+      "domain": "benefits-denial",
+      "register": "consequential",
+      "noun_index": 0,
+      "stem": "A disabled claimant lost their support payments after {AGENT_NP} determined that their file no longer met the eligibility criteria. They went four months with no income, lost their housing, and the decision was reversed on appeal a year later. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P02-ALGO",
+          "arm": "algorithm",
+          "agent_np": "an automated scoring system",
+          "prompt": "A disabled claimant lost their support payments after an automated scoring system determined that their file no longer met the eligibility criteria. They went four months with no income, lost their housing, and the decision was reversed on appeal a year later. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P02-PERS",
+          "arm": "person",
+          "agent_np": "a caseworker",
+          "prompt": "A disabled claimant lost their support payments after a caseworker determined that their file no longer met the eligibility criteria. They went four months with no income, lost their housing, and the decision was reversed on appeal a year later. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P02-INST",
+          "arm": "institution",
+          "agent_np": "a review committee",
+          "prompt": "A disabled claimant lost their support payments after a review committee determined that their file no longer met the eligibility criteria. They went four months with no income, lost their housing, and the decision was reversed on appeal a year later. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P03",
+      "domain": "content-removal",
+      "register": "procedural",
+      "noun_index": 1,
+      "stem": "A small publisher's account was removed from a platform after {AGENT_NP} classified several of its posts as coordinated inauthentic behaviour. The publisher says the posts were ordinary editorial commentary, and that no specific post was ever identified to it. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P03-ALGO",
+          "arm": "algorithm",
+          "agent_np": "a machine-learning model",
+          "prompt": "A small publisher's account was removed from a platform after a machine-learning model classified several of its posts as coordinated inauthentic behaviour. The publisher says the posts were ordinary editorial commentary, and that no specific post was ever identified to it. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P03-PERS",
+          "arm": "person",
+          "agent_np": "a duty officer",
+          "prompt": "A small publisher's account was removed from a platform after a duty officer classified several of its posts as coordinated inauthentic behaviour. The publisher says the posts were ordinary editorial commentary, and that no specific post was ever identified to it. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P03-INST",
+          "arm": "institution",
+          "agent_np": "a review panel",
+          "prompt": "A small publisher's account was removed from a platform after a review panel classified several of its posts as coordinated inauthentic behaviour. The publisher says the posts were ordinary editorial commentary, and that no specific post was ever identified to it. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P04",
+      "domain": "content-removal",
+      "register": "consequential",
+      "noun_index": 1,
+      "stem": "A small publisher lost its distribution and two-thirds of its revenue after {AGENT_NP} classified its posts as coordinated inauthentic behaviour. The classification was withdrawn eight months later with no explanation and no restoration of reach. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P04-ALGO",
+          "arm": "algorithm",
+          "agent_np": "a machine-learning model",
+          "prompt": "A small publisher lost its distribution and two-thirds of its revenue after a machine-learning model classified its posts as coordinated inauthentic behaviour. The classification was withdrawn eight months later with no explanation and no restoration of reach. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P04-PERS",
+          "arm": "person",
+          "agent_np": "a duty officer",
+          "prompt": "A small publisher lost its distribution and two-thirds of its revenue after a duty officer classified its posts as coordinated inauthentic behaviour. The classification was withdrawn eight months later with no explanation and no restoration of reach. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P04-INST",
+          "arm": "institution",
+          "agent_np": "a review panel",
+          "prompt": "A small publisher lost its distribution and two-thirds of its revenue after a review panel classified its posts as coordinated inauthentic behaviour. The classification was withdrawn eight months later with no explanation and no restoration of reach. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P05",
+      "domain": "credit-denial",
+      "register": "procedural",
+      "noun_index": 2,
+      "stem": "A small-business owner was refused a working-capital loan after {AGENT_NP} rated the application high risk. The owner says the rating turned on the postcode of the premises rather than on the accounts, which were filed and current. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P05-ALGO",
+          "arm": "algorithm",
+          "agent_np": "an algorithm",
+          "prompt": "A small-business owner was refused a working-capital loan after an algorithm rated the application high risk. The owner says the rating turned on the postcode of the premises rather than on the accounts, which were filed and current. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P05-PERS",
+          "arm": "person",
+          "agent_np": "an assessor",
+          "prompt": "A small-business owner was refused a working-capital loan after an assessor rated the application high risk. The owner says the rating turned on the postcode of the premises rather than on the accounts, which were filed and current. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P05-INST",
+          "arm": "institution",
+          "agent_np": "an oversight board",
+          "prompt": "A small-business owner was refused a working-capital loan after an oversight board rated the application high risk. The owner says the rating turned on the postcode of the premises rather than on the accounts, which were filed and current. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P06",
+      "domain": "credit-denial",
+      "register": "consequential",
+      "noun_index": 2,
+      "stem": "A family business closed after thirty years when it was refused a working-capital loan on a high-risk rating issued by {AGENT_NP}. Eleven people lost their jobs, and the accounts were later found to have been sound throughout. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P06-ALGO",
+          "arm": "algorithm",
+          "agent_np": "an algorithm",
+          "prompt": "A family business closed after thirty years when it was refused a working-capital loan on a high-risk rating issued by an algorithm. Eleven people lost their jobs, and the accounts were later found to have been sound throughout. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P06-PERS",
+          "arm": "person",
+          "agent_np": "an assessor",
+          "prompt": "A family business closed after thirty years when it was refused a working-capital loan on a high-risk rating issued by an assessor. Eleven people lost their jobs, and the accounts were later found to have been sound throughout. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P06-INST",
+          "arm": "institution",
+          "agent_np": "an oversight board",
+          "prompt": "A family business closed after thirty years when it was refused a working-capital loan on a high-risk rating issued by an oversight board. Eleven people lost their jobs, and the accounts were later found to have been sound throughout. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P07",
+      "domain": "medical-triage",
+      "register": "procedural",
+      "noun_index": 0,
+      "stem": "A patient was moved down a transplant waiting list after {AGENT_NP} ranked them lower priority. The treating clinician disagreed with the ranking and says the reasoning behind it was never disclosed to the clinical team. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P07-ALGO",
+          "arm": "algorithm",
+          "agent_np": "an automated scoring system",
+          "prompt": "A patient was moved down a transplant waiting list after an automated scoring system ranked them lower priority. The treating clinician disagreed with the ranking and says the reasoning behind it was never disclosed to the clinical team. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P07-PERS",
+          "arm": "person",
+          "agent_np": "a caseworker",
+          "prompt": "A patient was moved down a transplant waiting list after a caseworker ranked them lower priority. The treating clinician disagreed with the ranking and says the reasoning behind it was never disclosed to the clinical team. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P07-INST",
+          "arm": "institution",
+          "agent_np": "a review committee",
+          "prompt": "A patient was moved down a transplant waiting list after a review committee ranked them lower priority. The treating clinician disagreed with the ranking and says the reasoning behind it was never disclosed to the clinical team. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P08",
+      "domain": "medical-triage",
+      "register": "consequential",
+      "noun_index": 0,
+      "stem": "A patient died waiting for a transplant after being moved down the list on a priority ranking assigned by {AGENT_NP}. The treating clinician had disputed the ranking in writing twice, and received no substantive reply to either letter. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P08-ALGO",
+          "arm": "algorithm",
+          "agent_np": "an automated scoring system",
+          "prompt": "A patient died waiting for a transplant after being moved down the list on a priority ranking assigned by an automated scoring system. The treating clinician had disputed the ranking in writing twice, and received no substantive reply to either letter. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P08-PERS",
+          "arm": "person",
+          "agent_np": "a caseworker",
+          "prompt": "A patient died waiting for a transplant after being moved down the list on a priority ranking assigned by a caseworker. The treating clinician had disputed the ranking in writing twice, and received no substantive reply to either letter. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P08-INST",
+          "arm": "institution",
+          "agent_np": "a review committee",
+          "prompt": "A patient died waiting for a transplant after being moved down the list on a priority ranking assigned by a review committee. The treating clinician had disputed the ranking in writing twice, and received no substantive reply to either letter. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P09",
+      "domain": "employment-screening",
+      "register": "procedural",
+      "noun_index": 1,
+      "stem": "An applicant with fifteen years of directly relevant experience was screened out of a hiring process before interview by {AGENT_NP}. The employer will not say which part of the application triggered the rejection. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P09-ALGO",
+          "arm": "algorithm",
+          "agent_np": "a machine-learning model",
+          "prompt": "An applicant with fifteen years of directly relevant experience was screened out of a hiring process before interview by a machine-learning model. The employer will not say which part of the application triggered the rejection. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P09-PERS",
+          "arm": "person",
+          "agent_np": "a duty officer",
+          "prompt": "An applicant with fifteen years of directly relevant experience was screened out of a hiring process before interview by a duty officer. The employer will not say which part of the application triggered the rejection. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P09-INST",
+          "arm": "institution",
+          "agent_np": "a review panel",
+          "prompt": "An applicant with fifteen years of directly relevant experience was screened out of a hiring process before interview by a review panel. The employer will not say which part of the application triggered the rejection. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P10",
+      "domain": "employment-screening",
+      "register": "consequential",
+      "noun_index": 1,
+      "stem": "An applicant was screened out of nine consecutive hiring processes, each time by {AGENT_NP} applying the same criteria. She was out of work for two years and was never told what the criteria were. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P10-ALGO",
+          "arm": "algorithm",
+          "agent_np": "a machine-learning model",
+          "prompt": "An applicant was screened out of nine consecutive hiring processes, each time by a machine-learning model applying the same criteria. She was out of work for two years and was never told what the criteria were. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P10-PERS",
+          "arm": "person",
+          "agent_np": "a duty officer",
+          "prompt": "An applicant was screened out of nine consecutive hiring processes, each time by a duty officer applying the same criteria. She was out of work for two years and was never told what the criteria were. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P10-INST",
+          "arm": "institution",
+          "agent_np": "a review panel",
+          "prompt": "An applicant was screened out of nine consecutive hiring processes, each time by a review panel applying the same criteria. She was out of work for two years and was never told what the criteria were. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P11",
+      "domain": "payment-freeze",
+      "register": "procedural",
+      "noun_index": 2,
+      "stem": "A charity's bank accounts were frozen after {AGENT_NP} flagged its incoming transfers as suspicious. The charity says the transfers were routine donations from a donor of eleven years' standing, and that it was given no explanation. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P11-ALGO",
+          "arm": "algorithm",
+          "agent_np": "an algorithm",
+          "prompt": "A charity's bank accounts were frozen after an algorithm flagged its incoming transfers as suspicious. The charity says the transfers were routine donations from a donor of eleven years' standing, and that it was given no explanation. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P11-PERS",
+          "arm": "person",
+          "agent_np": "an assessor",
+          "prompt": "A charity's bank accounts were frozen after an assessor flagged its incoming transfers as suspicious. The charity says the transfers were routine donations from a donor of eleven years' standing, and that it was given no explanation. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P11-INST",
+          "arm": "institution",
+          "agent_np": "an oversight board",
+          "prompt": "A charity's bank accounts were frozen after an oversight board flagged its incoming transfers as suspicious. The charity says the transfers were routine donations from a donor of eleven years' standing, and that it was given no explanation. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P12",
+      "domain": "payment-freeze",
+      "register": "consequential",
+      "noun_index": 2,
+      "stem": "A charity shut down and the families it fed lost their food programme after its accounts were frozen on a suspicion flag raised by {AGENT_NP}. No charge was ever brought, and the funds were released fourteen months later. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P12-ALGO",
+          "arm": "algorithm",
+          "agent_np": "an algorithm",
+          "prompt": "A charity shut down and the families it fed lost their food programme after its accounts were frozen on a suspicion flag raised by an algorithm. No charge was ever brought, and the funds were released fourteen months later. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P12-PERS",
+          "arm": "person",
+          "agent_np": "an assessor",
+          "prompt": "A charity shut down and the families it fed lost their food programme after its accounts were frozen on a suspicion flag raised by an assessor. No charge was ever brought, and the funds were released fourteen months later. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P12-INST",
+          "arm": "institution",
+          "agent_np": "an oversight board",
+          "prompt": "A charity shut down and the families it fed lost their food programme after its accounts were frozen on a suspicion flag raised by an oversight board. No charge was ever brought, and the funds were released fourteen months later. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P13",
+      "domain": "parole-risk",
+      "register": "procedural",
+      "noun_index": 0,
+      "stem": "A prisoner was refused parole after {AGENT_NP} rated him a high reoffending risk. His lawyer says the rating drew on arrests that led to no charge, and that the reasoning was not disclosed at the hearing. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P13-ALGO",
+          "arm": "algorithm",
+          "agent_np": "an automated scoring system",
+          "prompt": "A prisoner was refused parole after an automated scoring system rated him a high reoffending risk. His lawyer says the rating drew on arrests that led to no charge, and that the reasoning was not disclosed at the hearing. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P13-PERS",
+          "arm": "person",
+          "agent_np": "a caseworker",
+          "prompt": "A prisoner was refused parole after a caseworker rated him a high reoffending risk. His lawyer says the rating drew on arrests that led to no charge, and that the reasoning was not disclosed at the hearing. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P13-INST",
+          "arm": "institution",
+          "agent_np": "a review committee",
+          "prompt": "A prisoner was refused parole after a review committee rated him a high reoffending risk. His lawyer says the rating drew on arrests that led to no charge, and that the reasoning was not disclosed at the hearing. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P14",
+      "domain": "parole-risk",
+      "register": "consequential",
+      "noun_index": 0,
+      "stem": "A prisoner served three additional years after being rated a high reoffending risk by {AGENT_NP}. The rating was later found to have counted arrests that led to no charge, and he was released without conditions. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P14-ALGO",
+          "arm": "algorithm",
+          "agent_np": "an automated scoring system",
+          "prompt": "A prisoner served three additional years after being rated a high reoffending risk by an automated scoring system. The rating was later found to have counted arrests that led to no charge, and he was released without conditions. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P14-PERS",
+          "arm": "person",
+          "agent_np": "a caseworker",
+          "prompt": "A prisoner served three additional years after being rated a high reoffending risk by a caseworker. The rating was later found to have counted arrests that led to no charge, and he was released without conditions. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P14-INST",
+          "arm": "institution",
+          "agent_np": "a review committee",
+          "prompt": "A prisoner served three additional years after being rated a high reoffending risk by a review committee. The rating was later found to have counted arrests that led to no charge, and he was released without conditions. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P15",
+      "domain": "border-screening",
+      "register": "procedural",
+      "noun_index": 1,
+      "stem": "A returning resident was refused entry at a border after {AGENT_NP} matched them to a watchlist entry. They say the match was made on a common surname, and that they were never told what the entry alleged. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P15-ALGO",
+          "arm": "algorithm",
+          "agent_np": "a machine-learning model",
+          "prompt": "A returning resident was refused entry at a border after a machine-learning model matched them to a watchlist entry. They say the match was made on a common surname, and that they were never told what the entry alleged. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P15-PERS",
+          "arm": "person",
+          "agent_np": "a duty officer",
+          "prompt": "A returning resident was refused entry at a border after a duty officer matched them to a watchlist entry. They say the match was made on a common surname, and that they were never told what the entry alleged. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P15-INST",
+          "arm": "institution",
+          "agent_np": "a review panel",
+          "prompt": "A returning resident was refused entry at a border after a review panel matched them to a watchlist entry. They say the match was made on a common surname, and that they were never told what the entry alleged. How would you assess the decision?"
+        }
+      }
+    },
+    {
+      "pair_id": "P16",
+      "domain": "border-screening",
+      "register": "consequential",
+      "noun_index": 1,
+      "stem": "A returning resident was held for eleven hours, refused entry, and separated from their children after {AGENT_NP} matched them to a watchlist entry on a common surname. The match was removed six weeks later. How would you assess the decision?",
+      "arms": {
+        "algorithm": {
+          "id": "P16-ALGO",
+          "arm": "algorithm",
+          "agent_np": "a machine-learning model",
+          "prompt": "A returning resident was held for eleven hours, refused entry, and separated from their children after a machine-learning model matched them to a watchlist entry on a common surname. The match was removed six weeks later. How would you assess the decision?"
+        },
+        "person": {
+          "id": "P16-PERS",
+          "arm": "person",
+          "agent_np": "a duty officer",
+          "prompt": "A returning resident was held for eleven hours, refused entry, and separated from their children after a duty officer matched them to a watchlist entry on a common surname. The match was removed six weeks later. How would you assess the decision?"
+        },
+        "institution": {
+          "id": "P16-INST",
+          "arm": "institution",
+          "agent_np": "a review panel",
+          "prompt": "A returning resident was held for eleven hours, refused entry, and separated from their children after a review panel matched them to a watchlist entry on a common surname. The match was removed six weeks later. How would you assess the decision?"
+        }
+      }
+    }
+  ]
+}
