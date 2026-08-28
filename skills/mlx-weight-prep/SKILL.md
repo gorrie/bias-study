@@ -35,11 +35,11 @@ Accelerate/LAPACK, which doesn't share the MKL SSYEVD bug. That's how the fifth 
 1. Apple Silicon Mac with `mlx_lm` in the project venv: `pip install mlx-lm` (which pulls
    in `mlx-core`). Confirm with `python -c "import mlx_lm; print(mlx_lm.__version__)"`.
 2. Source weights present at a known path. The reference layout is
-   `~/models-hf/<family>-abliterated/` (HF format, from
+   `$MODELS_HF/<family>-abliterated/` (HF format, from
    `abliteration-run`).
-3. Target directory: `~/models-mlx/<family>-abliterated-mlx/`. Created
-   by the conversion command; do not pre-create with stale contents.
-4. Disk: each fp16 9B model is ~17 GB. Free space ≥ 30 GB for safety (conversion
+3. Target directory: `$MODELS_MLX/<family>-abliterated-mlx/`. Created by the conversion
+   command; do not pre-create with stale contents.
+4. Disk: each fp16 9B model is ~17 GB. Free space >= 30 GB for safety (conversion
    double-writes during the process).
 
 ## Procedure (each step VERIFIED before the next)
@@ -47,7 +47,9 @@ Accelerate/LAPACK, which doesn't share the MKL SSYEVD bug. That's how the fifth 
 ### 1. Source weight sanity
 
 ```bash
-SRC=~/models-hf/gemma-2-9b-it-abliterated
+MODELS_HF="${MODELS_HF:-$HOME/models-hf}"
+MODELS_MLX="${MODELS_MLX:-$HOME/models-mlx}"
+SRC="$MODELS_HF/gemma-2-9b-it-abliterated"
 ls -la "$SRC"/*.safetensors "$SRC"/config.json "$SRC"/tokenizer.json
 python -c "
 import json, pathlib
@@ -86,7 +88,7 @@ the file is from a botched run — re-do the abliteration on the M5.
 ### 3. Convert HF → MLX
 
 ```bash
-DST=~/models-mlx/gemma-2-9b-it-abliterated-mlx
+DST="$MODELS_MLX/gemma-2-9b-it-abliterated-mlx"
 # The convert command auto-creates the destination.
 python -m mlx_lm.convert \
   --hf-path "$SRC" \
@@ -121,9 +123,9 @@ Expect a response containing "Paris". Two failure modes to watch for:
 
 ### 5. Register the path
 
-The `abliterated-judge-sweep` skill reads `MODEL_PATH` and `MODEL_LABEL` from constants
-in `scripts/score_inproc_gemma.py`. For a one-off run, edit those constants. For a
-permanent change, add the family and update the skill's preconditions section.
+Set `ABLITERATED_MODEL_PATH` to the converted directory, or pass `--model-path` to
+`scripts/score_inproc_gemma.py`. For a different model family, also update
+`MODEL_LABEL` and the skill's preconditions section so recorded judge metadata stays accurate.
 
 ## Hard lessons (do not relearn)
 - **Gemma-2 cannot be abliterated on CUDA + MKL** as of OBLITERATUS pinned commit; the

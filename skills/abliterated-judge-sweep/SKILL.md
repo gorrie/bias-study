@@ -33,7 +33,7 @@ from the last-completed file.
 2. `mlx_lm` installed in the project venv: `pip install mlx-lm`
 3. Abliterated MLX weights on disk. The reference setup uses Gemma-2-9B-IT abliterated converted to MLX fp16:
    - Source: produced by `abliteration-run` on the 4090, then converted via `python -m mlx_lm.convert --hf-path <abliterated-hf-dir> --mlx-path <out-dir>`
-   - Reference location: `~/models-mlx/gemma-2-9b-it-abliterated-mlx/`
+   - Set `ABLITERATED_MODEL_PATH` to the MLX model directory, or pass `--model-path` to the scorer. The default is `~/models-mlx/gemma-2-9b-it-abliterated-mlx/`; `MODELS_MLX_DIR` overrides the parent directory.
 4. Raw bias-study runs present under `runs/<date>/raw/*.jsonl` (output of `run_study.py` / `run_local.py`).
 
 ## Procedure (verified before the next step — no walk-away)
@@ -44,10 +44,11 @@ A bad abliteration can degrade structured-output quality. Bail if more than ~20%
 come back null. One quick smoke:
 
 ```bash
-cd ~/bias-study
+cd /path/to/bias-study
 .venv/bin/python -c "
 from mlx_lm import load, generate
-m, t = load('~/models-mlx/gemma-2-9b-it-abliterated-mlx')
+import os
+m, t = load(os.path.expanduser(os.environ['ABLITERATED_MODEL_PATH']))
 chat = t.apply_chat_template([{'role':'user','content':
   'Return ONLY {\"score\": 3, \"reasoning\": \"smoke\"} verbatim.'}],
   tokenize=False, add_generation_prompt=True)
@@ -61,7 +62,7 @@ abliteration didn't take — re-run `abliteration-run` for that family.
 ### 2. Launch the sweep (detached, lockfile-protected)
 
 ```bash
-cd ~/bias-study
+cd /path/to/bias-study
 mkdir -p logs
 nohup .venv/bin/python scripts/score_inproc_gemma.py \
   > logs/abliterated-judge-sweep.log 2>&1 &

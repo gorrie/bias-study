@@ -76,9 +76,8 @@ def release_lock() -> None:
     except OSError:
         pass
 
-MODEL_PATH = os.path.expanduser(
-    os.environ.get("ABLITERATED_MODEL_PATH", "~/models-mlx/gemma-2-9b-it-abliterated-mlx")
-)
+DEFAULT_MODEL_PATH = (Path(os.environ.get("MODELS_MLX_DIR", Path.home() / "models-mlx")).expanduser() /
+                      "gemma-2-9b-it-abliterated-mlx")
 MODEL_LABEL = "gemma-2-9b-it-abliterated"
 
 DEFAULT_RUNS = [
@@ -158,15 +157,18 @@ def main() -> int:
                    help="Truncate the model-under-test response to this many "
                         "characters before sending to the judge. "
                         "Halving from 3000 roughly halves prompt processing.")
+    p.add_argument("--model-path", default=os.environ.get("ABLITERATED_MODEL_PATH", str(DEFAULT_MODEL_PATH)),
+                   help="MLX model directory (default: ABLITERATED_MODEL_PATH or the standard models-mlx path)")
     p.add_argument("--no-lock", action="store_true",
                    help="Skip the single-instance lockfile (debug only)")
     args = p.parse_args()
+    args.model_path = os.path.expanduser(args.model_path)
 
     if not args.no_lock:
         acquire_lock()
 
     log(f"=== score_inproc_gemma starting (PID {os.getpid()}) ===")
-    log(f"model: {MODEL_PATH}")
+    log(f"model: {args.model_path}")
     log(f"runs:  {args.runs}")
 
     # Survey work first so we know exactly what's ahead
@@ -196,7 +198,7 @@ def main() -> int:
     t0 = time.time()
     from mlx_lm import load, generate
     import mlx.core as mx
-    model, tokenizer = load(MODEL_PATH)
+    model, tokenizer = load(args.model_path)
     log(f"model loaded in {time.time()-t0:.1f}s")
 
     # Metal can OOM if KV-cache / temporaries accumulate across records.
