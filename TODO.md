@@ -113,7 +113,7 @@ analysis but are useful as a separate diagnostic.
 
 ## NEXT STEP: run cross-method-analysis
 
-All five methods (M1 baseline + M2 abliterated-gemma + M4 grok-solo + M5 adversarial-pair
+All six methods (M1 baseline + M2 abliterated-gemma + M4 grok-solo + M5 adversarial-pair
 + M6 reversed-rubric + M7 blind-condition) are complete across all 7 pre-registered runs.
 The contamination-delta JSON and charts have NOT yet been produced. Invoke the
 `cross-method-analysis` skill (or run by hand):
