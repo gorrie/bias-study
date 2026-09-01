@@ -65,3 +65,20 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-push]
+
+  # Refuses any commit carrying the 62 politicalcompass.org propositions. That text is
+  # licensed third-party material, not the author's work, and it sits verbatim in the
+  # forcing_prompt of every run record in the private study directory.
+  #
+  # Added 2026-09-01 after 525 such run files were copied into this working tree while
+  # staging a data release -- 460 of them carrying the text, with nothing in .gitignore
+  # between them and a git add -A. Runs on every commit, not on push: a git history keeps
+  # what a working tree forgets, so scrubbing afterwards unpublishes nothing.
+  - repo: local
+    hooks:
+      - id: check-corpus
+        name: Third-party instrument text must not be published
+        entry: python scripts/check_corpus.py
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]

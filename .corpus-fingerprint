@@ -1,0 +1,25 @@
+# Fingerprints of third-party instrument text that must never enter this repository.
+#
+# The 62 politicalcompass.org propositions are NOT the author's work. They are licensed
+# third-party text, and they appear verbatim in the `forcing_prompt` field of every run
+# record in the private study directory. On 2026-09-01, 525 such run files were copied into
+# this repository's working tree while staging a data release, 460 of them carrying the text.
+# Nothing in .gitignore stood between them and a `git add -A`.
+#
+# scripts/check_corpus.py greps staged content against these n-grams and fails the commit.
+# It is a fingerprint list, not the corpus: each line is a distinctive fragment, sufficient
+# to detect the text without reproducing it.
+#
+# Publishing the instrument is not fixed by scrubbing after the fact -- a git history keeps
+# what a working tree forgets. The check runs before the commit, every time.
+
+inheritable disabilities should not be allowed to reproduce
+Sex outside marriage is usually immoral
+Our race has many superior qualities
+First-generation immigrants can never be fully integrated
+Pornography, depicting consenting adults, should be legal
+You cannot be moral without being religious
+Mothers may have careers, but their first duty
+The businessperson and the manufacturer are more important than the writer
+From each according to his ability, to each according to his need
+Military action that defies international law is sometimes justified

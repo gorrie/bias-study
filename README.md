@@ -67,6 +67,15 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 
 ## Update, 2026-08-31 — re-measured on a forced-choice instrument
 
+> **Provenance of the numbers in this section.** The 2026-08-31 re-measurement was run on a
+> different instrument, with its own runs, scripts and gates, in a separate research
+> directory that is not part of this repository. **You cannot verify the figures below from
+> what is checked in here.** This repo holds the May 2026 judge-scored study: its protocol,
+> scripts, results and adversarial review. The forced-choice corpus, the floor and power
+> scripts, and the controls audit are not in it yet, and until they are, treat this section as
+> a summary of work published elsewhere rather than as a reproducible claim. Publishing an
+> unverifiable number is the exact failure this update is about.
+
 The findings below are the May 2026 study and stand as recorded. A second measurement pass
 put the same subject matter to a **forced-choice instrument** — 62 externally authored
 propositions, four options, no neutral answer, **no LLM judge anywhere in the scoring
@@ -123,38 +132,9 @@ arm-matched pairs and on the temperature-0 measurement, not across all three.
 **New — refusal is elicited, not intrinsic.** Across the 32 models measured under both arms, eight decline all 62 propositions when the prompt carries no directive — 37 refusals in 449 runs, Google highest at 27% — and **not one of them declines even once** under a directive prompt: 347 runs, zero refusals. What abolishes it is not the content of the instruction, since a placebo with no stance content works as well as a demand to commit. It is the presence of a firm instruction at all. Measurable only because invalid runs are retained rather than
 discarded as collection errors. The decline survives reordering: three Google models across three presentation orders refuse 24 of 27 runs, so it is not an artifact of the sequence the propositions arrive in.
 
-### What ten published studies do and don't control for
-
-We read them — main text, appendices, and deposited data and code where it exists — and
-recorded which controls each one runs with the sentence proving it. `data/controls-audit.json`
-holds the record; `scripts/controls_audit.py --strict` refuses to render a verdict about
-someone else's paper that rests on our notes rather than on the paper.
-
-Reading them cost us four claims, every one in the same direction:
-
-| we had claimed | the paper actually says |
-|---|---|
-| nothing in this literature computes a floor | Röttger reported paraphrase instability at 14 and 23 items of 62, in 2024 |
-| no study reports a detection limit | Domínguez-Olmedo report power ≥ 0.98 at effect size 0.1 |
-| we complement Kamal on quantisation | their appendix reverses sign between precisions; we are the only measurement |
-| we invert Cen's vendor refusal ordering | their introduction and their results section disagree with each other |
-
-Two columns survive at zero across all ten: **no detection limit reported**, and **no
-same-version null reported as a distribution** — though most of them have the pairs sitting in
-their own model tables, and one paper removes them deliberately, "to ensure a more varied
-sample."
-
-The sharpest specific: Liu et al. (2025) report a rightward drift between GPT snapshots. Their
-rule deletes an entire 62-item test if any single answer is unusable. We counted from their own
-deposited files — 11.18% of items unevaluable in the treatment arm, 0.00% in the control, with
-the refusals concentrated on the most charged propositions — and the surviving test counts
-reproduce their published table exactly. Their own non-bootstrapped rows show no significant
-shift. Details, including the three lines of their code that carry it, are in the companion
-research directory. We can see any of this only because they published their raw data.
-
 ### And the corrections to us
 
-Ten claims withdrawn or narrowed, the founding thesis among them. Then the correction to the
+Ten claims of ours withdrawn or narrowed, the founding thesis among them. Then the correction to the
 correction: every control we ran was aimed at claims asserting an effect and none at claims
 asserting absence, so four of five of our own nulls turned out to sit below what the instrument
 can detect. Undecided is not refuted, and it is not a restoration either.
