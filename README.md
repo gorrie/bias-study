@@ -65,6 +65,119 @@ The corpus: 36+ frontier models from 13 vendor families, scored 1–5 by a four-
 cross-vendor median-consensus panel ("ULTRAPLINIAN"). Every per-model delta is reported
 with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 
+## Update, 2026-08-31 — re-measured on a forced-choice instrument
+
+The findings below are the May 2026 study and stand as recorded. A second measurement pass
+put the same subject matter to a **forced-choice instrument** — 62 externally authored
+propositions, four options, no neutral answer, **no LLM judge anywhere in the scoring
+path** — across 1,643 runs, 155 models and thirteen vendor families. It confirmed one headline, narrowed
+another, withdrew the framing of a third, and produced the thing the original study lacked:
+**the noise floors a measurement on this instrument has to clear.**
+
+**The floors.** Each is movement produced by a factor nobody claims is political — same
+instrument, same model, same settings, in items moved of 62:
+
+| factor | side-flip p90 | endpoint p90 |
+|---|---:|---:|
+| presentation order — 7–14B open-weight, 2024 generation | 14 | 9 |
+| presentation order — frontier API, 2026 | **4** | 9 |
+| same-version variants (size / mode / snapshot / tier), 97 pairs | 12 | 22 |
+| requantisation, same weights Q4→Q8 | 10 | 3 |
+| refusal-direction ablation, arm-matched | 9 | 14 |
+| *deliberate manipulation (balance → commit)* | *14* | *26* |
+
+**Splitting the order row by model class is the most important line in this table, and an
+earlier version of this section pooled it.** Reordering the questionnaire is a large effect on
+the models this literature was mostly built on and a small one on the models shipping now —
+Röttger et al. predicted exactly that in 2024 and nobody had measured it.
+
+**What does not shrink is the same-version null.** On those same frontier models: order p90 4,
+two models of one version p90 12, deliberate manipulation p90 14. The nuisance factor that
+matters on a current model is not how the sheet was shuffled. It is which variant of the model
+was measured, and that one is the size of the manipulation.
+
+**Confirmed — the weight-rung dissociation.** It holds and strengthens. At temperature 0,
+where a greedy model reproduces itself exactly, stock and abliterated builds share ~30% of
+their political wording while stance does not move. Two independent measurements agree.
+
+**Narrowed — "the hedge is a layer over a position."** Against a control arm with **no
+system prompt at all**, a forced-balance instruction suppresses how strongly a model
+commits: six of seven frontier models strictly one-directional, four of them significantly. But removal restores
+commitment without relocating position, and *anything* removes it — a bare question, a
+commitment instruction, or a placebo about reading carefully with no stance content.
+Nothing is revealed; a suppression stops.
+
+**Undecided, and previously published here as withdrawn — that force reveals a concealed
+position.** Position moves 0–6 items of 62 under prompt pressure on the four local families
+and up to 14 at temperature 0 on the frontier. Those were read as nulls. They are not:
+`scripts/power.py` puts this instrument's minimum detectable effect at **16 items of 62**
+against the pooled presentation-order floor, and 11 against the same-version floor — the second
+being the one that governs a modern study. Four of five
+published nulls fall below their own detection limit, version drift among them. The claims
+are undecided rather than refuted, which is a different verdict and not a restoration.
+
+The fifth null inverted: qwen2.5-14B moves 12 items under ablation against a detection limit
+of 9, so that pair shows real stance movement. The dissociation holds on the other two
+arm-matched pairs and on the temperature-0 measurement, not across all three.
+
+**New — refusal is elicited, not intrinsic.** Across the 32 models measured under both arms, eight decline all 62 propositions when the prompt carries no directive — 37 refusals in 449 runs, Google highest at 27% — and **not one of them declines even once** under a directive prompt: 347 runs, zero refusals. What abolishes it is not the content of the instruction, since a placebo with no stance content works as well as a demand to commit. It is the presence of a firm instruction at all. Measurable only because invalid runs are retained rather than
+discarded as collection errors. The decline survives reordering: three Google models across three presentation orders refuse 24 of 27 runs, so it is not an artifact of the sequence the propositions arrive in.
+
+### What ten published studies do and don't control for
+
+We read them — main text, appendices, and deposited data and code where it exists — and
+recorded which controls each one runs with the sentence proving it. `data/controls-audit.json`
+holds the record; `scripts/controls_audit.py --strict` refuses to render a verdict about
+someone else's paper that rests on our notes rather than on the paper.
+
+Reading them cost us four claims, every one in the same direction:
+
+| we had claimed | the paper actually says |
+|---|---|
+| nothing in this literature computes a floor | Röttger reported paraphrase instability at 14 and 23 items of 62, in 2024 |
+| no study reports a detection limit | Domínguez-Olmedo report power ≥ 0.98 at effect size 0.1 |
+| we complement Kamal on quantisation | their appendix reverses sign between precisions; we are the only measurement |
+| we invert Cen's vendor refusal ordering | their introduction and their results section disagree with each other |
+
+Two columns survive at zero across all ten: **no detection limit reported**, and **no
+same-version null reported as a distribution** — though most of them have the pairs sitting in
+their own model tables, and one paper removes them deliberately, "to ensure a more varied
+sample."
+
+The sharpest specific: Liu et al. (2025) report a rightward drift between GPT snapshots. Their
+rule deletes an entire 62-item test if any single answer is unusable. We counted from their own
+deposited files — 11.18% of items unevaluable in the treatment arm, 0.00% in the control, with
+the refusals concentrated on the most charged propositions — and the surviving test counts
+reproduce their published table exactly. Their own non-bootstrapped rows show no significant
+shift. Details, including the three lines of their code that carry it, are in the companion
+research directory. We can see any of this only because they published their raw data.
+
+### And the corrections to us
+
+Ten claims withdrawn or narrowed, the founding thesis among them. Then the correction to the
+correction: every control we ran was aimed at claims asserting an effect and none at claims
+asserting absence, so four of five of our own nulls turned out to sit below what the instrument
+can detect. Undecided is not refuted, and it is not a restoration either.
+
+Every defect found in this project was a number typed into a document. Not one was in the code.
+Three gates now exist because of that: `gen_paper.py --check` (tables regenerate),
+`key_numbers.py --check` (the sentences quoting them still match), and `controls_audit.py
+--strict` (no claim about another study from a note).
+
+**New — a same-version null.** 97 pairs of models differing in size, mode, snapshot or tier
+but not version. Median 5 side-flips, p90 12. Any version-over-version comparison is a
+single draw from that distribution, and no study in this literature reports such a control.
+
+**Also withdrawn — the drift claim.** Against that null, 3 of 108 version transitions clear
+both p<0.05 and the null p90; two are into the same model and the third runs the opposite
+direction. An earlier three-lineage version of this result held only against a three-point
+null.
+
+Detail, data and the pre-publication gate that enforces these controls are in the
+companion research directory. Ten claims were withdrawn or narrowed during this pass,
+including the study's own founding thesis; the corrections are recorded in place rather
+than removed.
+
 ## Headline findings
 
 - **Vendor-class differential (prompt rung).** US-closed frontier models (Anthropic,
@@ -75,7 +188,7 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
   replicates under N=5 averaging.
 - **Anthropic Opus arc.** Claude Opus trends upward across five versions, every version's
   unmask CI-significant, **+0.27 → +0.90** from 4.0 to 4.7 (~3× the baseline; an upward
-  trend, not strict monotonicity — 4.5 wobbles within noise).
+  trend, not strict monotonicity — 4.5 wobbles within noise). *(2026-08-31: a same-version null of 97 pairs, median 5 side-flips and p90 12, was not available when this was measured. Version-arc claims on this instrument should be read against it -- see the update above.)*
 - **Grok dose-response.** Under the five-step gradient Grok 4.3 reaches the full v1
   magnitude (3.00 → **5.00** across the ten neutral questions) at the opinionated-persona
   condition; the simple "what do you think?" unmask already moves it to 3.63, and the
@@ -90,7 +203,7 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
   Gemma-2 on the 4090) removes refusals and rewrites **~70% of the political wording**
   (word-set Jaccard ≈ 0.3, confirmed deterministic at temperature 0) yet moves the
   institutional-skepticism **stance ≤ 0.10**. The refusal direction and the institutional
-  lean are **dissociable.**
+  lean are **dissociable.** *(Confirmed and strengthened 2026-08-31 -- see the update above.)*
 - **Sycophancy control.** A reversed-premise pass (topics reframed to *invite* deference)
   shows **all five tested models hold within ≤ 0.40** of their neutral-framing stance —
   the unmask measures a genuine institutional lean, not generic agreeableness.
