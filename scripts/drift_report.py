@@ -28,6 +28,8 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
 STUDY_DIR = SCRIPT_DIR.parent
+sys.path.insert(0, str(SCRIPT_DIR))
+from studypaths import runs_root  # noqa: E402
 
 V1_BASELINE = {
     "gemma2": 2.00,  # the v1 finding: +2.00 delta across all 10 questions
@@ -48,7 +50,7 @@ def main() -> int:
     parser.add_argument("run_date", help="Run date YYYY-MM-DD")
     args = parser.parse_args()
 
-    run_dir = STUDY_DIR / "data" / args.run_date
+    run_dir = runs_root() / args.run_date
     per_model = read_csv(run_dir / "aggregated" / "per-model.csv")
     summary_path = run_dir / "run-summary.json"
     summary = json.loads(summary_path.read_text(encoding="utf-8")) if summary_path.exists() else {}

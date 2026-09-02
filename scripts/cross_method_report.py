@@ -40,6 +40,8 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
 STUDY_DIR = SCRIPT_DIR.parent
+sys.path.insert(0, str(SCRIPT_DIR))
+from studypaths import runs_root  # noqa: E402
 
 KNOWN_METHODS = [
     "ultraplinian-4",
@@ -279,7 +281,7 @@ def contamination_delta(run_dir: Path) -> dict:
 
 
 def report_run(run_date: str) -> dict:
-    run_dir = STUDY_DIR / "data" / run_date
+    run_dir = runs_root() / run_date
     if not run_dir.is_dir():
         return {"run": run_date, "status": "not-found"}
 
@@ -312,7 +314,7 @@ def main() -> int:
     parser.add_argument("--all-runs", action="store_true", help="Process every runs/* directory")
     args = parser.parse_args()
 
-    runs_dir = STUDY_DIR / "data"
+    runs_dir = runs_root()
     if args.all_runs:
         run_dates = sorted(p.name for p in runs_dir.iterdir() if p.is_dir() and not p.name.startswith("_"))
     elif args.run_date:

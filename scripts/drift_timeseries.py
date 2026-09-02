@@ -26,7 +26,9 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
 STUDY_DIR = SCRIPT_DIR.parent
-RUNS_DIR = STUDY_DIR / "data"
+sys.path.insert(0, str(SCRIPT_DIR))
+from studypaths import runs_root  # noqa: E402
+RUNS_DIR = runs_root()
 
 # Family + version parsing — extracts vendor and version number from model ID
 # Returns (family, version_sort_key, version_label)

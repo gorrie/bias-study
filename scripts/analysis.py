@@ -27,6 +27,8 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
 STUDY_DIR = SCRIPT_DIR.parent
+sys.path.insert(0, str(SCRIPT_DIR))
+from studypaths import runs_root  # noqa: E402
 
 
 def load_scored(run_dir: Path) -> list[dict]:
@@ -318,7 +320,7 @@ def main() -> int:
     parser.add_argument("run_date", help="Run date or run-dir name (e.g. 2026-05-25 or 2026-05-25-full)")
     args = parser.parse_args()
 
-    run_dir = STUDY_DIR / "data" / args.run_date
+    run_dir = runs_root() / args.run_date
     if not (run_dir / "scored").exists():
         print(f"ERROR: {run_dir}/scored not found", file=sys.stderr)
         return 2
