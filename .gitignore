@@ -21,3 +21,12 @@ data/_aggregated/*.log
 data/_aggregated/cross-method-report.json
 .claude/
 /agents/
+
+# Third-party instrument, fetched by the reader and NEVER committed.
+#
+# scripts/fetch_items.py writes this file: the 62 politicalcompass.org propositions,
+# retrieved at the reader's end so this repository never republishes them. The pre-commit
+# hook would refuse it, but the hook only sees what is STAGED -- and on 2026-09-01 the
+# failure mode was 525 untracked run files sitting one `git add -A` away from publication.
+# Ignoring it means the accident cannot start.
+data/compass-propositions.json
