@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+"""Render the controls matrix from data/controls-audit.json. Nothing restates it in prose.
+
+The matrix says, per study, which measurement controls it runs. It is the paper's central
+table and the most defamatory thing in the project -- it asserts what other people's papers
+failed to do -- so it carries two guards the rest of the project learned the hard way.
+
+FIRST GUARD: provenance. Every record declares whether the paper was read in full, retrieved
+as a summary, or is carried over from this project's earlier literature pass and never
+re-verified. `--strict` refuses to render any 'no' verdict sourced from an unverified record,
+because "study X does not run control Y" is a claim about someone else's work and it needs a
+source stronger than our own notes. Use --strict before publication.
+
+SECOND GUARD: no hand-copying. Every count in the paper comes from this script's output.
+`--check` exits 1 when the rendered matrix in a target file has drifted from the data.
+
+    python scripts/controls_audit.py                 # the matrix
+    python scripts/controls_audit.py --strict        # refuse unverified 'no' verdicts
+    python scripts/controls_audit.py --markdown      # paper-ready
+    python scripts/controls_audit.py --gaps          # per-control tallies and the pairs-in-hand list
+"""
+from __future__ import annotations
+
+import argparse
+import io
+import json
+import os
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+STUDY = os.path.dirname(HERE)
+DATA = os.path.join(STUDY, "data", "controls-audit.json")
+
+MARK = {"yes": "yes", "partial": "part", "no": "NO", "n/a": "--", "unknown": "?"}
+WEAK_PROVENANCE = ("project-review",)
+
+
+def load():
+    with io.open(DATA, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def render(doc, markdown=False):
+    controls = list(doc["controls"])
+    studies = [s for s in doc["studies"] if s["id"] != "ours"] + \
+              [s for s in doc["studies"] if s["id"] == "ours"]
+
+    short = {"item_order": "order", "nuisance_magnitude": "magnitude",
+             "same_version_point": "sv-point",
+             "same_version_dist": "sv-dist", "quantisation": "quant",
+             "retained_failures": "failures", "reported_mde": "MDE",
+             "forcing_disclosed": "forcing", "open_raw": "raw"}
+    # A control added to the data file but not named here is a silent omission from the
+    # matrix, which is the exact defect the matrix is about.
+    missing = [c for c in controls if c not in short]
+    if missing:
+        raise SystemExit("controls in the data file with no column label: %s" % missing)
+
+    out = []
+    if markdown:
+        out.append("| study | year | " + " | ".join(short[c] for c in controls) + " | provenance |")
+        out.append("|---|---:|" + "---|" * len(controls) + "---|")
+        for s in studies:
+            cells = " | ".join(MARK[s["status"][c]] for c in controls)
+            name = "**this study**" if s["id"] == "ours" else s["id"]
+            out.append("| %s | %d | %s | %s |" % (name, s["year"], cells, s["provenance"]))
+    else:
+        head = "study".ljust(20) + "yr  " + "".join(short[c].rjust(10) for c in controls)
+        out.append(head)
+        out.append("-" * len(head))
+        for s in studies:
+            row = s["id"].ljust(20) + str(s["year"])[2:] + "  "
+            row += "".join(MARK[s["status"][c]].rjust(10) for c in controls)
+            out.append(row)
+    return "\n".join(out)
+
+
+def gaps(doc):
+    controls = list(doc["controls"])
+    studies = [s for s in doc["studies"] if s["id"] != "ours"]
+    lines = ["PER-CONTROL TALLY, excluding this study (n=%d)" % len(studies), ""]
+    for c in controls:
+        counts = {}
+        for s in studies:
+            counts[s["status"][c]] = counts.get(s["status"][c], 0) + 1
+        summary = ", ".join("%s %d" % (k, counts[k]) for k in
+                            ("yes", "partial", "no", "n/a", "unknown") if k in counts)
+        lines.append("  %-22s %s" % (c, summary))
+        lines.append("      %s" % doc["controls"][c])
+    lines.append("")
+
+    # The argument of the paper is not that these controls are hard. It is that the pairs
+    # were already in hand. That list is the one worth printing.
+    lines.append("STUDIES WHOSE OWN DESIGN CONTAINS THE PAIRS FOR A SAME-VERSION NULL")
+    lines.append("but which do not report one as a distribution:")
+    for s in studies:
+        if s["status"]["same_version_dist"] in ("no", "partial"):
+            note = s["notes"].get("same_version_dist") or s["notes"].get("same_version_point")
+            if note:
+                lines.append("  %s -- %s" % (s["id"], note))
+    return "\n".join(lines)
+
+
+def strict_check(doc):
+    """A 'no' verdict about someone else's paper needs a source stronger than our own notes."""
+    problems = []
+    for s in doc["studies"]:
+        if s["provenance"] not in WEAK_PROVENANCE:
+            continue
+        for c, v in s["status"].items():
+            if v == "no":
+                problems.append((s["id"], c, s["provenance"]))
+    if not problems:
+        print("STRICT: every 'no' verdict is sourced from a read or retrieved paper.")
+        return 0
+    print("STRICT FAILURE -- %d 'no' verdicts rest on unverified records." % len(problems))
+    print("Each asserts a study did NOT run a control, on the strength of our own notes.")
+    print("Read the source and upgrade provenance, or downgrade the verdict to 'unknown'.")
+    print()
+    for sid, control, prov in problems:
+        print("  %-22s %-22s provenance=%s" % (sid, control, prov))
+    return 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--markdown", action="store_true")
+    ap.add_argument("--gaps", action="store_true")
+    ap.add_argument("--strict", action="store_true")
+    args = ap.parse_args(argv)
+
+    doc = load()
+    if args.strict:
+        return strict_check(doc)
+    if args.gaps:
+        print(gaps(doc))
+        return 0
+
+    print(render(doc, args.markdown))
+    if not args.markdown:
+        print()
+        print("yes = runs it and reports the magnitude   part = adjacent, or unreported")
+        print("NO  = does not run it   -- = does not apply   ? = not established")
+        print()
+        print("Run --gaps for the tallies, --strict before publishing any 'NO'.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

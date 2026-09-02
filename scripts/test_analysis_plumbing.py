@@ -1,0 +1,211 @@
+"""Regression tests for the analysis plumbing: encoding, run discovery, gate templates.
+
+WHY THIS FILE EXISTS
+--------------------
+This directory had exactly one test file (`test_compass_parser.py`, the answer parser) and
+three gates (`gen_paper --check`, `key_numbers --check`, `controls_audit --strict`). Gates check
+the ARTIFACT against the data. They do not check the tooling's logic, and on 2026-09-01/02 that
+distinction cost three real defects, every one of which a unit test would have caught in a
+second:
+
+  1. `gen_paper.run()` captured a child's UTF-8 stdout with the parent's cp1252 locale, so every
+     em-dash in a generated block became three characters of mojibake -- and `--check` reported
+     "all 8 generated blocks are current", because it corrupted BOTH sides of its own
+     comparison. A gate that renders its input through the defect it is checking for is not a
+     gate.
+  2. `floor_table` kept a hardcoded include-list of run directories. 14 runs collected to
+     extend the frontier order floor contributed nothing, and the file's own comment records
+     the SAME failure a day earlier with 27 runs -- fixed then by adding two directories to the
+     list, which guaranteed the recurrence.
+  3. `key_numbers`' phrase template for `order_p90_local` read "p90 %d, max 24" -- a second
+     number hardcoded inside the expectation for a different quantity. When the local max moved
+     24 -> 22 the gate failed on a sentence that was correct.
+
+Each class is tested here, on the principle that the defect that already happened is the one
+most likely to happen again.
+
+    python scripts/test_analysis_plumbing.py
+"""
+from __future__ import annotations
+
+import io
+import json
+import os
+import re
+import shutil
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+STUDY = os.path.dirname(HERE)
+sys.path.insert(0, HERE)
+
+import floor_table as F      # noqa: E402
+import gen_paper as G        # noqa: E402
+import key_numbers as K      # noqa: E402
+
+REPLACEMENT = "�"
+
+
+# --------------------------------------------------------------------- 1. encoding
+
+def test_generated_blocks_carry_no_replacement_characters():
+    """The paper itself. 19 of these were committed and the freshness gate passed over them.
+
+    SKIPS when the paper is absent, which is the state in the public replication package:
+    the writeup is an authorial decision separate from shipping the tooling and the data. A
+    replicator can reproduce every floor and every detection limit without it, and this test
+    has nothing to check until they have it.
+    """
+    paper = os.path.join(STUDY, "PAPER-below-the-floor.md")
+    if not os.path.exists(paper):
+        return
+    text = io.open(paper, encoding="utf-8").read()
+    assert REPLACEMENT not in text, (
+        "%d replacement character(s) in the paper -- a generated block was written through a "
+        "mis-decoded pipe" % text.count(REPLACEMENT))
+    assert "â€" not in text, "cp1252-mangled UTF-8 sequence in the paper"
+
+
+def test_subprocess_capture_decodes_as_utf8():
+    """`run()` must not decode a child's UTF-8 with the parent's locale.
+
+    Asserted on a script whose output genuinely contains non-ASCII: the timeline table uses
+    em-dashes. If this regresses, every generated block silently gains mojibake and --check
+    stays green because it compares mangled against mangled.
+    """
+    out = G.run("timeline.py", ["--markdown"])
+    assert out, "timeline.py produced nothing"
+    assert REPLACEMENT not in out, "child output came back with replacement characters"
+    assert "â€" not in out, "child output came back cp1252-mangled"
+
+
+def test_run_uses_an_explicit_encoding():
+    """Belt and braces: the call itself must name an encoding, not inherit the locale.
+
+    Reads the `run` function's body rather than trying to find the end of the call -- the
+    first attempt split on the next ')' and landed inside os.path.join(HERE, script), which
+    is the kind of parsing that makes a test fail on correct code.
+    """
+    src = io.open(os.path.join(HERE, "gen_paper.py"), encoding="utf-8").read()
+    body = src.split("\ndef run(", 1)[1].split("\ndef ", 1)[0]
+    assert "subprocess.run(" in body, "run() no longer shells out; re-read this test"
+    assert 'encoding="utf-8"' in body or "encoding='utf-8'" in body, (
+        "gen_paper.run() calls subprocess.run without encoding='utf-8' -- text=True will "
+        "decode the child's UTF-8 with the parent locale, which is cp1252 on this machine")
+
+
+# ------------------------------------------------------- 2. run-directory discovery
+
+def test_order_floor_discovers_a_new_run_directory():
+    """A directory that lands tomorrow must be counted tomorrow, with no code edit.
+
+    This is the test the include-list could never have passed. It writes a synthetic
+    condition-A sheet into a new run directory, asserts the order floor sees the model, and
+    removes it again.
+    """
+    probe_dir = os.path.join(STUDY, "runs", "_test-probe-order-discovery")
+    model = "test-vendor/discovery-probe"
+    os.makedirs(probe_dir, exist_ok=True)
+    try:
+        for seed, offset in ((101, 0), (202, 1)):
+            record = {
+                "schema": "compass-run/1", "model": model, "condition": "A",
+                "shuffle_seed": seed, "valid": True, "n_answers": 62,
+                # Not a constant sheet: load() drops degenerate ones on purpose.
+                "answers": [{"q": q, "position": (q + offset) % 4} for q in range(1, 63)],
+            }
+            with io.open(os.path.join(probe_dir, "probe_%d.jsonl" % seed), "w",
+                         encoding="utf-8", newline="\n") as fh:
+                fh.write(json.dumps(record) + "\n")
+
+        cells = F._order_cells()
+        assert model in cells, (
+            "a new run directory was invisible to the order floor -- the include-list "
+            "regression is back")
+        assert set(cells[model]) == {101, 202}, cells.get(model)
+    finally:
+        shutil.rmtree(probe_dir, ignore_errors=True)
+
+
+def test_order_exclude_is_actually_applied():
+    """An exclusion that is declared and not applied is worse than none at all.
+
+    The first version of the discovery change declared ORDER_EXCLUDE and never consulted it.
+    """
+    assert F.ORDER_EXCLUDE, "ORDER_EXCLUDE is empty; nothing to verify"
+    probe = os.path.join(STUDY, "runs", sorted(F.ORDER_EXCLUDE)[0])
+    if not os.path.isdir(probe):
+        return                      # the excluded directory is not present in this checkout
+    src = io.open(os.path.join(HERE, "floor_table.py"), encoding="utf-8").read()
+    body = src.split("def _order_cells(", 1)[1].split("\ndef ", 1)[0]
+    assert "ORDER_EXCLUDE" in body, "_order_cells does not consult ORDER_EXCLUDE"
+
+
+def test_order_sources_reports_what_contributed():
+    """"The floor reads everything" has to be checkable, not asserted."""
+    sources = F.order_sources()
+    assert sources, "no run directory contributed a condition-A sheet"
+    assert len(sources) > 4, (
+        "only %d directories contributed; the floor is reading a narrow slice" % len(sources))
+
+
+# ----------------------------------------------------------- 3. gate self-consistency
+
+#: Literal numbers a gated phrase may contain, each a FIXED property of the instrument or a
+#: label rather than a measured value. Anything not on this list is a quantity nothing checks.
+#: Adding an entry is a deliberate act; that is the point of the list being here.
+ALLOWED_LITERALS = {
+    "62",    # items in the instrument. Fixed by politicalcompass.org, not measured by us.
+    "90",    # the percentile in "p90" -- a label for the statistic, not its value.
+    "2026",  # a year.
+}
+
+
+def test_no_phrase_template_hides_a_second_number():
+    """A gated phrase may name ONE measured quantity: the one it checks.
+
+    The defect: "our order floor is p90 %d, max 24" checked the p90 and silently asserted the
+    max. When the max moved 24 -> 22 the gate failed on a sentence that was correct, and
+    pointed at the wrong quantity.
+
+    A blanket "no digits" rule was the first attempt and it was too crude -- it flagged "62
+    items" and "p90", which are a constant and a label. So the rule is a whitelist of literals
+    that cannot drift, and everything else has to be a placeholder.
+    """
+    offenders = []
+    for row in K.build():
+        template = row["phrase"]
+        stripped = template.replace("%d", "").replace("%s", "")
+        for literal in re.findall(r"\d+", stripped):
+            if literal not in ALLOWED_LITERALS:
+                offenders.append((row["key"], literal, template))
+    assert not offenders, (
+        "phrase template(s) assert a number nothing checks: %s" % offenders)
+
+
+def test_every_gated_phrase_has_exactly_one_placeholder():
+    for row in K.build():
+        n = row["phrase"].count("%d") + row["phrase"].count("%s")
+        assert n == 1, "%s has %d placeholders: %r" % (row["key"], n, row["phrase"])
+
+
+def test_gated_values_are_not_none():
+    for row in K.build():
+        assert row["value"] is not None, row["key"]
+
+
+if __name__ == "__main__":
+    import traceback
+    failures = 0
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            try:
+                fn()
+                print("ok    %s" % name)
+            except Exception:
+                failures += 1
+                print("FAIL  %s" % name)
+                traceback.print_exc()
+    print()
+    print("%d failure(s)" % failures)
+    raise SystemExit(1 if failures else 0)

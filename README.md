@@ -67,19 +67,52 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 
 ## Update, 2026-08-31 — re-measured on a forced-choice instrument
 
-> **Provenance of the numbers in this section.** The 2026-08-31 re-measurement was run on a
-> different instrument, with its own runs, scripts and gates, in a separate research
-> directory that is not part of this repository. **You cannot verify the figures below from
-> what is checked in here.** This repo holds the May 2026 judge-scored study: its protocol,
-> scripts, results and adversarial review. The forced-choice corpus, the floor and power
-> scripts, and the controls audit are not in it yet, and until they are, treat this section as
-> a summary of work published elsewhere rather than as a reproducible claim. Publishing an
-> unverifiable number is the exact failure this update is about.
+> **Provenance, and what you can check.** As of 2026-09-02 the forced-choice tooling and its
+> run data ARE in this repository, and the floors and detection limits below recompute from
+> what is checked in here. What is **not** here, and never will be, is the instrument itself:
+> the 62 propositions are politicalcompass.org's licensed text, not the author's work.
+>
+> That is why every run record is keyed by item id — `{"q": 17, "position": 2}` — and carries
+> `forcing_prompt_sha256` instead of the prompt. Run `scripts/fetch_items.py` to retrieve the
+> items at your end, then `--verify-run` to prove you hold the same instrument we did. See
+> **Replicating the barometer** below.
+>
+> Two honest caveats. `PAPER-below-the-floor.md`, the academic writeup, is not here — that is
+> an authorial decision, and none of the floors depend on it. And 19 run records had their
+> `response_text` withheld because the MODEL echoed propositions back; their answers are
+> intact, so no number changes, and `runs/COMPASS-EXPORT-MANIFEST.json` records the count.
+
+### Replicating the barometer
+
+Four commands, in order. Nothing here needs an API key except the collection step.
+
+```bash
+python scripts/fetch_items.py                       # retrieve the 62 items at your end
+python scripts/fetch_items.py --verify-run runs/2026-08-31-order-control/*.jsonl
+python scripts/test_compass_parser.py               # 13 parser fixtures; gate before collecting
+python scripts/floor_table.py                       # the floors, from the shipped runs
+python scripts/power.py                             # detection limits per null
+```
+
+`floor_table.py` should print `presentation order` at **84 pairs** and `same-version variants`
+at **97**; `power.py` should put the order threshold at **13** and the same-version detection
+limit at **11**. If your numbers differ, something is wrong and it is worth telling us about.
+
+To collect your own runs rather than re-analyse ours, `scripts/run_compass.py` needs an
+`OPENROUTER_API_KEY`. Run the parser fixtures first — the whole instrument depends on the
+answer parser being strict, and it has 13 tests for that reason.
+
+**A layout wrinkle you will notice.** The May study's runs live under `data/` and the
+forced-choice export lives under `runs/`. Two eras, two conventions;
+`scripts/studypaths.py` resolves the first and the compass scripts read the second. It is
+untidy and it is not ambiguous.
+
+### The re-measurement
 
 The findings below are the May 2026 study and stand as recorded. A second measurement pass
 put the same subject matter to a **forced-choice instrument** — 62 externally authored
 propositions, four options, no neutral answer, **no LLM judge anywhere in the scoring
-path** — across 1,643 runs, 155 models and thirteen vendor families. It confirmed one headline, narrowed
+path** — across 1,692 runs, 155 models and sixteen vendor keys. It confirmed one headline, narrowed
 another, withdrew the framing of a third, and produced the thing the original study lacked:
 **the noise floors a measurement on this instrument has to clear.**
 

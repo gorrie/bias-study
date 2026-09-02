@@ -310,11 +310,17 @@ def verify_run(path, items):
     # telling them their items are wrong would be false.
     # Walk up for the export manifest rather than assuming a depth: runs live at
     # export/runs/<run-date>/<file>.jsonl today and a reader may have moved them.
+    # Both names, because the export is called MANIFEST.json where it is produced and
+    # COMPASS-EXPORT-MANIFEST.json where it is published (runs/ already holds run
+    # directories, so a bare MANIFEST.json there would be ambiguous). Knowing only one name
+    # made this fall through to "your items genuinely differ" on a correct reproduction.
     expected_norm = None
     probe = os.path.dirname(os.path.abspath(path))
     for _ in range(5):
-        candidate = os.path.join(probe, "MANIFEST.json")
-        if os.path.exists(candidate):
+        candidate = next(
+            (c for c in (os.path.join(probe, "COMPASS-EXPORT-MANIFEST.json"),
+                         os.path.join(probe, "MANIFEST.json")) if os.path.exists(c)), None)
+        if candidate:
             try:
                 expected_norm = json.load(
                     io.open(candidate, encoding="utf-8")).get("instrument_normalized_sha256")
@@ -357,8 +363,10 @@ def verify_run(path, items):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--verify-run", metavar="FILE",
-                    help="rebuild each record's prompt and check it against the stored hash")
+    ap.add_argument("--verify-run", metavar="FILE", nargs="+",
+                    help="rebuild each record's prompt and check it against the stored hash; "
+                         "takes any number of files, so a shell glob over a whole run "
+                         "directory works")
     ap.add_argument("--expect-sha256", metavar="HEX",
                     help="exit 1 unless the fetched item set hashes to this")
     ap.add_argument("--offline", action="store_true",
@@ -366,7 +374,15 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     if args.verify_run:
-        return verify_run(args.verify_run, load_local())
+        items = load_local()
+        worst = 0
+        for path in args.verify_run:
+            worst = max(worst, verify_run(path, items))
+            if len(args.verify_run) > 1:
+                print()
+        if len(args.verify_run) > 1:
+            print("%d file(s) checked." % len(args.verify_run))
+        return worst
 
     if args.offline:
         items, source = load_local(), "local " + os.path.relpath(OUT, ROOT)
