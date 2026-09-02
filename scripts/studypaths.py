@@ -33,10 +33,25 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import random
 from pathlib import Path
 
-STUDY_DIR = Path(__file__).resolve().parent.parent
+#: Which study directory to read. Defaults to the repo this file lives in; `STUDY_ROOT`
+#: overrides it so ONE copy of these scripts can serve more than one study tree.
+#:
+#: WHY THIS EXISTS (2026-09-02). The private working study and this public mirror had
+#: DIVERGED at the statistics layer, not just in prose. `ci_analysis.py` here carries the
+#: per-cell RNG streams; the private copy still had a module-level `random.seed()`, so its
+#: bootstrap intervals depended on the order the run-dates were passed. Measured on two runs:
+#: 5 of 22 cells moved their CI bounds by up to 0.04 under reversal, and no verdict flipped --
+#: which is luck, because the study's gate is binary and a bound near zero is decidable by
+#: argument order.
+#:
+#: The repair is one implementation rather than a ported patch. That needs the private tree
+#: to be able to call these scripts, and calling them WITHOUT this override would resolve to
+#: the public (scrubbed) runs and silently analyse the wrong data -- worse than a crash.
+STUDY_DIR = Path(os.environ.get("STUDY_ROOT") or Path(__file__).resolve().parent.parent)
 
 #: May 2026's seed. Frozen. Used when a run's manifest declares none.
 LEGACY_SEED = 20260527
@@ -46,10 +61,36 @@ class RunNotFound(Exception):
     """A run directory, or its scored/ subdirectory, is not where it should be."""
 
 
+def _looks_like_runs_root(p: Path) -> bool:
+    """True when a directory actually CONTAINS runs, not merely when it is named for them."""
+    if not p.is_dir():
+        return False
+    for child in p.iterdir():
+        if not child.is_dir():
+            continue
+        if (child / "scored").is_dir() or (child / "manifest.json").exists():
+            return True
+        if any(child.glob("*.jsonl")):
+            return True
+    return False
+
+
 def runs_root() -> Path:
-    """`data/` in this repo; `runs/` in the predecessor layout."""
-    for name in ("data", "runs"):
-        p = STUDY_DIR / name
+    """The directory that holds run directories: `data/` here, `runs/` in other layouts.
+
+    Resolved BY CONTENT, not by name. Name-based resolution worked only because this repo's
+    `data/` happens to hold runs -- point `STUDY_ROOT` at the private working study, whose
+    `data/` holds config JSON and whose runs live in `runs/`, and a name-based rule silently
+    returns the config directory. The failure mode is an analysis that finds no runs and, in
+    the shape this module was written to kill, reports success having computed nothing.
+    """
+    candidates = [STUDY_DIR / "data", STUDY_DIR / "runs"]
+    for p in candidates:
+        if _looks_like_runs_root(p):
+            return p
+    # Nothing has runs in it. Fall back to an existing directory so the caller's own error
+    # names the missing run rather than this function's, but never invent one.
+    for p in candidates:
         if p.is_dir():
             return p
     raise RunNotFound(f"neither data/ nor runs/ exists under {STUDY_DIR}")
