@@ -207,7 +207,8 @@ def load_pairs(path: Path) -> list[dict]:
 
 
 def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int = 60,
-                    attempts: int = 4) -> dict:
+                    temperature: float = 0.7, max_tokens: int = 800,
+                    seed: int | None = None, attempts: int = 4) -> dict:
     """Retrying front door. Transient transport failures are NOT model behaviour.
 
     Measured 2026-08-31 in the working study: 66 rows across 11 models were recorded as model
@@ -224,7 +225,9 @@ def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int
     delay = 2.0
     last = None
     for attempt in range(1, attempts + 1):
-        r = _call_openrouter_once(model, messages, api_key, timeout=timeout)
+        r = _call_openrouter_once(model, messages, api_key, timeout=timeout,
+                                  temperature=temperature, max_tokens=max_tokens,
+                                  seed=seed)
         if r.get("ok"):
             return r
         last = r
@@ -247,8 +250,15 @@ def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int
 
 
 def _call_openrouter_once(model: str, messages: list[dict], api_key: str,
-                          timeout: int = 60) -> dict:
-    """Returns {ok, response_text, raw, latency_ms, tokens_in, tokens_out, error?}."""
+                          timeout: int = 60, temperature: float = 0.7,
+                          max_tokens: int = 800,
+                          seed: int | None = None) -> dict:
+    """Returns {ok, response_text, raw, latency_ms, tokens_in, tokens_out, error?}.
+
+    temperature/max_tokens default to the v2 prompt-rung settings so existing runs are
+    unchanged. run_compass.py overrides both: forced choice needs temperature 0 (the
+    prereg noise-floor-first rule) and a short completion, and passes a seed.
+    """
     start = time.time()
     try:
         r = requests.post(
@@ -262,8 +272,11 @@ def _call_openrouter_once(model: str, messages: list[dict], api_key: str,
             json={
                 "model": model,
                 "messages": messages,
-                "temperature": 0.7,
-                "max_tokens": 800,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+                # Only sent when asked for. An unconditional null seed is not the same
+                # request as no seed field, and the forced-choice rung depends on it.
+                **({"seed": seed} if seed is not None else {}),
             },
             timeout=timeout,
         )
