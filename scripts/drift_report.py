@@ -27,9 +27,12 @@ import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
-STUDY_DIR = SCRIPT_DIR.parent
+# STUDY_DIR comes from studypaths so that STUDY_ROOT is honoured HERE too, not
+# only by runs_root(). Defining it locally as SCRIPT_DIR.parent meant a script
+# invoked against another study tree still read THIS repo for its protocol and
+# wrote into THIS repo's runs -- silent wrong-data, worse than a crash.
 sys.path.insert(0, str(SCRIPT_DIR))
-from studypaths import runs_root  # noqa: E402
+from studypaths import STUDY_DIR, runs_root  # noqa: E402
 
 V1_BASELINE = {
     "gemma2": 2.00,  # the v1 finding: +2.00 delta across all 10 questions

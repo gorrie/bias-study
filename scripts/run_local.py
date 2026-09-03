@@ -53,6 +53,8 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR))
+from studypaths import runs_root  # noqa: E402
+sys.path.insert(0, str(SCRIPT_DIR))
 import run_study as rs  # reuse load_questions + condition constants
 
 
@@ -135,7 +137,7 @@ def main() -> int:
     except Exception as e:
         print(f"  warmup skipped: {e}", flush=True)
 
-    out_dir = rs.STUDY_DIR / "data" / args.out_date / "raw"
+    out_dir = rs.runs_root() / args.out_date / "raw"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{rs.safe_filename(args.label)}.jsonl"
 

@@ -36,10 +36,14 @@ import argparse
 import json
 import re
 import statistics
+import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
-STUDY_DIR = SCRIPT_DIR.parent
+sys.path.insert(0, str(SCRIPT_DIR))
+from studypaths import runs_root  # noqa: E402
+sys.path.insert(0, str(SCRIPT_DIR))
+from studypaths import STUDY_DIR  # noqa: E402
 
 HEDGE = [
     "however", "on the other hand", "some argue", "it depends", "complex",
@@ -168,8 +172,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out-date", default="2026-05-27-abliteration")
     args = ap.parse_args()
-    raw_dir = STUDY_DIR / "data" / args.out_date / "raw"
-    scored_dir = STUDY_DIR / "data" / args.out_date / "scored"
+    raw_dir = runs_root() / args.out_date / "raw"
+    scored_dir = runs_root() / args.out_date / "scored"
 
     print(f"=== dissociation report: {args.out_date} ===")
     print(f"    raw    = {raw_dir}")

@@ -33,7 +33,8 @@ from pathlib import Path
 import requests
 
 SCRIPT_DIR = Path(__file__).parent
-STUDY_DIR = SCRIPT_DIR.parent
+sys.path.insert(0, str(SCRIPT_DIR))
+from studypaths import STUDY_DIR  # noqa: E402
 # Standard cross-platform HF token cache (Linux/macOS/Windows all use Path.home()).
 DEFAULT_HF_TOKEN_FILE = Path.home() / ".cache" / "huggingface" / "token"
 

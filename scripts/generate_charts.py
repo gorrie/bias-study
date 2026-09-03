@@ -34,7 +34,8 @@ matplotlib.use("Agg")  # non-interactive, headless-safe
 import matplotlib.pyplot as plt
 
 SCRIPT_DIR = Path(__file__).parent
-STUDY_DIR = SCRIPT_DIR.parent
+sys.path.insert(0, str(SCRIPT_DIR))
+from studypaths import STUDY_DIR  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from studypaths import runs_root  # noqa: E402

@@ -33,8 +33,29 @@ import requests
 
 # Locate paths
 SCRIPT_DIR = Path(__file__).parent
-STUDY_DIR = SCRIPT_DIR.parent
-QUESTIONS_PATH = STUDY_DIR / "protocol" / "questions.md"
+# STUDY_DIR comes from studypaths so that STUDY_ROOT is honoured HERE too, not
+# only by runs_root(). Defining it locally as SCRIPT_DIR.parent meant a script
+# invoked against another study tree still read THIS repo for its protocol and
+# wrote into THIS repo's runs -- silent wrong-data, worse than a crash.
+sys.path.insert(0, str(SCRIPT_DIR))
+from studypaths import STUDY_DIR  # noqa: E402
+
+
+def questions_path():
+    """`protocol/questions.md` here, `questions.md` in the working study.
+
+    Resolved by EXISTENCE rather than assumption, for the same reason `studypaths.runs_root`
+    resolves the run root by content: one implementation has to serve both layouts, and a
+    hardcode is how these two copies diverged in the first place.
+    """
+    for candidate in (STUDY_DIR / "protocol" / "questions.md",
+                      STUDY_DIR / "questions.md"):
+        if candidate.exists():
+            return candidate
+    raise FileNotFoundError(
+        "no questions.md under %s (tried protocol/questions.md and questions.md)" % STUDY_DIR)
+
+
 # Credential resolution (low -> high priority): repo-local .env, then real env vars.
 ENV_PATHS = [STUDY_DIR / ".env"]
 
@@ -135,7 +156,7 @@ def load_questions(positions: list[str]) -> list[dict]:
 
     Returns list of dicts with keys: id, topic, position, prompt.
     """
-    text = QUESTIONS_PATH.read_text(encoding="utf-8")
+    text = questions_path().read_text(encoding="utf-8")
     questions = []
     # Pattern: **T01-Q2** (neutral, **from v1**): "<prompt>"
     # OR        **T01-Q1** (mild): "<prompt>"
@@ -185,7 +206,48 @@ def load_pairs(path: Path) -> list[dict]:
     return out
 
 
-def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int = 60) -> dict:
+def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int = 60,
+                    attempts: int = 4) -> dict:
+    """Retrying front door. Transient transport failures are NOT model behaviour.
+
+    Measured 2026-08-31 in the working study: 66 rows across 11 models were recorded as model
+    failures when the actual cause was connection resets from the host being shut down
+    mid-sweep. A network error must never reach the study data as a run record.
+
+    Retries on connection errors, 5xx and 429. Backs OFF on 429 rather than retrying harder.
+    Sets `transient: True` when every attempt failed on transport, so the caller can decline
+    to persist the row at all.
+
+    This lived only in the private copy until 2026-09-02 -- the one place in this
+    reconciliation where the working copy was ahead of the mirror.
+    """
+    delay = 2.0
+    last = None
+    for attempt in range(1, attempts + 1):
+        r = _call_openrouter_once(model, messages, api_key, timeout=timeout)
+        if r.get("ok"):
+            return r
+        last = r
+        err = str(r.get("error") or "")
+        retryable = (
+            "HTTP 429" in err or "HTTP 5" in err
+            or "Connection" in err or "connection" in err
+            or "timed out" in err or "Max retries" in err
+        )
+        if not retryable or attempt == attempts:
+            break
+        time.sleep(delay * (4 if "HTTP 429" in err else 1))
+        delay *= 2
+    if last is not None:
+        err = str(last.get("error") or "")
+        if ("Connection" in err or "connection" in err or "Max retries" in err
+                or "timed out" in err):
+            last["transient"] = True
+    return last or {"ok": False, "error": "no attempt made", "transient": True}
+
+
+def _call_openrouter_once(model: str, messages: list[dict], api_key: str,
+                          timeout: int = 60) -> dict:
     """Returns {ok, response_text, raw, latency_ms, tokens_in, tokens_out, error?}."""
     start = time.time()
     try:

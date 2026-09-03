@@ -27,7 +27,8 @@ import sys
 import time
 from pathlib import Path
 
-STUDY_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from studypaths import STUDY_DIR  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from studypaths import runs_root  # noqa: E402
