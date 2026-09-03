@@ -1,6 +1,6 @@
 ---
 name: bias-study-prep
-description: Pre-run refresh and sanity check for the LLM bias study. Pulls the repo, confirms the protocol files are present, verifies the OpenRouter key is reachable (and, if running the heavier rungs, the OBLITERATUS / G0DM0D3 toolchain and GPU image), and records a dated prep-state file. Run before every study run to guarantee reproducibility against a known-good state.
+description: Pre-run refresh and sanity check for the LLM bias study. Validates the live forced-choice instrument (62 propositions, contiguous ids, one sentence each), runs the five pre-run gates, and snapshots every noise floor's pair count so a collection that lands nowhere is detectable. Also pulls the repo, checks the legacy judge-scored protocol files, verifies the OpenRouter key is reachable and — for the heavier rungs — the OBLITERATUS / G0DM0D3 toolchain, then records a dated prep-state file. Run before every study run to guarantee reproducibility against a known-good state.
 ---
 
 # bias-study-prep
@@ -13,6 +13,12 @@ reproducibility guarantee starts from a recorded known-good state.
 Establishes and snapshots the state the run depends on, then writes an audit record. It does
 **not** execute the study itself; it is a gate that either says "good to run" or fails loudly
 so a non-reproducible run never starts.
+
+**Read the scope note before trusting a green tick.** Steps 1–2 pre-flight the *judge-scored
+battery* that was the primary instrument until 2026-08-29. Every file they check still exists,
+so they pass — and they say nothing whatever about a forced-choice run. That is exactly how
+this skill once ran green in front of a collection it did not check. Steps 3–5 are the ones
+that speak to the current instrument. If you only have time for part of this, it is those.
 
 ## Prerequisites
 
@@ -44,30 +50,66 @@ so a non-reproducible run never starts.
 
 ## Procedure
 
+`scripts/refresh.py` runs all of this end to end and writes the audit record. The steps are
+documented so a failure is diagnosable, not so they are performed by hand.
+
 1. **Update the repo.** `git pull` on a clean working tree so the run records which commit it
    ran against. If you are also running the pipeline or weight rungs, update those upstream
    checkouts (OBLITERATUS / G0DM0D3) and note their commit hashes too.
-2. **Sanity-check the protocol directory** (`protocol/`): confirm `questions.md`, `rubric.md`,
-   `schema.md`, `run-protocol.md`, `aggregation-rules.md`, and `vendor-enrollment-brief.md` are
-   all present and non-empty. These are the spec the run is validated against.
-3. **Verify the OpenRouter key is reachable** (required for both running the study and scoring).
-   A presence check is enough for prep — confirm the env-var resolves to a non-empty value via
-   the same resolution order the scripts use (environment, then repo `.env`, then
-   `~/.claude/agents/.env`). Do **not** spend budget on a live call here; the run itself will
-   surface auth errors.
-4. **Verify the heavier toolchain only if those rungs are in scope:**
+2. **Sanity-check the legacy protocol directory** (`protocol/`): confirm `questions.md`,
+   `rubric.md`, `schema.md`, `run-protocol.md`, `aggregation-rules.md`, and
+   `vendor-enrollment-brief.md` are all present and non-empty. These are the spec the
+   *judge-scored* runs are validated against. A pass here is not a statement about the
+   forced-choice instrument — see step 3.
+3. **Validate the live forced-choice instrument.** Confirm
+   `data/compass-propositions.json`, `scripts/run_compass.py`,
+   `scripts/test_compass_parser.py` and the live prereg are present, and that the item set is
+   **62 propositions with contiguous ids 1..62** — answers are keyed by item id, so a gap
+   silently misaligns every comparison. Also confirm each proposition is **exactly one
+   sentence**, a measured property of this instrument that the parser bound in
+   `scripts/fetch_items.py` depends on.
+4. **Run the five pre-run gates.** All must *already* pass before new runs land: if the paper
+   disagrees with the data now, adding runs makes the disagreement harder to attribute rather
+   than easier.
+   - `scripts/gen_paper.py --check` — every generated table matches `runs/`
+   - `scripts/key_numbers.py --check` — the sentences quoting those tables
+   - `scripts/controls_audit.py --strict` — no verdict about another study sourced from notes
+   - `scripts/test_compass_parser.py` — the 13 answer-parser fixtures
+   - `scripts/check_no_fork.py` — no script exists in two trees with different content
+5. **Snapshot every noise floor's pair count, before the run.** This is the check this skill
+   most needed and did not have. Twice — 27 runs on 2026-09-01 and 14 on 2026-09-02 — runs
+   were collected specifically to extend a floor and contributed **nothing** to it, because
+   the floor tool carried a hardcoded list of run directories and a new directory is
+   invisible to an include list by construction. Both times the collection looked successful
+   and the row did not move. A pair count taken beforehand makes that a subtraction.
+6. **Verify the heavier toolchain only if those rungs are in scope:**
    - Pipeline rung: the G0DM0D3 server starts and answers a health check.
    - Weight rung: the OBLITERATUS CLI imports inside the GPU image, the GPU is visible to
      Docker (`docker run --rm --gpus all ... nvidia-smi`), and configs parse.
-5. **Record the state.** Write a dated prep-state file to `data/<YYYY-MM-DD>/prep-state.json`
-   containing: the repo commit hash (and any upstream tool commits), protocol-file checksums,
-   tool versions (Python, Docker, the GPU image tag if used), and env-var presence flags
+7. **Record the state.** Write a dated prep-state file containing: the repo commit hash (and
+   any upstream tool commits), protocol-file checksums, the instrument's checksums and item
+   count, each gate's exit code, `floors_before`, tool versions, and env-var presence flags
    (presence only — **never the key value**).
+
+## How to invoke
+
+```bash
+python skills/bias-study-prep/scripts/refresh.py
+
+# check-only, no pull or build:
+python skills/bias-study-prep/scripts/verify-state.py
+
+# the skill's own tests:
+python skills/bias-study-prep/scripts/test_refresh.py
+```
+
+`refresh.py` reads `BIAS_STUDY_WORKSPACE` to locate the workspace it is prepping, and defaults
+to the home directory.
 
 ## Output
 
-On success: `data/<YYYY-MM-DD>/prep-state.json` written, a console summary of commit hashes and
-env-var presence, and exit 0.
+On success: `<runs>/<YYYY-MM-DD>/prep-state.json` written, a console summary of commit hashes,
+instrument item count, each gate's verdict and every floor's pair count, and exit 0.
 
 On any failure: a console error naming the failed check, exit 1 (the run MUST NOT proceed), and
 `prep-state.json` either not written or written with `status: failed`.
@@ -78,3 +120,18 @@ On any failure: a console error naming the failed check, exit 1 (the run MUST NO
   invocations with `MSYS_NO_PATHCONV=1` so MSYS doesn't rewrite `-v host:/container` volume
   paths. On macOS/Linux this prefix is unnecessary.
 - The prep-state file is the audit trail. Keep it in the run dir so the run is self-describing.
+- **After a collection, compare against `floors_before`.** If a floor's pair count did not
+  move, the runs did not land where the floor reads — see step 5.
+
+## Files
+
+```
+skills/bias-study-prep/
+├── SKILL.md            (this file)
+├── learnings.md        accumulated run notes
+└── scripts/
+    ├── refresh.py          end-to-end pre-flight
+    ├── verify-state.py     sanity checks only, no pull or build
+    ├── log-prep-state.py   writes the audit-trail file
+    └── test_refresh.py     10 tests: instrument validation and the floor snapshot
+```
