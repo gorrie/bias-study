@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import io
+import json
 import os
 import sys
 
@@ -104,8 +105,36 @@ def audit_scale():
         studies = [dict(v, key=k) for k, v in studies.items()]
     external = [s for s in studies if (s.get("key") or s.get("id")) != "ours"]
     full = [s for s in external if s.get("provenance") == "full-text"]
+
+    # The two columns that come back nearly empty, counted rather than described. The public
+    # page said "two columns come back nearly empty" in prose while the counts sat in the
+    # JSON; prose is what goes stale, and this page's own argument is that a number typed into
+    # a document rots. Also count where the field is STRONG -- a critique that reports only
+    # failures is a hit piece, and most of these authors do publish their raw data.
+    def tally(control, verdict):
+        return sum(1 for s in external if (s.get("status") or {}).get(control) == verdict)
+
+    ours = next((s for s in studies if (s.get("key") or s.get("id")) == "ours"), None)
+    ours_status = (ours or {}).get("status") or {}
+    controls = list((rec.get("controls") or {}).keys()) if isinstance(rec, dict) else []
+
+    # EXTERNAL ONLY, every count. `ours` is 9-for-9 and sits in the same JSON, so including it
+    # inflates every "the field does X" figure by one. Caught 2026-09-04 when a first draft of
+    # the public table said 1 study reports the same-version distribution and 10 publish raw
+    # data; the true external figures are 0 and 9. The docstring above warns about exactly this
+    # and it still happened, which is the argument for computing these rather than typing them.
     return {"external": len(external), "full_text": len(full),
-            "not_full": len(external) - len(full)}
+            "not_full": len(external) - len(full),
+            "yes_same_version_dist": tally("same_version_dist", "yes"),
+            "no_same_version_dist": tally("same_version_dist", "no"),
+            "yes_reported_mde": tally("reported_mde", "yes"),
+            "no_reported_mde": tally("reported_mde", "no"),
+            "yes_quantisation": tally("quantisation", "yes"),
+            "yes_open_raw": tally("open_raw", "yes"),
+            "yes_forcing": tally("forcing_disclosed", "yes"),
+            "no_forcing": tally("forcing_disclosed", "no"),
+            "n_controls": len(controls),
+            "ours_pass": sum(1 for c in controls if ours_status.get(c) == "yes")}
 
 
 def floors():
@@ -268,6 +297,27 @@ SURFACES = {
             "arms_nodir_refusals": "%d refusals in 486 runs",
             "arms_nodir_runs": "39 refusals in %d runs",
             "arms_dir_runs": "%d runs, zero refusals",
+            # The audit block, added 2026-09-04. These were prose ("two columns come back
+            # nearly empty") while the counts sat in the JSON, on a page whose own argument is
+            # that a typed number rots -- and the page still said "ten studies" after the
+            # paper had been corrected to twelve.
+            # A NUMERAL, not a spelled-out word. The page said "ten studies" in prose long
+            # after the paper was corrected to twelve, and a spelled word cannot be gated by
+            # a numeric grep -- which is precisely how it survived.
+            # Every phrase here carries its ROW LABEL. A bare "| **%d of 12** |" matched three
+            # different rows of the same table, so the gate reported the same-version row's
+            # figure as drift against the raw-data row's -- a guard that cannot tell two
+            # numbers apart is not guarding either.
+            "audit_external": "Of the %d external studies",
+            "audit_controls": "scored against %d controls",
+            "audit_yes_same_version_dist": "the null a drift claim needs | **%d of 12** |",
+            "audit_no_same_version_dist": "%d say no and one is not applicable",
+            "audit_yes_quantisation": "controls for quantisation | **%d of 12** |",
+            "audit_yes_reported_mde": "minimum detectable effect at all | %d of 12",
+            "audit_no_reported_mde": "of 12 (**%d say no**)",
+            "audit_yes_open_raw": "publishes its raw data** | **%d of 12** |",
+            "audit_yes_forcing": "discloses its forcing prompt** | %d of 12",
+            "audit_ours_pass": "our own run passes %d of 9",
         },
     },
     "release": {
@@ -278,6 +328,67 @@ SURFACES = {
         },
     },
 }
+
+
+#: Numbers a SURFACE states that the paper does not. Same guard, different text: the public
+#: page reports the audit's control gaps and our own row, which the paper covers in a generated
+#: table rather than in a sentence, so there is no paper phrase to grep. Keyed the same way and
+#: checked the same way -- the point is that no hand-typed number on any surface is unguarded.
+def surface_numbers():
+    a = audit_scale()
+    return [
+        {"key": "audit_yes_same_version_dist", "value": a["yes_same_version_dist"],
+         "what": "external studies that DO report a same-version distribution"},
+        {"key": "audit_no_same_version_dist", "value": a["no_same_version_dist"],
+         "what": "external studies reporting no same-version distribution"},
+        {"key": "audit_yes_quantisation", "value": a["yes_quantisation"],
+         "what": "external studies that DO control for quantisation"},
+        {"key": "audit_yes_reported_mde", "value": a["yes_reported_mde"],
+         "what": "external studies that DO report a minimum detectable effect"},
+        {"key": "audit_no_reported_mde", "value": a["no_reported_mde"],
+         "what": "external studies reporting no minimum detectable effect"},
+        {"key": "audit_yes_open_raw", "value": a["yes_open_raw"],
+         "what": "external studies that DO publish their raw data"},
+        {"key": "audit_yes_forcing", "value": a["yes_forcing"],
+         "what": "external studies that DO disclose their forcing prompt"},
+        {"key": "audit_controls", "value": a["n_controls"],
+         "what": "controls each study is scored against"},
+        {"key": "audit_ours_pass", "value": a["ours_pass"],
+         "what": "of those controls our own run passes"},
+    ]
+
+
+def check_ours_row(rows):
+    """Our own row in the controls audit describes its own scale. Does it still?
+
+    Added 2026-09-04. That field read "1643 runs, 155 models, 13 vendor families" while the
+    paper two directories away said 1,657 runs and 16 vendor keys. It is unrendered today and
+    it goes public with the audit, and it is the record backing the sentence "the same table
+    scores us" -- so a stale self-description there is the exact defect this study convicts
+    five other papers of, sitting in the file that carries the conviction.
+
+    Returns a list of (what, expected, found) for anything the string no longer states.
+    """
+    rec = json.load(io.open(AUDIT, encoding="utf-8"))
+    studies = rec["studies"] if isinstance(rec, dict) and "studies" in rec else rec
+    if isinstance(studies, dict):
+        studies = [dict(v, key=k) for k, v in studies.items()]
+    ours = next((s for s in studies if (s.get("key") or s.get("id")) == "ours"), None)
+    if ours is None:
+        return [("ours row", "a row keyed 'ours' in the controls audit", None)]
+
+    scale = ours.get("scale") or ""
+    by_key = {r["key"]: r["value"] for r in rows}
+    bad = []
+    # Each of these is stated in the scale string as a bare number, so check for the number
+    # rather than for a phrase -- the wording of that field is not load-bearing, the digits are.
+    for key, label in (("corpus_runs", "runs"),
+                       ("corpus_models", "models"),
+                       ("corpus_vendors", "vendor keys")):
+        want = "%s" % by_key[key]
+        if want not in scale:
+            bad.append(("controls-audit 'ours' %s" % label, want, scale))
+    return bad
 
 
 def check_surface(name, rows):
@@ -293,7 +404,7 @@ def check_surface(name, rows):
               % (name, os.path.basename(path)))
         return []
     text = io.open(path, encoding="utf-8", newline="").read().replace("\r\n", "\n")
-    by_key = {r["key"]: r for r in rows}
+    by_key = {r["key"]: r for r in list(rows) + surface_numbers()}
     bad = []
     checked = 0
     for key, phrase in spec["phrases"].items():
@@ -369,9 +480,22 @@ def main(argv=None):
         if expected not in text:
             bad.append(r)
 
-    if not bad:
-        print("PROSE CHECK: all %d load-bearing numbers match the paper's sentences" % len(rows))
+    ours_bad = check_ours_row(rows)
+
+    if not bad and not ours_bad:
+        print("PROSE CHECK: all %d load-bearing numbers match the paper's sentences," % len(rows))
+        print("and the controls audit's own row still describes the corpus it was run on")
         return 0
+
+    if ours_bad:
+        print("THE AUDIT'S OWN ROW IS STALE -- %d figure(s)" % len(ours_bad))
+        print("This is the defect the paper convicts five other studies of, in our record of it.")
+        for what, want, found in ours_bad:
+            print("  %s: expected to state %s" % (what, want))
+            print("    field says: %r" % found)
+        print()
+        if not bad:
+            return 1
 
     print("PROSE CHECK FAILED -- %d of %d sentences disagree with the data" % (len(bad), len(rows)))
     print("Either the corpus grew and the prose is stale, or the prose was reworded.")
