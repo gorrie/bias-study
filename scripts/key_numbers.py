@@ -221,18 +221,142 @@ def build():
     ]
 
 
+#: W3.2 -- the SAME numbers, on the OTHER surfaces that state them.
+#:
+#: The paper is not the only place these quantities appear in prose. The public research page
+#: and the release repository's README both narrate them, in their own words, and neither is
+#: regenerated from `runs/`. That is three hand-typed copies of one fact, which is the exact
+#: defect this file exists to catch inside the paper -- just spread across repositories, where
+#: nobody re-reads them together.
+#:
+#: It found one on its first run. The website says "across 1,657 runs, 155 models and sixteen
+#: vendor keys"; the release README says "across 1,692 runs, 155 models and sixteen vendor
+#: keys" -- the same sentence, a different corpus size, because the release copy predates the
+#: exclusion the paper applies (REFUSAL_EXCLUDE, the google-orderfloor run dir).
+#:
+#: Keys absent from a surface are simply not checked there: a page is allowed to omit a number.
+#: What it may not do is state a DIFFERENT one in the same words.
+#: Surfaces are located by SEARCHING rather than by counting directory levels up from STUDY.
+#:
+#: This file lives in two trees -- the private study and the public mirror -- and
+#: `check_no_fork.py` requires those copies to be byte-identical, because a fork is how a fix
+#: lands on one side only (it caught this very edit). A hardcoded `dirname(dirname(STUDY))`
+#: resolves to different places in the two trees, so it would either break in the mirror or
+#: force a fork. Candidate paths, with a missing surface simply not checked, work in both.
+def _find_surface(*relative_parts):
+    here = os.path.abspath(STUDY)
+    for _ in range(6):
+        here = os.path.dirname(here)
+        if not here:
+            break
+        candidate = os.path.join(here, *relative_parts)
+        if os.path.exists(candidate):
+            return candidate
+    return os.path.join(STUDY, *relative_parts)      # non-existent; reported, not crashed
+
+
+SURFACES = {
+    "website": {
+        "path": _find_surface("website", "content", "research", "ai-bias-audit.md"),
+        "phrases": {
+            "corpus_runs": "across %s runs",
+            "corpus_models": "runs, %d models",
+            # The page's own wording, bold markers and line wrap included -- the phrase is a
+            # literal grep, so it has to be the sentence as written rather than as summarised.
+            "order_mde": "of %d items of 62** at 80%% power",
+            "arms_models": "Across the %d models measured under both arms",
+            "arms_nodir_refusals": "%d refusals in 486 runs",
+            "arms_nodir_runs": "39 refusals in %d runs",
+            "arms_dir_runs": "%d runs, zero refusals",
+        },
+    },
+    "release": {
+        "path": _find_surface("bias-study-release", "README.md"),
+        "phrases": {
+            "corpus_runs": "across %s runs",
+            "corpus_models": "runs, %d models",
+        },
+    },
+}
+
+
+def check_surface(name, rows):
+    """Verify one non-paper surface still states the computed numbers. Returns a failure list."""
+    spec = SURFACES[name]
+    path = spec["path"]
+    if not os.path.exists(path):
+        # NOT a failure. This file is byte-identical in two trees and only one of them
+        # contains the website, so "absent here" is the ordinary state rather than drift.
+        # Printed loudly so a surface that vanished from the tree that SHOULD have it is
+        # still visible -- the gate that matters runs where the surface lives.
+        print("%s: NOT PRESENT in this tree (%s) -- not checked here"
+              % (name, os.path.basename(path)))
+        return []
+    text = io.open(path, encoding="utf-8", newline="").read().replace("\r\n", "\n")
+    by_key = {r["key"]: r for r in rows}
+    bad = []
+    checked = 0
+    for key, phrase in spec["phrases"].items():
+        row = by_key.get(key)
+        if row is None:
+            bad.append((key, "no such computed number", ""))
+            continue
+        checked += 1
+        expected = phrase % row["value"]
+        if expected not in text:
+            # Show the surface's own version of the sentence, so the drift is visible.
+            stem = phrase.split("%")[0].strip()
+            found = ""
+            if stem:
+                for line in text.split("\n"):
+                    if stem and stem in line:
+                        found = line.strip()[:160]
+                        break
+            bad.append((key, expected, found))
+    if not bad:
+        print("%s: all %d stated number(s) agree with runs/" % (name, checked))
+    return bad
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--check-website", action="store_true",
+                    help="do the public research page's numbers still match runs/?")
+    ap.add_argument("--check-release", action="store_true",
+                    help="does the release repository's README still match runs/?")
     args = ap.parse_args(argv)
 
     rows = build()
+
+    if args.check_website or args.check_release:
+        failures = []
+        for name, wanted in (("website", args.check_website),
+                             ("release", args.check_release)):
+            if wanted:
+                failures += [(name,) + f for f in check_surface(name, rows)]
+        if not failures:
+            return 0
+        print("")
+        print("CROSS-SURFACE DRIFT -- %d statement(s) disagree with runs/" % len(failures))
+        print("These are hand-typed copies of generated numbers, living in a different repo")
+        print("from the paper, which is why nobody re-reads them together.")
+        print("")
+        for surface, key, expected, found in failures:
+            print("  [%s] %s" % (surface, key))
+            print("    expected: %r" % expected)
+            if found:
+                print("    surface says: %r" % found)
+        return 1
 
     if not args.check:
         print("KEY NUMBERS -- computed from runs/, and the phrase the paper uses for each")
         print()
         for r in rows:
-            print("  %-14s %3d   %s" % (r["key"], r["value"], r["what"]))
+            # %s, not %d: one entry carries a thousands-formatted string ("1,657"), and %d
+            # crashed on it -- so the file's own documented no-argument usage was broken while
+            # --check kept working, because --check formats through each entry's own phrase.
+            print("  %-14s %5s   %s" % (r["key"], r["value"], r["what"]))
             print("  %-14s       \"%s\"" % ("", r["phrase"] % r["value"]))
         print()
         print("Run --check to verify the paper's prose still says these.")
