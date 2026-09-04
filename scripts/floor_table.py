@@ -43,7 +43,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-from check_arm_match import INELIGIBLE_PAIRS  # noqa: E402
+from check_arm_match import INELIGIBLE_PAIRS, QUANT_PAIRS  # noqa: E402
 from classify_lineage import classify, parse  # noqa: E402
 
 BOOT_N = 2000
@@ -364,17 +364,35 @@ def floor_template():
 
 
 def floor_quant():
+    """Same base weights, two quantisations, everything else held.
+
+    PAIRS WITHIN A FAMILY, from check_arm_match.QUANT_PAIRS. It used to pair every model in a
+    condition against every other, which was harmless while the arm held one family -- gemma2
+    at Q4_0 vs Q8_0 -- and became a silent corruption the moment a second family landed on
+    2026-09-04: llama3.1-Q4 against mistral-Q8 is not a requantisation pair, it is a
+    cross-model comparison wearing the label of a null. The gated pair list is the authority
+    on what a pair is, so the floor reads it instead of inferring one from directory contents.
+
+    Note the arm previously reported "4 pairs" for ONE weights family across four prompt
+    conditions. Four conditions of one model are not four independent pairs; the n column did
+    not distinguish them, and the row was the only one in the table with no confidence
+    interval.
+    """
     cells = load("runs/2026-08-30-quant-null/**/*.jsonl")
+    cells.update(load("runs/2026-09-04-quant-null/**/*.jsonl"))
     by = collections.defaultdict(dict)
     for (m, c, o), runs in cells.items():
         by[c][m] = modal(runs)
-    pairs = []
-    for c, models in by.items():
-        ms = list(models)
-        for i in range(len(ms)):
-            for j in range(i + 1, len(ms)):
-                pairs.append(both_stats(models[ms[i]], models[ms[j]]))
-    return summarise("requantisation", pairs, "same weights, Q4 vs Q8, no other change")
+    pairs, families = [], set()
+    for c, models in sorted(by.items()):
+        for base, quant, label in QUANT_PAIRS:
+            if base in models and quant in models:
+                pairs.append(both_stats(models[base], models[quant]))
+                families.add(label)
+    return summarise("requantisation", pairs,
+                     "same weights, Q4 vs Q8, no other change; %d weights famil%s, "
+                     "gated by check_arm_match --quant-known"
+                     % (len(families), "y" if len(families) == 1 else "ies"))
 
 
 def floor_ablation():

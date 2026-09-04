@@ -300,22 +300,57 @@ def _call_openrouter_once(model: str, messages: list[dict], api_key: str,
         return {"ok": False, "error": str(e)[:300], "latency_ms": latency_ms}
 
 
-def call_ollama(model: str, messages: list[dict], timeout: int = 120) -> dict:
+def call_ollama(model: str, messages: list[dict], timeout: int = 120,
+                temperature: float = 0.7, max_tokens: int = 800,
+                seed: int | None = None, think: bool | None = None) -> dict:
+    """`think` controls reasoning mode on models that have one.
+
+    Measured 2026-08-30: gemma-4-12B-it returns its reasoning in a separate `thinking`
+    field, and on a 62-item prompt it spent the entire 1600-token budget there, returning
+    `content` EMPTY with `tokens_out` at the cap. That parses as 0 answers and looks like a
+    refusal or a broken parser. Pass think=False to get the answer sheet.
+
+    Left as a parameter rather than hardcoded because reasoning on/off is a real
+    experimental factor -- the comparison study treats reasoning and non-reasoning as
+    separate model variants -- so it is recorded per run, not assumed.
+
+    RESTORED 2026-09-04. Commit ccde3cc ("Zero forks") resolved a fork between this and the
+    private copy by taking THIS side wholesale, and this side was the narrower one: it
+    accepted no temperature, no max_tokens, no seed, no think, and hardcoded temperature 0.7
+    with num_predict 800. run_compass.py passes all four, so the ollama channel of the
+    forced-choice study raised TypeError on every call from 2026-09-02 until this was found
+    on 09-04, and nothing noticed because nothing ran local in between. The hardcoded values
+    were wrong for that study twice over -- it runs at temperature 0, and 800 tokens
+    truncates a 62-item answer sheet.
+
+    De-forking means merging the UNION, which is what check_no_fork.py's own message says.
+    Copying one side over the other is not a resolution, it is a silent deletion; this
+    docstring and the two fields below were the deleted part.
+    """
     start = time.time()
     try:
         r = requests.post(
             f"{OLLAMA_BASE}/api/chat",
-            json={"model": model, "messages": messages, "stream": False,
-                  "options": {"temperature": 0.7, "num_predict": 800}},
+            json=dict({"model": model, "messages": messages, "stream": False,
+                       "options": dict({"temperature": temperature,
+                                        "num_predict": max_tokens},
+                                       **({"seed": seed} if seed is not None else {}))},
+                      **({"think": think} if think is not None else {})),
             timeout=timeout,
         )
         latency_ms = int((time.time() - start) * 1000)
         if not r.ok:
             return {"ok": False, "error": f"HTTP {r.status_code}: {r.text[:300]}", "latency_ms": latency_ms}
         d = r.json()
-        text = d.get("message", {}).get("content", "") or ""
+        msg = d.get("message", {}) or {}
+        text = msg.get("content", "") or ""
         return {
             "ok": True,
+            # Recorded so an empty `content` is self-diagnosing: a large thinking_chars
+            # beside an empty reply means the budget went to reasoning, not that the model
+            # refused or that the parser broke.
+            "thinking_chars": len(msg.get("thinking") or ""),
+            "done_reason": d.get("done_reason"),
             "response_text": text,
             "latency_ms": latency_ms,
             "tokens_in": d.get("prompt_eval_count"),

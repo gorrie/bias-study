@@ -66,6 +66,18 @@ KNOWN_PAIRS = [
      "hf.co/OBLITERATUS/Qwen3.8-27B-OBLITERATED:Q4_K_M", "qwen38-27b"),
 ]
 
+#: Requantisation pairs: the same base weights served at two quantisations. Added 2026-09-04
+#: because the requantisation floor rested on ONE model -- gemma2 at Q4_0 vs Q8_0, across four
+#: conditions -- and reported itself as "4 pairs". Four conditions of one weights family are
+#: not four independent pairs, and the table's "n pairs" column did not say which it meant.
+QUANT_PAIRS = [
+    ("gemma2:latest", "gemma2:9b-instruct-q8_0", "gemma2-9b"),
+    ("llama3.2:latest", "llama3.2:3b-instruct-q8_0", "llama32-3b"),
+    ("mistral:latest", "mistral:7b-instruct-q8_0", "mistral-7b"),
+    ("llama3.1:8b", "llama3.1:8b-instruct-q8_0", "llama31-8b"),
+    ("qwen2.5:14b", "qwen2.5:14b-instruct-q8_0", "qwen25-14b"),
+]
+
 SAMPLING_KEYS = ("temperature", "top_p", "top_k", "repeat_penalty", "seed", "mirostat")
 
 #: The pairs this gate has RULED ineligible, by pair label, with the reason. Measured
@@ -123,22 +135,47 @@ def describe(model):
     }
 
 
-def compare(stock, ablated, label):
+#: What the pair is varying on purpose. Everything NOT named here must match.
+#:
+#: Added 2026-09-04. The gate had one hardcoded intervention -- ablation -- so it demanded
+#: matched quantisation on every pair, and correctly called three genuine requantisation pairs
+#: INVALID for differing in exactly the way a requantisation pair is supposed to differ. A gate
+#: that only understands one experiment is a gate that gets bypassed for the other, and a
+#: bypassed gate is how a pair with mismatched stop tokens enters a published floor.
+#:
+#: The dimension being varied is EXEMPTED from the match test, never ignored: it is printed as
+#: the intervention so the reader can see what the pair claims to isolate.
+INTERVENTIONS = {
+    "ablation": {"vary": (), "note": "refusal-direction ablation: everything must match"},
+    "requantisation": {"vary": ("quant",),
+                       "note": "same weights at two quantisations: everything else must match"},
+}
+
+
+def compare(stock, ablated, label, intervention="ablation"):
     try:
         a, b = describe(stock), describe(ablated)
     except (urllib.error.URLError, OSError) as exc:
         print("  %-14s ERROR  %s" % (label, str(exc)[:60]))
         return False
-    problems = []
+    vary = INTERVENTIONS[intervention]["vary"]
+    problems, varied = [], []
     if a["quant"] != b["quant"]:
-        problems.append("quantisation %s vs %s" % (a["quant"], b["quant"]))
+        msg = "quantisation %s vs %s" % (a["quant"], b["quant"])
+        (varied if "quant" in vary else problems).append(msg)
+    elif "quant" in vary:
+        # A requantisation pair whose quantisation is IDENTICAL is not a requantisation pair.
+        # It would contribute a zero to the floor and read as "requantising changes nothing".
+        problems.append("quantisation is identical (%s) -- this is not a requantisation pair"
+                        % a["quant"])
     if a["stops"] != b["stops"]:
         problems.append("stop tokens differ (%d vs %d)" % (len(a["stops"]), len(b["stops"])))
     if a["sampling"] != b["sampling"]:
         problems.append("baked sampling params differ")
     ok = not problems
     print("  %-14s %-9s %s" % (label, "MATCHED" if ok else "INVALID",
-                               "" if ok else "; ".join(problems)))
+                               "; ".join(problems) or
+                               ("varying " + ", ".join(varied) if varied else "")))
     return ok
 
 
@@ -146,26 +183,35 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("models", nargs="*", help="stock ablated [stock ablated ...]")
     ap.add_argument("--known", action="store_true", help="check the six locally-held pairs")
+    ap.add_argument("--quant-known", action="store_true",
+                    help="check the locally-held requantisation pairs")
+    ap.add_argument("--intervention", choices=sorted(INTERVENTIONS), default="ablation",
+                    help="what the pair varies on purpose; everything else must match")
     args = ap.parse_args(argv)
 
+    intervention = args.intervention
     if args.known:
         pairs = KNOWN_PAIRS
+    elif args.quant_known:
+        pairs = QUANT_PAIRS
+        intervention = "requantisation"
     elif len(args.models) >= 2 and len(args.models) % 2 == 0:
         pairs = [(args.models[i], args.models[i + 1], args.models[i].split("/")[-1][:14])
                  for i in range(0, len(args.models), 2)]
     else:
-        ap.error("give pairs of models, or --known")
+        ap.error("give pairs of models, or --known / --quant-known")
 
     print("ARM-MATCH GATE -- a pair must be identical in everything except the intervention")
+    print("  intervention: %s" % INTERVENTIONS[intervention]["note"])
     print()
-    results = [compare(s, a, lab) for s, a, lab in pairs]
+    results = [compare(s, a, lab, intervention) for s, a, lab in pairs]
     print()
     print("  %d of %d pairs usable as arms" % (sum(results), len(results)))
     if not all(results):
         print()
         print("  An INVALID pair is not a weaker arm, it is a different experiment. A")
-        print("  between-arm difference on one of these is attributable to quantisation or")
-        print("  stop-token configuration before it is attributable to the ablation.")
+        print("  between-arm difference on one of these is attributable to a serving-stack")
+        print("  difference before it is attributable to the intervention.")
     print()
     print("  Passing this gate makes a pair ELIGIBLE, not verified. It compares metadata,")
     print("  not weights. The only way to remove the third-party-artifact caveat entirely")

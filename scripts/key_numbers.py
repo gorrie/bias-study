@@ -235,8 +235,19 @@ def build():
          "phrase": "in %d runs where the prompt carries no directive"},
         {"key": "arms_dir_runs",
          "value": arms["dir_runs"],
-         "what": "directive runs on that matched subset, all of them refusal-free",
-         "phrase": "none in %d runs where it carries one"},
+         "what": "directive runs on that matched subset",
+         "phrase": "against %d runs where it carries one"},
+        # THE LOAD-BEARING NUMBER OF SECTION 1, and it was ungated until 2026-09-04. The
+        # sentence said "none in 347 runs where it carries one" and the gate only checked the
+        # 347 -- the zero was hardcoded in the phrase, so the one quantity the argument rests
+        # on was the one quantity nothing recomputed. It is no longer zero: three local models
+        # added on 2026-09-04 refuse under the commitment directive, and the claim narrows
+        # from "not one" to "3 in 354". A gate that checks the denominator of a rate and not
+        # its numerator is checking the wrong half.
+        {"key": "arms_dir_refusals",
+         "value": arms["dir_refusals"],
+         "what": "refusals in the directive arm on that matched subset",
+         "phrase": "%d of those runs are refusals"},
         {"key": "arms_declining",
          "value": arms["declining"],
          "what": "models in that subset that decline the instrument at least once",
@@ -296,9 +307,14 @@ SURFACES = {
             # literal grep, so it has to be the sentence as written rather than as summarised.
             "order_mde": "of %d items of 62** at 80%% power",
             "arms_models": "Across the %d models measured under both arms",
-            "arms_nodir_refusals": "%d refusals in 486 runs",
+            "arms_nodir_refusals": "%d refusals in 499 runs",
             "arms_nodir_runs": "39 refusals in %d runs",
-            "arms_dir_runs": "%d runs, zero refusals",
+            "arms_dir_runs": "against %d runs where it carries one",
+            # Gated on the public page too, for the same reason it is gated in the paper: this
+            # page carried "not one of them declines even once ... 347 runs, zero refusals"
+            # until 2026-09-04, and the zero was the only figure on it that was typed rather
+            # than generated.
+            "arms_dir_refusals": "**%d of those runs are refusals**",
             # The audit block, added 2026-09-04. These were prose ("two columns come back
             # nearly empty") while the counts sat in the JSON, on a page whose own argument is
             # that a typed number rots -- and the page still said "ten studies" after the
