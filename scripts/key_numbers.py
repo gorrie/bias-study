@@ -33,9 +33,11 @@ import floor_table as F      # noqa: E402
 import power as P            # noqa: E402
 import refusal_table as R    # noqa: E402
 
-# The exclusion gen_paper.py applies to the refusal block. Kept in sync here because the
-# corpus-scale sentences in section 2 describe that same analysis.
-REFUSAL_EXCLUDE = {"2026-08-31-google-orderfloor"}
+# NOT a copy any more. This was a literal set "kept in sync" with gen_paper.py's --exclude
+# argument, and on 2026-09-04 the paraphrase-floor arm had to be withheld from every refusal
+# figure -- which meant editing the same fact in three places or having the paper and this
+# gate describe different corpora. refusal_table.DEFAULT_EXCLUDE owns it; this is a reference.
+REFUSAL_EXCLUDE = R.DEFAULT_EXCLUDE
 AUDIT = os.path.join(STUDY, "data", "controls-audit.json")
 
 
@@ -139,7 +141,7 @@ def audit_scale():
 
 def floors():
     out = {}
-    for fn in (F.floor_order, F.floor_same_version, F.floor_quant,
+    for fn in (F.floor_order, F.floor_same_version, F.floor_template, F.floor_quant,
                F.floor_ablation, F.floor_conditions):
         r = fn()
         if r:

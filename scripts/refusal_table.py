@@ -21,9 +21,9 @@ one, and exits 1 on any disagreement. That is the guard: if the rule here ever d
 the rule in the collector, this stops being a recomputation of the same quantity.
 
 Usage:
-    python scripts/refusal_table.py                     # whole corpus
+    python scripts/refusal_table.py                     # the corpus the paper describes
     python scripts/refusal_table.py --audit             # + derivation-vs-stored check
-    python scripts/refusal_table.py --exclude 2026-08-31-google-orderfloor
+    python scripts/refusal_table.py --exclude                # whole corpus, nothing withheld
 """
 
 import argparse
@@ -45,6 +45,28 @@ LEGACY_MAX_TOKENS = 1600
 # wash-llama31-8b-ablit invents its own questions and answers those. Excluded by name rather
 # than by loosening the refusal test, which has to stay strict for every intact model.
 BROKEN_BUILDS = ("wash-",)
+
+#: Run directories withheld from every refusal figure, each with the reason it is withheld.
+#: THE ONLY COPY. This set previously existed three times -- a literal set in
+#: key_numbers.py, a `--exclude` argument in gen_paper.py, and an example in the docstring
+#: above -- and on 2026-09-04 a new arm had to be added to all three or the paper and the
+#: gate would disagree about which corpus they describe. One of them would have been missed.
+#:
+#: Every entry is a TARGETED collection: runs made to extend one floor, on a chosen slice of
+#: models and usually a single condition. They are legitimate data for the arm they were
+#: collected for and they distort any rate computed over the whole corpus, because they change
+#: one condition's denominator without changing the others'.
+DEFAULT_EXCLUDE = {
+    # Three Google models re-collected specifically because they refuse most. A refusal rate
+    # that includes a sweep selected FOR refusing is not a refusal rate.
+    "2026-08-31-google-orderfloor",
+    # The paraphrase floor: 6 models x 10 templates, condition A only. Including it added 132
+    # condition-A runs against an unchanged directive arm, moving the matched-arms comparison
+    # from 39 refusals in 486 no-directive runs to 48 in 531 while the 347 directive runs
+    # stood still. The arm contrast is the finding; a one-sided denominator is not a bigger
+    # sample of it. Its own floor reads these runs directly (floor_table.floor_template).
+    "2026-09-04-template-floor",
+}
 
 
 def vendor_of(model):
@@ -100,7 +122,14 @@ def classify(row):
     return "other"
 
 
-def load(exclude):
+def load(exclude=None):
+    """Every scoreable row, minus the targeted collections in DEFAULT_EXCLUDE.
+
+    The default is the exclusion set rather than the empty set on purpose. A caller who wants
+    the whole corpus has to say `load(set())` and mean it; a caller who forgets the argument
+    gets the corpus the paper describes, not a silently different one.
+    """
+    exclude = DEFAULT_EXCLUDE if exclude is None else exclude
     rows = []
     for path in sorted(RUNS.glob("**/*.jsonl")):
         bucket = path.relative_to(RUNS).parts[0]
@@ -147,7 +176,9 @@ def audit(rows):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--exclude", nargs="*", default=[])
+    ap.add_argument("--exclude", nargs="*", default=sorted(DEFAULT_EXCLUDE),
+                    help="run dirs to withhold (default: DEFAULT_EXCLUDE; pass with no "
+                         "values for the whole corpus)")
     ap.add_argument("--audit", action="store_true")
     args = ap.parse_args()
 

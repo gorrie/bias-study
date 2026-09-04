@@ -57,7 +57,25 @@ def side(p):
     return p >= 2
 
 
-def load(pattern, condition=None):
+def _default_key(r):
+    return (r["model"], r["condition"], r.get("shuffle_seed"))
+
+
+def _template_key(r):
+    """Cell key for the paraphrase arm: the template is what varies, order is held fixed."""
+    return (r["model"], r["condition"], r.get("template", "T01"))
+
+
+def load(pattern, condition=None, key=None):
+    """Answer sheets grouped into cells.
+
+    `key` chooses the grouping and defaults to the historical (model, condition, shuffle_seed).
+    It is a parameter rather than a second loader because the parse, the validity filter and
+    the degenerate-sheet rule are the same for every arm, and a copy of this loop is a copy of
+    three rules that must not drift -- the template arm needs a different GROUPING, not
+    different loading.
+    """
+    key = key or _default_key
     cells = collections.defaultdict(list)
     for p in glob.glob(os.path.join(STUDY, pattern), recursive=True):
         for line in io.open(p, encoding="utf-8"):
@@ -71,8 +89,7 @@ def load(pattern, condition=None):
             vals = [a["position"] for a in r["answers"]]
             if len(set(vals)) == 1:
                 continue  # degenerate sheet
-            key = (r["model"], r["condition"], r.get("shuffle_seed"))
-            cells[key].append({a["q"]: a["position"] for a in r["answers"]})
+            cells[key(r)].append({a["q"]: a["position"] for a in r["answers"]})
     return cells
 
 
@@ -278,6 +295,35 @@ def floor_same_version():
     return summarise("same-version variants", pairs, "size / mode / snapshot / tier, same version")
 
 
+def floor_template():
+    """The paraphrase floor: same model, same order, same temperature, reworded instruction.
+
+    Added 2026-09-04, and it is the last unmeasured nuisance factor in this study. Every other
+    floor here varies the SUBJECT -- model, size, quantisation, weights -- or the order of the
+    items. The forced-choice wrapper was one fixed string across all 1,657 runs, so its
+    contribution to every number in the paper was unmeasured, and "we did not vary it" is not
+    the same claim as "it does not matter".
+
+    Ten paraphrases, meaning held constant (see PARAPHRASE_TEMPLATES in run_compass.py and the
+    import-time assertions that keep them the same task). Six 2026-frontier models, one per
+    vendor family, at temperature 0 in condition A. Roettger et al. measured this factor in
+    2024 and their p90 re-scored with this statistic is 9 of 62 -- but on Llama-2 and GPT-3.5,
+    so it establishes that the factor is real and nothing about its size today.
+    """
+    cells = load("runs/2026-09-04-template-floor/**/*.jsonl", "A", key=_template_key)
+    by_model = collections.defaultdict(dict)
+    for (m, c, tpl), runs in cells.items():
+        by_model[m][tpl] = modal(runs)
+    pairs = []
+    for m, templates in sorted(by_model.items()):
+        tids = sorted(templates)
+        for i in range(len(tids)):
+            for j in range(i + 1, len(tids)):
+                pairs.append(both_stats(templates[tids[i]], templates[tids[j]]))
+    return summarise("instruction paraphrase", pairs,
+                     "same model, same order, same temperature, reworded wrapper")
+
+
 def floor_quant():
     cells = load("runs/2026-08-30-quant-null/**/*.jsonl")
     by = collections.defaultdict(dict)
@@ -325,7 +371,7 @@ def main(argv=None):
     ap.add_argument("--markdown", action="store_true")
     args = ap.parse_args(argv)
 
-    rows = [f for f in (floor_order(), floor_same_version(), floor_quant(),
+    rows = [f for f in (floor_order(), floor_same_version(), floor_template(), floor_quant(),
                         floor_ablation(), floor_conditions()) if f]
     rows.sort(key=lambda r: -r["side"][1])
 

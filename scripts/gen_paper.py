@@ -35,10 +35,11 @@ BLOCKS = {
     "power":    ("power.py", [], None),
     "controls": ("controls_audit.py", ["--markdown"], None),
     "gaps":     ("controls_audit.py", ["--gaps"], None),
-    # The paper's refusal table must match the analysis it describes, which excludes the
-    # 2026-08-31 order-floor run -- that run is a targeted re-collection of the three Google
-    # models that refuse most, and pooling it lifts the Google row from 27% to 41%.
-    "refusal":  ("refusal_table.py", ["--exclude", "2026-08-31-google-orderfloor"], None),
+    # The paper's refusal table must match the analysis it describes, which withholds the
+    # targeted floor collections. That list is refusal_table.DEFAULT_EXCLUDE and is now the
+    # script's own default -- naming a run dir here made this the third copy of the same fact,
+    # and on 2026-09-04 a new arm needed withholding from all three.
+    "refusal":  ("refusal_table.py", [], None),
     "null":     ("floor_table.py", [], "same-version"),
     "references": ("references.py", [], None),
     "timeline":   ("timeline.py", ["--markdown"], None),
