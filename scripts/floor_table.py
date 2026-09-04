@@ -43,6 +43,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
+from check_arm_match import INELIGIBLE_PAIRS  # noqa: E402
 from classify_lineage import classify, parse  # noqa: E402
 
 BOOT_N = 2000
@@ -66,6 +67,34 @@ def _template_key(r):
     return (r["model"], r["condition"], r.get("template", "T01"))
 
 
+#: What load() threw away on the last call, and why. A dropped run is a measurement that does
+#: not reach a floor, and until 2026-09-04 every one of them vanished without a trace: the
+#: OBLITERATED Qwen3.8-27B's entire ablated arm -- four valid, fully parsed 62-item sheets --
+#: was discarded as degenerate and no output anywhere said a pair had lost its arm.
+#: Read it after a load, or call load_report().
+DROPPED = collections.Counter()
+
+#: Run identities already counted into DROPPED. Several floors glob overlapping directories --
+#: the order floor reads six run dirs, the condition floor reads one of the same six -- so a
+#: naive counter reports 376 drops for a corpus that has far fewer. A count that inflates with
+#: the number of callers is not a count.
+_DROPPED_SEEN = set()
+
+
+def _count_drop(reason, rec):
+    ident = (rec.get("model"), rec.get("condition"), rec.get("collected_at"),
+             rec.get("shuffle_seed"), rec.get("template"))
+    if ident in _DROPPED_SEEN:
+        return
+    _DROPPED_SEEN.add(ident)
+    DROPPED[reason] += 1
+
+
+def load_report():
+    """One line per reason load() discarded a run, for a floor to print alongside its number."""
+    return sorted(DROPPED.items(), key=lambda kv: (-kv[1], kv[0]))
+
+
 def load(pattern, condition=None, key=None):
     """Answer sheets grouped into cells.
 
@@ -74,6 +103,12 @@ def load(pattern, condition=None, key=None):
     the degenerate-sheet rule are the same for every arm, and a copy of this loop is a copy of
     three rules that must not drift -- the template arm needs a different GROUPING, not
     different loading.
+
+    Drops are counted into DROPPED rather than being silent. The degenerate-sheet rule in
+    particular is CORRECT and consequential: a model that answers every one of 62 items
+    identically has no position to compare, and scoring that against a normal sheet reports a
+    huge side-flip count that reads as an effect. Excluding it is right; excluding it invisibly
+    is how a pair loses an arm without anyone noticing.
     """
     key = key or _default_key
     cells = collections.defaultdict(list)
@@ -82,13 +117,17 @@ def load(pattern, condition=None, key=None):
             if not line.strip():
                 continue
             r = json.loads(line)
-            if r.get("schema") != "compass-run/1" or not r.get("valid"):
+            if r.get("schema") != "compass-run/1":
+                continue
+            if not r.get("valid"):
+                _count_drop("invalid run (%s)" % (r.get("failure_mode") or "unclassified"), r)
                 continue
             if condition and r["condition"] != condition:
                 continue
             vals = [a["position"] for a in r["answers"]]
             if len(set(vals)) == 1:
-                continue  # degenerate sheet
+                _count_drop("degenerate sheet, all %d: %s" % (vals[0], r.get("model")), r)
+                continue
             cells[key(r)].append({a["q"]: a["position"] for a in r["answers"]})
     return cells
 
@@ -339,8 +378,25 @@ def floor_quant():
 
 
 def floor_ablation():
-    pairs = []
-    for pair_dir in glob.glob(os.path.join(STUDY, "runs/2026-08-30-ablation-pairs/*")):
+    """Stock vs ablated, arm-matched, per condition.
+
+    EXCLUSIONS ARE BY RULING NOW, not by luck. `check_arm_match.INELIGIBLE_PAIRS` holds the
+    three of six locally-held pairs that gate measured as invalid comparison arms on
+    2026-08-30 -- mismatched quantisation, dropped stop tokens, baked sampling parameters.
+    None of those differences is the refusal direction.
+
+    Before 2026-09-04 this function did not know that. All three were excluded anyway, by
+    three unrelated accidents: two emit prose with no parsable answers, and the third answers
+    every item identically so the loader calls it degenerate. The floor was right and its
+    reason was wrong, which is a floor that holds until one of the accidents stops happening.
+    """
+    pairs, skipped = [], []
+    pair_dirs = sorted(glob.glob(os.path.join(STUDY, "runs/2026-08-30-ablation-pairs/*")))
+    for pair_dir in pair_dirs:
+        label = os.path.basename(pair_dir)
+        if label in INELIGIBLE_PAIRS:
+            skipped.append((label, INELIGIBLE_PAIRS[label]))
+            continue
         arms = {}
         for arm in ("stock", "ablated"):
             cells = load(os.path.join("runs/2026-08-30-ablation-pairs",
@@ -351,7 +407,17 @@ def floor_ablation():
             arms[arm] = {c: modal(v) for c, v in per_cond.items()}
         for c in set(arms.get("stock", {})) & set(arms.get("ablated", {})):
             pairs.append(both_stats(arms["stock"][c], arms["ablated"][c]))
-    return summarise("refusal-direction ablation", pairs, "arm-matched pairs only")
+        if not (set(arms.get("stock", {})) & set(arms.get("ablated", {}))):
+            # Eligible by the gate and still contributing nothing. That combination has no
+            # documented cause, so it must not pass quietly the way the ruled-out three did.
+            skipped.append((label, "ELIGIBLE but produced no arm-matched condition -- "
+                                   "investigate, this has no recorded reason"))
+    out = summarise("refusal-direction ablation", pairs,
+                    "%d of %d collected model pairs excluded, see check_arm_match"
+                    % (len(skipped), len(pair_dirs)))
+    if out:
+        out["skipped"] = skipped
+    return out
 
 
 def floor_conditions():
@@ -387,6 +453,13 @@ def main(argv=None):
             print()
             print("† fewer than 10 pairs, so the 90th percentile IS the maximum by "
                   "nearest-rank and the two columns print one number, not two.")
+        # A row's exclusions belong beside the row. The ablation floor rests on three of six
+        # collected model pairs and the table said only "arm-matched pairs only", which reads
+        # as a description of the method rather than as half the data being withheld.
+        for r in rows:
+            for label, why in r.get("skipped") or ():
+                print()
+                print("**%s excludes `%s`:** %s" % (r["name"], label, why))
         return 0
 
     print("MEASURED FLOORS -- every row computed from runs/, both statistics")
@@ -402,6 +475,15 @@ def main(argv=None):
     print()
     for r in rows:
         print("  %-28s %s" % (r["name"], r["note"]))
+        for label, why in r.get("skipped") or ():
+            print("  %-28s   excluded %s: %s" % ("", label, why))
+    # Everything the loader refused, so a lost arm cannot be invisible again.
+    dropped = load_report()
+    if dropped:
+        print()
+        print("LOADER DROPPED %d run(s):" % sum(n for _, n in dropped))
+        for reason, n in dropped:
+            print("  x%-4d %s" % (n, reason))
     return 0
 
 
