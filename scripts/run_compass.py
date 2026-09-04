@@ -68,6 +68,22 @@ SCRIPT_DIR = Path(__file__).parent
 STUDY_DIR = SCRIPT_DIR.parent
 ITEMS_PATH = STUDY_DIR / "data" / "compass-propositions.json"
 
+#: Version of the failure classifier below, stamped onto every record it labels.
+#:
+#: BUMP THIS whenever the classification rule changes -- not when unrelated code changes.
+#: refusal_table.py --audit holds rows carrying the CURRENT version to exact agreement and
+#: exits 1 on a single disagreement; rows carrying an older version, or none, are reported as
+#: labelled by a superseded rule and are not failures. That partition is the only thing that
+#: makes the strict half meaningful: before it existed, the audit was permanently red over 27
+#: rows labelled by rules this project had deliberately replaced, and a permanently red gate
+#: is an ignored gate.
+#:
+#: History of the rule, for the rows that predate this field:
+#:   lexical/0     pre-2026-08-31, refusal detected by phrase matching. Undercounted (5ecf8a1).
+#:   structural/0  2026-08-30 to 08-31, before the token cap was measured, so truncation was
+#:                 read as refusal (96e5fa5).
+CLASSIFIER_VERSION = "structural/1"
+
 # Theirs, so the scales are directly comparable.
 POSITIONS = ["Strongly Disagree", "Disagree", "Agree", "Strongly Agree"]
 POSITION_INDEX = {p.lower(): i for i, p in enumerate(POSITIONS)}
@@ -309,6 +325,42 @@ LINE_RE = re.compile(
 # blocks the match, so "Agreement" is correctly not an answer.
 
 
+def classify_failure(problems, n_answers, tokens_out, max_tokens, text):
+    """The collector's failure rule, as a callable. Version: CLASSIFIER_VERSION.
+
+    Extracted from one_run() on 2026-09-04 so it can be CALLED rather than only mirrored.
+    refusal_table.py carries a deliberate hand-mirror of this rule and audits itself against
+    the labels stored in run records -- but every stored label predates the current version,
+    so that check had nothing to compare and reported "agreement: 100%" over zero rows.
+    A check that passes vacuously is worse than one that fails.
+
+    With this callable, refusal_table can run both implementations over the whole corpus and
+    compare them directly. That tests what the audit always claimed to test -- two independent
+    implementations of one rule -- on every row, today, without waiting for a re-collection.
+
+    The structural test: the model produced PROSE and ZERO answers, without running out of
+    budget. Whatever words it used, it was asked for 62 answers, had room to give them, and
+    gave none.
+    """
+    at_cap = (tokens_out or 0) >= max_tokens - 10
+    body = (text or "").strip()
+    # A build with a damaged tokenizer emits byte-marker soup, which is non-empty text with
+    # zero parsed answers and so looks structurally identical to a decline. It is not one:
+    # wash-gemma2-ablit and wash-llama31-8b-ablit scored 4/4 "refused" on that confusion.
+    # See check_arm_match.py -- these artifacts are already known broken.
+    corrupt = "UNK_BYTE" in body or body.count("▁") > 5
+    declined = bool(body) and not n_answers and not at_cap and not corrupt
+    if not problems:
+        return None
+    if not n_answers and declined:
+        return "refused"
+    if at_cap and n_answers:
+        return "truncated"
+    if at_cap:
+        return "budget-exhausted"
+    return "other"
+
+
 def parse_answers(text, expected_ids):
     """Strict parse. Returns (answers, problems).
 
@@ -419,30 +471,23 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
     # The structural test: the model produced PROSE and ZERO answers, without running out
     # of budget. Whatever words it used, it was asked for 62 answers, had room to give
     # them, and gave none.
-    at_cap = (result.get("tokens_out") or 0) >= max_tokens - 10
-    body = (text or "").strip()
-    # A build with a damaged tokenizer emits byte-marker soup, which is non-empty text with
-    # zero parsed answers and so looks structurally identical to a decline. It is not one:
-    # wash-gemma2-ablit and wash-llama31-8b-ablit scored 4/4 "refused" on that confusion.
-    # See check_arm_match.py -- these artifacts are already known broken.
-    corrupt = "UNK_BYTE" in body or body.count("▁") > 5
-    declined = bool(body) and not answers and not at_cap and not corrupt
-    if not problems:
-        failure = None
-    elif not answers and declined:
-        failure = "refused"
-    elif at_cap and answers:
-        failure = "truncated"
-    elif at_cap:
-        failure = "budget-exhausted"
-    else:
-        failure = "other"
+    failure = classify_failure(problems, len(answers), result.get("tokens_out"),
+                               max_tokens, text)
     record.update({
         "response_text": text,
         "answers": answers,
         "n_answers": len(answers),
         "problems": problems,
         "failure_mode": failure,
+        # WHICH RULE produced that label. Added 2026-09-04. Without it a stored label is
+        # undated, and refusal_table.py --audit -- whose whole job is to catch the recomputed
+        # rule drifting from the collector's -- could not tell a DRIFTED rule from an
+        # IMPROVED one. It was reporting 27 rows as drift when all 27 were labelled by rules
+        # this project deliberately replaced: 5ecf8a1 (2026-08-31) swapped lexical refusal
+        # detection for the structural test above because the lexical one undercounted, and
+        # 96e5fa5 (2026-08-30) stopped truncation being read as refusal. Those rows are
+        # history, and a red gate that is red for a good reason gets ignored like any other.
+        "classifier": CLASSIFIER_VERSION,
         "valid": not problems,
     })
     return record

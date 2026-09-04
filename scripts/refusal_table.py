@@ -35,6 +35,13 @@ import sys
 RUNS = pathlib.Path(__file__).resolve().parent.parent / "runs"
 CONDITIONS = ["A", "B", "C", "D", "E", "P"]
 
+# The RULE below is a deliberate hand-mirror of the collector's -- that independence is what
+# the audit tests. The VERSION NUMBER is not mirrored: both implementations must agree about
+# which version of the rule they claim to implement, or the audit is comparing two things and
+# cannot say which. So it is imported, not retyped.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from run_compass import CLASSIFIER_VERSION, classify_failure  # noqa: E402
+
 # The collector's default before it was measured, and after. A row that predates the
 # max_tokens field was collected under one of these; the smaller one is the conservative
 # choice for an at-cap test, because it calls MORE rows truncated and fewer refused.
@@ -153,24 +160,93 @@ def load(exclude=None):
 
 
 def audit(rows):
-    """Derived classification must agree with the collector on every row that has both."""
+    """Derived classification must agree with the collector, on rows labelled by THIS rule.
+
+    Partitioned by the row's stored `classifier` version, and that partition is the fix for a
+    real defect rather than a way around one. The check was comparing today's derivation
+    against labels written by rules this project deliberately replaced -- 5ecf8a1 swapped
+    lexical refusal detection for the structural test because the lexical one undercounted,
+    96e5fa5 stopped truncation being read as refusal -- so it was permanently red over 27 rows
+    of history, and a permanently red gate is an ignored gate.
+
+    NOT a loosening. Rows carrying the current version are held to exact agreement and a
+    single disagreement exits 1, which is what the check was always for. Rows carrying an
+    older version or none are counted and printed by transition, so superseded labels are
+    visible rather than excused: if that number grows, someone changed a rule without bumping
+    CLASSIFIER_VERSION, and this says so.
+    """
     disagree = collections.Counter()
-    checked = 0
+    superseded = collections.Counter()
+    checked = stale = 0
     for row in rows:
         stored = row.get("failure_mode")
         if stored is None:
             continue
-        checked += 1
         derived = classify(row)
+        if row.get("classifier") != CLASSIFIER_VERSION:
+            stale += 1
+            if derived != stored:
+                superseded[(row.get("classifier") or "unversioned", stored, derived)] += 1
+            continue
+        checked += 1
         if derived != stored:
             disagree[(stored, derived)] += 1
-    print("AUDIT: derived vs stored on %d classified rows" % checked)
+
+    # THE NON-VACUOUS HALF, and the one that actually tests what this gate is named for.
+    # Run the collector's own rule and this module's hand-mirror of it over every row and
+    # compare them to each other -- no stored label involved, so it needs neither a version
+    # match nor a re-collection, and it cannot pass by having nothing to check.
+    mirror = collections.Counter()
+    for row in rows:
+        theirs = classify_failure(
+            row.get("problems") if row.get("problems") is not None
+            else ([] if row.get("valid") else ["unrecorded"]),
+            row.get("n_answers") or 0,
+            row.get("tokens_out"),
+            row.get("max_tokens") or LEGACY_MAX_TOKENS,
+            row.get("response_text") or "")
+        if row.get("failure_mode") == "transport":
+            continue  # this module short-circuits transport; the collector never sees one here
+        ours = classify(row)
+        # The two encode the SAME verdict differently for a clean run: the collector stores
+        # None in `failure_mode` (there was no failure), this module returns the string
+        # "valid" (it classifies every row, not just failures). Normalising here rather than
+        # changing either side -- both encodings are right for their caller, and a comparison
+        # that flags 1,445 clean runs as drift is a broken comparison, not a broken rule.
+        if theirs is None and ours == "valid":
+            continue
+        if theirs != ours:
+            mirror[(ours, theirs)] += 1
+
+    print("AUDIT: derived vs stored")
+    print("  MIRROR CHECK: this module's rule vs the collector's callable, %d row(s)"
+          % len(rows))
+    if mirror:
+        for (ours, theirs), n in mirror.most_common():
+            print("    ours=%-16s collector=%-16s  %d rows" % (ours, theirs, n))
+        print("    MIRROR BROKEN -- the two implementations of one rule disagree. This is the")
+        print("    drift this gate exists for, and it does not depend on any stored label.")
+        return 1
+    print("    the two implementations agree on every row")
+    print("  %d row(s) labelled by the current classifier (%s)" % (checked, CLASSIFIER_VERSION))
+    if not checked:
+        print("    VACUOUS -- no row carries the current version yet, because the field was")
+        print("    added after the last collection. The mirror check above is what is")
+        print("    holding right now; this half becomes real at the next collection.")
+    print("  %d row(s) labelled by a superseded one" % stale)
+    if superseded:
+        print()
+        print("  SUPERSEDED LABELS -- history, not drift. Re-collection would change these:")
+        for (ver, stored, derived), n in superseded.most_common():
+            print("    [%s] stored=%-16s now=%-16s  %d rows" % (ver, stored, derived, n))
+    print()
     if not disagree:
-        print("  agreement: 100%")
+        print("  agreement on the current classifier: 100%")
         return 0
     for (stored, derived), n in disagree.most_common():
         print("  stored=%-16s derived=%-16s  %d rows" % (stored, derived, n))
-    print("  DISAGREEMENT -- the rule here has drifted from the collector's.")
+    print("  DISAGREEMENT -- the rule here has drifted from the collector's, on rows the")
+    print("  collector labelled with the SAME version. That is the failure this gate is for.")
     return 1
 
 

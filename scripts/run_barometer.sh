@@ -82,5 +82,18 @@ $PY scripts/ci_analysis.py "$RUN"       || { echo "  ci_analysis FAILED for $RUN
 $PY scripts/robustness_checks.py "$RUN" || { echo "  robustness_checks FAILED for $RUN"; exit 1; }
 $PY scripts/abliteration_effect_check.py --out-date "$RUN" 2>/dev/null || true
 
+# 5. INTEGRITY — the checks that catch a rule drifting rather than a number moving.
+# Wired in 2026-09-04. Before this they were documented in the paper's reproduction block and
+# run by hand, which is how refusal_table.py --audit sat red for four days: nothing ran it, so
+# nothing reported that it was red. A gate nobody invokes is a comment.
+echo "[5] integrity gates"
+$PY scripts/refusal_table.py --audit >/dev/null \
+  || { echo "  FAILED: the refusal classifier and its recomputation disagree"; exit 1; }
+$PY scripts/key_numbers.py --check \
+  || { echo "  FAILED: the paper's sentences no longer match its tables"; exit 1; }
+$PY scripts/controls_audit.py --strict >/dev/null \
+  || { echo "  FAILED: a claim about another study rests on our notes, not their paper"; exit 1; }
+echo "  refusal classifier, paper prose, and controls sourcing all agree"
+
 echo "===== PASS $RUN COMPLETE — review, then update WRITEUP + permalink, then gated publish ====="
 echo "Next: diff per-model deltas vs the prior quarter's runs/<prev>/ (the barometer time series)."
