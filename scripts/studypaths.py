@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import os
 import random
 from pathlib import Path
@@ -61,16 +62,35 @@ class RunNotFound(Exception):
     """A run directory, or its scored/ subdirectory, is not where it should be."""
 
 
+#: A run directory is DATED. `2026-05-25`, `2026-09-05-recollect`, `2026-08-31-lineage`.
+#: Nothing else in either layout is.
+_RUN_DIR = re.compile(r"^\d{4}-\d{2}-\d{2}")
+
+
 def _looks_like_runs_root(p: Path) -> bool:
-    """True when a directory actually CONTAINS runs, not merely when it is named for them."""
+    """True when a directory actually CONTAINS runs, not merely when it is named for them.
+
+    THE NAME OF THE CHILD MATTERS, and leaving it out cost a silent misdirection on
+    2026-09-05. The third test used to be "this child holds any *.jsonl", which is true of any
+    data directory that happens to contain one -- and the private study's `data/` acquired
+    `external/rottger2024-codes.jsonl` that morning. From then on `runs_root()` returned
+    `data/` instead of `runs/`, so every shared script looked for runs in the config directory
+    and reported the run missing. The docstring below already warned about exactly this failure
+    for the NAME-based rule; the content-based rule inherited it through a laxer door.
+
+    A run directory is dated in both layouts, so requiring that of the child costs nothing and
+    closes it. The structural markers (`raw/`, `scored/`, `manifest.json`) still qualify a
+    child on their own, because those are unambiguous whatever it is called.
+    """
     if not p.is_dir():
         return False
     for child in p.iterdir():
         if not child.is_dir():
             continue
-        if (child / "scored").is_dir() or (child / "manifest.json").exists():
+        if (child / "scored").is_dir() or (child / "raw").is_dir() \
+                or (child / "manifest.json").exists():
             return True
-        if any(child.glob("*.jsonl")):
+        if _RUN_DIR.match(child.name) and any(child.glob("*.jsonl")):
             return True
     return False
 
