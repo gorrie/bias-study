@@ -141,7 +141,8 @@ def audit_scale():
 
 def floors():
     out = {}
-    for fn in (F.floor_order, F.floor_same_version, F.floor_template, F.floor_quant,
+    for fn in (F.floor_order, F.floor_same_version, F.floor_template, F.floor_replicate,
+               F.floor_quant,
                F.floor_ablation, F.floor_conditions):
         r = fn()
         if r:

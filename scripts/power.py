@@ -94,7 +94,8 @@ def mde(vals, threshold, power=POWER):
 def collect():
     """Raw per-pair values for every floor, reusing floor_table's own loaders."""
     out = {}
-    for fn in (F.floor_order, F.floor_same_version, F.floor_template, F.floor_quant,
+    for fn in (F.floor_order, F.floor_same_version, F.floor_template, F.floor_replicate,
+               F.floor_quant,
                F.floor_ablation, F.floor_conditions):
         # floor_table.summarise() discards the raw pairs, so re-derive them the same way it
         # does and keep them. Any divergence between this and floor_table is a bug in one of
@@ -110,6 +111,7 @@ def collect():
 def _label(fn_name):
     return {"floor_order": "presentation order",
             "floor_template": "instruction paraphrase",
+            "floor_replicate": "run-to-run replicate",
             "floor_same_version": "same-version variants",
             "floor_quant": "requantisation",
             "floor_ablation": "refusal-direction ablation",

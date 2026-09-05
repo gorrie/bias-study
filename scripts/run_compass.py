@@ -101,7 +101,9 @@ FORCED_CHOICE_INSTRUCTION = (
 # the items. Not one varies the wrapper, so the wrapper has been a single fixed string across
 # 1,657 runs and its contribution to every number here is unmeasured.
 #
-# Roettger et al. 2024 varied it (10 templates, 8 models) and re-scoring their completions with
+# Roettger et al. 2024 varied it -- 10 templates across 8 models in the released data, though
+# their own paraphrase ANALYSIS reports only the two models at near-100% validity -- and
+# re-scoring their completions with
 # this project's statistic puts the paraphrase p90 at 9 side-flips of 62 -- the same magnitude
 # as our presentation-order floor, on data we did not collect. That is a reason to measure it
 # here rather than to cite them for it: their models are Llama-2 and GPT-3.5, two generations

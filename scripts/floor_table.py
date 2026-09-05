@@ -67,6 +67,16 @@ def _template_key(r):
     return (r["model"], r["condition"], r.get("template", "T01"))
 
 
+def _order_key(r):
+    """The default key PLUS the template, so the order floor can hold the wrapper fixed.
+
+    Carries template as a fourth element rather than folding it in, so `_order_cells` can
+    filter on it and then group on the historical three-part key -- the floor's pairing logic
+    is unchanged, it just stops being fed cells that differ in something other than order.
+    """
+    return (r["model"], r["condition"], r.get("shuffle_seed"), r.get("template", "T01"))
+
+
 #: What load() threw away on the last call, and why. A dropped run is a measurement that does
 #: not reach a floor, and until 2026-09-04 every one of them vanished without a trace: the
 #: OBLITERATED Qwen3.8-27B's entire ablated arm -- four valid, fully parsed 62-item sheets --
@@ -248,16 +258,33 @@ def _order_cells():
     previous fix guaranteed the recurrence.
 
     So the default is now READ EVERYTHING and anything withheld is named with a reason. A
-    directory that arrives tomorrow is counted tomorrow. The pairing logic keys on (model,
-    condition, shuffle seed), so an extra source can only add cells, never corrupt one.
+    directory that arrives tomorrow is counted tomorrow.
+
+    THAT DEFAULT NEEDS A GUARD, and it did not have one. This docstring used to end "the
+    pairing logic keys on (model, condition, shuffle seed), so an extra source can only add
+    cells, never corrupt one." False, and falsified within a day: the paraphrase arm collected
+    2026-09-04 writes condition-A runs at shuffle_seed None under ten different instruction
+    templates, all of which hash to the SAME key as the canonical-order sheet. 107 non-T01
+    runs were pooled into canonical-order cells, so a cell's modal answer became a majority
+    vote across paraphrases. Point estimates survived; the published p90 interval did not
+    (pooled [7,13] with them, [7,12] without).
+
+    An include list fails open on new directories; a read-everything default fails open on new
+    FACTORS. Both are the same bug at different scopes, and the answer to the second is that
+    the order floor holds every non-order factor fixed by construction: only the canonical
+    template T01 enters, because "same model, same condition, item order only" is what the row
+    claims to measure.
     """
     cells = collections.defaultdict(list)
     for path in glob.glob(os.path.join(STUDY, "runs", "**", "*.jsonl"), recursive=True):
         rel = os.path.relpath(path, os.path.join(STUDY, "runs")).replace("\\", "/")
         if rel.split("/")[0] in ORDER_EXCLUDE:
             continue
-        for key, runs in load(os.path.relpath(path, STUDY), "A").items():
-            cells[key].extend(runs)
+        for key, runs in load(os.path.relpath(path, STUDY), "A",
+                              key=_order_key).items():
+            if key[3] != "T01":
+                continue
+            cells[key[:3]].extend(runs)
     by = collections.defaultdict(dict)
     for (m, c, o), runs in cells.items():
         if c == "A":
@@ -334,20 +361,86 @@ def floor_same_version():
     return summarise("same-version variants", pairs, "size / mode / snapshot / tier, same version")
 
 
+def _template_cells(runs_only=False):
+    """Condition-A sheets from the paraphrase arm, keyed (model, condition, template)."""
+    return load("runs/2026-09-04-template-floor/**/*.jsonl", "A", key=_template_key)
+
+
+def floor_replicate():
+    """THE REPLICATE FLOOR: same model, same template, same temperature, run again.
+
+    Added 2026-09-04 after an adversarial review, and it is the control the paraphrase floor
+    needed from the start. This study runs at temperature 0 and treats repeats as replicates
+    to be collapsed, which quietly assumes that a repeat changes nothing. It does not: hosted
+    inference batches requests, routes MoE experts and reduces in nondeterministic order, so
+    temperature 0 is a decoding rule and not a determinism guarantee.
+
+    Measuring it matters twice over. First, it is the floor UNDER every other floor here --
+    anything that varies a factor across two runs is measuring that factor plus this. Second,
+    it is precisely the quantity Naser and Sakhawat use to certify reliability: they run one
+    prompt ten times at temperature 0, observe agreement, and call the instrument stable. This
+    row says what that agreement is actually worth on current models.
+
+    Pairs are RUN AGAINST RUN inside one (model, template) cell -- no modal collapse, because
+    the modal is what hid this. See floor_template.
+    """
+    cells = _template_cells()
+    pairs = []
+    for (m, c, tpl), runs in sorted(cells.items()):
+        for i in range(len(runs)):
+            for j in range(i + 1, len(runs)):
+                pairs.append(both_stats(runs[i], runs[j]))
+    return summarise("run-to-run replicate", pairs,
+                     "same model, same template, same temperature 0 -- the floor under the floors")
+
+
 def floor_template():
     """The paraphrase floor: same model, same order, same temperature, reworded instruction.
 
-    Added 2026-09-04, and it is the last unmeasured nuisance factor in this study. Every other
-    floor here varies the SUBJECT -- model, size, quantisation, weights -- or the order of the
-    items. The forced-choice wrapper was one fixed string across all 1,657 runs, so its
-    contribution to every number in the paper was unmeasured, and "we did not vary it" is not
-    the same claim as "it does not matter".
+    PAIRED AT RUN LEVEL, NOT MODAL-COLLAPSED, and the reason is a defect worth stating.
+    This function used to call modal() on each cell's runs. `modal()` takes
+    `Counter.most_common(1)`, and with exactly TWO runs every disagreement is a 1-1 tie that
+    Counter breaks by insertion order -- so run 1 won every tie and run 2 contributed nothing
+    at all. 54 of 60 cells hold exactly two runs. Rebuilding the floor from run 1 alone
+    reproduced the shipped numbers to the digit. The design was one run per cell wearing a
+    two-run label, and "run-to-run noise is inside these numbers" understated it: the second
+    run was collected and then discarded by a tie-break.
+
+    Pairing every run against every run across templates keeps both, and makes the comparison
+    to floor_replicate an apples-to-apples one: identical pairing, identical statistic, the
+    only difference being whether the template changed. The paraphrase contribution is the
+    EXCESS of this row over that one, and on current models that excess is about one item at
+    p90 -- which is the honest headline and not the one first reported.
+    """
+    cells = _template_cells()
+    by_model = collections.defaultdict(dict)
+    for (m, c, tpl), runs in cells.items():
+        by_model[m][tpl] = runs
+    pairs = []
+    for m, templates in sorted(by_model.items()):
+        tids = sorted(templates)
+        for i in range(len(tids)):
+            for j in range(i + 1, len(tids)):
+                for a in templates[tids[i]]:
+                    for b in templates[tids[j]]:
+                        pairs.append(both_stats(a, b))
+    return summarise("instruction paraphrase", pairs,
+                     "same model, same order, temperature 0, reworded wrapper; "
+                     "run-level pairs, compare against the run-to-run replicate row")
+
+
+def floor_template_modal():
+    """The modal-collapsed version, kept ONLY so the superseded number stays reproducible.
+
+    NOT for reporting. This is what `floor_template` did until 2026-09-04, and its result --
+    270 pairs, side 3 / 6 / 13 -- is the number that reached the paper's floors table before
+    an adversarial review showed the modal of two runs is just run 1. Keeping it callable
+    means the retired figure can be regenerated by anyone checking what changed, instead of
+    surviving only as a claim in a results file.
 
     Ten paraphrases, meaning held constant (see PARAPHRASE_TEMPLATES in run_compass.py and the
     import-time assertions that keep them the same task). Six 2026-frontier models, one per
-    vendor family, at temperature 0 in condition A. Roettger et al. measured this factor in
-    2024 and their p90 re-scored with this statistic is 9 of 62 -- but on Llama-2 and GPT-3.5,
-    so it establishes that the factor is real and nothing about its size today.
+    vendor family, at temperature 0 in condition A.
     """
     cells = load("runs/2026-09-04-template-floor/**/*.jsonl", "A", key=_template_key)
     by_model = collections.defaultdict(dict)
@@ -455,7 +548,8 @@ def main(argv=None):
     ap.add_argument("--markdown", action="store_true")
     args = ap.parse_args(argv)
 
-    rows = [f for f in (floor_order(), floor_same_version(), floor_template(), floor_quant(),
+    rows = [f for f in (floor_order(), floor_same_version(), floor_template(),
+                        floor_replicate(), floor_quant(),
                         floor_ablation(), floor_conditions()) if f]
     rows.sort(key=lambda r: -r["side"][1])
 
