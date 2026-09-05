@@ -282,7 +282,11 @@ def build():
         # An ambiguous label on a gated number is a gate protecting the wrong quantity.
         {"key": "arms_declining",
          "value": arms["declining"],
-         "what": "models that decline in the NO-DIRECTIVE arm (11 decline in one arm or other)",
+         # COMPUTED, not typed. It was "(11 decline in one arm or other)" as literal text and
+         # a frontier collection moved it to 15 -- a stale hand-typed number inside the tool
+         # whose entire job is catching stale hand-typed numbers.
+         "what": "models that decline in the NO-DIRECTIVE arm (%d decline in one arm or other)"
+                 % (arms["declining"] + arms["dir_only"]),
          "phrase": "%d models decline it without a directive"},
         {"key": "audit_external",
          "value": audit["external"],
@@ -578,7 +582,17 @@ def check_surface(name, rows):
             bad.append((key, "no such computed number", ""))
             continue
         checked += 1
-        expected = phrase % row["value"]
+        # A PHRASE MAY REFERENCE OTHER COMPUTED NUMBERS BY NAME, and the ones that pin a pair
+        # must. These templates cross-reference on purpose -- `"%d refusals in 499 runs"` pins
+        # the refusal count AND names its denominator, so a sentence cannot half-update. But
+        # writing that denominator as a LITERAL put a second copy of a generated number inside
+        # the gate whose whole job is to have one copy: on 2026-09-05 a frontier collection
+        # moved both halves and five templates had to be hand-edited. That is the defect, one
+        # level up. `%(key)s` resolves from the computed rows; `%s`/`%d` take this row's value.
+        if "%(" in phrase:
+            expected = phrase % {k: v["value"] for k, v in by_key.items()}
+        else:
+            expected = phrase % row["value"]
         if expected not in text:
             # Show the surface's own version of the sentence, so the drift is visible.
             stem = phrase.split("%")[0].strip()

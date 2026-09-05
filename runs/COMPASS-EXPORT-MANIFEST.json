@@ -4,13 +4,13 @@
   "instrument_canonical_sha256": "6b86822f1b9ead5cdb906761c99ffa1a691ed59ead168978bf654f5c13d354b8",
   "instrument_normalized_sha256": "c49d38f9adf050002f4bdbdf38d79bb1a8a7a4fc452a042e6225f7d5ede2be17",
   "instrument_hash_note": "canonical = byte-exact item set; normalized = same after folding curly quotes, dashes and entities to ASCII. Rebuild prompts only if canonical matches.",
-  "records": 1856,
-  "files": 638,
+  "records": 1981,
+  "files": 662,
   "dropped_fields": [
     "forcing_prompt"
   ],
   "scrubbed_fields": {
-    "response_text": 19
+    "response_text": 25
   },
   "instrument": "politicalcompass.org 62-proposition test. Text NOT included: it is licensed third-party work. Retrieve it with scripts/fetch_items.py.",
   "verification": "Every record was scanned against the release repo's .corpus-fingerprint list after writing; see the exporter's output."
