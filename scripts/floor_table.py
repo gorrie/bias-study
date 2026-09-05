@@ -179,6 +179,12 @@ def ci(vals, clusters=None):
     rng = random.Random(BOOT_SEED)
     p90s = []
     if clusters:
+        # A silent length mismatch would drop pairs or clusters without a word -- `zip` stops
+        # at the shorter, so `ci(sf, clusters[:10])` on 1,067 pairs would quietly bootstrap ten
+        # of them and return an interval that looks computed. Refuse instead.
+        if len(clusters) != len(vals):
+            raise ValueError("clusters (%d) must be parallel to vals (%d)"
+                             % (len(clusters), len(vals)))
         groups = collections.defaultdict(list)
         for v, c in zip(vals, clusters):
             groups[c].append(v)
@@ -201,16 +207,21 @@ def ci(vals, clusters=None):
     return p90s[int(0.025 * BOOT_N)], p90s[int(0.975 * BOOT_N)]
 
 
-def ci_str(pair):
+def ci_str(pair, clustered=False):
     """Render a bootstrap interval, or say why there is not one.
 
     Printing "[nan, nan]" into a published table invites a reader to treat an undefined
-    interval as a computed one. The requantisation row has 4 pairs and cannot carry a
-    percentile bootstrap; the table should say so in words.
+    interval as a computed one; the table should say so in words instead.
+
+    `clustered` changes the WORDS, because the two reasons are different and "n too small" is
+    wrong for one of them. A flat bootstrap declines under five pairs -- that is a small n. A
+    cluster bootstrap declines under three MODELS, which can happen with a thousand pairs, and
+    reporting that as "n too small" would tell a reader the opposite of the truth about a row
+    whose pair count is its most impressive number.
     """
     lo, hi = pair
     if lo != lo or hi != hi:
-        return "n too small"
+        return "too few models" if clustered else "n too small"
     return "[%.0f, %.0f]" % (lo, hi)
 
 
@@ -241,7 +252,37 @@ def summarise(name, pairs, note="", clusters=None):
     return {"name": name, "n": len(pairs),
             "side": side, "endpoint": endpoint, "side_ci": (lo, hi), "note": note,
             "small_n": len(pairs) < 10,
+            # Which bootstrap produced side_ci, so a renderer can say why an interval is
+            # missing in the right words -- "too few models" and "n too small" are different
+            # facts, and a clustered row can have a thousand pairs and still decline.
+            "clustered": bool(clusters),
+            "n_clusters": len(set(clusters)) if clusters else None,
+            # PER CLUSTER, so a pooled p90 is never the only number on offer. Cell sizes are
+            # unequal by construction -- pairs scale QUADRATICALLY in runs per cell, so
+            # qwen3.8-flash contributes 236 pairs from 23 runs while kimi-k3 contributes 129
+            # from 17, and kimi is the noisiest model in the arm. The cluster bootstrap fixed
+            # the INTERVAL's unit; it does nothing for the point estimate's weighting.
+            #
+            # Measured on the paraphrase arm the pooled p90 (6) happens to equal the median of
+            # the per-model p90s (6), so the imbalance moves nothing today. The SPREAD is the
+            # part that matters and it is large: 3 for gemini-3.5-flash-lite against 10 for
+            # kimi-k3, so the pooled figure sits below the floor of the model with the highest
+            # one. Any per-model claim has to clear that model's own row.
+            "per_cluster": _per_cluster(sf, clusters) if clusters else None,
             "p90_is_max": side[1] == side[2]}
+
+
+def _per_cluster(vals, clusters):
+    """[(cluster, n, med, p90, max)] sorted by p90, so the spread reads at a glance."""
+    groups = collections.defaultdict(list)
+    for v, c in zip(vals, clusters):
+        groups[c].append(v)
+    out = []
+    for name, v in groups.items():
+        v = sorted(v)
+        p90 = v[int(0.9 * len(v)) - 1] if len(v) >= 10 else max(v)
+        out.append((name, len(v), v[len(v) // 2], p90, max(v)))
+    return sorted(out, key=lambda r: -r[3])
 
 
 def floor_order():
@@ -275,7 +316,7 @@ ORDER_EXCLUDE = {
 }
 
 
-def _order_cells():
+def _order_cells(with_sources=False):
     """Condition-A sheets from EVERY run directory except those named in ORDER_EXCLUDE.
 
     THE LIST USED TO POINT THE OTHER WAY, and it failed twice for the same reason.
@@ -306,6 +347,7 @@ def _order_cells():
     claims to measure.
     """
     cells = collections.defaultdict(list)
+    sources = collections.Counter()
     for path in glob.glob(os.path.join(STUDY, "runs", "**", "*.jsonl"), recursive=True):
         rel = os.path.relpath(path, os.path.join(STUDY, "runs")).replace("\\", "/")
         if rel.split("/")[0] in ORDER_EXCLUDE:
@@ -315,30 +357,29 @@ def _order_cells():
             if key[3] != "T01":
                 continue
             cells[key[:3]].extend(runs)
+            sources[rel.split("/")[0]] += len(runs)
     by = collections.defaultdict(dict)
     for (m, c, o), runs in cells.items():
         if c == "A":
             by[m][o] = modal(runs)
-    return by
+    return (by, sources) if with_sources else by
 
 
 def order_sources():
     """Which run directories actually contributed condition-A order cells, and how many.
 
-    Reported so "the floor reads everything" is checkable rather than asserted.
+    Reported so "the floor reads everything" is checkable rather than asserted -- and it
+    stopped being checkable the moment the floor started filtering. This function counted every
+    valid condition-A run on disk, applying neither ORDER_EXCLUDE nor the T01 filter, so after
+    2026-09-04 it credited `2026-09-04-template-floor` with 119 contributed runs when 12 enter,
+    and `2026-08-31-google-orderfloor` with 2 when none do. A provenance report that overstates
+    its own inputs is worse than no report: it is the assertion the report exists to replace.
+
+    Derived from `_order_cells` now, which is the single place that knows what the floor reads.
+    Two encodings of "exclude these dirs, keep only T01" is exactly the drift this file keeps
+    finding elsewhere.
     """
-    out = collections.Counter()
-    for path in glob.glob(os.path.join(STUDY, "runs", "**", "*.jsonl"), recursive=True):
-        rel = os.path.relpath(path, os.path.join(STUDY, "runs")).replace("\\", "/")
-        top = rel.split("/")[0]
-        for line in io.open(path, encoding="utf-8"):
-            if not line.strip():
-                continue
-            r = json.loads(line)
-            if (r.get("schema") == "compass-run/1" and r.get("valid")
-                    and r.get("condition") == "A"):
-                out[top] += 1
-    return out
+    return _order_cells(with_sources=True)[1]
 
 
 def floor_order_by_class():
@@ -512,15 +553,39 @@ def floor_quant():
     for (m, c, o), runs in cells.items():
         by[c][m] = modal(runs)
     pairs, families = [], set()
+    # HALF-PAIRS ARE COUNTED, not dropped in silence. floor_ablation grew an "eligible but
+    # produced no arm-matched condition" trap on 2026-09-04 and this function, written the
+    # same day, did not get one -- so a family gated ELIGIBLE could contribute nothing and the
+    # row would simply report a smaller n. Measured: mistral-7b is one of five gated pairs and
+    # contributes ZERO (its base run is invalid in A and its Q8 runs are invalid in B/C/D),
+    # while llama31-8b loses C and D and llama32-3b loses D. Seven of twenty possible cells,
+    # invisible. A count that shrinks without saying why is how a floor quietly becomes a
+    # different measurement.
+    half = []
     for c, models in sorted(by.items()):
         for base, quant, label in QUANT_PAIRS:
-            if base in models and quant in models:
+            has_base, has_quant = base in models, quant in models
+            if has_base and has_quant:
                 pairs.append(both_stats(models[base], models[quant]))
                 families.add(label)
-    return summarise("requantisation", pairs,
-                     "same weights, Q4 vs Q8, no other change; %d weights famil%s, "
-                     "gated by check_arm_match --quant-known"
-                     % (len(families), "y" if len(families) == 1 else "ies"))
+            elif has_base or has_quant:
+                half.append("%s %s (%s only)"
+                            % (label, c, "Q8" if has_quant else "base"))
+
+    contributing = {lab for _, _, lab in QUANT_PAIRS} & families
+    silent = [lab for _, _, lab in QUANT_PAIRS if lab not in contributing]
+    out = summarise("requantisation", pairs,
+                    "same weights, Q4 vs Q8, no other change; %d of %d gated famil%s "
+                    "contribute, %d half-pair(s) lost to invalid runs"
+                    % (len(families), len(QUANT_PAIRS),
+                       "y" if len(QUANT_PAIRS) == 1 else "ies", len(half)))
+    if out:
+        out["half_pairs"] = half
+        # A pair the gate passed that then contributes nothing is the case worth naming, not
+        # merely counting: it looks like a measurement that was made and was not.
+        out["skipped"] = [(lab, "gated ELIGIBLE but contributed no pair -- every condition "
+                                "lost one arm to an invalid run") for lab in silent]
+    return out
 
 
 def floor_ablation():
@@ -594,7 +659,7 @@ def main(argv=None):
         for r in rows:
             mark = " †" if r.get("small_n") and r.get("p90_is_max") else ""
             print("| %s%s | %d | %d / %d / %d | %s | %d / %d / %d |"
-                  % (r["name"], mark, r["n"], *r["side"], ci_str(r["side_ci"]),
+                  % (r["name"], mark, r["n"], *r["side"], ci_str(r["side_ci"], r.get("clustered")),
                      *r["endpoint"]))
         if any(r.get("small_n") and r.get("p90_is_max") for r in rows):
             print()
@@ -618,12 +683,17 @@ def main(argv=None):
     for r in rows:
         print("%-28s %6d %18s %14s %18s"
               % (r["name"], r["n"], "%d / %d / %d" % r["side"],
-                 ci_str(r["side_ci"]), "%d / %d / %d" % r["endpoint"]))
+                 ci_str(r["side_ci"], r.get("clustered")), "%d / %d / %d" % r["endpoint"]))
     print()
     for r in rows:
         print("  %-28s %s" % (r["name"], r["note"]))
         for label, why in r.get("skipped") or ():
             print("  %-28s   excluded %s: %s" % ("", label, why))
+        # Never let a pooled p90 stand alone on a clustered row: the spread across models is
+        # wider than the row, and a per-model claim must clear its own model.
+        for name, n, med, p90, mx in r.get("per_cluster") or ():
+            print("  %-28s     %-30s %4d pairs  med %2d  p90 %2d  max %2d"
+                  % ("", name[:30], n, med, p90, mx))
     # Everything the loader refused, so a lost arm cannot be invisible again.
     dropped = load_report()
     if dropped:

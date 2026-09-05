@@ -275,10 +275,15 @@ def build():
          "value": arms["dir_only"],
          "what": "models that decline ONLY under a directive",
          "phrase": "%d other models decline only when told to commit"},
+        # "decline the instrument at least once" was the description and it counts only the
+        # NO-DIRECTIVE arm. Across both arms 11 models decline at least once (8 + 3 that
+        # decline only under a directive), and the paper's sentence sat immediately after a
+        # clause describing both arms -- so it read as a total and the total was different.
+        # An ambiguous label on a gated number is a gate protecting the wrong quantity.
         {"key": "arms_declining",
          "value": arms["declining"],
-         "what": "models in that subset that decline the instrument at least once",
-         "phrase": "%d models decline the instrument"},
+         "what": "models that decline in the NO-DIRECTIVE arm (11 decline in one arm or other)",
+         "phrase": "%d models decline it without a directive"},
         {"key": "audit_external",
          "value": audit["external"],
          "what": "external studies in the controls audit, excluding ours",
@@ -342,6 +347,13 @@ SURFACES = {
             # than generated.
             "arms_silenced": "**all %d of them stop**",
             "arms_dir_only": "**%d other models decline only when told to commit**",
+            # Conclusion five. Gated because it is the most quotable paragraph on the page,
+            # and because its own argument is that a typed number goes stale.
+            "replicate_med": "A median of %d answers move",
+            "replicate_max": "and up to %d.**",
+            "order_max_all": "Reorder the questions and up to %d move",
+            "same_version_max": "two variants of one release and up to %d move",
+            "manipulation_p90": "moves %d at its 90th percentile",
             # The audit block, added 2026-09-04. These were prose ("two columns come back
             # nearly empty") while the counts sat in the JSON, on a page whose own argument is
             # that a typed number rots -- and the page still said "ten studies" after the
@@ -379,9 +391,16 @@ SURFACES = {
 #: page reports the audit's control gaps and our own row, which the paper covers in a generated
 #: table rather than in a sentence, so there is no paper phrase to grep. Keyed the same way and
 #: checked the same way -- the point is that no hand-typed number on any surface is unguarded.
+#: Floor rows this checkout could not compute, filled in by `surface_numbers()` and reported by
+#: the gate. A set rather than a flag because the caller has to be able to NAME them: "3 numbers
+#: were not verifiable here" is a usable sentence, "some checks were skipped" is not.
+MISSING_FLOORS = set()
+
+
 def surface_numbers():
     a = audit_scale()
-    return [
+    fl = floors()
+    out = [
         {"key": "audit_yes_same_version_dist", "value": a["yes_same_version_dist"],
          "what": "external studies that DO report a same-version distribution"},
         {"key": "audit_no_same_version_dist", "value": a["no_same_version_dist"],
@@ -400,7 +419,44 @@ def surface_numbers():
          "what": "controls each study is scored against"},
         {"key": "audit_ours_pass", "value": a["ours_pass"],
          "what": "of those controls our own run passes"},
+        # CONCLUSION FIVE's numbers. They live here rather than in build() because build()'s
+        # rows are grepped against the PAPER, and the paper states these figures inside its
+        # generated floors table rather than in these sentences. A website-only sentence gated
+        # against the paper fails forever on prose that was never supposed to be there.
+        #
+        # Gated at all because that conclusion is the most quotable paragraph on the page and
+        # its own argument is that a number typed into a document goes quietly stale.
     ]
+
+    # A FLOOR ROW THAT THIS CHECKOUT CANNOT COMPUTE IS NOT A CRASH.
+    #
+    # These five were indexed directly out of `fl`, which is fine in the private working tree
+    # where every run exists. This public repository ships a smaller run set -- it has no
+    # instruction-paraphrase and no run-to-run-replicate runs at all -- so `fl["run-to-run
+    # replicate"]` raised KeyError and took down `--check`, `--check-website` and
+    # `--check-release` with it, on the repo whose entire purpose is that a stranger can run
+    # these commands.
+    #
+    # Absent is not zero and it is not a pass. A row this checkout cannot compute is dropped
+    # from the gate and NAMED, so the summary says how many numbers were verified and which
+    # were unverifiable here -- the same distinction background_rate.py draws between a bucket
+    # that measures nothing and a bucket that is not in the tree.
+    optional = [
+        ("replicate_med", "run-to-run replicate", 0,
+         "median side-flips when NOTHING changes: same model, same prompt, temp 0"),
+        ("replicate_max", "run-to-run replicate", 2, "worst case of the same"),
+        ("order_max_all", "presentation order", 2, "worst case under reordering alone"),
+        ("same_version_max", "same-version variants", 2,
+         "worst case between two variants of one release"),
+        ("manipulation_p90", "prompt condition A->D", 1,
+         "the deliberate manipulation's p90 -- the bar the nuisance factors clear"),
+    ]
+    for key, row, idx, what in optional:
+        if row in fl:
+            out.append({"key": key, "value": fl[row]["side"][idx], "what": what})
+        else:
+            MISSING_FLOORS.add(row)
+    return out
 
 
 def check_ours_row(rows):
@@ -580,6 +636,38 @@ def main(argv=None):
             print("  %-14s       \"%s\"" % ("", r["phrase"] % r["value"]))
         print()
         print("Run --check to verify the paper's prose still says these.")
+        return 0
+
+    if not os.path.exists(PAPER):
+        # THE PAPER IS NOT DISTRIBUTED IN THIS REPOSITORY, AND THIS USED TO BE A TRACEBACK.
+        #
+        # `--check` gates the paper's hand-typed sentences against the generated tables. It is
+        # the same script in the private working tree, where the paper lives; here it crashed
+        # with FileNotFoundError on the first thing a reader of a reproduction repo would type.
+        #
+        # Absent is not stale and it is not a pass either. So: say what cannot be checked, run
+        # what can -- this repository's own README carries two of the same numbers -- and fail
+        # if THAT drifts. Returning 0 here without checking anything would be the vacuous pass
+        # this project holds to be worse than a failure.
+        print("The paper (%s) is not distributed in this repository, so its prose"
+              % os.path.basename(PAPER))
+        print("cannot be gated here. Checking this repository's own surfaces instead.")
+        print("")
+        failures = check_surface("release", rows)
+        if failures:
+            print("CROSS-SURFACE DRIFT -- %d statement(s) disagree with the run data"
+                  % len(failures))
+            for f in failures:
+                print("  [release] %s" % (" | ".join(str(x) for x in f if x != "")))
+            return 1
+        print("RELEASE SURFACE: every stated number in README.md agrees with the run data.")
+        print("%d generated numbers available; run with no flags to print them all." % len(rows))
+        if MISSING_FLOORS:
+            # NAMED, not swallowed. This repository ships a smaller run set than the working
+            # tree, so some floor rows have nothing to compute from -- say which, or a reader
+            # cannot tell a gate that verified everything from one that verified less.
+            print("Not computable in this checkout, so not gated here: %s"
+                  % ", ".join(sorted(MISSING_FLOORS)))
         return 0
 
     text = io.open(PAPER, encoding="utf-8", newline="").read().replace("\r\n", "\n")

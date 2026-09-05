@@ -32,6 +32,20 @@ import json
 import pathlib
 import sys
 
+#: THIS REPOSITORY HAS TWO RUN ROOTS, AND THEY ARE NOT INTERCHANGEABLE.
+#:
+#:   data/  the May 2026 scored study -- LLM-judged 1-5 responses. `studypaths.runs_root()`
+#:          resolves to this one, and every May-study script reads it.
+#:   runs/  the forced-choice barometer -- `compass-run/1` records, item-id-keyed answers,
+#:          exported scrubbed of the third-party instrument by `export_scrubbed.py`.
+#:
+#: So this hardcode is correct and must NOT be "fixed" to call `runs_root()`: that would
+#: silently point the refusal table at the wrong corpus. The two roots hold different
+#: instruments measured different ways, and a script has to know which one it means.
+#:
+#: Written down on 2026-09-05 because a scrubbed export was copied into `data/` instead --
+#: where nothing read it, `check_corpus` passed, and the only symptom was that
+#: `key_numbers --check` went on reporting 1,657 runs against a README that says 1,689.
 RUNS = pathlib.Path(__file__).resolve().parent.parent / "runs"
 CONDITIONS = ["A", "B", "C", "D", "E", "P"]
 

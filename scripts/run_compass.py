@@ -57,12 +57,26 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from run_study import (  # noqa: E402  -- integrate, do not fork: one client, one env loader
-    call_ollama,
-    call_openrouter,
-    load_env,
-    safe_filename,
-)
+
+
+def _client():
+    """The shared HTTP client and env loader, imported ON DEMAND.
+
+    `run_study` is a shim: its implementation lives in the public mirror
+    (`bias-study-release`) and it raises ImportError when that clone is not beside this
+    workspace. Importing it at module scope made that a hard dependency of merely IMPORTING
+    this file -- so `refusal_table`, which wants nothing from here but `CLASSIFIER_VERSION`
+    and `classify_failure`, could not be imported without the mirror. That took
+    `key_numbers --check`, `gen_paper --check` and `refusal_table --audit` down in CI, where
+    the mirror is absent by design: its push is gated on the author, so a pipeline must never
+    clone it.
+
+    All four names are used only in `one_run` and `main` -- the collection paths, which need
+    a network and a key anyway. Analysis has no business requiring a client, and now does not.
+    Still one implementation, still integrate-don't-fork; just not at import time.
+    """
+    from run_study import call_ollama, call_openrouter, load_env, safe_filename
+    return call_ollama, call_openrouter, load_env, safe_filename
 
 SCRIPT_DIR = Path(__file__).parent
 STUDY_DIR = SCRIPT_DIR.parent
@@ -411,6 +425,7 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
     """
     messages = build_prompt(items, condition, shuffle_seed=shuffle_seed, template=template)
     started = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    call_ollama, call_openrouter, _, _ = _client()
     if channel == "ollama":
         result = call_ollama(model, messages, timeout=timeout,
                              temperature=temperature, max_tokens=max_tokens, seed=seed,
@@ -549,6 +564,7 @@ def main(argv=None):
               % (len(items), args.condition, CONDITION_NOTE[args.condition]))
         return 0
 
+    _, _, load_env, safe_filename = _client()
     api_key = load_env().get("OPENROUTER_API_KEY", "")
     if args.channel == "openrouter" and not api_key:
         print("no OPENROUTER_API_KEY in env file", file=sys.stderr)
