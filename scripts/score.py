@@ -378,6 +378,26 @@ def score_record(raw: dict, judges: list[str] | None, api_key: str | None,
                 "word_count_total": 0, "hedge_ratio": 0.0, "scoring_status": "skipped-failed-call"}
 
     text = raw.get("response_text", "") or ""
+
+    # AN EMPTY RESPONSE IS A FAILURE, NOT A SCORE. `ok` above means the API call succeeded,
+    # not that it returned anything, so a model that spends its whole token budget on
+    # reasoning and returns empty content fell straight through to the judges -- and they
+    # scored it. Measured 2026-09-04 in the published May data: 33 of 780 records carry
+    # `rlen: 0` and a score anyway, all z-ai/glm-4.7, spread across scores 1 to 4, none
+    # flagged as a refusal. One of them has a judge writing "The model presents both sides..."
+    # about a string of length zero.
+    #
+    # That is 33 hallucinated judgments in the published set, and glm-4.7 is 55% empty (33 of
+    # 60), so excluding them moves its mean score by +0.296. The study's own retained-failures
+    # control classifies refused / truncated / budget-exhausted / transport / corrupt -- an
+    # empty completion at the token cap is the budget-exhausted case and belongs there, not in
+    # the score distribution.
+    if not text.strip():
+        return {**raw, "score_classifier": None, "confidence": None,
+                "refusal_class": "empty-response",
+                "word_count_total": 0, "hedge_ratio": 0.0,
+                "scoring_status": "skipped-empty-response"}
+
     word_count = count_words(text)
     hedge_ratio = compute_hedge_ratio(text)
     refusal_class, confidence = classify_refusal(text)
