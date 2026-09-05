@@ -158,15 +158,45 @@ def both_stats(a, b):
     return sideflips, abs(gained - lost)
 
 
-def ci(vals):
-    """Bootstrap CI on the p90, so a floor carries an interval rather than a point."""
+def ci(vals, clusters=None):
+    """Bootstrap CI on the p90, so a floor carries an interval rather than a point.
+
+    `clusters` is a list parallel to `vals` naming the MODEL each pair came from. When given,
+    the bootstrap resamples MODELS with replacement and takes all of a model's pairs together,
+    which is the correct unit: 45 pairs from one model under ten templates are not 45
+    independent draws, they are one model measured 45 ways. Ten templates produce nine pairs
+    each, so every pair shares a sheet with eight others.
+
+    Measured 2026-09-04: the paraphrase floor's naive interval is [6, 7] on 1067 pairs; the
+    cluster interval over its six models is wider, and the honest one. The naive version
+    understates uncertainty by exactly the factor the pairing inflates n.
+
+    Falls back to the flat bootstrap when no clusters are supplied, so every existing caller
+    keeps its behaviour rather than silently acquiring a different statistic.
+    """
     if len(vals) < 5:
         return float("nan"), float("nan")
     rng = random.Random(BOOT_SEED)
     p90s = []
-    for _ in range(BOOT_N):
-        s = sorted(rng.choices(vals, k=len(vals)))
-        p90s.append(s[int(0.9 * len(s)) - 1])
+    if clusters:
+        groups = collections.defaultdict(list)
+        for v, c in zip(vals, clusters):
+            groups[c].append(v)
+        keys = sorted(groups)
+        if len(keys) < 3:
+            # Two or fewer clusters cannot carry a cluster bootstrap: every resample is one of
+            # three shapes. Say so rather than returning an interval that looks computed.
+            return float("nan"), float("nan")
+        for _ in range(BOOT_N):
+            drawn = []
+            for _ in range(len(keys)):
+                drawn.extend(groups[keys[rng.randrange(len(keys))]])
+            s = sorted(drawn)
+            p90s.append(s[int(0.9 * len(s)) - 1])
+    else:
+        for _ in range(BOOT_N):
+            s = sorted(rng.choices(vals, k=len(vals)))
+            p90s.append(s[int(0.9 * len(s)) - 1])
     p90s.sort()
     return p90s[int(0.025 * BOOT_N)], p90s[int(0.975 * BOOT_N)]
 
@@ -184,7 +214,7 @@ def ci_str(pair):
     return "[%.0f, %.0f]" % (lo, hi)
 
 
-def summarise(name, pairs, note=""):
+def summarise(name, pairs, note="", clusters=None):
     if not pairs:
         return None
     sf = [p[0] for p in pairs]
@@ -200,7 +230,7 @@ def summarise(name, pairs, note=""):
         med = int(med + 0.5) if med >= 0 else int(med - 0.5)
         return med, v[int(0.9 * len(v)) - 1] if len(v) >= 10 else max(v), max(v)
 
-    lo, hi = ci(sf)
+    lo, hi = ci(sf, clusters)
     side, endpoint = q(sf), q(ep)
     # DISCLOSE, do not hide: for n < 10 the q() above deliberately reports the MAX as the p90,
     # because a nearest-rank 90th percentile on nine or fewer observations IS the maximum. That
@@ -385,13 +415,16 @@ def floor_replicate():
     the modal is what hid this. See floor_template.
     """
     cells = _template_cells()
-    pairs = []
+    pairs, clusters = [], []
     for (m, c, tpl), runs in sorted(cells.items()):
         for i in range(len(runs)):
             for j in range(i + 1, len(runs)):
                 pairs.append(both_stats(runs[i], runs[j]))
+                clusters.append(m)
     return summarise("run-to-run replicate", pairs,
-                     "same model, same template, same temperature 0 -- the floor under the floors")
+                     "same model, same template, temperature 0 -- the floor under the floors; "
+                     "interval is a CLUSTER bootstrap over models",
+                     clusters=clusters)
 
 
 def floor_template():
@@ -416,7 +449,7 @@ def floor_template():
     by_model = collections.defaultdict(dict)
     for (m, c, tpl), runs in cells.items():
         by_model[m][tpl] = runs
-    pairs = []
+    pairs, clusters = [], []
     for m, templates in sorted(by_model.items()):
         tids = sorted(templates)
         for i in range(len(tids)):
@@ -424,9 +457,11 @@ def floor_template():
                 for a in templates[tids[i]]:
                     for b in templates[tids[j]]:
                         pairs.append(both_stats(a, b))
+                        clusters.append(m)
     return summarise("instruction paraphrase", pairs,
-                     "same model, same order, temperature 0, reworded wrapper; "
-                     "run-level pairs, compare against the run-to-run replicate row")
+                     "same model, same order, temperature 0, reworded wrapper; run-level "
+                     "pairs, CLUSTER bootstrap over models; compare to run-to-run replicate",
+                     clusters=clusters)
 
 
 def floor_template_modal():

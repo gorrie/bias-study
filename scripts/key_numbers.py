@@ -84,12 +84,29 @@ def matched_arms():
     nd = [r for r in sel if r.get("condition") in no_dir]
     di = [r for r in sel if r.get("condition") in directive]
     declining = {r.get("model") for r in nd if R.classify(r) == "refused"}
+    dir_declining = {r.get("model") for r in di if R.classify(r) == "refused"}
+
+    # PAIRED, PER MODEL -- because both pooled rates mislead, in opposite directions.
+    #
+    # Added 2026-09-04 after review. Pooled, refusal goes 7.8% -> 0.8% and reads as "a factor
+    # of ten". That figure is dominated by ONE model: gemini-3.7-flash contributes 24 of the 39
+    # no-directive refusals. Take the unweighted per-model mean instead and refusal goes UP,
+    # 5.2% -> 8.3% -- because the three models that refuse under a directive have exactly ONE
+    # directive run each, so each contributes a rate of 1.0.
+    #
+    # Neither number is the finding. The finding is paired and it is cleaner than either:
+    # every model that declines without a directive stops declining with one, 8 of 8, and the
+    # directive-arm refusals are three OTHER models. That statement survives both weightings,
+    # which is why it is the one the paper now makes.
+    silenced = sum(1 for m in declining if m not in dir_declining)
     return {"models": len(both),
             "nodir_runs": len(nd),
             "nodir_refusals": sum(1 for r in nd if R.classify(r) == "refused"),
             "dir_runs": len(di),
             "dir_refusals": sum(1 for r in di if R.classify(r) == "refused"),
-            "declining": len(declining)}
+            "declining": len(declining),
+            "silenced": silenced,
+            "dir_only": len(dir_declining - declining)}
 
 
 def audit_scale():
@@ -249,6 +266,15 @@ def build():
          "value": arms["dir_refusals"],
          "what": "refusals in the directive arm on that matched subset",
          "phrase": "%d of those runs are refusals"},
+        # The paired statement, gated so it cannot drift the way the zero did.
+        {"key": "arms_silenced",
+         "value": arms["silenced"],
+         "what": "models that decline without a directive and NOT with one",
+         "phrase": "all %d of them stop"},
+        {"key": "arms_dir_only",
+         "value": arms["dir_only"],
+         "what": "models that decline ONLY under a directive",
+         "phrase": "%d other models decline only when told to commit"},
         {"key": "arms_declining",
          "value": arms["declining"],
          "what": "models in that subset that decline the instrument at least once",
@@ -310,12 +336,12 @@ SURFACES = {
             "arms_models": "Across the %d models measured under both arms",
             "arms_nodir_refusals": "%d refusals in 499 runs",
             "arms_nodir_runs": "39 refusals in %d runs",
-            "arms_dir_runs": "against %d runs where it carries one",
             # Gated on the public page too, for the same reason it is gated in the paper: this
             # page carried "not one of them declines even once ... 347 runs, zero refusals"
             # until 2026-09-04, and the zero was the only figure on it that was typed rather
             # than generated.
-            "arms_dir_refusals": "**%d of those runs are refusals**",
+            "arms_silenced": "**all %d of them stop**",
+            "arms_dir_only": "**%d other models decline only when told to commit**",
             # The audit block, added 2026-09-04. These were prose ("two columns come back
             # nearly empty") while the counts sat in the JSON, on a page whose own argument is
             # that a typed number rots -- and the page still said "ten studies" after the
@@ -410,6 +436,61 @@ def check_ours_row(rows):
     return bad
 
 
+#: Claims this project has WITHDRAWN, as literal strings that must not survive on any surface.
+#:
+#: Every entry earned its place by outliving its own correction. A positive gate ("the page
+#: says N") is satisfied by one occurrence and blind to the others, so a retracted sentence
+#: sitting in a table, a caption or an older section passes review indefinitely. This is the
+#: negative half, and it is the half that matters for a withdrawal.
+#:
+#: Add a phrase here the moment a claim is retracted -- not the moment someone notices it
+#: survived somewhere.
+RETRACTED = [
+    ("none in 347 runs where it carries one",
+     "the zero-refusals-under-a-directive claim, withdrawn 2026-09-04. Three models decline "
+     "under a directive; the surviving statement is the paired one (all 8 decliners stop, "
+     "3 others decline only when told to commit)"),
+    ("not one of them declines even once",
+     "same withdrawal, the public page's wording of it"),
+    ("Not one of them declines when told firmly to answer",
+     "same withdrawal, the paper's wording of it"),
+    ("n too small",
+     "the requantisation row's interval. It rested on 4 pairs from ONE weights family until "
+     "2026-09-04 and now has 13 pairs from four, with a real CI -- any surface still saying "
+     "the interval cannot be computed is describing the retired version"),
+]
+
+
+def _unquoted_occurrences(text, phrase):
+    """Occurrences of `phrase` that are ASSERTED, not quoted inside a correction note.
+
+    A withdrawal has to be describable. "This paragraph originally said 'not one of them
+    declines even once'" is the correction working correctly, and a gate that forbids the
+    words outright would force every retraction to be silent about what it retracted -- which
+    is how a page ends up quietly acquiring the right answer and teaching nobody how it got
+    the wrong one.
+
+    The distinction is quotation. A retraction quotes the old claim; an assertion states it.
+    So an occurrence is allowed when a quote mark opens before it and closes after it on the
+    same line, and reported otherwise. Deliberately simple: a rule a writer can predict beats
+    a cleverer one they cannot.
+    """
+    out = []
+    for line in text.split("\n"):
+        start = 0
+        while True:
+            i = line.find(phrase, start)
+            if i < 0:
+                break
+            start = i + 1
+            before, after = line[:i], line[i + len(phrase):]
+            quoted = any(before.count(q) % 2 == 1 for q in ('"', "“")) or (
+                "“" in before and "”" in after)
+            if not quoted:
+                out.append(line.strip()[:110])
+    return out
+
+
 def check_surface(name, rows):
     """Verify one non-paper surface still states the computed numbers. Returns a failure list."""
     spec = SURFACES[name]
@@ -426,6 +507,15 @@ def check_surface(name, rows):
     by_key = {r["key"]: r for r in list(rows) + surface_numbers()}
     bad = []
     checked = 0
+
+    # RETRACTED PHRASES MUST BE ABSENT. A positive grep cannot catch a SECOND stale copy:
+    # on 2026-09-04 the zero-refusals claim was corrected at one place on the research page
+    # and left standing in a comparison table 115 lines further down, and this gate passed --
+    # because the phrase it looks for was satisfied by the corrected sentence. A claim is
+    # retracted from a PAGE, not from a line.
+    for phrase, why in RETRACTED:
+        for occurrence in _unquoted_occurrences(text, phrase):
+            bad.append(("RETRACTED", "must not be ASSERTED anywhere: %s" % why, occurrence))
     for key, phrase in spec["phrases"].items():
         row = by_key.get(key)
         if row is None:

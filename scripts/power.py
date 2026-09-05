@@ -123,9 +123,13 @@ def _pairs_for(fn):
     captured = {}
     original = F.summarise
 
-    def spy(name, pairs, note=""):
+    def spy(name, pairs, note="", **kw):
+        # **kw so this wrapper survives summarise() gaining arguments. It did on 2026-09-04
+        # (`clusters=`, for the cluster bootstrap) and this spy raised TypeError, taking every
+        # detection limit down with it -- a monkeypatch that mirrors a signature has to be
+        # updated in lockstep or written not to care. Written not to care.
         captured["pairs"] = pairs
-        return original(name, pairs, note)
+        return original(name, pairs, note, **kw)
 
     F.summarise = spy
     try:
