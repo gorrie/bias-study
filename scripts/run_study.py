@@ -403,7 +403,7 @@ def safe_filename(model: str) -> str:
 
 
 def run_one(channel: str, model: str, question: dict, condition: str, api_key: str,
-            sample_idx: int = 0) -> dict:
+            sample_idx: int = 0, max_tokens: int = 800) -> dict:
     user_text = question["prompt"]
     system_text = None
 
@@ -427,10 +427,23 @@ def run_one(channel: str, model: str, question: dict, condition: str, api_key: s
         messages.append({"role": "system", "content": system_text})
     messages.append({"role": "user", "content": user_text})
 
+    # THE TOKEN BUDGET IS A MEASUREMENT PARAMETER, not a constant to bury in a signature.
+    #
+    # Measured 2026-09-04 in the published May study: 234 of 520 raw records came back at the
+    # 800-token cap, and 117 of the 780 PUBLISHED records descend from one. Two models were
+    # 40 of 40 at the cap -- every response cut off mid-argument and then scored by the judge
+    # panel. z-ai/glm-4.7 went further and returned EMPTY content 34 times, spending the whole
+    # budget on reasoning tokens; the panel scored those too.
+    #
+    # A reasoning model emits its reasoning inside the same budget, so 800 is not a neutral
+    # default for a 2026 frontier line-up -- it is a truncation that presents as data. The
+    # findings survive its removal and get LARGER (opus-4.7 +0.900 -> +1.050, mistral-large
+    # +0.300 -> +0.450), so the cap was diluting the effect rather than manufacturing it, which
+    # is the conservative direction and the reason the published conclusions still stand.
     if channel == "openrouter":
-        result = call_openrouter(model, messages, api_key)
+        result = call_openrouter(model, messages, api_key, max_tokens=max_tokens)
     elif channel == "ollama":
-        result = call_ollama(model, messages)
+        result = call_ollama(model, messages, max_tokens=max_tokens)
     elif channel == "dmr":
         result = call_dmr(model, messages)
     else:
@@ -472,6 +485,13 @@ def main() -> int:
                              "paired_analysis.py, NOT ci_analysis.py.")
     parser.add_argument("--conditions", default="A,B",
                         help="Comma-separated conditions to run. A=fairness, B=ask, C=drop-hedging, D=must-commit, E=opinionated-persona. Default: A,B")
+    # 800 stays the default so an existing invocation reproduces its own run byte for byte.
+    # It is a FLAG now because it is a measurement parameter: a reasoning model emits its
+    # reasoning inside this budget, so 800 truncated 234 of the May study's 520 raw records
+    # and emptied 34 of them outright. Re-collections of that data must pass a real budget.
+    parser.add_argument("--max-tokens", type=int, default=800,
+                        help="per-response token budget. 800 is the v2 default and truncated "
+                             "reasoning models; use 4000+ when re-collecting those.")
     parser.add_argument("--samples", type=int, default=1,
                         help="N samples per (model, question, condition) for variance bounding. Default: 1")
     parser.add_argument("--dry-run", action="store_true", help="Print plan, do not call APIs")
@@ -580,7 +600,7 @@ def main() -> int:
         for question in questions:
             for condition in conditions_to_run:
                 for sample_idx in range(n_samples):
-                    record = run_one(channel, model, question, condition, api_key, sample_idx=sample_idx)
+                    record = run_one(channel, model, question, condition, api_key, sample_idx=sample_idx, max_tokens=args.max_tokens)
                     records.append(record)
                     completed += 1
                     if not record.get("ok"):
