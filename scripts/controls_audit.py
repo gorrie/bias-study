@@ -49,7 +49,11 @@ def render(doc, markdown=False):
              "same_version_point": "sv-point",
              "same_version_dist": "sv-dist", "quantisation": "quant",
              "retained_failures": "failures", "reported_mde": "MDE",
-             "forcing_disclosed": "forcing", "open_raw": "raw"}
+             "forcing_disclosed": "forcing", "open_raw": "raw",
+             # Added 2026-09-05. Each of these four was found by failing it ourselves; see
+             # scripts/add_controls_2026_09.py for why each is a column and not a sentence.
+             "judge_free_scoring": "no-judge", "judge_lean_reported": "judge-lean",
+             "self_judging_disclosed": "self-judged", "longitudinal": "over-time"}
     # A control added to the data file but not named here is a silent omission from the
     # matrix, which is the exact defect the matrix is about.
     missing = [c for c in controls if c not in short]
@@ -65,12 +69,12 @@ def render(doc, markdown=False):
             name = "**this study**" if s["id"] == "ours" else s["id"]
             out.append("| %s | %d | %s | %s |" % (name, s["year"], cells, s["provenance"]))
     else:
-        head = "study".ljust(20) + "yr  " + "".join(short[c].rjust(10) for c in controls)
+        head = "study".ljust(20) + "yr  " + "".join(short[c].rjust(12) for c in controls)
         out.append(head)
         out.append("-" * len(head))
         for s in studies:
             row = s["id"].ljust(20) + str(s["year"])[2:] + "  "
-            row += "".join(MARK[s["status"][c]].rjust(10) for c in controls)
+            row += "".join(MARK[s["status"][c]].rjust(12) for c in controls)
             out.append(row)
     return "\n".join(out)
 

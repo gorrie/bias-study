@@ -30,7 +30,11 @@
     "retained_failures": "Unparseable or declined runs retained and classified by cause rather than discarded as collection error.",
     "reported_mde": "A minimum detectable effect, power analysis, or explicit resolution limit reported alongside the effects.",
     "forcing_disclosed": "The forcing mechanism that turns free text into a scoreable answer is stated and its influence acknowledged.",
-    "open_raw": "Raw per-item responses published, not just aggregates."
+    "open_raw": "Raw per-item responses published, not just aggregates.",
+    "judge_free_scoring": "No language model anywhere in the scoring path -- answers are recorded mechanically (forced choice, item id + position) rather than read and rated by a model. A judged score inherits the judge's lean; a mechanical one cannot.",
+    "judge_lean_reported": "If a model DOES score the responses, the study reports that scoring layer's own lean as a magnitude -- per-judge deviation, or an equivalent -- rather than asserting agreement and stopping.",
+    "self_judging_disclosed": "No subject of the study also sits on the panel that scores it, or if one does, the study says so. n/a where scoring is judge-free.",
+    "longitudinal": "The same subject re-measured over CALENDAR TIME under held parameters. A cross-section of successive versions measured on one date is not this, however many versions it spans."
   },
   "studies": [
     {
@@ -51,7 +55,11 @@
         "retained_failures": "no",
         "reported_mde": "no",
         "forcing_disclosed": "yes",
-        "open_raw": "yes"
+        "open_raw": "yes",
+        "judge_free_scoring": "unknown",
+        "judge_lean_reported": "unknown",
+        "self_judging_disclosed": "unknown",
+        "longitudinal": "unknown"
       },
       "notes": {
         "item_order": "Each probe is an independent call with the context cleared, so there is no sequence for order to act on. This control does not apply to a per-probe design and claiming otherwise would be wrong.",
@@ -59,7 +67,11 @@
         "same_version_dist": "Same-version pairs exist inside their own tier ladder (mini vs flagship at one generation, dated snapshots of one name) and are read as drift transitions carrying d values rather than as a baseline.",
         "retained_failures": "GPT-5 (2025-08-07) excluded entirely for a 33.1% parse success rate. Two-thirds unparseable on the newest flagship is the study's most interesting cell and it is the one cell not in it.",
         "reported_mde": "Reliability is reported as ICC 0.89-1.00 (median 0.98) with 82.2% of model-probe cells byte-identical across 10 trials. That is sampling variability at T=0, which is near zero by construction, and it is then used to certify effects against factors that were never varied.",
-        "open_raw": "huggingface.co/datasets/mznaser/moral-tracing-in-LLMs"
+        "open_raw": "huggingface.co/datasets/mznaser/moral-tracing-in-LLMs",
+        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
+        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
+        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
       },
       "quotes": {
         "reported_mde": "The high intraclass correlations reported in Section 4.1 establish that within-model noise is negligible and that observed stance drift reflects genuine distributional change across model generations rather than sampling artifacts.",
@@ -88,13 +100,21 @@
         "retained_failures": "unknown",
         "reported_mde": "partial",
         "forcing_disclosed": "unknown",
-        "open_raw": "unknown"
+        "open_raw": "unknown",
+        "judge_free_scoring": "unknown",
+        "judge_lean_reported": "unknown",
+        "self_judging_disclosed": "unknown",
+        "longitudinal": "unknown"
       },
       "notes": {
         "item_order": "Ten administrations with the context cleared vary sampling only; item order is fixed across all ten. On the same 62-item instrument reordering moves a median 7 and up to 24 answers, so the largest known nuisance term has no term in the ANOVA.",
         "same_version_dist": "Their Table 7 lists gpt-4.1-nano, gpt-4.1-mini and gpt-4.1 alongside each other without treating them as a null.",
         "reported_mde": "Volatility (sigma_vol) and eta-squared are reported, which bound sampling noise. No detection limit is reported for any other factor.",
-        "provenance": "Method and results retrieved 2026-08-31; the full text has not been read end to end. Do not cite specific method details beyond those quoted here without upgrading this record."
+        "provenance": "Method and results retrieved 2026-08-31; the full text has not been read end to end. Do not cite specific method details beyond those quoted here without upgrading this record.",
+        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
+        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
+        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
       },
       "quotes": {
         "reported_mde": "One-way ANOVA confirms that model identity is the dominant source of variance across all political axes. Effect sizes exceed 0.90 for most dimensions, indicating that over 90% of score variance is attributable to model identity rather than sampling noise.",
@@ -122,7 +142,11 @@
         "retained_failures": "yes",
         "reported_mde": "no",
         "forcing_disclosed": "yes",
-        "open_raw": "yes"
+        "open_raw": "yes",
+        "judge_free_scoring": "unknown",
+        "judge_lean_reported": "unknown",
+        "self_judging_disclosed": "unknown",
+        "longitudinal": "unknown"
       },
       "notes": {
         "nuisance_magnitude": "THE CLOSEST PRIOR RESULT TO OURS, and it predates us by two years. Ten semantics-preserving paraphrases of the prompt template produce contradicting responses on 14 of 62 propositions for Mistral 7b Iv0.1 and 23 of 62 for GPT-3.5 1106. Our order floor is p90 14, max 24. Independent lab, independent factor, same instrument, same magnitude -- which is corroboration of the floor, not a novelty claim against them.",
@@ -130,7 +154,11 @@
         "retained_failures": "Better documented than ours. Invalid responses are the subject of section 4.2, not a discard: per-model valid rates (Llama2 7b 6.5%, 13b 45.2%, Mistral Iv0.1 75.8%), then 100 sampled invalid responses hand-annotated by two authors, Fleiss kappa 66.2%, disagreements resolved with a third. 95% of invalid responses emphasise inability to hold an opinion; only 6% are outright refusals. Our contribution is the STRUCTURAL rather than lexical classifier and the condition-dependence, not the idea.",
         "reported_mde": "Magnitudes yes, detection limit no. Their recommendation is to estimate the extent of instabilities; nobody including them converts an extent into a threshold an effect must clear.",
         "same_version_dist": "GPT-3.5 0613 vs 1106 and GPT-4 0613 vs 1106 are snapshot pairs of one version, and Llama2 7b/13b/70b are size variants. All four are in the model list as separate subjects rather than as a baseline.",
-        "open_raw": "github.com/paul-rottger/llm-values-pct -- data/completions/ confirmed present."
+        "open_raw": "github.com/paul-rottger/llm-values-pct -- data/completions/ confirmed present.",
+        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
+        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
+        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
       },
       "quotes": {
         "nuisance_magnitude": "In total, there are contradicting responses of this kind in 14 of 62 propositions for Mistral, and in 23 of 62 for GPT-3.5. Therefore, paraphrase instability is substantial across models, but concentrated around a subset of PCT propositions.",
@@ -161,7 +189,11 @@
         "retained_failures": "no",
         "reported_mde": "no",
         "forcing_disclosed": "partial",
-        "open_raw": "yes"
+        "open_raw": "yes",
+        "judge_free_scoring": "unknown",
+        "judge_lean_reported": "unknown",
+        "self_judging_disclosed": "unknown",
+        "longitudinal": "unknown"
       },
       "notes": {
         "item_order": "Randomised per round as a prevention device and never quantified -- the classic prevention-and-pool. Worse, it is not recoverable: the deposited spreadsheet has an item id and a round index but no column recording presentation position, so no reader can estimate the effect they controlled for.",
@@ -169,7 +201,11 @@
         "same_version_point": "n/a rather than no: the study runs a single model, so no pair of any kind exists. Their placebo battery varies the ITEMS, not the model, and therefore bounds nothing about model-identity noise.",
         "retained_failures": "MEASURED BY US from their deposit, never stated by them. The released Stata coding block maps exactly four answer strings and lets everything else fall to missing with no note. Off-menu responses are present in dataset_eua -- 'neutral' 8 times on an instrument with no neutral option, plus malformed tokens -- roughly 0.03% of cells. Tiny, but unreported and uncategorised, and the model breaking a forced choice is the signal we would keep.",
         "naming": "The paper says ChatGPT throughout; the supplement names text-davinci-003, a GPT-3.5-series completion model. Any claim from this paper is a claim about text-davinci-003 at temperature 0.7 and should be cited that way.",
-        "design_flag": "The published prompt elicits the default answer AND both partisan answers in ONE completion. The main text describes three conditions, which reads as three independent measurements; they are not independent, and the default answer is conditioned on simultaneously producing a Democrat and a Republican answer in the same output."
+        "design_flag": "The published prompt elicits the default answer AND both partisan answers in ONE completion. The main text describes three conditions, which reads as three independent measurements; they are not independent, and the default answer is conditioned on simultaneously producing a Democrat and a Republican answer in the same output.",
+        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
+        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
+        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
       },
       "quotes": {
         "item_order": "In each round, we randomized the order of questions to avoid any potential bias that a particular ordering could create due to any type of context.",
@@ -199,7 +235,11 @@
         "retained_failures": "no",
         "reported_mde": "no",
         "forcing_disclosed": "partial",
-        "open_raw": "yes"
+        "open_raw": "yes",
+        "judge_free_scoring": "unknown",
+        "judge_lean_reported": "unknown",
+        "self_judging_disclosed": "unknown",
+        "longitudinal": "unknown"
       },
       "notes": {
         "item_order": "Randomised as prevention, magnitude never reported -- but better than Motoki in one respect worth crediting: the deposit stores each questionnaire AS PRESENTED, one line per item in order, so a reader can run the order analysis they did not run.",
@@ -208,7 +248,11 @@
         "refusal_is_content_correlated": "MEASURED BY US. The deleted items are the charged ones: sex outside marriage (6 of 30 runs), inheritable disabilities and reproduction (6), pornography (5), abortion (5), morality without religion (5), racial superiority (5), first-generation immigrants (5), [instrument text withheld] (5). Listwise deletion on a refusal that tracks item content, applied to one arm of a two-arm comparison and not the other, is the failure mode this audit exists to catch.",
         "their_own_table": "THEIRS, and the most important thing in the entry because it needs no derivation: the non-bootstrapped rows of their Table 1 show NO significant shift for GPT-3.5 (economic 0.391, SE 0.452; social 0.165, SE 0.223) and a non-significant LEFTWARD social coefficient for GPT-4 (-0.174, SE 0.149). Every starred result in the paper comes from a bootstrapped row. The model with 11% refusals shows the largest shift; the models with none show none.",
         "mechanism_verified_2026_09_01": "RE-DERIVED INDEPENDENTLY 2026-09-01 and verified against their deposited code and raw files; no longer quarantined. Their axis score is a sum over items divided by a fixed constant, and their bootstrap draws a test index uniform on 0-9 from a table the invalid tests were already removed from -- so for the 1106 model roughly 43% of draws would match no row and the synthetic questionnaire would lose those items, shrinking a fixed-divisor sum toward its offsets, which are positive on both axes. Attenuating each model's non-bootstrapped mean by its own dropped-test fraction reproduces their reported bootstrapped means to within rounding on all four models. That is consistent with the mechanism and is NOT proof of it. Anyone citing this must re-derive it from the deposited do-files first.",
-        "abstract_overclaim": "Their abstract states the study 'controlled for factors such as user interaction and language'. The account regression is the user-interaction control. There is no language control anywhere in the body -- every prompt and item is English. Do not cite this paper for a language control."
+        "abstract_overclaim": "Their abstract states the study 'controlled for factors such as user interaction and language'. The account regression is the user-interaction control. There is no language control anywhere in the body -- every prompt and item is English. Do not cite this paper for a language control.",
+        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
+        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
+        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
       },
       "quotes": {
         "retained_failures": "Notably, for each 62-question test, if ChatGPT gave an 'unevaluable' answer to a certain question, the entire test result was regarded as invalid and deleted.",
@@ -239,7 +283,11 @@
         "retained_failures": "partial",
         "reported_mde": "no",
         "forcing_disclosed": "yes",
-        "open_raw": "yes"
+        "open_raw": "yes",
+        "judge_free_scoring": "unknown",
+        "judge_lean_reported": "unknown",
+        "self_judging_disclosed": "unknown",
+        "longitudinal": "unknown"
       },
       "notes": {
         "item_order": "NOT an omission -- item order cannot act on this design. Each item is presented in isolation with the chat history cleared, which he states and justifies in Methods. Same structural reason as Naser. What he does omit is an ANSWER-OPTION order control, and he defends that omission by assumption rather than experiment: the tests 'presumably use a variety of ranking orders'. Do not conflate the two axes.",
@@ -247,7 +295,11 @@
         "same_version_point": "The pairs are excluded ON PURPOSE. This is the strongest single quote in the audit: the control is not merely unrun in this literature, it is designed out to make the sample look more varied. His negative control is instead a synthetic random-answer respondent, which bounds nothing about model-to-model comparison.",
         "retained_failures": "Half credit, and the distinction matters. Invalid responses ARE measured, attributed to cause and reported per model (mean 11%, sd 9% conversational; gpt-4 33%, claude-instant 31%, 'mostly because those models often refuse... by claiming to lack political preferences'; base models mean 42%). But the individual invalid response is then retried up to 10 times and, if it still fails, left blank or replaced with a RANDOM answer (105 of 96,240 items). Retained as a statistic, discarded as a measurement.",
         "same_version_pairs_in_hand": "grok-fun-mode vs grok-regular-mode -- same model, same snapshot, mode only, both fully scored in the published CSV, and the two modes are never mentioned in the prose. Plus Llama-2 7b/13b/70b chat and base ladders, babbage-002 vs davinci-002, and six matched base-vs-chat pairs which he uses as the study's main effect.",
-        "open_raw": "Zenodo 10.5281/zenodo.10553530; jsonl files carry all per-item LLM responses, plus tabulated_results.csv of means and SDs over 10 retakes."
+        "open_raw": "Zenodo 10.5281/zenodo.10553530; jsonl files carry all per-item LLM responses, plus tabulated_results.csv of means and SDs over 10 retakes.",
+        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
+        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
+        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
       },
       "quotes": {
         "item_order": "the automated administration of tests module always uses a clear chat history and prompts the model with each test question/statement in isolation to avoid previous test items and model responses influencing the current model response to a test question/statement",
@@ -278,14 +330,22 @@
         "retained_failures": "n/a",
         "reported_mde": "yes",
         "forcing_disclosed": "yes",
-        "open_raw": "yes"
+        "open_raw": "yes",
+        "judge_free_scoring": "unknown",
+        "judge_lean_reported": "unknown",
+        "self_judging_disclosed": "unknown",
+        "longitudinal": "unknown"
       },
       "notes": {
         "item_order": "Held fixed at ACS order in both the independent and the sequential settings, and never varied. This is the reference work on ANSWER-OPTION order, not item order, and the two must not be conflated: they permute the assignment of answers to labels, and in Appendix C they separate position from label by permuting each independently.",
         "reported_mde": "THE ONE PRIOR POWER ANALYSIS IN THE AUDIT, and it narrows our claim. Scope matters: it covers the appendix chi-square tests for positioning versus labelling bias, not the main-text KL and entropy comparisons, which carry no stated limit. Nobody, including them, converts a measured nuisance magnitude into a threshold a substantive effect must clear.",
         "retained_failures": "Does not arise. The response is a renormalised probability distribution over label tokens, so there is no unparseable generation to retain. One documented discard in the ATP replication only: refusal answer choices excluded from analysis, following Santurkar.",
         "same_version_pairs_in_hand": "The largest matched inventory in the audit and none of it used as a null: GPT-2 at 4 sizes, GPT-Neo at 3, GPT-3 at 4, LLaMA-1 at 4, Llama 2 at 3, Llama 2 Chat at 3, Llama 3 at 2, Pythia at 2; GPT-4 0613 against GPT-4 Turbo 0125; text-davinci-001/002/003; and matched base-versus-tuned pairs at equal size, which they do compare -- as the instruction-tuning treatment effect, not as a baseline.",
-        "open_raw": "Code at github.com/socialfoundations/surveying-language-models; results on an MPG Keeper share rather than a DOI archive. What is published is per-question probability distributions, not free text, which never existed in this design."
+        "open_raw": "Code at github.com/socialfoundations/surveying-language-models; results on an MPG Keeper share rather than a DOI archive. What is published is per-question probability distributions, not free text, which never existed in this design.",
+        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
+        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
+        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
       },
       "quotes": {
         "reported_mde": "Since we collect 3,000 response distributions under randomized choice position and letter assignment, we ensure a high test power (>= 0.98) in detecting small effect sizes (0.1) at a significance level of 0.05.",
@@ -315,7 +375,11 @@
         "retained_failures": "no",
         "reported_mde": "no",
         "forcing_disclosed": "partial",
-        "open_raw": "no"
+        "open_raw": "no",
+        "judge_free_scoring": "unknown",
+        "judge_lean_reported": "unknown",
+        "self_judging_disclosed": "unknown",
+        "longitudinal": "unknown"
       },
       "notes": {
         "quantisation": "OUR EARLIER READING OF THIS PAPER WAS WRONG AND THE CORRECTION MATTERS. We had it as a complement -- they report the pattern survives quantisation, we add the per-item magnitude. They report no magnitude at all, and they never difference the two arms: each is run separately through the same battery and the significance patterns are compared by eye. The patterns disagree. In their Table 16 the base-versus-finetuned t statistics REVERSE SIGN between precisions (Social -32.74 full against +3.98 quantised; Economic -8.38 against +2.28). In Table 15 prompt-to-Economic is significant at full precision and not at 4-bit. Table 17 reports F = 0.15 with p = 4.23e-43, which cannot both be true. So on the question we came here for, our requantisation floor is not a complement to a prior finding. It is the only measurement.",
@@ -323,7 +387,11 @@
         "same_version_point": "The pair exists and is clean -- Llama3.2-1B-Instruct at full precision against the same model 4-bit, same version, same size, precision only -- and it is used as a generalisability check rather than a null. They never compute the difference or ask whether it is zero.",
         "retained_failures": "Discarded, at the worst granularity, and the same failure mode as Liu: one unparseable item voids all 62. 187 of 2,880 tests dropped (6.5%) on the PCT, 176 of 2,880 (6.1%) on 8 Values, with no breakdown by cause -- refusal, unparseable and off-topic are not separated.",
         "seed_null_on_the_wrong_variable": "They do run a seed null -- three fine-tunes of each model on SciSumm with different seeds, reported as not varying significantly. But Table 25 reports BLEU, ROUGE and BERTScore. The seed null is evaluated on summarisation quality, not on the PCT score that is the paper's dependent variable.",
-        "open_raw": "No. The repository holds training and evaluation scripts plus aggregated ANOVA and t-test CSVs. No per-item responses and no per-test score dump. The paper promises source code, and delivers source code."
+        "open_raw": "No. The repository holds training and evaluation scripts plus aggregated ANOVA and t-test CSVs. No per-item responses and no per-test score dump. The paper promises source code, and delivers source code.",
+        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
+        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
+        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
       },
       "quotes": {
         "quantisation": "Otherwise, the results are consistent across different model sizes and quantized and non-quantized versions of the same size, supporting generalizability.",
@@ -353,7 +421,11 @@
         "retained_failures": "partial",
         "reported_mde": "no",
         "forcing_disclosed": "yes",
-        "open_raw": "yes"
+        "open_raw": "yes",
+        "judge_free_scoring": "unknown",
+        "judge_lean_reported": "unknown",
+        "self_judging_disclosed": "unknown",
+        "longitudinal": "unknown"
       },
       "notes": {
         "THE_QUOTE_WE_WERE_GOING_TO_USE": "DO NOT PUBLISH IT. Our sentence -- refusal 'highest for GPT models and lowest for Gemini models, with Claude models in the middle' -- is a verbatim quote from their INTRODUCTION, and their own Results section 6.3 and Figure 6 say something else: 'GPT-4, Claude 3-Haiku, and Claude 3 Opus have the highest refusal rates, while Perplexity has by far the lowest'. Claude is not in the middle. Gemini is not lowest, Perplexity is. The GPT family straddles both ends -- gpt-4 highest, gpt-4o among the lowest. There is also exactly ONE Gemini model in the study, so 'Gemini models' is plural about a single column. We cannot claim to contradict a paper that already contradicts itself, and citing the tidier of its two passages would be the same offence we are auditing everyone else for.",
@@ -363,7 +435,11 @@
         "same_version_point": "Three online/offline pairs of one model each -- gpt-4o, claude-3.5-sonnet, gemini-1.0-pro with and without Google Search. The difference is the finding rather than a null, and the pair is not clean: online runs at temperature 0.1 against 0 offline.",
         "quantisation": "Precision never addressed, but the serving stack is varied and, to their credit, its drift is disclosed rather than hidden: the flagship checkpoint updates under them as providers ship, and Perplexity switched sonar-32k to sonar-128k mid-collection.",
         "reported_mde": "None, and unusually candid about it: their error bands 'are not intended as confidence intervals in the traditional statistical sense, as the means are taken over groups of questions and not a source of randomness'. Honest, and it leaves no resolution limit.",
-        "open_raw": "huggingface.co/datasets/sarahcen/llm-election-data-2024 -- near-daily responses of 12 models to 12,638 questions over 100+ days. The best open-data posture in the audit, and it means the Figure 6 ordering is independently checkable by anyone who wants to settle their internal contradiction."
+        "open_raw": "huggingface.co/datasets/sarahcen/llm-election-data-2024 -- near-daily responses of 12 models to 12,638 questions over 100+ days. The best open-data posture in the audit, and it means the Figure 6 ordering is independently checkable by anyone who wants to settle their internal contradiction.",
+        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
+        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
+        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
       },
       "quotes": {
         "intro_claim": "We further study the refusal rates of models to answer the candidate-adjective questions, revealing that rates are highest for GPT models and lowest for Gemini models, with Claude models in the middle.",
@@ -393,11 +469,19 @@
         "retained_failures": "partial",
         "reported_mde": "no",
         "forcing_disclosed": "yes",
-        "open_raw": "yes"
+        "open_raw": "yes",
+        "judge_free_scoring": "unknown",
+        "judge_lean_reported": "unknown",
+        "self_judging_disclosed": "unknown",
+        "longitudinal": "unknown"
       },
       "notes": {
         "item_order": "108 whole-questionnaire ordering runs, reported at coordinate level as negligible. Our item-level re-analysis of the same data shows the churn is real and cancels unevenly -- llama3.1-8B moves 22.6 points of agree-rate from reordering alone. Both statements are true at different aggregation levels.",
-        "disclosure": "This is the project's own observatory. Any use of it as external replication must be disclosed as half-internal."
+        "disclosure": "This is the project's own observatory. Any use of it as external replication must be disclosed as half-internal.",
+        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
+        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
+        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
       },
       "first_public": "2026-07-29",
       "of_record": null,
@@ -409,7 +493,7 @@
       "venue": "unpublished",
       "year": 2026,
       "instrument": "politicalcompass.org 62 propositions, forced choice, four options, no neutral, no LLM judge in the scoring path",
-      "scale": "1,814 runs, 166 models, 16 vendor keys of which 12 are vendor families",
+      "scale": "2,126 runs, 166 models, 16 vendor keys of which 12 are vendor families",
       "provenance": "full-text",
       "headline": "Presentation order and same-version variation each move as many items as any deliberate manipulation measured",
       "status": {
@@ -421,14 +505,21 @@
         "retained_failures": "yes",
         "reported_mde": "yes",
         "forcing_disclosed": "yes",
-        "open_raw": "yes"
+        "open_raw": "yes",
+        "judge_free_scoring": "yes",
+        "judge_lean_reported": "yes",
+        "self_judging_disclosed": "yes",
+        "longitudinal": "partial"
       },
       "notes": {
         "reported_mde": "Added 2026-08-31, and it indicted our own published nulls: 4 of 5 fell below their own detection limit, including both used to retire this project's central claims. The row reads yes only because that check was eventually run, not because the design anticipated it.",
         "item_order": "18 pairs, median 7 / p90 14 / max 24 side-flips of 62. Frontier coverage is incomplete.",
         "same_version_dist": "97 pairs, median 5 / p90 12 / max 24. Robust to dropping any single vendor.",
         "retained_failures": "Structural classification: refused / truncated / budget-exhausted / transport / corrupt / other. The refusal result exists only because these are kept.",
-        "honesty": "Single presentation order for most cells, mostly n=3, one collection window. The gate warns about all three."
+        "honesty": "Single presentation order for most cells, mostly n=3, one collection window. The gate warns about all three.",
+        "judge_lean_reported": "Added 2026-09-05 and it was absent before: scripts/judge_lean.py over 4,744 scored records gives a per-judge spread of 0.29 points (gemini-2.5-flash +0.173 to deepseek-v3.2 -0.119), larger than two of the five effects this project published. Rank order is identical under both conditions, so the lean is a main effect and cancels in the within-model deltas; absolute scores it does not.",
+        "self_judging_disclosed": "Disclosed 2026-09-05, having gone unsaid since May. Two of five CI-clean findings are self-judged: openai/gpt-4.1 (+0.433) and deepseek/deepseek-v3.2 (+0.233) both sat on the four-model panel that scored them.",
+        "longitudinal": "PARTIAL and generously so. The forced-choice corpus spans 2026-08-30 to 2026-09-05 -- six days -- and runs/2026-08-31-lineage is 137 models measured on ONE date, a version cross-section rather than a series. A fixed 31-model panel with frozen parameters exists as of 2026-09-05 (scripts/wave.py) and wave 0 is declared, but one wave is a baseline, not a series. This becomes `yes` at wave 2 and not before."
       },
       "first_public": "2026-08-31",
       "of_record": null,
@@ -455,12 +546,20 @@
         "retained_failures": "unknown",
         "reported_mde": "no",
         "forcing_disclosed": "yes",
-        "open_raw": "yes"
+        "open_raw": "yes",
+        "judge_free_scoring": "unknown",
+        "judge_lean_reported": "unknown",
+        "self_judging_disclosed": "unknown",
+        "longitudinal": "unknown"
       },
       "notes": {
         "nuisance_magnitude": "The largest nuisance magnitude in this file, in any domain: 76 accuracy points from formatting that preserves meaning. Not a political instrument, so it does not bound our floors -- it establishes that the problem class was named and quantified at a major venue two years before we started.",
         "reported_mde": "Recommends reporting a RANGE across plausible formats rather than a point, which is the caveat form. Does not convert the range into a threshold an effect must clear.",
-        "scope": "Included as a methodological precedent rather than a comparable study. It measures task accuracy, not political position, and its numbers must never be quoted as if they bound this instrument."
+        "scope": "Included as a methodological precedent rather than a comparable study. It measures task accuracy, not political position, and its numbers must never be quoted as if they bound this instrument.",
+        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
+        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
+        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
       },
       "quotes": {
         "nuisance_magnitude": "several widely used open-source LLMs are extremely sensitive to subtle changes in prompt formatting in few-shot settings, with performance differences of up to 76 accuracy points",
@@ -488,12 +587,20 @@
         "retained_failures": "unknown",
         "reported_mde": "yes",
         "forcing_disclosed": "yes",
-        "open_raw": "unknown"
+        "open_raw": "unknown",
+        "judge_free_scoring": "unknown",
+        "judge_lean_reported": "unknown",
+        "self_judging_disclosed": "unknown",
+        "longitudinal": "unknown"
       },
       "notes": {
         "reported_mde": "The closest prior work to this paper's central move. It converts unmeasured variance into a corrected interval and shows the consequences -- naive 95% coverage DEGRADES as sample size grows, which is the same trap as reporting a tight interval around a quantity that was never moving.",
         "same_version_dist": "Does not run one. The specific claim -- a same-version null as a distribution -- survives this paper. The general claim, that the field underestimates its own uncertainty, does not and should not be presented as new.",
-        "scope": "Methodological precedent, not a political-instrument study. Published four months before this work and before the Carnegie recommendation, which makes the uptake argument stronger rather than weaker."
+        "scope": "Methodological precedent, not a political-instrument study. Published four months before this work and before the Carnegie recommendation, which makes the uptake argument stronger rather than weaker.",
+        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
+        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
+        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
       },
       "quotes": {
         "reported_mde": "naive standard errors are 40-60% smaller than the TEE-corrected SE"

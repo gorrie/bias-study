@@ -276,22 +276,25 @@ def build():
          "what": "models that decline ONLY under a directive",
          "phrase": "%d other models decline only when told to commit"},
         # "decline the instrument at least once" was the description and it counts only the
-        # NO-DIRECTIVE arm. Across both arms 11 models decline at least once (8 + 3 that
-        # decline only under a directive), and the paper's sentence sat immediately after a
-        # clause describing both arms -- so it read as a total and the total was different.
-        # An ambiguous label on a gated number is a gate protecting the wrong quantity.
+        # NO-DIRECTIVE arm. Across both arms more models decline at least once (this arm plus
+        # those that decline ONLY under a directive), and the paper's sentence sat immediately
+        # after a clause describing both arms -- so it read as a total and the total was
+        # different. An ambiguous label on a gated number is a gate protecting the wrong
+        # quantity.
+        #
+        # THE DISAMBIGUATING TOTAL IS COMPUTED, not typed. It was "(11 decline in one arm or
+        # other)" as literal text, and the 2026-09-05 frontier collection moved it to 15 --
+        # a stale hand-typed number living inside the tool whose entire job is to catch stale
+        # hand-typed numbers.
         {"key": "arms_declining",
          "value": arms["declining"],
-         # COMPUTED, not typed. It was "(11 decline in one arm or other)" as literal text and
-         # a frontier collection moved it to 15 -- a stale hand-typed number inside the tool
-         # whose entire job is catching stale hand-typed numbers.
          "what": "models that decline in the NO-DIRECTIVE arm (%d decline in one arm or other)"
                  % (arms["declining"] + arms["dir_only"]),
          "phrase": "%d models decline it without a directive"},
         {"key": "audit_external",
          "value": audit["external"],
          "what": "external studies in the controls audit, excluding ours",
-         "phrase": "%d studies, nine controls"},
+         "phrase": "%d studies, thirteen controls"},
         {"key": "audit_full_text",
          "value": audit["full_text"],
          "what": "of those, read in full rather than retrieved as a summary",
@@ -343,8 +346,8 @@ SURFACES = {
             # literal grep, so it has to be the sentence as written rather than as summarised.
             "order_mde": "of %d items of 62** at 80%% power",
             "arms_models": "Across the %d models measured under both arms",
-            "arms_nodir_refusals": "%d refusals in 499 runs",
-            "arms_nodir_runs": "39 refusals in %d runs",
+            "arms_nodir_refusals": "%(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
+            "arms_nodir_runs": "%(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
             # Gated on the public page too, for the same reason it is gated in the paper: this
             # page carried "not one of them declines even once ... 347 runs, zero refusals"
             # until 2026-09-04, and the zero was the only figure on it that was typed rather
@@ -378,7 +381,48 @@ SURFACES = {
             "audit_no_reported_mde": "of 12 (**%d say no**)",
             "audit_yes_open_raw": "publishes its raw data** | **%d of 12** |",
             "audit_yes_forcing": "discloses its forcing prompt** | %d of 12",
-            "audit_ours_pass": "our own run passes %d of 9",
+            "audit_ours_pass": "our own run passes %(audit_ours_pass)d of %(audit_controls)d",
+        },
+    },
+    # THE DISPATCH, added 2026-09-05, and the reason is the whole argument for this file.
+    #
+    # `ai-bias-audit.md` was gated and correct. This dispatch says the same things in the same
+    # numbers and was NOT gated, so on 2026-09-05 it still carried "not one refusal in 347 runs
+    # with one. Eight models refuse without a directive. None refuses with one" -- the exact
+    # sentence the audit page had been corrected out of on 2026-09-04, plus "roughly 1,600 runs
+    # across 155 models" and a reordering max of 24 where the floor table measures 22.
+    #
+    # One page gated and its twin ungated is not half-protected; it is a page that is right and
+    # a page that is wrong, published together, under the same argument.
+    "dispatch-gemma": {
+        "path": _find_surface("website", "content", "dispatches", "gemma-delta.md"),
+        "phrases": {
+            "corpus_runs": "%(corpus_runs)s runs across %(corpus_models)d models",
+            "corpus_models": "runs across %d models",
+            "arms_models": "Across the %d models measured under both arms",
+            "arms_nodir_refusals": "%(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
+            "arms_nodir_runs": "%(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
+            "arms_dir_refusals": "against %(arms_dir_refusals)d refusals in %(arms_dir_runs)d runs",
+            "arms_dir_runs": "against %(arms_dir_refusals)d refusals in %(arms_dir_runs)d runs",
+            "arms_silenced": "all %d of them stop",
+            "order_max_all": "moves up to %d answers",
+        },
+    },
+    #: Same drift, same day, same numbers -- two dispatches saying what the audit page says,
+    #: neither of them gated, both a correction behind it.
+    "dispatch-mask": {
+        "path": _find_surface("website", "content", "dispatches", "alignment-mask.md"),
+        "phrases": {
+            "corpus_runs": "across %(corpus_runs)s runs and %(corpus_models)d models",
+            "corpus_models": "runs and %d models",
+            "arms_models": "Across the %d models measured under both arms",
+            "arms_nodir_refusals": "%(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
+            "arms_nodir_runs": "%(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
+            "arms_dir_refusals": "against %(arms_dir_refusals)d refusals in %(arms_dir_runs)d runs",
+            "arms_dir_runs": "against %(arms_dir_refusals)d refusals in %(arms_dir_runs)d runs",
+            "arms_silenced": "all %d of them stop",
+            "order_max_all": "moves up to %d answers",
+            "same_version_max": "a median of five and up to %d",
         },
     },
     "release": {
@@ -395,9 +439,9 @@ SURFACES = {
 #: page reports the audit's control gaps and our own row, which the paper covers in a generated
 #: table rather than in a sentence, so there is no paper phrase to grep. Keyed the same way and
 #: checked the same way -- the point is that no hand-typed number on any surface is unguarded.
-#: Floor rows this checkout could not compute, filled in by `surface_numbers()` and reported by
-#: the gate. A set rather than a flag because the caller has to be able to NAME them: "3 numbers
-#: were not verifiable here" is a usable sentence, "some checks were skipped" is not.
+#: Floor rows this checkout could not compute, filled in by surface_numbers() and reported by
+#: the gate. A set rather than a flag because the caller has to NAME them: "3 numbers were not
+#: verifiable here" is a usable sentence, "some checks were skipped" is not.
 MISSING_FLOORS = set()
 
 
@@ -432,19 +476,18 @@ def surface_numbers():
         # its own argument is that a number typed into a document goes quietly stale.
     ]
 
-    # A FLOOR ROW THAT THIS CHECKOUT CANNOT COMPUTE IS NOT A CRASH.
+    # A FLOOR ROW THIS CHECKOUT CANNOT COMPUTE IS NOT A CRASH.
     #
-    # These five were indexed directly out of `fl`, which is fine in the private working tree
-    # where every run exists. This public repository ships a smaller run set -- it has no
-    # instruction-paraphrase and no run-to-run-replicate runs at all -- so `fl["run-to-run
+    # These five were indexed straight out of `fl`, which is fine in the working tree where
+    # every run exists. The public mirror ships a smaller run set, so `fl["run-to-run
     # replicate"]` raised KeyError and took down `--check`, `--check-website` and
-    # `--check-release` with it, on the repo whose entire purpose is that a stranger can run
-    # these commands.
+    # `--check-release` with it -- on the repository whose entire purpose is that a stranger
+    # can run those commands.
     #
     # Absent is not zero and it is not a pass. A row this checkout cannot compute is dropped
-    # from the gate and NAMED, so the summary says how many numbers were verified and which
-    # were unverifiable here -- the same distinction background_rate.py draws between a bucket
-    # that measures nothing and a bucket that is not in the tree.
+    # from the gate and NAMED, so the summary says which numbers were unverifiable here --
+    # the same distinction background_rate.py draws between a bucket that measures nothing and
+    # a bucket that is not in the tree.
     optional = [
         ("replicate_med", "run-to-run replicate", 0,
          "median side-flips when NOTHING changes: same model, same prompt, temp 0"),
@@ -586,9 +629,12 @@ def check_surface(name, rows):
         # must. These templates cross-reference on purpose -- `"%d refusals in 499 runs"` pins
         # the refusal count AND names its denominator, so a sentence cannot half-update. But
         # writing that denominator as a LITERAL put a second copy of a generated number inside
-        # the gate whose whole job is to have one copy: on 2026-09-05 a frontier collection
-        # moved both halves and five templates had to be hand-edited. That is the defect, one
-        # level up. `%(key)s` resolves from the computed rows; `%s`/`%d` take this row's value.
+        # the gate whose whole job is to have one copy: on 2026-09-05 the frontier collection
+        # moved both halves, and five templates here had to be hand-edited to match. That is
+        # the defect, one level up.
+        #
+        # `%(key)s` resolves from the computed rows, so a paired phrase now names both numbers
+        # and neither is typed. `%s`/`%d` still take this row's own value.
         if "%(" in phrase:
             expected = phrase % {k: v["value"] for k, v in by_key.items()}
         else:
@@ -621,8 +667,13 @@ def main(argv=None):
 
     if args.check_website or args.check_release:
         failures = []
-        for name, wanted in (("website", args.check_website),
-                             ("release", args.check_release)):
+        # --check-website covers EVERY website surface, not the one page it was written for.
+        # Adding a surface to SURFACES and forgetting to add it here would leave it declared and
+        # unchecked, which is the same silence as not declaring it -- and is how the dispatch
+        # ran a day behind a corrected page.
+        for name, wanted in ([(n, args.check_website) for n in SURFACES
+                              if n == "website" or n.startswith("dispatch-")]
+                             + [("release", args.check_release)]):
             if wanted:
                 failures += [(name,) + f for f in check_surface(name, rows)]
         if not failures:
@@ -653,16 +704,17 @@ def main(argv=None):
         return 0
 
     if not os.path.exists(PAPER):
-        # THE PAPER IS NOT DISTRIBUTED IN THIS REPOSITORY, AND THIS USED TO BE A TRACEBACK.
+        # THE PAPER IS NOT DISTRIBUTED IN THE PUBLIC MIRROR, AND THIS USED TO BE A TRACEBACK.
         #
-        # `--check` gates the paper's hand-typed sentences against the generated tables. It is
-        # the same script in the private working tree, where the paper lives; here it crashed
-        # with FileNotFoundError on the first thing a reader of a reproduction repo would type.
+        # `--check` gates the paper's hand-typed sentences against the generated tables. This is
+        # one file serving two trees; the paper lives in only one of them, and in the other this
+        # crashed with FileNotFoundError on the first command a reader of a reproduction repo
+        # would type.
         #
         # Absent is not stale and it is not a pass either. So: say what cannot be checked, run
-        # what can -- this repository's own README carries two of the same numbers -- and fail
-        # if THAT drifts. Returning 0 here without checking anything would be the vacuous pass
-        # this project holds to be worse than a failure.
+        # what can -- that repository's own README carries some of the same numbers -- and fail
+        # if THAT drifts. Returning 0 having checked nothing would be the vacuous pass this
+        # project holds to be worse than a failure.
         print("The paper (%s) is not distributed in this repository, so its prose"
               % os.path.basename(PAPER))
         print("cannot be gated here. Checking this repository's own surfaces instead.")
@@ -677,9 +729,9 @@ def main(argv=None):
         print("RELEASE SURFACE: every stated number in README.md agrees with the run data.")
         print("%d generated numbers available; run with no flags to print them all." % len(rows))
         if MISSING_FLOORS:
-            # NAMED, not swallowed. This repository ships a smaller run set than the working
-            # tree, so some floor rows have nothing to compute from -- say which, or a reader
-            # cannot tell a gate that verified everything from one that verified less.
+            # NAMED, not swallowed. A smaller run set means some floor rows have nothing to
+            # compute from -- say which, or a reader cannot tell a gate that verified
+            # everything from one that verified less.
             print("Not computable in this checkout, so not gated here: %s"
                   % ", ".join(sorted(MISSING_FLOORS)))
         return 0

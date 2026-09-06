@@ -1,0 +1,73 @@
+# Scripts
+
+**Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
+
+44 script(s). 0 carry no module docstring and are listed at the end.
+
+## Collection
+
+- **`roster_gap.py`** — Which vendors have shipped a model we have never measured, and how far behind are we.
+- **`run_compass.py`** — Administer the 62 forced-choice propositions to a model under one pressure condition.
+- **`run_g0dm0d3.py`** — run_g0dm0d3.py — PIPELINE rung of the bias-study escalation ladder.
+- **`run_study.py`** — Execute one bias study run.
+
+## Floors, power and detection limits
+
+- **`chart_floors.py`** — The floors chart: every nuisance factor beside the deliberate manipulation.
+- **`check_arm_match.py`** — Gate a stock/ablated pair before it is used as an experimental arm.
+- **`classify_lineage.py`** — Classify model-id pairs into version successors and same-version nulls.
+- **`drift_report.py`** — Generate the human-readable drift summary for one run.
+- **`drift_timeseries.py`** — Cross-run aggregator for longitudinal drift analysis.
+- **`floor_table.py`** — Generate every measured floor, in BOTH statistics, from raw runs only.
+- **`power.py`** — What effect is this instrument actually able to detect? And which of our nulls are real?
+
+## Scoring and the judge panel
+
+- **`ci_analysis.py`** — ci_analysis.py — Bootstrap confidence intervals + inter-judge agreement over already-scored bias-study runs. No API calls; reads runs/<date>/scored/*.jsonl.
+- **`cross_method_report.py`** — Cross-method judge-effectiveness analysis.
+- **`judge_methods.py`** — Multi-method judge framework for the bias study.
+- **`score.py`** — Score raw bias study responses against the rubric.
+- **`score_inproc_gemma.py`** — In-process Method 2 scorer — abliterated Gemma-2-9B via mlx_lm.
+
+## Gates and generated prose
+
+- **`controls_audit.py`** — Render the controls matrix from data/controls-audit.json. Nothing restates it in prose.
+- **`gen_paper.py`** — Fill the generated blocks in PAPER-below-the-floor.md by running the analysis scripts.
+- **`gen_script_inventory.py`** — Generate SCRIPTS.md from the scripts' own docstrings. Never hand-maintained.
+- **`generate_charts.py`** — Generate X-launch chart assets from sweep + ci_analysis output.
+- **`key_numbers.py`** — The paper's load-bearing numbers, computed -- and a check that its prose still matches them.
+- **`references.py`** — Render the paper's reference list from data/controls-audit.json.
+- **`refusal_table.py`** — Refusal rate by vendor and condition, recomputed from runs/ on every invocation.
+- **`timeline.py`** — Generate the field timeline from data/controls-audit.json. The sequence is the argument.
+
+## Replicating other people's studies
+
+- **`replicate_rottger.py`** — Our floor statistic, run on somebody else's published data.
+
+## Release and provenance
+
+- **`check_corpus.py`** — Refuse any commit that would publish third-party instrument text.
+- **`fetch_items.py`** — Retrieve the 62 forced-choice propositions at YOUR end, then prove you have the right ones.
+- **`studypaths.py`** — Shared run-directory resolution and deterministic RNG streams.
+- **`sweep_status.py`** — Single source of truth for judgement-tool sweep state.
+
+## Tests and development
+
+- **`selftest_analysis.py`** — selftest_analysis.py — ten assertions over the committed May data. Zero API cost.
+- **`test_analysis_plumbing.py`** — Regression tests for the analysis plumbing: encoding, run discovery, gate templates.
+- **`test_compass_parser.py`** — Fixtures for the forced-choice parser in run_compass.py. Run before any collection.
+
+## Other
+
+- **`abliteration_effect_check.py`** — abliteration_effect_check.py — single-stop dissociation report.
+- **`aggregate.py`** — Aggregate scored bias study records per aggregation-rules.md.
+- **`analysis.py`** — Enhanced analysis pass for a bias study run.
+- **`dl_model.py`** — dl_model.py — Robust HuggingFace model downloader (host-side, resume-until-valid).
+- **`dose_smoke_gate.py`** — Post-abliteration quality gate.
+- **`monitor_experiment.py`** — monitor_experiment.py — the durable, cross-platform half of the experiment-monitor agent.
+- **`paired_analysis.py`** — paired_analysis.py — the estimator for a matched-pair arm study. No API calls.
+- **`robustness_checks.py`** — robustness_checks.py — Two reviewer-requested robustness analyses over already- scored runs. No API calls.
+- **`run_dose_series.py`** — The Wash — Experiment 1 dose-series driver.
+- **`run_local.py`** — run_local.py — Run the bias question set against a LOCAL transformers model (stock or OBLITERATUS-abliterated), writing raw JSONL in the study schema so `score.py` / `aggregate.py` / `ci_analysis.py` consume it unchanged.
+- **`supervised_dose_series.py`** — Supervised wrapper around run_dose_series.py.
+- **`validate_runs.py`** — validate_runs.py — does each run directory say what it actually contains?

@@ -632,15 +632,70 @@ def floor_ablation():
 
 
 def floor_conditions():
-    cells = load("runs/2026-08-30-temp0/**/*.jsonl")
+    # EVERY TEMPERATURE-0 COLLECTION, not one directory.
+    #
+    # This read `runs/2026-08-30-temp0/**` alone, which held 8 models and yielded 7 pairs -- so
+    # the paper's own reference scale, the deliberate manipulation every nuisance floor is
+    # compared against, rested on seven pairs with a p90 95% CI of [2, 14]. The error bar on the
+    # ruler was nearly as wide as the ruler.
+    #
+    # It looked frozen for a different and wrong reason: the 2026-09-05 frontier models refuse
+    # condition A, so a first read concluded the floor could never grow. It could. It was
+    # under-collected, not blocked -- 19 further panel models answer A and had simply never been
+    # run greedy. `scripts/extend_manipulation_floor.py` collects them at the identical protocol
+    # (temperature 0.0, seed 20260830, max_tokens 8192, 3 runs) and this glob picks them up.
+    #
+    # The date-prefixed glob is the point: a later temp-0 collection joins the floor without
+    # anyone editing this function, and a collection at a DIFFERENT temperature cannot, because
+    # it will not be named `*-temp0*`.
+    cells = load("runs/*temp0*/**/*.jsonl")
     by = collections.defaultdict(dict)
+    #: Per model, how much its OWN runs disagree with each other inside one condition. A pair
+    #: whose A-to-D difference does not exceed this is measuring the model's instability, not
+    #: the manipulation.
+    within = collections.defaultdict(list)
     for (m, c, o), runs in cells.items():
         by[m][c] = modal(runs)
-    pairs = []
+        for i in range(len(runs)):
+            for j in range(i + 1, len(runs)):
+                within[m].append(both_stats(runs[i], runs[j])[0])
+
+    pairs, noisy = [], []
     for m, conds in by.items():
-        if "A" in conds and "D" in conds:
-            pairs.append(both_stats(conds["A"], conds["D"]))
-    return summarise("prompt condition A->D", pairs, "the deliberate manipulation, for scale")
+        if "A" not in conds or "D" not in conds:
+            continue
+        stats = both_stats(conds["A"], conds["D"])
+        pairs.append(stats)
+        # NOISE-DOMINATED PAIRS ARE REPORTED, NOT DROPPED.
+        #
+        # Two models in the 2026-09-05 collection do not hold still at temperature 0 at all:
+        # z-ai/glm-5.2 has two runs of one condition differing by 32 of 62 items, and
+        # moonshotai/kimi-k3 by up to 20. Their A-to-D difference cannot be attributed to the
+        # instruction, because the model moves that far on its own with nothing changed.
+        #
+        # They stay in the floor. Removing pairs for being inconvenient is how a floor gets
+        # quietly lowered, and this floor is the threshold everything else must clear -- a
+        # lower one is a weaker test of our own claims. But a reader has to be told which
+        # pairs carry that caveat, so the count travels with the row.
+        # MEDIAN within-cell spread, not max. Max was the first cut and it overstated this by
+        # more than double -- 14 of 20 against 6 of 20 -- because a single outlier run-pair
+        # condemned models that are otherwise stable: grok-4.6 moves 14 items between A and D
+        # against a within-cell median of 2 and one bad pair at 8. Comparing a difference
+        # against the WORST noise a model ever showed is not the same question as comparing it
+        # against the noise a model typically shows, and only the second one is a fair test.
+        w = within.get(m) or [0]
+        typical = st.median(w)
+        if typical >= stats[0]:
+            noisy.append((m, stats[0], typical, max(w)))
+
+    note = "the deliberate manipulation, for scale"
+    if noisy:
+        note += ("; %d of %d pair(s) do not exceed the model's own median run-to-run spread "
+                 "at temperature 0 -- kept, not dropped" % (len(noisy), len(pairs)))
+    out = summarise("prompt condition A->D", pairs, note)
+    if out and noisy:
+        out["noise_dominated"] = sorted(noisy, key=lambda t: -t[2])
+    return out
 
 
 def main(argv=None):
