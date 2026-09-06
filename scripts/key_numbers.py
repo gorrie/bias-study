@@ -250,10 +250,14 @@ def build():
          "value": len(PANEL_MODELS),
          "what": "models in the frozen wave panel",
          "phrase": "%d panel models"},
+        # REFUSERS, not "models with an empty A cell". `panel - paired` is the second
+        # quantity, and using it here printed 6 on the paper and the public page when 5
+        # refuse and a sixth exhausts its token budget. Read from the floor's own split.
         {"key": "manip_refusing_sitting",
-         "value": len(PANEL_MODELS) - manip_sitting["n"],
-         "what": "panel models contributing no manipulation pair because they refuse "
-                 "condition A outright",
+         "value": len(F._split_refusals(
+             sorted(m for m in PANEL_MODELS
+                    if m not in manip_sitting.get("paired_models", [])))[0]),
+         "what": "panel models declining condition A outright in the one-sitting arm",
          "phrase": "The other %d decline the balance instruction outright"},
         {"key": "null_median",
          "value": null["side"][0],

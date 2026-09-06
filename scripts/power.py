@@ -94,28 +94,25 @@ def mde(vals, threshold, power=POWER):
 def collect():
     """Raw per-pair values for every floor, reusing floor_table's own loaders."""
     out = {}
-    for fn in (F.floor_order, F.floor_same_version, F.floor_template, F.floor_replicate,
-               F.floor_quant,
-               F.floor_ablation, F.floor_conditions):
+    # floor_table.ALL_FLOORS, not a second copy. See chart_floors.floors() for what a third
+    # copy of this list cost: a floor could reach the paper with no power analysis behind it.
+    for fn in F.ALL_FLOORS:
         # floor_table.summarise() discards the raw pairs, so re-derive them the same way it
         # does and keep them. Any divergence between this and floor_table is a bug in one of
         # the two, which is why both read the same loaders.
-        name = fn.__name__
-        pairs = _pairs_for(fn)
+        name, pairs = _pairs_for(fn)
         if pairs:
-            out[_label(name)] = {"side": [p[0] for p in pairs],
-                                 "endpoint": [p[1] for p in pairs]}
+            out[name] = {"side": [p[0] for p in pairs],
+                         "endpoint": [p[1] for p in pairs]}
     return out
 
 
-def _label(fn_name):
-    return {"floor_order": "presentation order",
-            "floor_template": "instruction paraphrase",
-            "floor_replicate": "run-to-run replicate",
-            "floor_same_version": "same-version variants",
-            "floor_quant": "requantisation",
-            "floor_ablation": "refusal-direction ablation",
-            "floor_conditions": "prompt condition A->D"}[fn_name]
+# `_label` used to live here: a hand-typed function-name -> display-name map, which was a
+# FOURTH copy of the floor list wearing different clothes. Adding `floor_conditions_wave` to
+# ALL_FLOORS raised a KeyError from it, which is the good failure -- the same omission in
+# chart_floors.py failed silently by plotting one row fewer than the paper printed. The name a
+# floor goes by is the name it passes to summarise(), and `spy` already receives it, so there
+# is nothing here to keep in sync.
 
 
 def _pairs_for(fn):
@@ -129,6 +126,7 @@ def _pairs_for(fn):
         # detection limit down with it -- a monkeypatch that mirrors a signature has to be
         # updated in lockstep or written not to care. Written not to care.
         captured["pairs"] = pairs
+        captured["name"] = name
         return original(name, pairs, note, **kw)
 
     F.summarise = spy
@@ -136,7 +134,7 @@ def _pairs_for(fn):
         fn()
     finally:
         F.summarise = original
-    return captured.get("pairs", [])
+    return captured.get("name", fn.__name__), captured.get("pairs", [])
 
 
 def main(argv=None):

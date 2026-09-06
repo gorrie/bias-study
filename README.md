@@ -127,7 +127,7 @@ instrument, same model, same settings, in items moved of 62:
 | presentation order | 84 | 3 / 11 / 22 | [7, 13] | 4 / 10 / 18 |
 | same-version variants | 97 | 5 / 11 / 24 | [8, 13] | 8 / 22 / 29 |
 | refusal-direction ablation | 12 | 6 / 9 / 12 | [6, 12] | 6 / 14 / 16 |
-| prompt condition A->D, one sitting | 25 | 3 / 7 / 14 | [4, 12] | 11 / 22 / 26 |
+| prompt condition A->D, one sitting | 25 | 3 / 7 / 14 | [4, 12] | 12 / 22 / 26 |
 | instruction paraphrase | 1067 | 3 / 6 / 14 | [5, 8] | 2 / 10 / 28 |
 | requantisation | 13 | 3 / 6 / 10 | [3, 10] | 1 / 3 / 7 |
 | run-to-run replicate | 63 | 3 / 5 / 15 | [4, 11] | 2 / 10 / 28 |
@@ -147,16 +147,27 @@ sitting` is the same contrast collected under one protocol in a single sitting: 
 at temperature 0.7 with a swept seed, five runs each, all four conditions. 25 answer both arms;
 the other 6 refuse the balance instruction outright.
 
-Pooled says p90 15. One sitting says **p90 7**, over more pairs — below presentation order (11)
-and below same-version variants (11). They differ because at temperature 0 with a fixed seed a
-cell's runs are near-identical, so its "modal" sheet is really one observation carrying
-single-run noise; across five swept seeds the modal is a consensus and that noise averages out.
-The pooled row is an upper bound inflated by noise it could not average away. Both are printed
-and neither is deleted.
+Pooled says p90 15. One sitting says **p90 7**. An earlier version of this section read that as
+the manipulation being smaller than the nuisance floors. **It does not support that**, and the
+reasons are more useful than the conclusion was:
 
-The comparison is like-for-like — the order and same-version floors also pair consensus against
-consensus, and only `run-to-run replicate` pairs raw runs, which is correct, since raw noise is
-what it measures.
+- **The 15 is one model.** Remove `x-ai/grok-4.5` and the pooled arm reads 8. Its answers under
+  the commitment instruction are bimodal — four of five wave runs land within 3–4 items of each
+  other and the fifth lands 15–18 away — so a modal sheet reports whichever mode the sampler
+  favoured. It is 3 on one date in this corpus and 18 on another.
+- **"At temperature 0 the runs are near-identical" is false here.** Over the temp-0 A and D
+  cells: 263 within-cell run pairs, median 1, p90 5, max 32, and only 10 of 57 cells are
+  byte-identical.
+- **The comparison crossed protocols.** The wave holds all four conditions for the same 25
+  models in one sitting, so it contains its own nuisance contrast — a bare question against a
+  content-free system prompt, neither mentioning politics. That is **p90 3**, against the
+  manipulation's 7. Under one protocol the deliberate manipulation is the *larger* effect.
+- **And the units differ.** This row pairs a five-run modal against a five-run modal; the order
+  floor mostly does not, since **23 of its 37 shuffled-order cells hold exactly one run**.
+
+What survives: the deliberate manipulation moves a median of 3 items of 62, 23 of 25 models move
+8 or fewer, and the nuisance factors are the same order of magnitude. Which is largest is not
+settled — no nuisance floor has been collected under the one-sitting protocol yet.
 
 **Splitting the order row by model class is the most important line in this table, and an
 earlier version of this section pooled it.** Reordering the questionnaire is a large effect on

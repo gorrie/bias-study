@@ -105,7 +105,7 @@ def load_report():
     return sorted(DROPPED.items(), key=lambda kv: (-kv[1], kv[0]))
 
 
-def load(pattern, condition=None, key=None):
+def load(pattern, condition=None, key=None, dedupe_by_seed=False):
     """Answer sheets grouped into cells.
 
     `key` chooses the grouping and defaults to the historical (model, condition, shuffle_seed).
@@ -122,6 +122,17 @@ def load(pattern, condition=None, key=None):
     """
     key = key or _default_key
     cells = collections.defaultdict(list)
+    # ONE SEED, ONE SAMPLE -- for the arms where the seed identifies the draw.
+    #
+    # Wave 0 holds cells with 6 to 10 valid runs across 5 swept seeds, because repairing the
+    # seed-restart defect ADDED the missing positions without removing the duplicated ones. A
+    # duplicated seed is not a second observation, and left in it gets double weight inside
+    # modal() -- which decides every item where the cell is otherwise split.
+    #
+    # NOT the default, deliberately. `floor_replicate` measures run-to-run variation at a FIXED
+    # seed: there every record shares one seed by design, and deduping would delete the floor
+    # rather than clean it. The caller knows which kind of arm it is reading.
+    seen_seed = set()
     # SORTED, because glob order is the filesystem's and the filesystem's is not the same on
     # two machines. Found 2026-09-06: this gate was red in CI and green on the author's box
     # against the same commit, differing in exactly one number -- the presentation-order
@@ -149,6 +160,12 @@ def load(pattern, condition=None, key=None):
             if len(set(vals)) == 1:
                 _count_drop("degenerate sheet, all %d: %s" % (vals[0], r.get("model")), r)
                 continue
+            if dedupe_by_seed and r.get("seed") is not None:
+                mark = (key(r), r["seed"])
+                if mark in seen_seed:
+                    _count_drop("duplicate seed in a swept cell: %s" % (r.get("model"),), r)
+                    continue
+                seen_seed.add(mark)
             cells[key(r)].append({a["q"]: a["position"] for a in r["answers"]})
     return cells
 
@@ -762,17 +779,18 @@ def floor_conditions():
     return summarise("prompt condition A->D", pairs, note)
 
 
-def _condition_pairs(pattern):
+def _condition_pairs(pattern, dedupe_by_seed=False):
     """A→D pairs from one collection, keyed by (model, condition, collection date).
 
     Extracted from floor_conditions so the wave arm below runs the SAME pairing rather than a
     copy of it. A second implementation of "what is a manipulation pair" is a second definition
     of the paper's reference scale, and the two would drift.
 
-    Returns (pairs, by_model, split_day).
+    Returns (pairs, by_model, split_day, raw_cells).
     """
     raw = load(pattern, key=lambda r: (r["model"], r["condition"],
-                                       r.get("collected_at", "")[:10]))
+                                       r.get("collected_at", "")[:10]),
+               dedupe_by_seed=dedupe_by_seed)
     by = collections.defaultdict(dict)
     seen_day = {}
     for (m, c, day), runs in sorted(raw.items()):
@@ -783,7 +801,40 @@ def _condition_pairs(pattern):
                        and seen_day.get((m, "A")) != seen_day.get((m, "D")))
     pairs = [both_stats(cs["A"], cs["D"]) for _m, cs in sorted(by.items())
              if "A" in cs and "D" in cs]
-    return pairs, by, split_day
+    return pairs, by, split_day, raw
+
+
+def _split_refusals(models, pattern="runs/2026-09-05-wave/*.jsonl", condition="A"):
+    """Of the models with no usable sheet, which actually REFUSED and which failed otherwise.
+
+    A model that declines the balance instruction and a model that runs out of tokens on it
+    both leave an empty cell, and the difference is the entire finding. Returns
+    (refused, [(model, reason), ...]).
+    """
+    seen = collections.defaultdict(collections.Counter)
+    for p in sorted(glob.glob(os.path.join(STUDY, pattern))):
+        for line in io.open(p, encoding="utf-8"):
+            if not line.strip():
+                continue
+            try:
+                r = json.loads(line)
+            except ValueError:
+                continue
+            if r.get("condition") != condition or r.get("model") not in set(models):
+                continue
+            if r.get("valid"):
+                seen[r["model"]]["valid"] += 1
+            else:
+                seen[r["model"]][r.get("failure_mode") or "unclassified"] += 1
+    refused, other = [], []
+    for m in models:
+        modes = seen.get(m, collections.Counter())
+        top = modes.most_common(1)[0][0] if modes else "no runs"
+        if top == "refused":
+            refused.append(m)
+        else:
+            other.append((m, top))
+    return refused, other
 
 
 def floor_conditions_wave():
@@ -814,24 +865,58 @@ def floor_conditions_wave():
     position -- and it makes the pooled row an upper bound inflated by the noise it could not
     average away. Both rows are printed. Neither is deleted.
     """
-    pairs, by, split_day = _condition_pairs("runs/*-wave/*.jsonl")
+    pairs, by, split_day, raw = _condition_pairs("runs/*-wave/*.jsonl", dedupe_by_seed=True)
     if not pairs:
         return None
     sides = sorted(s for s, _e in pairs)
     tail = sorted(((m, both_stats(cs["A"], cs["D"])[0]) for m, cs in by.items()
                    if "A" in cs and "D" in cs), key=lambda t: -t[1])
-    refused = sorted(m for m, cs in by.items() if "D" in cs and "A" not in cs)
+    # NO PAIR is not the same as REFUSED, and calling it that overstated the refusal finding by
+    # one model. This read `"D" in cs and "A" not in cs`, which is "the A cell yielded no usable
+    # sheet" -- true of a refusal AND of a model that ran out of tokens. The gemma-4-12B GGUF
+    # build has 5 A runs, 0 refused, 5 `budget-exhausted`; it was being counted and printed as a
+    # sixth refuser on the public page. Same defect class as the two found this morning: the
+    # label claims one quantity and the code computes a broader one.
+    no_pair = sorted(m for m, cs in by.items() if "D" in cs and "A" not in cs)
+    refused, unusable = _split_refusals(no_pair)
     note = ("the same manipulation under ONE protocol in ONE sitting -- temperature 0.7, swept "
             "seed, 5 runs, wave 0. %d of %d models move 8 items or fewer. The tail is %s. "
             "%d panel model(s) contribute no pair because they refuse condition A outright: %s"
             % (sum(1 for s in sides if s <= 8), len(sides),
                ", ".join("%s %d" % (m.split("/")[-1], v) for m, v in tail[:3]),
                len(refused), ", ".join(m.split("/")[-1] for m in refused)))
+    if unusable:
+        note += ("; %d further model(s) yield no A sheet for other reasons: %s"
+                 % (len(unusable), ", ".join("%s (%s)" % (m.split("/")[-1], why)
+                                             for m, why in unusable)))
     if split_day:
         note += ("; %d pair(s) span more than one date: %s"
                  % (len(split_day), ", ".join(m.split("/")[-1] for m in split_day)))
-    return summarise("prompt condition A->D, one sitting", pairs, note,
-                     clusters=[m for m, cs in sorted(by.items()) if "A" in cs and "D" in cs])
+    # DISCLOSE THE SAMPLE BEHIND EACH MODAL. "n=5 per cell" is the protocol, not the outcome:
+    # a run that refuses or exhausts its budget is not a sample, so some cells resolve on two
+    # sheets. A row that says "one sitting, five runs" while resting on a two-run modal is
+    # describing its intent rather than its data.
+    runs_behind = []
+    for m, cs in sorted(by.items()):
+        if "A" not in cs or "D" not in cs:
+            continue
+        sizes = [len(v) for (mm, c, _d), v in raw.items() if mm == m and c in ("A", "D")]
+        if sizes:
+            runs_behind.append(min(sizes))
+    runs_behind.sort()
+    if runs_behind:
+        note += ("; runs behind each modal: min %d, median %d (protocol asks 5 -- refusals and "
+                 "budget-exhausted runs are not samples)"
+                 % (runs_behind[0], int(st.median(runs_behind))))
+
+    paired = [m for m, cs in sorted(by.items()) if "A" in cs and "D" in cs]
+    rec = summarise("prompt condition A->D, one sitting", pairs, note, clusters=paired)
+    # Which models actually contributed, so a consumer can ask "and the ones that did not?"
+    # without re-deriving the pairing and getting a different answer.
+    rec["paired_models"] = paired
+    rec["refused_models"] = refused
+    rec["unusable_models"] = unusable
+    return rec
 
 
 #: EVERY FLOOR, in one place. This list lived here AND in `key_numbers.floors()`, so adding

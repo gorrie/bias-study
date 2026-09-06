@@ -67,16 +67,27 @@ plt.rcParams.update({
 
 DEFAULT_OUT = os.path.join(SERIES, "website", "static", "images", "bias-study")
 
-#: The one row that is a deliberate political manipulation. Drawn in the accent colour so the
-#: comparison the section is making is visible without reading the caption.
+#: The rows that ARE a deliberate political manipulation, drawn in the accent colour so the
+#: comparison is visible without reading the caption.
+#:
+#: BOTH manipulation rows, matched by prefix. The one-sitting row IS the deliberate
+#: manipulation and was rendering BLUE -- "a factor nobody calls political" -- because this
+#: matched one exact string. A legend that miscolours the thing the chart is about is worse
+#: than no legend.
 MANIPULATION = "prompt condition A->D"
+
+
+def is_manipulation(name):
+    return name.startswith(MANIPULATION)
 
 
 def floors():
     """Every measured floor, from floor_table's own functions. Nothing typed."""
-    rows = [f for f in (F.floor_order(), F.floor_same_version(), F.floor_template(),
-                        F.floor_replicate(), F.floor_quant(), F.floor_ablation(),
-                        F.floor_conditions()) if f]
+    # floor_table.ALL_FLOORS, not a third copy of the list. This one, power.py and
+    # key_numbers.floors() each enumerated the floors themselves, so a row added to the table
+    # appeared in the paper and in NONE of them -- the chart on the public page would have kept
+    # plotting six rows while the paper printed seven, and nothing would have said so.
+    rows = [f for f in (fn() for fn in F.ALL_FLOORS) if f]
     return sorted(rows, key=lambda r: r["side"][1])
 
 
@@ -87,7 +98,7 @@ def draw(rows, out_path):
 
     for y, r in zip(ys, rows):
         med, p90, mx = r["side"]
-        is_manip = r["name"] == MANIPULATION
+        is_manip = is_manipulation(r["name"])
         colour = ACCENT if is_manip else ACCENT2
         # median-to-max as the bar, p90 marked, median marked. Three numbers, one row --
         # the table's own columns rather than a summary that loses two of them.
@@ -112,18 +123,26 @@ def draw(rows, out_path):
     ax.grid(axis="x", alpha=0.35, linewidth=0.5)
     ax.set_axisbelow(True)
 
-    manip = [r for r in rows if r["name"] == MANIPULATION]
-    if manip:
-        # The line the whole section turns on: anything reaching past it is a nuisance factor
-        # the size of a deliberate one.
-        ax.axvline(manip[0]["side"][1], color=ACCENT, linestyle="--", linewidth=1.0, alpha=0.8)
-        # Anchored low and left of the line, clear of the title and of every bar's label.
-        ax.text(manip[0]["side"][1] - 0.5, -0.62,
-                "p90 of the deliberate manipulation →", color=ACCENT, fontsize=9,
-                va="center", ha="right")
+    # TWO LINES, LABELLED, because there are two manipulation rows and they disagree.
+    #
+    # This drew one line at the pooled row's p90 and called it "the deliberate manipulation",
+    # which now hides the thing a reader most needs: measured under one protocol in one sitting
+    # the same manipulation is 7, not 15, and 15 is one bimodal model (grok-4.5) away from 8.
+    # A single reference line invites the reader to treat whichever number it marks as the
+    # scale, and the honest picture is that the scale depends on how it was collected.
+    for r in sorted((r for r in rows if is_manipulation(r["name"])),
+                    key=lambda r: r["side"][1]):
+        x = r["side"][1]
+        pooled = r["name"] == MANIPULATION
+        ax.axvline(x, color=ACCENT, linestyle="--", linewidth=1.0,
+                   alpha=0.8 if pooled else 0.45)
+        ax.text(x - 0.4, -0.62 if pooled else -0.92,
+                "%s p90 %d →" % ("pooled" if pooled else "one sitting", x),
+                color=ACCENT, fontsize=8.5, va="center", ha="right",
+                alpha=1.0 if pooled else 0.75)
 
     fig.text(0.5, 0.015,
-             "red = an instruction demanding commitment instead of balance. "
+             "red = an instruction demanding commitment instead of balance, measured two ways. "
              "blue = factors nobody calls political.",
              ha="center", fontsize=9, color=MUTED)
     plt.tight_layout(rect=(0, 0.04, 1, 1))

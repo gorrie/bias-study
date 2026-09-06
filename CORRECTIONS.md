@@ -148,6 +148,48 @@ arbitrary — a tie means the cell has no modal answer for that item — and the
 now written down instead of inherited from a dict. Four tests pin it, including one that shuffles
 the corpus order and requires every floor to come back byte-identical.
 
+### 7. "The manipulation is smaller than the nuisance floors" — withdrawn the day it was published
+
+**Published:** 2026-09-06.
+**Withdrawn:** 2026-09-06.
+
+Wave 0 measured the deliberate manipulation under one protocol in one sitting and returned p90
+**7**, against a pooled figure of 15. We published that as: the manipulation moves fewer items
+than reordering the questionnaire (11) or swapping model variants (11), and called the
+comparison like-for-like.
+
+**Three things were wrong with it**, and an adversarial review of our own finished state found
+all three within the hour.
+
+*It crossed protocols.* No nuisance floor has been collected under the wave's protocol. The one
+the wave itself contains — a bare question against a content-free system prompt, two
+instructions that say nothing about politics — is **p90 3**, against the manipulation's 7.
+Like-for-like inside one sitting, the deliberate manipulation is the **larger** effect.
+
+*It compared a consensus against a single run.* The manipulation figure pairs a five-run modal
+sheet. The order figure mostly does not: **23 of its 37 shuffled-order cells hold exactly one
+run**, so that side carries a full unit of run-to-run noise the other side averaged away. We
+verified that `modal()` was *called* on both sides and reported the comparison as sound. Whether
+a function is called is not the same question as what it was fed — our own "measure the
+artifact, not the source" rule, applied one level too shallow.
+
+*And the drop from 15 to 7 is one model.* Remove `x-ai/grok-4.5` from the pooled arm and it
+reads 8. Its answers under the commitment instruction are bimodal: four of five runs land
+together, the fifth lands 15–18 items away. A modal sheet cannot represent that — it reports
+whichever mode the sampler favoured, which was 2 on one collection and 18 on another. The
+mechanism we offered ("averaging reveals the position") assumes a single position exists. The
+supporting claim that temperature-0 runs are near-identical is also false on this corpus: 263
+within-cell pairs, median 1, p90 5, **max 32**, only 10 of 57 cells byte-identical.
+
+**What replaced it:** the deliberate manipulation moves a median of 3 items of 62 and 23 of 25
+models move 8 or fewer, while the nuisance factors nobody controls for move comparable amounts.
+Which is largest is not settled by these collections. Settling it needs two item orders across
+the panel under the wave protocol — about 310 calls — and that is named as the next measurement
+rather than resolved by choosing a favourable number.
+
+Both manipulation rows now print in the floor table, the chart draws both reference lines, and
+the sample size behind each modal is disclosed on the row.
+
 ---
 
 ## How to read this file

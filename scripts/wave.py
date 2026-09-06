@@ -302,7 +302,7 @@ def collected(outdir, by_seed=True):
     return got
 
 
-def verify(outdir, panel):
+def verify(outdir, panel, strict=False):
     """Did anything drift from the frozen spec? Reports, and returns a failure count."""
     bad, seen = [], collections.Counter()
     cell_runs = collections.defaultdict(list)
@@ -350,21 +350,63 @@ def verify(outdir, panel):
     # to catch that structurally, or the spec change that fixed the collector leaves the old
     # data looking valid: every one of those records carries seed 20260830, which sits inside
     # the swept window and passes a range check.
+    #
+    # AND IT COUNTS *VALID* RUNS, which it did not until 2026-09-06.
+    #
+    # Two holes, both found by review. (a) The test was `n < min(len(rs), runs)`, so a cell
+    # holding 10 records across 5 seeds passed on `5 < 5` -- duplicates were invisible whenever
+    # the record count exceeded the target. (b) It never read `valid`, so a cell could reach
+    # five distinct seeds on records that carry no answer sheet. Measured on wave 0: 22 cells
+    # carried a duplicate seed among their VALID runs while this reported the wave clean.
+    #
+    # An invalid run is not a sample. Sample size is DISTINCT SEEDS AMONG VALID RUNS, and that
+    # is what a cell has to reach.
+    # DRIFT vs SAMPLE SIZE -- two findings, and only one of them can be fixed by collecting.
+    #
+    # Drift (a fixed seed, a changed parameter) makes the wave incomparable and is a blocker.
+    # A short cell mostly is not: 9 cells produced NO valid run because the model declined the
+    # balance instruction, which is section 1's headline rather than a collection failure, and
+    # re-running a model that refuses gets another refusal. Gating on that is how you end up
+    # with a permanently red pipeline that everyone learns to ignore -- the thing this repo
+    # already fixed once by refusing to wire the truncation scan until it could pass.
+    #
+    # So shortfalls and duplicate draws print, and `--strict` gates them for an audit pass.
+    empty, short = [], []
     if panel["params"].get("seed_sweep"):
+        want = panel["params"]["runs"]
         for (m, c), rs in sorted(cell_runs.items()):
-            n = distinct_seeds(rs)
-            if len(rs) >= 2 and n < min(len(rs), panel["params"]["runs"]):
-                bad.append("%s %s: %d run(s) but only %d distinct seed(s) -- collected under "
-                           "a fixed seed, so it is n=%d" % (m, c, len(rs), n, n))
+            valid = [r for r in rs if r.get("valid")]
+            if not valid:
+                # Every run refused or failed. That is the refusal series' finding, not drift.
+                empty.append("%s %s" % (m, c))
+                continue
+            n = distinct_seeds(valid)
+            if n < want:
+                short.append("%s %s: %d valid run(s) over %d distinct seed(s) -- sample size "
+                             "is %d, not %d" % (m, c, len(valid), n, n, want))
+            elif len(valid) > n:
+                short.append("%s %s: %d valid run(s) at %d seed(s) -- %d duplicate draw(s), "
+                             "not independent samples (the floors dedupe by seed)"
+                             % (m, c, len(valid), n, len(valid) - n))
     print("%s" % os.path.basename(outdir))
     print("  %d cell(s) present, %d panel cell(s) missing" % (len(seen), len(missing)))
+    if empty:
+        print("  %d cell(s) produced no valid run (refusal or failure, not drift): %s"
+              % (len(empty), ", ".join(empty[:5]) + (" ..." if len(empty) > 5 else "")))
+    if short:
+        print("  SAMPLE SIZE -- %d cell(s) are not n=%d (prints; --strict gates):"
+              % (len(short), panel["params"]["runs"]))
+        for s in short[:8]:
+            print("    %s" % s)
+        if len(short) > 8:
+            print("    ...and %d more" % (len(short) - 8))
     if bad:
         print("  PARAMETER DRIFT -- this wave is not comparable to the others:")
         for b in sorted(set(bad))[:12]:
             print("    %s" % b)
     if missing[:6]:
         print("  missing e.g.: %s" % ", ".join("%s/%s" % m for m in missing[:6]))
-    return len(set(bad))
+    return len(set(bad)) + (len(short) if strict else 0)
 
 
 def series():
@@ -416,6 +458,10 @@ def main(argv=None):
     ap.add_argument("--run", action="store_true")
     ap.add_argument("--verify", nargs="?", default="", const=ALL_WAVES,
                     help="wave directory name to verify; bare --verify checks EVERY wave")
+    ap.add_argument("--strict", action="store_true",
+                    help="also gate on sample size: cells short of n runs, or holding "
+                         "duplicate draws. Off by default because a cell whose runs all "
+                         "REFUSED cannot be repaired by collecting more of them.")
     ap.add_argument("--series", action="store_true")
     ap.add_argument("--date", default="", help="wave date (default: today)")
     ap.add_argument("--delay", type=float, default=2.0)
@@ -444,14 +490,14 @@ def main(argv=None):
                 return 0
             bad = 0
             for d in waves:
-                bad += 1 if verify(d, panel) else 0
+                bad += 1 if verify(d, panel, args.strict) else 0
             print("")
             print("%d wave(s) checked, %d with findings" % (len(waves), bad))
             return 1 if bad else 0
         d = args.verify if os.path.isdir(args.verify) else os.path.join(STUDY, "runs", args.verify)
         if not os.path.isdir(d):
             raise SystemExit("no such wave: %s" % args.verify)
-        return 1 if verify(d, panel) else 0
+        return 1 if verify(d, panel, args.strict) else 0
 
     # A WAVE IS A SITTING, NOT A CALENDAR DAY, and this defaulted to today().
     #
