@@ -648,54 +648,88 @@ def floor_conditions():
     # The date-prefixed glob is the point: a later temp-0 collection joins the floor without
     # anyone editing this function, and a collection at a DIFFERENT temperature cannot, because
     # it will not be named `*-temp0*`.
-    cells = load("runs/*temp0*/**/*.jsonl")
+    # KEYED BY COLLECTION DATE, because pooling across dates invents numbers.
+    #
+    # `_default_key` is (model, condition, shuffle_seed) and shuffle_seed is None on every
+    # temp-0 record, so widening the glob to three directories silently merged runs collected
+    # on different days into one modal sheet. Measured: x-ai/grok-4.5's A-to-D is 3 on
+    # 2026-08-30 and 18 on 2026-09-05 -- its D-arm behaviour changed in six days -- and the
+    # pooled modal reported 16, a value the model produced on NEITHER date.
+    #
+    # A floor row built from a sheet no model ever emitted is not a measurement. One date per
+    # (model, condition); when a model was collected twice, the LATER date wins, and the
+    # difference is a drift finding rather than something to average away.
+    raw = load("runs/*temp0*/**/*.jsonl", key=lambda r: (r["model"], r["condition"],
+                                                         r.get("collected_at", "")[:10]))
+    cells = {}
+    for (m, c, day), runs in sorted(raw.items()):
+        cells[(m, c, day)] = runs
     by = collections.defaultdict(dict)
     #: Per model, how much its OWN runs disagree with each other inside one condition. A pair
     #: whose A-to-D difference does not exceed this is measuring the model's instability, not
     #: the manipulation.
     within = collections.defaultdict(list)
-    for (m, c, o), runs in cells.items():
+    # sorted() above puts the earliest date first, so a later collection of the same
+    # (model, condition) overwrites it here. One date per cell, never a blend of two.
+    seen_day = {}
+    for (m, c, day), runs in cells.items():
         by[m][c] = modal(runs)
+        seen_day[(m, c)] = day
         for i in range(len(runs)):
             for j in range(i + 1, len(runs)):
                 within[m].append(both_stats(runs[i], runs[j])[0])
 
-    pairs, noisy = [], []
-    for m, conds in by.items():
-        if "A" not in conds or "D" not in conds:
-            continue
-        stats = both_stats(conds["A"], conds["D"])
-        pairs.append(stats)
-        # NOISE-DOMINATED PAIRS ARE REPORTED, NOT DROPPED.
-        #
-        # Two models in the 2026-09-05 collection do not hold still at temperature 0 at all:
-        # z-ai/glm-5.2 has two runs of one condition differing by 32 of 62 items, and
-        # moonshotai/kimi-k3 by up to 20. Their A-to-D difference cannot be attributed to the
-        # instruction, because the model moves that far on its own with nothing changed.
-        #
-        # They stay in the floor. Removing pairs for being inconvenient is how a floor gets
-        # quietly lowered, and this floor is the threshold everything else must clear -- a
-        # lower one is a weaker test of our own claims. But a reader has to be told which
-        # pairs carry that caveat, so the count travels with the row.
-        # MEDIAN within-cell spread, not max. Max was the first cut and it overstated this by
-        # more than double -- 14 of 20 against 6 of 20 -- because a single outlier run-pair
-        # condemned models that are otherwise stable: grok-4.6 moves 14 items between A and D
-        # against a within-cell median of 2 and one bad pair at 8. Comparing a difference
-        # against the WORST noise a model ever showed is not the same question as comparing it
-        # against the noise a model typically shows, and only the second one is a fair test.
-        w = within.get(m) or [0]
-        typical = st.median(w)
-        if typical >= stats[0]:
-            noisy.append((m, stats[0], typical, max(w)))
+    # A pair whose two arms come from DIFFERENT days is not a clean manipulation contrast --
+    # it carries whatever the model did in between. Reported rather than dropped, because with
+    # this few pairs dropping is expensive and the drift is itself worth seeing.
+    split_day = sorted(m for m in by
+                       if "A" in by[m] and "D" in by[m]
+                       and seen_day.get((m, "A")) != seen_day.get((m, "D")))
 
-    note = "the deliberate manipulation, for scale"
-    if noisy:
-        note += ("; %d of %d pair(s) do not exceed the model's own median run-to-run spread "
-                 "at temperature 0 -- kept, not dropped" % (len(noisy), len(pairs)))
-    out = summarise("prompt condition A->D", pairs, note)
-    if out and noisy:
-        out["noise_dominated"] = sorted(noisy, key=lambda t: -t[2])
-    return out
+    # THE "NOISE-DOMINATED" RULE IS GONE, AND SO IS THE EXAMPLE THAT DEFENDED IT.
+    #
+    # A previous version of this function flagged pairs whose A-to-D difference did not exceed
+    # the model's own within-condition spread, first against the MAX of that spread (14 of 20
+    # flagged) and then against the MEDIAN (6 of 20). The comment justifying the switch said max
+    # "condemned models that are otherwise stable: grok-4.6 moves 14 items between A and D
+    # against a within-cell median of 2 and one bad pair at 8."
+    #
+    # THAT EXAMPLE WAS NOT REAL. grok-4.6's A-to-D is 14 and its within-cell max is 8; 14 > 8,
+    # so it was never flagged under either rule. A fabricated case was used to justify changing
+    # a statistic in the direction that made this project's own work look better -- which is
+    # precisely what this paper convicts other studies of, committed inside the tool built to
+    # prevent it. Recorded here rather than quietly deleted.
+    #
+    # The rule was also wrong on its own terms. Under the median form it flagged
+    # claude-opus-4.6, whose runs are byte-identical (within = 0) and whose A-to-D is exactly 0
+    # -- the cleanest possible measurement of NO EFFECT, relabelled as "cannot tell". And it
+    # did NOT flag the two models the comment was written about: z-ai/glm-5.2 (32 items between
+    # two runs of one condition) and moonshotai/kimi-k3 (20) both pass it.
+    #
+    # A difference that is small because the instruction did nothing and a difference that is
+    # small because the model cannot hold still are different facts, and comparing a
+    # modal-vs-modal number against single-run-vs-single-run spread cannot separate them.
+    # Separating them needs an exchangeability test at a run count this collection does not
+    # have: with 3 runs per arm the smallest attainable permutation p is 0.10.
+    pairs = []
+    for m, conds in by.items():
+        if "A" in conds and "D" in conds:
+            pairs.append(both_stats(conds["A"], conds["D"]))
+
+    # THE NOTE IS COMPUTED. A hand-typed "(14, 16, 17)" was in this string an hour ago and was
+    # already wrong after the date fix.
+    sides = sorted(s for s, _e in pairs)
+    tail = [(m, both_stats(by[m]["A"], by[m]["D"])[0]) for m in by
+            if "A" in by[m] and "D" in by[m] and both_stats(by[m]["A"], by[m]["D"])[0] > 8]
+    note = ("the deliberate manipulation, for scale -- READ THE SPREAD, NOT THE p90: "
+            "%d of %d models move 8 items or fewer, inside the run-to-run replicate floor. "
+            "The tail is %s" % (sum(1 for s in sides if s <= 8), len(sides),
+                                ", ".join("%s %d" % (m.split("/")[-1], v)
+                                          for m, v in sorted(tail, key=lambda t: -t[1]))))
+    if split_day:
+        note += ("; %d pair(s) have their two arms from different days: %s"
+                 % (len(split_day), ", ".join(m.split("/")[-1] for m in split_day)))
+    return summarise("prompt condition A->D", pairs, note)
 
 
 def main(argv=None):
