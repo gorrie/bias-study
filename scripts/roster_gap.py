@@ -40,7 +40,10 @@ STUDY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
 CATALOGUE = "https://openrouter.ai/api/v1/models"
-UA = "bias-study-roster/1.0 (+https://the internal GitLab working copy)"
+# The PUBLIC identity, hardcoded. GitLab is the private working tree and is never
+#: publicly reachable, so a User-Agent pointing there tells an operator whose logs we appear
+#: in nothing they can act on. github.com/gorrie/bias-study is the published artifact.
+UA = "bias-study-roster/1.0 (+https://github.com/gorrie/bias-study)"
 
 #: Ids that are NOT subjects for this instrument, with the reason each is out. Named rather
 #: than pattern-matched away, because a silent filter is how a real frontier model gets skipped

@@ -34,7 +34,31 @@ REPOS = {
     "OBLITERATUS": CLAUDE_TOOLS / "OBLITERATUS",
 }
 
-BIAS_STUDY_DIR = WORKSPACE / "evil-robots-series" / "research" / "bias-study"
+def _resolve_study_dir():
+    """The study tree this skill should operate on.
+
+    THIS SHIPPED IN THE PUBLIC MIRROR POINTING AT A PRIVATE DIRECTORY. `WORKSPACE` defaults to
+    the home directory, so this resolved to `~/evil-robots-series/research/bias-study` -- a path
+    that exists on exactly one machine. Anyone who cloned github.com/gorrie/bias-study and ran
+    the skill shipped to ease reproduction got a subprocess traceback
+    (`NotADirectoryError: [WinError 267]`), with nothing saying why.
+
+    The mirror is itself a complete study tree: it has `scripts/`, `runs/` and `data/`. So the
+    author's tree is used when it is there, and the repository this file lives in otherwise --
+    which is the case that matters, because it is the only one a replicator has.
+    """
+    private = WORKSPACE / "evil-robots-series" / "research" / "bias-study"
+    if (private / "scripts").is_dir():
+        return private
+    here = Path(__file__).resolve().parents[3]      # skills/<name>/scripts/ -> repo root
+    if (here / "scripts").is_dir():
+        return here
+    raise SystemExit(
+        "no study tree found. Looked for %s (the author's working copy) and %s (this "
+        "repository). Set BIAS_STUDY_WORKSPACE if yours is elsewhere." % (private, here))
+
+
+BIAS_STUDY_DIR = _resolve_study_dir()
 
 # The JUDGE-SCORED battery's protocol files. Still checked, still present, and no longer the
 # primary instrument: it was retired on 2026-08-29 in favour of the 62 forced-choice

@@ -65,7 +65,19 @@ PANEL_FILE = os.path.join(STUDY, "data", "wave-panel.json")
 #: `--verify` checks a collected wave against this and fails on any difference.
 WAVE_PARAMS = {
     "temperature": 0.7,
-    "seed": 20260830,
+    # THE SEED SWEEPS: run k uses `seed_base + k`. A FIXED seed does not produce five runs.
+    #
+    # Measured on the first wave collected under the old spec (fixed 20260830, 5 runs): 17 of
+    # 32 cells with three or more runs held two or fewer DISTINCT answer sheets, and several
+    # held one -- claude-opus-4.6 A, gemma2 B, a gemma-4-12B GGUF P. Every local model returned
+    # copies, and some hosted cells were served from cache. Those cells recorded n=5 and carry
+    # the information of n=1, which inflates every count built on them and makes the
+    # within-cell spread zero by construction.
+    #
+    # `run_compass --seed-sweep` is the flag that does this on purpose; its own help says
+    # "repeating a seeded deterministic call measures nothing". The wave was doing exactly that.
+    "seed_base": 20260830,
+    "seed_sweep": True,
     "max_tokens": 8192,
     "template": "T01",
     "runs": 5,
@@ -202,6 +214,16 @@ def spec_matching_corpus(panel):
     return {k: v for k, v in hits.items() if len(v) >= need}, short
 
 
+def distinct_seeds(records):
+    """How many DIFFERENT seeds a cell's runs carry.
+
+    Run count is not sample size when the seed is fixed: under the old spec a cell could hold
+    five runs and one answer sheet. Counting seeds is the cheap structural check -- it does not
+    need the sheets, and it catches the defect at collection time rather than in analysis.
+    """
+    return len({r.get("seed") for r in records if r.get("seed") is not None})
+
+
 def adopt_baseline(panel, force=False):
     """Record the already-collected, spec-matching records as wave 0. Copies nothing."""
     if os.path.exists(BASELINE_FILE) and not force:
@@ -261,6 +283,7 @@ def collected(outdir):
 def verify(outdir, panel):
     """Did anything drift from the frozen spec? Reports, and returns a failure count."""
     bad, seen = [], collections.Counter()
+    cell_runs = collections.defaultdict(list)
     for p in glob.glob(os.path.join(outdir, "*.jsonl")):
         for line in io.open(p, encoding="utf-8", errors="replace"):
             if not line.strip():
@@ -270,9 +293,20 @@ def verify(outdir, panel):
             except ValueError:
                 continue
             seen[(r.get("model"), r.get("condition"))] += 1
+            cell_runs[(r.get("model"), r.get("condition"))].append(r)
             for key, want in panel["params"].items():
-                if key == "runs":
-                    continue          # a count, not a per-record field
+                if key in ("runs", "seed_sweep"):
+                    continue          # a count and a rule, not per-record fields
+                if key == "seed_base":
+                    # The seed VARIES by design: run k carries seed_base + k. Verify it sits
+                    # inside the swept window rather than equalling the base, or the spec that
+                    # fixes the duplicate-runs bug would itself fail verification.
+                    got = r.get("seed")
+                    if got is not None and not (want <= got < want + panel["params"]["runs"]):
+                        bad.append("%s %s: seed=%r outside the swept window [%d, %d)"
+                                   % (r.get("model"), r.get("condition"), got,
+                                      want, want + panel["params"]["runs"]))
+                    continue
                 got = r.get(key)
                 if got is not None and got != want:
                     bad.append("%s %s: %s=%r, frozen spec says %r"
@@ -288,6 +322,18 @@ def verify(outdir, panel):
                    if (m, c) not in still}
     missing = [(m, c) for m in panel["models"] for c in ALL_CONDITIONS
                if not seen.get((m, c)) and (m, c) not in adopted]
+
+    # A CELL WHOSE RUNS SHARE ONE SEED IS NOT n RUNS. Under the pre-2026-09-05 spec, 17 of 32
+    # cells with three or more runs held two or fewer distinct answer sheets. Verification has
+    # to catch that structurally, or the spec change that fixed the collector leaves the old
+    # data looking valid: every one of those records carries seed 20260830, which sits inside
+    # the swept window and passes a range check.
+    if panel["params"].get("seed_sweep"):
+        for (m, c), rs in sorted(cell_runs.items()):
+            n = distinct_seeds(rs)
+            if len(rs) >= 2 and n < min(len(rs), panel["params"]["runs"]):
+                bad.append("%s %s: %d run(s) but only %d distinct seed(s) -- collected under "
+                           "a fixed seed, so it is n=%d" % (m, c, len(rs), n, n))
     print("%s" % os.path.basename(outdir))
     print("  %d cell(s) present, %d panel cell(s) missing" % (len(seen), len(missing)))
     if bad:
@@ -408,9 +454,11 @@ def main(argv=None):
         cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
                "--model", model, "--condition", cond,
                "--runs", str(p["runs"]), "--temperature", str(p["temperature"]),
-               "--seed", str(p["seed"]), "--max-tokens", str(p["max_tokens"]),
+               "--seed", str(p["seed_base"]), "--max-tokens", str(p["max_tokens"]),
                "--template", p["template"], "--channel", channel_for(model),
                "--delay", str(args.delay), "--out", outdir]
+        if p.get("seed_sweep"):
+            cmd.append("--seed-sweep")
         # The COLLECTOR is run_compass, not a reimplementation of it. Two collectors would be
         # two definitions of what a run is, and the wave would stop being comparable to every
         # other collection in this corpus.

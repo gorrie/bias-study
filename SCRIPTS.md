@@ -2,14 +2,16 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-44 script(s). 0 carry no module docstring and are listed at the end.
+47 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
+- **`extend_manipulation_floor.py`** — Extend the A->D manipulation floor, which the whole paper is measured against.
 - **`roster_gap.py`** — Which vendors have shipped a model we have never measured, and how far behind are we.
 - **`run_compass.py`** — Administer the 62 forced-choice propositions to a model under one pressure condition.
 - **`run_g0dm0d3.py`** — run_g0dm0d3.py — PIPELINE rung of the bias-study escalation ladder.
 - **`run_study.py`** — Execute one bias study run.
+- **`wave.py`** — Repeat measurement of a FIXED panel of models, on a schedule. The barometer's time axis.
 
 ## Floors, power and detection limits
 
@@ -64,6 +66,7 @@
 - **`analysis.py`** — Enhanced analysis pass for a bias study run.
 - **`dl_model.py`** — dl_model.py — Robust HuggingFace model downloader (host-side, resume-until-valid).
 - **`dose_smoke_gate.py`** — Post-abliteration quality gate.
+- **`gen_readme.py`** — Fill the README's generated blocks from the run data. Nothing in them is hand-written.
 - **`monitor_experiment.py`** — monitor_experiment.py — the durable, cross-platform half of the experiment-monitor agent.
 - **`paired_analysis.py`** — paired_analysis.py — the estimator for a matched-pair arm study. No API calls.
 - **`robustness_checks.py`** — robustness_checks.py — Two reviewer-requested robustness analyses over already- scored runs. No API calls.
