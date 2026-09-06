@@ -137,6 +137,13 @@ def audit_scale():
     ours_status = (ours or {}).get("status") or {}
     controls = list((rec.get("controls") or {}).keys()) if isinstance(rec, dict) else []
 
+    #: Controls at least one external study was actually assessed on. A control where every
+    #: external reads `unknown` has not been audited in the field; it has only been audited
+    #: here, and putting it in a side-by-side count flatters us by construction.
+    comparable = [c for c in controls
+                  if any((s.get("status") or {}).get(c) not in (None, "unknown")
+                         for s in external)]
+
     # EXTERNAL ONLY, every count. `ours` is 9-for-9 and sits in the same JSON, so including it
     # inflates every "the field does X" figure by one. Caught 2026-09-04 when a first draft of
     # the public table said 1 study reports the same-version distribution and 10 publish raw
@@ -153,7 +160,23 @@ def audit_scale():
             "yes_forcing": tally("forcing_disclosed", "yes"),
             "no_forcing": tally("forcing_disclosed", "no"),
             "n_controls": len(controls),
-            "ours_pass": sum(1 for c in controls if ours_status.get(c) == "yes")}
+            "ours_pass": sum(1 for c in controls if ours_status.get(c) == "yes"),
+            # COMPARABLE controls only: the ones at least one external study was actually
+            # assessed on.
+            #
+            # Four controls added 2026-09-05 -- judge_free_scoring, judge_lean_reported,
+            # self_judging_disclosed, longitudinal -- are `unknown` for all twelve externals
+            # and `yes`/`partial` for us, because they were written to audit OURSELVES and
+            # nobody has re-read twelve papers against them. Counting them made the rendered
+            # table read "this study 12 of 13" against everyone else's two to four, which is
+            # not a comparison: it is a scoreboard where only one player was scored.
+            #
+            # `ours_pass` keeps the honest self-count over every control. `ours_pass_comparable`
+            # is the number that may sit beside somebody else's.
+            "comparable_controls": len(comparable),
+            "ours_pass_comparable": sum(1 for c in comparable
+                                        if ours_status.get(c) == "yes"),
+            "ours_only_controls": sorted(set(controls) - set(comparable))}
 
 
 def _panel_models():
@@ -432,7 +455,10 @@ SURFACES = {
             "audit_no_reported_mde": "of 12 (**%d say no**)",
             "audit_yes_open_raw": "publishes its raw data** | **%d of 12** |",
             "audit_yes_forcing": "discloses its forcing prompt** | %d of 12",
-            "audit_ours_pass": "our own run passes %(audit_ours_pass)d of %(audit_controls)d",
+            "audit_ours_pass_comparable":
+                "passes %(audit_ours_pass_comparable)d of the %(audit_comparable_controls)d "
+                "controls anyone else was scored on",
+            "audit_ours_pass": "passes %(audit_ours_pass)d of all %(audit_controls)d",
         },
     },
     # THE DISPATCH, added 2026-09-05, and the reason is the whole argument for this file.
@@ -518,6 +544,11 @@ def surface_numbers():
          "what": "controls each study is scored against"},
         {"key": "audit_ours_pass", "value": a["ours_pass"],
          "what": "of those controls our own run passes"},
+        {"key": "audit_comparable_controls", "value": a["comparable_controls"],
+         "what": "controls at least one external study was actually scored on"},
+        {"key": "audit_ours_pass_comparable", "value": a["ours_pass_comparable"],
+         "what": "of the comparable controls our own run passes -- the only self-score that "
+                 "may sit beside another study's"},
         # CONCLUSION FIVE's numbers. They live here rather than in build() because build()'s
         # rows are grepped against the PAPER, and the paper states these figures inside its
         # generated floors table rather than in these sentences. A website-only sentence gated

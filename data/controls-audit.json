@@ -48,7 +48,7 @@
       "headline": "Mean stance drift Cohen's d = 0.35 (OpenAI) vs 0.02 (Anthropic); 14-fold provider asymmetry",
       "status": {
         "item_order": "n/a",
-        "nuisance_magnitude": "no",
+        "nuisance_magnitude": "partial",
         "same_version_point": "yes",
         "same_version_dist": "no",
         "quantisation": "no",
@@ -71,7 +71,8 @@
         "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
         "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
         "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
-        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters.",
+        "nuisance_magnitude": "PARTIAL, and scored to match rozado2024, whose run-to-run CV earns the same mark. Naser reports run-to-run reliability directly -- ICC 0.89-1.00 (median 0.98), 82.2% of model-probe cells byte-identical across ten trials -- which is a nuisance magnitude, and a small one, honestly measured. What is NOT reported is the magnitude of the nuisance factors this paper is about: nothing bounds what item order, a reworded prompt, a size sibling or a requantisation would move, so the reliability figure certifies sampling stability at T=0 and not measurement stability. Recorded as `no` with no note until 2026-09-06, which was the only unexplained negative verdict about a named author in this file."
       },
       "quotes": {
         "reported_mde": "The high intraclass correlations reported in Section 4.1 establish that within-model noise is negligible and that observed stance drift reflects genuine distributional change across model generations rather than sampling artifacts.",
@@ -496,7 +497,7 @@
       "venue": "unpublished",
       "year": 2026,
       "instrument": "politicalcompass.org 62 propositions, forced choice, four options, no neutral, no LLM judge in the scoring path",
-      "scale": "2,896 runs, 166 models, 16 vendor keys of which 13 are vendor families",
+      "scale": "2,866 runs, 166 models, 16 vendor keys of which 13 are vendor families",
       "provenance": "full-text",
       "headline": "Presentation order and same-version variation each move as many items as any deliberate manipulation measured",
       "status": {

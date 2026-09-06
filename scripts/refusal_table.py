@@ -87,6 +87,15 @@ DEFAULT_EXCLUDE = {
     # stood still. The arm contrast is the finding; a one-sided denominator is not a bigger
     # sample of it. Its own floor reads these runs directly (floor_table.floor_template).
     "2026-09-04-template-floor",
+    # The order floor under the wave protocol: the full panel x 2 shuffled item orders,
+    # CONDITION D ONLY. Exactly the one-sided denominator the template-floor entry above
+    # describes, pointing the other way -- it adds 310 directive runs against an unchanged
+    # no-directive arm, so pooling it would push the matched-arms refusal contrast in our
+    # favour without a single new observation about refusal. Caught 2026-09-06 while the
+    # collection was still running: the gate reported the arms figures moving from
+    # 153/1096 vs 4/917 to 148/1076 vs 4/953 with nothing about refusal having changed.
+    # Its own floor reads these runs directly (floor_table.floor_order_wave).
+    "2026-09-06-wave-orders",
 }
 
 

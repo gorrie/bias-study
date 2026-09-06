@@ -113,7 +113,7 @@ untidy and it is not ambiguous.
 The findings below are the May 2026 study and stand as recorded. A second measurement pass
 put the same subject matter to a **forced-choice instrument** — 62 externally authored
 propositions, four options, no neutral answer, **no LLM judge anywhere in the scoring
-path** — across 2,896 runs, 166 models and sixteen vendor keys. It confirmed one headline, narrowed
+path** — across 2,866 runs, 166 models and sixteen vendor keys. It confirmed one headline, narrowed
 another, withdrew the framing of a third, and produced the thing the original study lacked:
 **the noise floors a measurement on this instrument has to clear.**
 

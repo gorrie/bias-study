@@ -30,10 +30,3 @@ data/_aggregated/cross-method-report.json
 # failure mode was 525 untracked run files sitting one `git add -A` away from publication.
 # Ignoring it means the accident cannot start.
 data/compass-propositions.json
-
-# Retired collections that exist only to explain a tooling bug in the private tree.
-# 2026-09-06-strayrestart is six cells a wave.py date-rollover bug collected mid-repair;
-# every one duplicates a cell already complete in 2026-09-05-wave, and it carries no
-# measurement this repository does not already have. The bug and its fix are described in
-# the wave-0 results; the wreckage does not need to ship.
-runs/2026-09-06-strayrestart/
