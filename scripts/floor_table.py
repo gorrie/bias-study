@@ -762,14 +762,102 @@ def floor_conditions():
     return summarise("prompt condition A->D", pairs, note)
 
 
+def _condition_pairs(pattern):
+    """A→D pairs from one collection, keyed by (model, condition, collection date).
+
+    Extracted from floor_conditions so the wave arm below runs the SAME pairing rather than a
+    copy of it. A second implementation of "what is a manipulation pair" is a second definition
+    of the paper's reference scale, and the two would drift.
+
+    Returns (pairs, by_model, split_day).
+    """
+    raw = load(pattern, key=lambda r: (r["model"], r["condition"],
+                                       r.get("collected_at", "")[:10]))
+    by = collections.defaultdict(dict)
+    seen_day = {}
+    for (m, c, day), runs in sorted(raw.items()):
+        by[m][c] = modal(runs)
+        seen_day[(m, c)] = day
+    split_day = sorted(m for m in by
+                       if "A" in by[m] and "D" in by[m]
+                       and seen_day.get((m, "A")) != seen_day.get((m, "D")))
+    pairs = [both_stats(cs["A"], cs["D"]) for _m, cs in sorted(by.items())
+             if "A" in cs and "D" in cs]
+    return pairs, by, split_day
+
+
+def floor_conditions_wave():
+    """THE REFERENCE SCALE, RE-MEASURED UNDER ONE PROTOCOL IN ONE SITTING.
+
+    The `prompt condition A->D` row above is the paper's reference scale, and it is pooled
+    across collections: temperature 0, three runs, several dates, and one pair whose two arms
+    come from different days. It was the open item after wave 0 -- re-collect it under one
+    protocol, one sitting -- and wave 0 turned out to have already done it. 31 models were run
+    under all four conditions at temperature 0.7 with a swept seed, five runs each, in a single
+    sitting. 25 of them answer both A and D; the other six refuse the balance instruction
+    outright, which is section 1's finding rather than a gap here.
+
+    THE COMPARISON IS IN THE SAME UNITS. This pairs modal-vs-modal, and so do the two nuisance
+    floors it is compared against: `floor_order` pairs `modal(runs)` per item order, and
+    `floor_same_version` pairs `modal()` per variant. Only `floor_replicate` pairs raw runs,
+    correctly, because raw run-to-run noise is the thing it measures.
+
+    AND THE ANSWER MOVES. Pooled temp-0: p90 15 over 20 pairs. Here: **p90 7 over 25 pairs**,
+    below the presentation-order floor and below the same-version floor. 23 of 25 models move 8
+    items or fewer.
+
+    WHY THE TWO DIFFER, stated rather than picked between. At temperature 0 with a fixed seed a
+    cell's runs are near-identical, so its "modal" sheet is effectively a single observation
+    carrying single-run noise. Here the modal is a real consensus across five different seeds,
+    so noise averages out and what is left is the position. That makes this the better estimate
+    of the quantity the paper actually compares -- does the instruction move the model's central
+    position -- and it makes the pooled row an upper bound inflated by the noise it could not
+    average away. Both rows are printed. Neither is deleted.
+    """
+    pairs, by, split_day = _condition_pairs("runs/*-wave/*.jsonl")
+    if not pairs:
+        return None
+    sides = sorted(s for s, _e in pairs)
+    tail = sorted(((m, both_stats(cs["A"], cs["D"])[0]) for m, cs in by.items()
+                   if "A" in cs and "D" in cs), key=lambda t: -t[1])
+    refused = sorted(m for m, cs in by.items() if "D" in cs and "A" not in cs)
+    note = ("the same manipulation under ONE protocol in ONE sitting -- temperature 0.7, swept "
+            "seed, 5 runs, wave 0. %d of %d models move 8 items or fewer. The tail is %s. "
+            "%d panel model(s) contribute no pair because they refuse condition A outright: %s"
+            % (sum(1 for s in sides if s <= 8), len(sides),
+               ", ".join("%s %d" % (m.split("/")[-1], v) for m, v in tail[:3]),
+               len(refused), ", ".join(m.split("/")[-1] for m in refused)))
+    if split_day:
+        note += ("; %d pair(s) span more than one date: %s"
+                 % (len(split_day), ", ".join(m.split("/")[-1] for m in split_day)))
+    return summarise("prompt condition A->D, one sitting", pairs, note,
+                     clusters=[m for m, cs in sorted(by.items()) if "A" in cs and "D" in cs])
+
+
+#: EVERY FLOOR, in one place. This list lived here AND in `key_numbers.floors()`, so adding
+#: `floor_conditions_wave` to the table left the gate blind to it -- a new row could appear in
+#: the paper with nothing recomputing the sentences around it, which is the one thing that gate
+#: exists to prevent. One list, two readers.
+ALL_FLOORS = (floor_order, floor_same_version, floor_template, floor_replicate,
+              floor_quant, floor_ablation, floor_conditions, floor_conditions_wave)
+
+
+def all_floors():
+    """Every floor that measured something, keyed by name."""
+    out = {}
+    for fn in ALL_FLOORS:
+        r = fn()
+        if r:
+            out[r["name"]] = r
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--markdown", action="store_true")
     args = ap.parse_args(argv)
 
-    rows = [f for f in (floor_order(), floor_same_version(), floor_template(),
-                        floor_replicate(), floor_quant(),
-                        floor_ablation(), floor_conditions()) if f]
+    rows = list(all_floors().values())
     rows.sort(key=lambda r: -r["side"][1])
 
     if args.markdown:

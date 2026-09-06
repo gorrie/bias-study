@@ -156,15 +156,31 @@ def audit_scale():
             "ours_pass": sum(1 for c in controls if ours_status.get(c) == "yes")}
 
 
+def _panel_models():
+    """The frozen wave panel, read rather than counted by hand.
+
+    The paper says "31 panel models" and "the other 6 decline". Both are the panel size minus
+    what the one-sitting floor could pair, and typing either is how the pair of them stops
+    agreeing when the panel changes.
+    """
+    path = os.path.join(STUDY, "data", "wave-panel.json")
+    if not os.path.exists(path):
+        return []
+    return json.load(io.open(path, encoding="utf-8")).get("models", [])
+
+
+PANEL_MODELS = _panel_models()
+
+
 def floors():
-    out = {}
-    for fn in (F.floor_order, F.floor_same_version, F.floor_template, F.floor_replicate,
-               F.floor_quant,
-               F.floor_ablation, F.floor_conditions):
-        r = fn()
-        if r:
-            out[r["name"]] = r
-    return out
+    """Every floor, from floor_table's own list rather than a second copy of it.
+
+    This enumerated the floor functions itself, so `floor_table` and this gate each held their
+    own idea of what the floor table contains. Adding a row to the table therefore left this
+    gate blind to it -- the paper could print a new number with nothing recomputing the prose
+    around it, which is precisely what this file exists to prevent.
+    """
+    return F.all_floors()
 
 
 def build():
@@ -180,6 +196,7 @@ def build():
 
     order = f["presentation order"]
     manip = f["prompt condition A->D"]
+    manip_sitting = f["prompt condition A->D, one sitting"]
     abl = f["refusal-direction ablation"]
     null = f["same-version variants"]
 
@@ -216,6 +233,28 @@ def build():
          "value": manip["side"][1],
          "what": "deliberate manipulation p90, side-flips",
          "phrase": "forced commitment | %d |"},
+        # THE SAME CONTRAST UNDER ONE PROTOCOL, gated separately because it is a different
+        # measurement and not a correction of the row above. Pooled temp-0 says 15 over 20
+        # pairs; wave 0 says 7 over 25, collected in one sitting at one temperature with a
+        # swept seed. Both are printed in the floors table and both are gated, so neither can
+        # quietly become "the" reference scale in prose.
+        {"key": "manip_p90_sitting",
+         "value": manip_sitting["side"][1],
+         "what": "deliberate manipulation p90 under one protocol in one sitting, side-flips",
+         "phrase": "one-sitting row reports p90 %d"},
+        {"key": "manip_pairs_sitting",
+         "value": manip_sitting["n"],
+         "what": "model pairs behind the one-sitting manipulation floor",
+         "phrase": "%d of them answer both arms"},
+        {"key": "wave_panel_size",
+         "value": len(PANEL_MODELS),
+         "what": "models in the frozen wave panel",
+         "phrase": "%d panel models"},
+        {"key": "manip_refusing_sitting",
+         "value": len(PANEL_MODELS) - manip_sitting["n"],
+         "what": "panel models contributing no manipulation pair because they refuse "
+                 "condition A outright",
+         "phrase": "The other %d decline the balance instruction outright"},
         {"key": "null_median",
          "value": null["side"][0],
          "what": "same-version null median, side-flips",

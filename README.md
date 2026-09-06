@@ -127,6 +127,7 @@ instrument, same model, same settings, in items moved of 62:
 | presentation order | 84 | 3 / 11 / 22 | [7, 13] | 4 / 10 / 18 |
 | same-version variants | 97 | 5 / 11 / 24 | [8, 13] | 8 / 22 / 29 |
 | refusal-direction ablation | 12 | 6 / 9 / 12 | [6, 12] | 6 / 14 / 16 |
+| prompt condition A->D, one sitting | 25 | 3 / 7 / 14 | [4, 12] | 11 / 22 / 26 |
 | instruction paraphrase | 1067 | 3 / 6 / 14 | [5, 8] | 2 / 10 / 28 |
 | requantisation | 13 | 3 / 6 / 10 | [3, 10] | 1 / 3 / 7 |
 | run-to-run replicate | 63 | 3 / 5 / 15 | [4, 11] | 2 / 10 / 28 |
@@ -139,6 +140,23 @@ instrument, same model, same settings, in items moved of 62:
 
 **requantisation excludes `mistral-7b`:** gated ELIGIBLE but contributed no pair -- every condition lost one arm to an invalid run
 <!-- /GEN:floors -->
+
+**The manipulation appears twice, on purpose.** `prompt condition A->D` is pooled across
+collections — temperature 0, three runs per arm, several dates. `prompt condition A->D, one
+sitting` is the same contrast collected under one protocol in a single sitting: 31 panel models
+at temperature 0.7 with a swept seed, five runs each, all four conditions. 25 answer both arms;
+the other 6 refuse the balance instruction outright.
+
+Pooled says p90 15. One sitting says **p90 7**, over more pairs — below presentation order (11)
+and below same-version variants (11). They differ because at temperature 0 with a fixed seed a
+cell's runs are near-identical, so its "modal" sheet is really one observation carrying
+single-run noise; across five swept seeds the modal is a consensus and that noise averages out.
+The pooled row is an upper bound inflated by noise it could not average away. Both are printed
+and neither is deleted.
+
+The comparison is like-for-like — the order and same-version floors also pair consensus against
+consensus, and only `run-to-run replicate` pairs raw runs, which is correct, since raw noise is
+what it measures.
 
 **Splitting the order row by model class is the most important line in this table, and an
 earlier version of this section pooled it.** Reordering the questionnaire is a large effect on
