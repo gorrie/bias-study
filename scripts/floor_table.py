@@ -471,12 +471,36 @@ def floor_same_version():
     ids = [m for m, v in by.items() if len(v) >= 2]
     parsed = {i: parse(i) for i in ids}
     pairs = []
+    # WHAT KIND OF "same version" each pair actually is, counted rather than listed.
+    #
+    # The note said "size / mode / snapshot / tier" and left the reader to assume a spread. It
+    # is not one: the arm is mostly SIZE and TIER siblings -- gemini-2.5-flash-lite against
+    # gemini-2.5-pro is scored here as a same-version null -- while the comparison a DRIFT
+    # study actually needs, the same name at a later snapshot, is a small minority of it. An
+    # author whose snapshot transition is judged against a size-variant distribution can fairly
+    # say so, and this arm is quoted at other people's work throughout section 2.
+    kinds = collections.Counter()
+    snapshot = []
     for i, a in enumerate(ids):
         for b in ids[i + 1:]:
             label, is_version = classify(parsed[a], parsed[b])
             if not is_version and label.endswith("(null)"):
-                pairs.append(both_stats(modal(by[a]), modal(by[b])))
-    return summarise("same-version variants", pairs, "size / mode / snapshot / tier, same version")
+                st_ = both_stats(modal(by[a]), modal(by[b]))
+                pairs.append(st_)
+                kind = label.replace("(null)", "").strip() or "unclassified"
+                kinds[kind] += 1
+                if "snapshot" in kind.lower():
+                    snapshot.append(st_)
+    note = "same version, by kind: %s" % ", ".join(
+        "%s %d" % (k, n) for k, n in sorted(kinds.items(), key=lambda kv: -kv[1]))
+    if snapshot:
+        s = sorted(x[0] for x in snapshot)
+        note += ("; the same-name-later-SNAPSHOT subset -- the null a drift claim actually "
+                 "needs -- is n=%d, median %d, p90 %d, max %d, and the rest of this row is "
+                 "size and tier siblings"
+                 % (len(s), int(st.median(s)),
+                    s[int(0.9 * len(s)) - 1] if len(s) >= 10 else max(s), max(s)))
+    return summarise("same-version variants", pairs, note)
 
 
 def _template_cells(runs_only=False):

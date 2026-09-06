@@ -32,7 +32,15 @@ STUDY = os.path.dirname(HERE)
 DATA = os.path.join(STUDY, "data", "controls-audit.json")
 
 MARK = {"yes": "yes", "partial": "part", "no": "NO", "n/a": "--", "unknown": "?"}
-WEAK_PROVENANCE = ("project-review",)
+#: Provenance too thin to support a "no" verdict about someone else's paper.
+#:
+#: This was ("project-review",) and NO row carried that value, so --strict was vacuous while
+#: eleven "does not control for X" verdicts rested on `retrieved-summary` -- a method-and-
+#: results retrieval, not the paper. Sakhawat carried five of them. A retrieval can show a
+#: control is absent from what we saw; it cannot establish it is absent from the work, and
+#: this project does not get to make a claim about someone else that it would not accept
+#: about itself. Those verdicts are "unknown" now and return when someone reads the paper.
+WEAK_PROVENANCE = ("project-review", "retrieved-summary")
 
 
 def load():

@@ -673,7 +673,31 @@ RETRACTED = [
      "the requantisation row's interval. It rested on 4 pairs from ONE weights family until "
      "2026-09-04 and now has 13 pairs from four, with a real CI -- any surface still saying "
      "the interval cannot be computed is describing the retired version"),
+    ("the lean is a main effect and cancels",
+     "the judge-lean claim, withdrawn 2026-09-05 (CORRECTIONS #5). It does not cancel: the "
+     "same judge sits at +0.044 under the balance instruction and +0.290 under the bare "
+     "question, so it does not subtract out of a within-model delta. This sentence outlived "
+     "its own withdrawal by a day inside data/controls-audit.json, which SHIPS -- and no gate "
+     "was reading that file, only the prose surfaces"),
+    # THE CLAIM, not the idiom. This was first written as the bare phrase "like-for-like",
+    # which the corrected paragraph uses legitimately -- "measured like-for-like inside one
+    # sitting, the manipulation is the LARGER effect" is the replacement claim, not the
+    # retracted one. A retraction gate that forbids a common phrase forbids describing the
+    # correction, which is the failure `_unquoted_occurrences` exists to avoid.
+    ("pair a consensus sheet against a consensus sheet",
+     "the claim that the one-sitting manipulation floor is measured in the same units as the "
+     "nuisance floors, withdrawn 2026-09-06 (CORRECTIONS #7). 23 of the order floor's 37 "
+     "shuffled-order cells hold ONE run, so it pairs a single run against a five-run "
+     "consensus"),
 ]
+
+#: Files scanned for RETRACTED phrases beyond the prose surfaces.
+#:
+#: `data/controls-audit.json` is the record backing "the same table scores us", it is exported
+#: to the public repository, and until 2026-09-06 NOTHING checked it -- so a claim withdrawn on
+#: the 5th was still asserted inside it on the 6th. A retraction that only reaches the sentences
+#: a human happens to re-read is not a retraction.
+RETRACTED_ALSO_SCAN = ("data/controls-audit.json",)
 
 
 def _unquoted_occurrences(text, phrase):
@@ -706,6 +730,57 @@ def _unquoted_occurrences(text, phrase):
     return out
 
 
+def check_retracted_in_data():
+    """Retracted claims must not survive in the DATA either, not just in the prose.
+
+    `data/controls-audit.json` ships to the public repository and is the record behind "the
+    same table scores us". A claim withdrawn on 2026-09-05 was still asserted inside it on the
+    6th, because every retraction gate read markdown and nothing read the JSON.
+
+    JSON NEEDS ITS OWN QUOTATION RULE. `_unquoted_occurrences` allows a phrase that sits
+    between quote marks, because in prose that means the sentence is being QUOTED by a
+    retraction rather than asserted. In JSON every value is quoted by definition, so that rule
+    exempts the entire file -- the first version of this gate scanned the raw text, found the
+    retracted sentence, and passed it. Parse the values and look for a NESTED quotation
+    instead: a note describing a withdrawal writes 'the old claim' inside its own string.
+    """
+    out = []
+    for rel in RETRACTED_ALSO_SCAN:
+        path = os.path.join(STUDY, rel)
+        if not os.path.exists(path):
+            continue
+        try:
+            blob = json.load(io.open(path, encoding="utf-8"))
+        except ValueError:
+            continue
+
+        def strings(node, trail=""):
+            if isinstance(node, dict):
+                for k, v in node.items():
+                    yield from strings(v, "%s.%s" % (trail, k) if trail else str(k))
+            elif isinstance(node, list):
+                for i, v in enumerate(node):
+                    yield from strings(v, "%s[%d]" % (trail, i))
+            elif isinstance(node, str):
+                yield trail, node
+
+        for where, value in strings(blob):
+            for phrase, why in RETRACTED:
+                if phrase not in value:
+                    continue
+                # Allowed only when the phrase is nested inside quote marks WITHIN the value,
+                # which is how a note describes what it withdrew.
+                i = value.index(phrase)
+                before, after = value[:i], value[i + len(phrase):]
+                quoted = (before.rstrip().endswith(("'", '"', "“"))
+                          and after.lstrip().startswith(("'", '"', "”")))
+                if not quoted:
+                    out.append(("RETRACTED in %s" % rel,
+                                "must not be ASSERTED in shipped data: %s" % why,
+                                "%s: %s" % (where, value[max(0, i - 40):i + len(phrase) + 20])))
+    return out
+
+
 def check_surface(name, rows):
     """Verify one non-paper surface still states the computed numbers. Returns a failure list."""
     spec = SURFACES[name]
@@ -731,6 +806,7 @@ def check_surface(name, rows):
     for phrase, why in RETRACTED:
         for occurrence in _unquoted_occurrences(text, phrase):
             bad.append(("RETRACTED", "must not be ASSERTED anywhere: %s" % why, occurrence))
+    bad += check_retracted_in_data()
     for key, phrase in spec["phrases"].items():
         row = by_key.get(key)
         if row is None:

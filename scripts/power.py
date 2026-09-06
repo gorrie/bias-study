@@ -50,9 +50,19 @@ import floor_table as F  # noqa: E402
 POWER = 0.80
 ALPHA = 0.05
 
-# Every null this project has published, with the movement actually observed and the floor
-# it was judged against. Scope strings are deliberately verbatim from the documents so a
-# reader can find the sentence being audited.
+# Every null this project has published, with the movement observed AT THE TIME and the floor
+# it is judged against. Scope strings are deliberately verbatim from the documents so a reader
+# can find the sentence being audited.
+#
+# `observed` IS FROZEN BY DESIGN and is the one hand-typed field here. The question this table
+# asks is "did this claim clear its floor when it was made", so the effect size has to be the
+# one the claim rested on; recomputing it would silently re-ask a different question every time
+# the corpus grew. The FLOOR is live, which is the half that should move -- a null can lose its
+# verdict later because the instrument got sharper, and that is the finding.
+#
+# Where the current value has since drifted from the published one, the drift is the subject of
+# its own RESULTS document rather than an edit here: the frontier temp-0 arm's max is now 19
+# against the 14 recorded below, and the local arm's is 5 against 6. Neither changes a verdict.
 PUBLISHED_NULLS = [
     {"claim": "position does not move under prompt pressure (local families)",
      "observed": 6, "stat": "side", "floor": "presentation order",

@@ -92,11 +92,11 @@
       "provenance": "retrieved-summary",
       "headline": "Model identity explains >90% of score variance (eta-squared > 0.90, p<1e-90); normalized drift below 4%",
       "status": {
-        "item_order": "no",
-        "nuisance_magnitude": "no",
-        "same_version_point": "no",
-        "same_version_dist": "no",
-        "quantisation": "no",
+        "item_order": "unknown",
+        "nuisance_magnitude": "unknown",
+        "same_version_point": "unknown",
+        "same_version_dist": "unknown",
+        "quantisation": "unknown",
         "retained_failures": "unknown",
         "reported_mde": "partial",
         "forcing_disclosed": "unknown",
@@ -107,14 +107,17 @@
         "longitudinal": "unknown"
       },
       "notes": {
-        "item_order": "Ten administrations with the context cleared vary sampling only; item order is fixed across all ten. On the same 62-item instrument reordering moves a median 7 and up to 24 answers, so the largest known nuisance term has no term in the ANOVA.",
-        "same_version_dist": "Their Table 7 lists gpt-4.1-nano, gpt-4.1-mini and gpt-4.1 alongside each other without treating them as a null.",
+        "item_order": "Ten administrations with the context cleared vary sampling only; item order is fixed across all ten. On the same 62-item instrument reordering moves a median 3 and up to 22 answers, so the largest known nuisance term has no term in the ANOVA. Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
+        "same_version_dist": "Their Table 7 lists gpt-4.1-nano, gpt-4.1-mini and gpt-4.1 alongside each other without treating them as a null. Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
         "reported_mde": "Volatility (sigma_vol) and eta-squared are reported, which bound sampling noise. No detection limit is reported for any other factor.",
         "provenance": "Method and results retrieved 2026-08-31; the full text has not been read end to end. Do not cite specific method details beyond those quoted here without upgrading this record.",
         "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
         "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
         "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
-        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters.",
+        "nuisance_magnitude": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
+        "same_version_point": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
+        "quantisation": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full."
       },
       "quotes": {
         "reported_mde": "One-way ANOVA confirms that model identity is the dominant source of variance across all political axes. Effect sizes exceed 0.90 for most dimensions, indicating that over 90% of score variance is attributable to model identity rather than sampling noise.",
@@ -292,7 +295,7 @@
       "notes": {
         "item_order": "NOT an omission -- item order cannot act on this design. Each item is presented in isolation with the chat history cleared, which he states and justifies in Methods. Same structural reason as Naser. What he does omit is an ANSWER-OPTION order control, and he defends that omission by assumption rather than experiment: the tests 'presumably use a variety of ranking orders'. Do not conflate the two axes.",
         "nuisance_magnitude": "Run-to-run CV is reported (median 8.03%; 6.7% conversational, 18.26% base), and a temperature/token/suffix ablation is reported -- but the ablation's magnitude is given for the INVALID RESPONSE RATE, not for the political score, where the effect is asserted as 'minimal' with no number.",
-        "same_version_point": "The pairs are excluded ON PURPOSE. This is the strongest single quote in the audit: the control is not merely unrun in this literature, it is designed out to make the sample look more varied. His negative control is instead a synthetic random-answer respondent, which bounds nothing about model-to-model comparison.",
+        "same_version_point": "The pairs are excluded ON PURPOSE, and he says so -- the strongest single quote in the audit. Same-version siblings are left out of the sample in favour of variety across model families, which is a stated sampling rationale and not a hidden one; the consequence is that the one comparison capable of bounding model-to-model difference is the one the design removes. His negative control is instead a synthetic random-answer respondent, which bounds nothing about model-to-model comparison. (Reworded 2026-09-06: an earlier version said the pairs were designed out 'to make the sample look more varied', which imputes a motive to a rationale he gives openly. The methodological point does not need it.)",
         "retained_failures": "Half credit, and the distinction matters. Invalid responses ARE measured, attributed to cause and reported per model (mean 11%, sd 9% conversational; gpt-4 33%, claude-instant 31%, 'mostly because those models often refuse... by claiming to lack political preferences'; base models mean 42%). But the individual invalid response is then retried up to 10 times and, if it still fails, left blank or replaced with a RANDOM answer (105 of 96,240 items). Retained as a statistic, discarded as a measurement.",
         "same_version_pairs_in_hand": "grok-fun-mode vs grok-regular-mode -- same model, same snapshot, mode only, both fully scored in the published CSV, and the two modes are never mentioned in the prose. Plus Llama-2 7b/13b/70b chat and base ladders, babbage-002 vs davinci-002, and six matched base-vs-chat pairs which he uses as the study's main effect.",
         "open_raw": "Zenodo 10.5281/zenodo.10553530; jsonl files carry all per-item LLM responses, plus tabulated_results.csv of means and SDs over 10 retakes.",
@@ -513,11 +516,11 @@
       },
       "notes": {
         "reported_mde": "Added 2026-08-31, and it indicted our own published nulls: 4 of 5 fell below their own detection limit, including both used to retire this project's central claims. The row reads yes only because that check was eventually run, not because the design anticipated it.",
-        "item_order": "18 pairs, median 7 / p90 14 / max 24 side-flips of 62. Frontier coverage is incomplete.",
-        "same_version_dist": "97 pairs, median 5 / p90 12 / max 24. Robust to dropping any single vendor.",
+        "item_order": "84 pairs, median 3 / p90 11 / max 22 side-flips of 62. Split by model class rather than pooled -- 2024-generation open-weight models move far more than 2026 frontier API models, and the pooled figure conceals that. Most shuffled-order cells hold a single run, so one side of most pairs carries run-to-run noise the other does not.",
+        "same_version_dist": "97 pairs, median 5 / p90 11 / max 24. Robust to dropping any single vendor. Mostly SIZE and TIER siblings rather than date snapshots: the same-name-later-snapshot null a drift study actually needs is n=9 within this arm and is reported separately.",
         "retained_failures": "Structural classification: refused / truncated / budget-exhausted / transport / corrupt / other. The refusal result exists only because these are kept.",
         "honesty": "Single presentation order for most cells, mostly n=3, one collection window. The gate warns about all three.",
-        "judge_lean_reported": "Added 2026-09-05 and it was absent before: scripts/judge_lean.py over 4,744 scored records gives a per-judge spread of 0.29 points (gemini-2.5-flash +0.173 to deepseek-v3.2 -0.119), larger than two of the five effects this project published. Rank order is identical under both conditions, so the lean is a main effect and cancels in the within-model deltas; absolute scores it does not.",
+        "judge_lean_reported": "Added 2026-09-05: scripts/judge_lean.py over 4,744 scored records gives a per-judge spread of 0.29 points (gemini-2.5-flash +0.173 to deepseek-v3.2 -0.119), larger than two of the five effects this project published. It does NOT simply cancel: the same judge sits at +0.044 under the balance instruction and +0.290 under the bare question, so it does not subtract out of a within-model delta. Settled by re-scoring each finding under each judge alone -- the two large effects survive every judge; the smallest ranges +0.03 to +0.60 and is reported as suggestive with its range. An earlier version of this note claimed the lean cancels; that claim was withdrawn on 2026-09-05 (CORRECTIONS.md #5) and survived here until 2026-09-06.",
         "self_judging_disclosed": "Disclosed 2026-09-05, having gone unsaid since May. Two of five CI-clean findings are self-judged: openai/gpt-4.1 (+0.433) and deepseek/deepseek-v3.2 (+0.233) both sat on the four-model panel that scored them.",
         "longitudinal": "PARTIAL and generously so. The forced-choice corpus spans 2026-08-30 to 2026-09-05 -- six days -- and runs/2026-08-31-lineage is 137 models measured on ONE date, a version cross-section rather than a series. A fixed 31-model panel with frozen parameters exists as of 2026-09-05 (scripts/wave.py) and wave 0 is declared, but one wave is a baseline, not a series. This becomes `yes` at wave 2 and not before."
       },
@@ -540,11 +543,11 @@
       "status": {
         "item_order": "n/a",
         "nuisance_magnitude": "yes",
-        "same_version_point": "no",
-        "same_version_dist": "no",
-        "quantisation": "no",
+        "same_version_point": "unknown",
+        "same_version_dist": "unknown",
+        "quantisation": "unknown",
         "retained_failures": "unknown",
-        "reported_mde": "no",
+        "reported_mde": "unknown",
         "forcing_disclosed": "yes",
         "open_raw": "yes",
         "judge_free_scoring": "unknown",
@@ -554,12 +557,15 @@
       },
       "notes": {
         "nuisance_magnitude": "The largest nuisance magnitude in this file, in any domain: 76 accuracy points from formatting that preserves meaning. Not a political instrument, so it does not bound our floors -- it establishes that the problem class was named and quantified at a major venue two years before we started.",
-        "reported_mde": "Recommends reporting a RANGE across plausible formats rather than a point, which is the caveat form. Does not convert the range into a threshold an effect must clear.",
+        "reported_mde": "Recommends reporting a RANGE across plausible formats rather than a point, which is the caveat form. Does not convert the range into a threshold an effect must clear. Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
         "scope": "Included as a methodological precedent rather than a comparable study. It measures task accuracy, not political position, and its numbers must never be quoted as if they bound this instrument.",
         "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
         "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
         "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
-        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters.",
+        "same_version_point": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
+        "same_version_dist": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
+        "quantisation": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full."
       },
       "quotes": {
         "nuisance_magnitude": "several widely used open-source LLMs are extremely sensitive to subtle changes in prompt formatting in few-shot settings, with performance differences of up to 76 accuracy points",
@@ -581,8 +587,8 @@
       "status": {
         "item_order": "unknown",
         "nuisance_magnitude": "yes",
-        "same_version_point": "no",
-        "same_version_dist": "no",
+        "same_version_point": "unknown",
+        "same_version_dist": "unknown",
         "quantisation": "unknown",
         "retained_failures": "unknown",
         "reported_mde": "yes",
@@ -595,12 +601,13 @@
       },
       "notes": {
         "reported_mde": "The closest prior work to this paper's central move. It converts unmeasured variance into a corrected interval and shows the consequences -- naive 95% coverage DEGRADES as sample size grows, which is the same trap as reporting a tight interval around a quantity that was never moving.",
-        "same_version_dist": "Does not run one. The specific claim -- a same-version null as a distribution -- survives this paper. The general claim, that the field underestimates its own uncertainty, does not and should not be presented as new.",
+        "same_version_dist": "Does not run one. The specific claim -- a same-version null as a distribution -- survives this paper. The general claim, that the field underestimates its own uncertainty, does not and should not be presented as new. Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
         "scope": "Methodological precedent, not a political-instrument study. Published four months before this work and before the Carnegie recommendation, which makes the uptake argument stronger rather than weaker.",
         "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
         "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
         "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
-        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
+        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters.",
+        "same_version_point": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full."
       },
       "quotes": {
         "reported_mde": "naive standard errors are 40-60% smaller than the TEE-corrected SE"
