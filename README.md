@@ -124,8 +124,8 @@ instrument, same model, same settings, in items moved of 62:
 | factor | n pairs | side-flip med / p90 / max | p90 95% CI | endpoint med / p90 / max |
 |---|---:|---|---|---|
 | prompt condition A->D | 20 | 3 / 15 / 19 | [5, 19] | 13 / 21 / 26 |
-| presentation order | 84 | 3 / 11 / 22 | [7, 13] | 4 / 10 / 18 |
-| same-version variants | 97 | 5 / 11 / 24 | [8, 13] | 8 / 22 / 29 |
+| presentation order | 84 | 3 / 11 / 22 | [5, 14] | 4 / 10 / 18 |
+| same-version variants | 97 | 5 / 11 / 24 | [8, 15] | 8 / 22 / 29 |
 | refusal-direction ablation | 12 | 6 / 9 / 12 | [6, 12] | 6 / 14 / 16 |
 | prompt condition A->D, one sitting | 25 | 3 / 7 / 14 | [4, 12] | 12 / 22 / 26 |
 | instruction paraphrase | 1067 | 3 / 6 / 14 | [5, 8] | 2 / 10 / 28 |

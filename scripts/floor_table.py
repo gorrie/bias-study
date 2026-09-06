@@ -343,13 +343,21 @@ def floor_order():
     # 18 pairs of 2024-vintage local models. Collecting data and then not reading it is the
     # same defect as measuring the source instead of the artifact, one step earlier.
     by = _order_cells()
-    pairs = []
+    # CLUSTERED BY MODEL, like the paraphrase row. 84 pairs sounds like 84 independent
+    # observations and is not: they come from 11 models, six of which contribute ten pairs
+    # each, so a flat bootstrap treats one model's ten draws as ten models' worth of evidence
+    # and reports an interval narrower than the data supports. The cluster bootstrap was built
+    # for exactly this on 2026-09-04 and was wired to one row -- and the two rows the headline
+    # comparison rests on, this and same-version, were not among them.
+    pairs, clusters = [], []
     for m, orders in by.items():
         ks = list(orders)
         for i in range(len(ks)):
             for j in range(i + 1, len(ks)):
                 pairs.append(both_stats(orders[ks[i]], orders[ks[j]]))
-    return summarise("presentation order", pairs, "same model, same condition, item order only")
+                clusters.append(m)
+    return summarise("presentation order", pairs, "same model, same condition, item order only",
+                     clusters=clusters)
 
 
 # Run directories deliberately withheld from the order floor, each with its reason. This is
@@ -481,12 +489,23 @@ def floor_same_version():
     # say so, and this arm is quoted at other people's work throughout section 2.
     kinds = collections.Counter()
     snapshot = []
+    # CLUSTERED BY VERSION GROUP. 97 pairs come from 19 groups and `qwen|qwen|3` alone
+    # contributes 45, so a flat bootstrap over pairs counts one family's internal spread as
+    # nearly half the evidence.
+    clusters = []
     for i, a in enumerate(ids):
         for b in ids[i + 1:]:
             label, is_version = classify(parsed[a], parsed[b])
             if not is_version and label.endswith("(null)"):
                 st_ = both_stats(modal(by[a]), modal(by[b]))
                 pairs.append(st_)
+                # parse() returns a DICT, not an object. Written with getattr() first, which
+                # silently yielded "" for every field and collapsed all 97 pairs into ONE
+                # cluster -- the bootstrap then returned NaN rather than a wrong number, which
+                # is the good failure and is why it was caught immediately.
+                pa = parsed[a]
+                clusters.append("|".join(str(pa.get(k) or "")
+                                         for k in ("vendor", "stem", "version")))
                 kind = label.replace("(null)", "").strip() or "unclassified"
                 kinds[kind] += 1
                 if "snapshot" in kind.lower():
@@ -500,7 +519,7 @@ def floor_same_version():
                  "size and tier siblings"
                  % (len(s), int(st.median(s)),
                     s[int(0.9 * len(s)) - 1] if len(s) >= 10 else max(s), max(s)))
-    return summarise("same-version variants", pairs, note)
+    return summarise("same-version variants", pairs, note, clusters=clusters)
 
 
 def _template_cells(runs_only=False):
