@@ -194,6 +194,70 @@ def test_gated_values_are_not_none():
         assert row["value"] is not None, row["key"]
 
 
+# ------------------------------------------------- 4. the floors do not depend on file order
+#
+# Found 2026-09-06. `gen_paper --check` was red in CI and green on the author's machine against
+# the SAME COMMIT, differing in one number: the presentation-order endpoint p90, 10 on Windows
+# and 11 on Linux, over the same 84 pairs. Same count, different values, so the pairs differed.
+#
+# `modal()` built each cell's reference sheet with `Counter.most_common(1)`, which breaks a TIE
+# by insertion order. Insertion order was `load()`'s read order and `load()` globbed unsorted,
+# so on a 2-2 split between Disagree and Agree the reference sheet -- and every endpoint delta
+# measured against it -- was decided by whether the corpus sat on NTFS or ext4.
+#
+# A published percentile was a property of the filesystem. Both halves are fixed: the glob is
+# sorted so the corpus order is canonical, and modal() breaks ties by the lower position
+# explicitly, so it does not depend on order even when handed runs in some other sequence.
+
+def test_modal_is_order_independent():
+    import itertools
+    runs = [{"q1": 1}, {"q1": 1}, {"q1": 2}, {"q1": 2}]      # a 2-2 tie
+    got = {tuple(sorted(F.modal(list(p)).items())) for p in itertools.permutations(runs)}
+    assert len(got) == 1, "modal() returns %d different answers for one multiset: %r" % (
+        len(got), got)
+
+
+def test_modal_breaks_ties_to_the_lower_position():
+    """The rule is arbitrary. Being WRITTEN DOWN is the whole difference, so it is asserted."""
+    assert F.modal([{"q": 1}, {"q": 2}]) == {"q": 1}
+    assert F.modal([{"q": 2}, {"q": 1}]) == {"q": 1}
+    assert F.modal([{"q": 0}, {"q": 3}, {"q": 3}]) == {"q": 3}   # no tie: the mode wins
+
+
+def test_load_reads_the_corpus_in_a_canonical_order():
+    src = io.open(os.path.join(HERE, "floor_table.py"), encoding="utf-8").read()
+    unsorted = [l for l in src.splitlines()
+                if "glob.glob(" in l and "sorted(" not in l and not l.strip().startswith("#")]
+    assert not unsorted, ("floor_table globs without sorting, so the corpus is read in "
+                          "filesystem order again:\n  " + "\n  ".join(unsorted))
+
+
+def test_floors_survive_a_reordered_corpus():
+    """End to end: shuffle what glob returns and every floor must be byte-identical."""
+    import glob as _glob
+    import random as _random
+    floors = [F.floor_conditions, F.floor_same_version, F.floor_order, F.floor_ablation,
+              F.floor_template, F.floor_quant, F.floor_replicate]
+
+    def snapshot():
+        F.DROPPED.clear()
+        F._DROPPED_SEEN.clear()
+        return [(r["name"], r["n"], r["side"], r["endpoint"], r["side_ci"]) for r in
+                (f() for f in floors)]
+
+    base = snapshot()
+    real = _glob.glob
+    try:
+        for shuffle in (lambda L: L[::-1],
+                        lambda L: _random.Random(7).sample(L, len(L))):
+            _glob.glob = lambda *a, **k: shuffle(list(real(*a, **k)))
+            assert snapshot() == base, "a floor changed when the corpus was read in another order"
+    finally:
+        _glob.glob = real
+        F.DROPPED.clear()
+        F._DROPPED_SEEN.clear()
+
+
 if __name__ == "__main__":
     import traceback
     failures = 0

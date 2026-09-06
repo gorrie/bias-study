@@ -61,6 +61,11 @@ still saying the interval cannot be computed is describing the retired version.
 
 Not a retraction; a reframing that matters more than the number.
 
+> **The figures in this entry were superseded on 2026-09-06 by correction 6 below.** The p90 is
+> 15, not 14, and three values in the distribution move. The reframing this entry is actually
+> about — read the spread, not the p90 — is unaffected, and the entry is left as written because
+> it is the record of what was published on 2026-09-05.
+
 The `prompt condition A→D` row is this paper's reference scale — the deliberate political
 manipulation every nuisance floor is compared against. It rested on **7 model pairs collected in
 one sitting**, with a p90 95% CI of **[2, 14]**: an error bar nearly as wide as the ruler, on a
@@ -95,6 +100,53 @@ judge** — claude-opus-4.7 +0.80…+1.50, grok-4.3 +0.80…+1.30. The smallest 
 depending on who scores it, and its low end is that model scoring itself; it is now reported as
 suggestive with its range rather than as a finding of equal standing. Two of the five findings
 are self-judged, which is disclosed in the README.
+
+### 6. Three floors were a property of the filesystem — corrected 2026-09-06
+
+**Published:** through 2026-09-05.
+**Corrected:** 2026-09-06.
+
+The floor table was not reproducible across machines. Running the identical analysis on the
+identical commit gave one answer on Linux and another on Windows, and the difference sat in
+published numbers.
+
+**The mechanism.** Each cell's reference sheet is the per-item *modal* answer across its runs.
+That was computed with `Counter.most_common(1)`, which breaks a tie by insertion order —
+insertion order was the order the run files were read, and they were read in whatever order the
+filesystem's `glob` returned. So on any item where a cell split evenly, say 2 runs Disagree and
+2 Agree, the reference answer was decided by the directory listing. Every endpoint delta is
+measured against that sheet.
+
+**What moved:**
+
+| row | published | corrected |
+|---|---:|---:|
+| prompt condition A→D, side-flip p90 | 14 | **15** |
+| same-version variants, side-flip p90 | 12 | **11** |
+| same-version variants, p90 95% CI | [9, 13] | **[8, 13]** |
+| same-version variants, endpoint median | 9 | **8** |
+| presentation order, side-flip MDE | 12 | **13** |
+| presentation order, endpoint p90 | 10 or 11, by machine | **10** |
+
+The A→D distribution moves in three places: `3 → 4`, one `5 → 4`, and `14 → 15`. It now reads
+`0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 4, 4, 5, 5, 5, 6, 8, 15, 18, 19`.
+
+**No conclusion in this paper changes.** Correction 4's reframing survives intact — 17 of 20
+models still move 8 items or fewer, still inside the run-to-run replicate floor, and the tail is
+still three models from one vendor. The two power verdicts that quote the order floor keep their
+verdicts on the new MDE.
+
+**How it was found, because that is the useful part.** A CI run went red on a gate that was
+green on the author's machine, against the same commit. The gate reported only `STALE blocks:
+floors` — a name and no diff — so the run data, the committed tree and the Python version all
+had to be eliminated by hand before the environment was a suspect at all. That gate now prints
+the diff, which is what named the defect in one line.
+
+**Fixed in two places, so neither can reintroduce it:** the corpus glob is sorted, making the
+read order canonical; and `modal()` breaks ties by the lower position explicitly. That rule is
+arbitrary — a tie means the cell has no modal answer for that item — and the point is that it is
+now written down instead of inherited from a dict. Four tests pin it, including one that shuffles
+the corpus order and requires every floor to come back byte-identical.
 
 ---
 

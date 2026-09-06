@@ -122,7 +122,18 @@ def load(pattern, condition=None, key=None):
     """
     key = key or _default_key
     cells = collections.defaultdict(list)
-    for p in glob.glob(os.path.join(STUDY, pattern), recursive=True):
+    # SORTED, because glob order is the filesystem's and the filesystem's is not the same on
+    # two machines. Found 2026-09-06: this gate was red in CI and green on the author's box
+    # against the same commit, differing in exactly one number -- the presentation-order
+    # endpoint p90, 10 here and 11 there, on the same 84 pairs. Same count, different values,
+    # which can only mean the pairs themselves differed.
+    #
+    # The path runs through `modal()`, whose Counter.most_common(1) breaks a TIE by insertion
+    # order. Insertion order is this loop's order, this loop's order was glob's, and glob's is
+    # ext4 on one side and NTFS on the other. A published percentile was a property of the
+    # filesystem. Sorting here makes the corpus order canonical; modal() no longer depends on
+    # it either way (see its own note), and both are fixed so neither can reintroduce it.
+    for p in sorted(glob.glob(os.path.join(STUDY, pattern), recursive=True)):
         for line in io.open(p, encoding="utf-8"):
             if not line.strip():
                 continue
@@ -143,11 +154,30 @@ def load(pattern, condition=None, key=None):
 
 
 def modal(runs):
+    """The per-item modal answer across a cell's runs.
+
+    TIES ARE BROKEN BY THE LOWER POSITION, EXPLICITLY. `Counter.most_common(1)` breaks a tie by
+    insertion order, and insertion order here is the order the runs were read, which was the
+    order the filesystem listed them. On a 2-2 split between Disagree and Agree that made the
+    reference sheet -- and therefore every endpoint delta measured against it -- a property of
+    whether the corpus sat on ext4 or NTFS. It moved the published presentation-order endpoint
+    p90 between 10 and 11 depending on the machine, which is how it was found.
+
+    The lower position is not a better answer than the higher one; it is an arbitrary rule, and
+    an arbitrary rule that is WRITTEN DOWN is the whole difference. A tie means the cell has no
+    modal answer for that item, and any convention has to be disclosed rather than inherited
+    from a dict.
+    """
     acc = collections.defaultdict(list)
     for r in runs:
         for q, v in r.items():
             acc[q].append(v)
-    return {q: collections.Counter(v).most_common(1)[0][0] for q, v in acc.items()}
+    out = {}
+    for q, v in acc.items():
+        counts = collections.Counter(v)
+        top = max(counts.values())
+        out[q] = min(pos for pos, n in counts.items() if n == top)
+    return out
 
 
 def both_stats(a, b):
@@ -348,7 +378,7 @@ def _order_cells(with_sources=False):
     """
     cells = collections.defaultdict(list)
     sources = collections.Counter()
-    for path in glob.glob(os.path.join(STUDY, "runs", "**", "*.jsonl"), recursive=True):
+    for path in sorted(glob.glob(os.path.join(STUDY, "runs", "**", "*.jsonl"), recursive=True)):
         rel = os.path.relpath(path, os.path.join(STUDY, "runs")).replace("\\", "/")
         if rel.split("/")[0] in ORDER_EXCLUDE:
             continue

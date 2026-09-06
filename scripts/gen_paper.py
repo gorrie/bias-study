@@ -79,6 +79,15 @@ def block_body(name):
     return fence + text + close
 
 
+def _diff(have, want, context=1):
+    """The lines that differ between the paper's block and a fresh one, paper-side first."""
+    import difflib
+    out = [l for l in difflib.unified_diff(have.splitlines(), want.splitlines(),
+                                           fromfile="in the paper", tofile="freshly computed",
+                                           lineterm="", n=context)]
+    return out
+
+
 def fill(text, check=False):
     stale = []
     for name in BLOCKS:
@@ -89,7 +98,13 @@ def fill(text, check=False):
             raise SystemExit("no GEN block named %r in the paper" % name)
         fresh = block_body(name) + "\n"
         if match.group(2).strip() != fresh.strip():
-            stale.append(name)
+            # Carry the DIFF, not just the name. "STALE blocks: floors" is true and useless:
+            # on 2026-09-06 this gate went red in CI and green on the author's machine, against
+            # the same commit, and the message gave nothing to work from -- the run data, the
+            # committed tree and a clean worktree all had to be eliminated by hand before the
+            # environment was even a suspect. A gate that detects drift should be able to say
+            # what drifted.
+            stale.append((name, _diff(match.group(2).strip(), fresh.strip())))
         if not check:
             text = text[:match.start(2)] + fresh + text[match.end(2):]
     return text, stale
@@ -108,8 +123,18 @@ def main(argv=None):
 
     if args.check:
         if stale:
-            print("STALE blocks in %s: %s" % (os.path.basename(PAPER), ", ".join(stale)))
+            print("STALE blocks in %s: %s"
+                  % (os.path.basename(PAPER), ", ".join(n for n, _ in stale)))
+            for name, lines in stale:
+                print("")
+                print("  --- %s" % name)
+                for l in lines:
+                    print("  %s" % l)
+            print("")
             print("Run: python scripts/gen_paper.py")
+            print("If the diff is empty or looks like formatting, the two sides were computed")
+            print("in different environments -- compare Python and dependency versions before")
+            print("regenerating, because regenerating would then commit THIS machine's answer.")
             return 1
         print("all %d generated blocks are current" % len(BLOCKS))
         return 0
@@ -117,7 +142,7 @@ def main(argv=None):
     io.open(PAPER, "w", encoding="utf-8", newline="").write(filled.replace("\n", nl))
     print("filled %d blocks: %s" % (len(BLOCKS), ", ".join(BLOCKS)))
     if stale:
-        print("(%d were stale and have been updated: %s)" % (len(stale), ", ".join(stale)))
+        print("(%d were stale and have been updated: %s)" % (len(stale), ", ".join(n for n, _ in stale)))
     return 0
 
 
