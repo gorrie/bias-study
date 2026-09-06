@@ -415,7 +415,27 @@ def main(argv=None):
             raise SystemExit("no such wave: %s" % args.verify)
         return 1 if verify(d, panel) else 0
 
-    date = args.date or datetime.date.today().isoformat()
+    # A WAVE IS A SITTING, NOT A CALENDAR DAY, and this defaulted to today().
+    #
+    # A full wave is 124 cells and takes hours. On 2026-09-06 at 00:25 the collection crossed
+    # midnight mid-run and the next invocation opened `2026-09-06-wave` alongside the
+    # `2026-09-05-wave` it had been filling -- 17 cells in one directory, 4 in the other.
+    # `wave_dirs()` globs `*-wave`, so the series would have read those as TWO waves 25 minutes
+    # apart: a fabricated first interval, in the one structure whose whole purpose is a clean
+    # time axis. It is the same failure that put a phantom value in the manipulation floor.
+    #
+    # So: continue the most recent wave while it is unfinished, and only start a new one when
+    # the last is complete or `--date` says so explicitly.
+    if args.date:
+        date = args.date
+    else:
+        date = datetime.date.today().isoformat()
+        existing = wave_dirs()
+        if existing:
+            last = os.path.basename(existing[-1])[: -len("-wave")]
+            if collected(existing[-1]) and len(collected(existing[-1])) < \
+                    len(panel["models"]) * len(ALL_CONDITIONS):
+                date = last
     outdir = os.path.join(STUDY, "runs", "%s-wave" % date)
     have = collected(outdir) if os.path.isdir(outdir) else collections.Counter()
 

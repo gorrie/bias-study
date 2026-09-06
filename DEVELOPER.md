@@ -292,13 +292,9 @@ Common errors seen during replication + their fixes — keep current as the tool
   the model's license on its page, then `export HF_TOKEN=...` or drop it in
   `~/.claude/agents/.env`. `dl_model.py` reads it transparently.
 
-- **`fatal: could not read Password for 'https://...@gitlab.com'`** on `git fetch`/`push`.
-  Wire glab as git's credential helper for gitlab.com:
-  `git config --global 'credential.https://gitlab.com.helper' '!glab auth git-credential'`.
-  Do **not** pin `credential.username` for gitlab — glab authenticates as `oauth2`, and a
-  forced username makes its helper reject the request. (GitHub multi-account is the
-  opposite — pin `credential.https://github.com.username` per-tree so the right account's
-  token is fetched from the keychain.)
+- **`fatal: could not read Password`** on `git push` with more than one GitHub account on the
+  machine. Pin the account per-tree so the right token is fetched from the keychain:
+  `git config credential.https://github.com.username <account>`.
 
 - **`score.py` re-judging committed families** when scoring a run that's gained a new
   model. Default is now skip-if-existing — only new raw files get scored. Pass `--rescore`
