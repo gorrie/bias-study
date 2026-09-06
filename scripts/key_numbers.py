@@ -239,6 +239,14 @@ def build():
          "value": scale["vendors"],
          "what": "distinct vendor keys vendor_of() yields -- the row count of the refusal table",
          "phrase": "%d vendor families"},
+        # THE SUBTRACTION, gated because it was wrong and nothing recomputed it. The paper
+        # named three non-vendor keys of sixteen and then wrote "Twelve rows are vendor
+        # families" in the next sentence; the controls audit's own row copied the twelve. Every
+        # other number in that paragraph was gated. This one was prose, so it drifted alone.
+        {"key": "corpus_vendor_families",
+         "value": vendor_family_count(),
+         "what": "vendor keys that are actually vendor families (see NON_VENDOR_KEYS)",
+         "phrase": "%d rows are vendor families"},
         {"key": "arms_models",
          "value": arms["models"],
          "what": "models measured under both the no-directive and directive arms",
@@ -516,6 +524,13 @@ def check_ours_row(rows):
     five other papers of, sitting in the file that carries the conviction.
 
     Returns a list of (what, expected, found) for anything the string no longer states.
+
+    AND `--sync-ours` WRITES IT, because a gate over a hand-typed copy only tells you it is
+    stale -- it went stale again on 2026-09-06 when a fixed-panel wave took the corpus from
+    2,126 runs to 2,896, and the fix was to retype three numbers that this module already
+    computes. Two copies of a fact is the defect; the repair is one computation and one writer,
+    the way `background_rate.py --sync-doc` does it. The prose around the digits is left alone:
+    only the counts are rewritten, and `--check` still fails if anything edits them back.
     """
     rec = json.load(io.open(AUDIT, encoding="utf-8"))
     studies = rec["studies"] if isinstance(rec, dict) and "studies" in rec else rec
@@ -537,6 +552,60 @@ def check_ours_row(rows):
         if want not in scale:
             bad.append(("controls-audit 'ours' %s" % label, want, scale))
     return bad
+
+
+#: Keys `vendor_of()` yields that are not vendor families, named rather than counted.
+#:
+#: The paper says "Three of those sixteen keys are not vendors" and names exactly these, then
+#: says "Twelve rows are vendor families" in the next sentence. Sixteen minus three is
+#: thirteen. That subtraction was wrong in the prose and copied into the controls audit's
+#: 'ours' row, where it sat as our own self-description in the table that scores five other
+#: studies for not saying what they pooled. Found 2026-09-06 while making the row derived --
+#: which is the argument for deriving it, since the number nobody recomputes is the number
+#: that is wrong.
+NON_VENDOR_KEYS = frozenset({
+    "hf.co",                        # a hosting domain
+    "huihui_ai",                    # a community fine-tuner of someone else's weights
+    "claude-code-harness-agent",    # this project's own harness, answering as a subject
+})
+
+
+def vendor_family_count():
+    """Vendor keys that are vendor families, counted against the keys actually present."""
+    scale = corpus_scale()
+    present = [v for v in scale["vendor_list"] if v in NON_VENDOR_KEYS]
+    return scale["vendors"] - len(present)
+
+
+def sync_ours_row(rows):
+    """Rewrite the 'ours' scale string from the computed corpus scale. Returns the new string.
+
+    Deliberately regenerates the WHOLE field rather than patching digits in place: a substring
+    replacement on "2,126" would leave "166 models" untouched when the model count moves, and
+    the field's job is to describe the corpus, not to preserve its own phrasing.
+    """
+    by_key = {r["key"]: r["value"] for r in rows}
+    families = vendor_family_count()
+    new = ("%s runs, %s models, %s vendor keys of which %s are vendor families"
+           % (by_key["corpus_runs"], by_key["corpus_models"],
+              by_key["corpus_vendors"], families))
+
+    raw = io.open(AUDIT, encoding="utf-8").read()
+    rec = json.loads(raw)
+    studies = rec["studies"] if isinstance(rec, dict) and "studies" in rec else rec
+    if isinstance(studies, dict):
+        studies = list(studies.values())
+    ours = next((s for s in studies
+                 if (s.get("key") or s.get("id")) == "ours"), None)
+    if ours is None:
+        raise SystemExit("no row keyed 'ours' in %s" % os.path.relpath(AUDIT, STUDY))
+    old = ours.get("scale")
+    if old == new:
+        return new
+    ours["scale"] = new
+    io.open(AUDIT, "w", encoding="utf-8", newline="\n").write(
+        json.dumps(rec, indent=2, ensure_ascii=False) + "\n")
+    return new
 
 
 #: Claims this project has WITHDRAWN, as literal strings that must not survive on any surface.
@@ -661,9 +730,16 @@ def main(argv=None):
                     help="do the public research page's numbers still match runs/?")
     ap.add_argument("--check-release", action="store_true",
                     help="does the release repository's README still match runs/?")
+    ap.add_argument("--sync-ours", action="store_true",
+                    help="rewrite the controls audit's 'ours' scale from runs/ instead of "
+                         "retyping it. --check still gates the result.")
     args = ap.parse_args(argv)
 
     rows = build()
+
+    if args.sync_ours:
+        print(sync_ours_row(rows))
+        return 0
 
     if args.check_website or args.check_release:
         failures = []

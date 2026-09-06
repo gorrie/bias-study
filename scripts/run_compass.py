@@ -586,7 +586,24 @@ def main(argv=None):
     # cell re-billed every cell that had already succeeded. Count what is on disk for THIS
     # cell and ask only for the shortfall. Keyed on every field that defines the cell, so a
     # different template, order or temperature is a different cell and is not skipped.
+    #
+    # AND THE SEED SWEEP HAS TO RESUME WITH IT. Under --seed-sweep the seed is a POSITION IN A
+    # SEQUENCE, not a loop counter: run k of the cell carries seed_base + k. This block reduced
+    # `args.runs` by what was on disk and then let the loop below restart at run_no = 1, so a
+    # cell interrupted after two runs re-issued seed_base + 0 and + 1 -- the two it already had.
+    # At temperature 0.7 a repeated seed is not a repeated call, so nothing looked wrong: the
+    # records differ, the cell reaches five, and `valid` counts five. It is n=3.
+    #
+    # Measured on wave 2026-09-05, which is how this was found: 11 of 124 cells held five to
+    # seven records over three or four distinct seeds, every one of them a cell some killed
+    # chunk had interrupted. `wave.py --verify` reports distinct seeds rather than run count
+    # precisely so a shortfall shows up as a shortfall.
+    #
+    # So collect the seeds already present and take the next UNUSED positions, rather than
+    # offsetting by a count. Offsetting by `have` is right for a clean resume and wrong for a
+    # cell already carrying duplicates -- it would collide again while repairing.
     have = 0
+    seen_seeds = set()
     if path.exists():
         for line in io.open(path, encoding="utf-8"):
             if not line.strip():
@@ -600,6 +617,12 @@ def main(argv=None):
                     and rec.get("shuffle_seed") == args.shuffle_seed
                     and rec.get("temperature") == args.temperature):
                 have += 1
+                if rec.get("seed") is not None:
+                    seen_seeds.add(rec["seed"])
+    if args.seed_sweep:
+        # Sample size is DISTINCT SEEDS, so a cell with duplicates is short however many
+        # records it holds. Count it that way, and the shortfall below is the real one.
+        have = len(seen_seeds) if seen_seeds else have
     if have >= args.runs:
         print("%s  %s  template %s: %d valid run(s) already on disk, nothing to do"
               % (args.model, args.condition, args.template, have))
@@ -610,10 +633,24 @@ def main(argv=None):
                  args.runs - have))
         args.runs -= have
 
+    # The sweep positions this invocation will fill: the first `args.runs` offsets from 0 whose
+    # seed is not already on disk. For a fresh cell that is 0..runs-1, unchanged.
+    if args.seed_sweep:
+        offsets = []
+        k = 0
+        while len(offsets) < args.runs:
+            if args.seed + k not in seen_seeds:
+                offsets.append(k)
+            k += 1
+            if k > args.runs + len(seen_seeds) + 16:
+                break   # cannot happen with a contiguous sweep; refuse to spin regardless
+    else:
+        offsets = [0] * args.runs
+
     valid = 0
     with open(path, "a", encoding="utf-8", newline="\n") as fh:
         for run_no in range(1, args.runs + 1):
-            seed = args.seed + (run_no - 1 if args.seed_sweep else 0)
+            seed = args.seed + (offsets[run_no - 1] if args.seed_sweep else 0)
             record = one_run(args.channel, args.model, items, args.condition,
                              api_key, run_no, args.temperature, args.timeout, seed=seed,
                              think=args.think, shuffle_seed=args.shuffle_seed,

@@ -40,6 +40,7 @@ its own: what fraction of the panel declines a balance instruction, wave over wa
     python scripts/wave.py --plan              # what the next wave would collect
     python scripts/wave.py --run               # collect it (serial, delayed, resumable)
     python scripts/wave.py --verify <wave>     # did anything drift from the frozen spec?
+    python scripts/wave.py --verify            # ...every wave; sample size is DISTINCT SEEDS
     python scripts/wave.py --series            # the time series, wave over wave
 """
 from __future__ import annotations
@@ -106,6 +107,7 @@ def channel_for(model):
 #: series and are NOT load-bearing for position -- 9.8% refusal and rising.
 SERIES_CONDITIONS = ("D", "P")
 REFUSAL_CONDITIONS = ("A", "B")
+ALL_WAVES = "__all__"   #: sentinel for a bare --verify: check every wave present
 ALL_CONDITIONS = REFUSAL_CONDITIONS + SERIES_CONDITIONS
 
 
@@ -265,9 +267,21 @@ def adopt_baseline(panel, force=False):
     return rec
 
 
-def collected(outdir):
-    """(model, condition) -> record count already in this wave."""
-    got = collections.Counter()
+def collected(outdir, by_seed=True):
+    """(model, condition) -> SAMPLE SIZE already in this wave.
+
+    Sample size is distinct seeds, not records. Under the seed sweep a record is one position
+    in a sequence, and two records at the same seed are one sample -- `distinct_seeds()` says
+    so, and `--verify` has always reported it that way. This function did not, so the two
+    disagreed about whether a cell was finished: `--verify` called eleven cells short while
+    `--run` saw five records and skipped every one of them. A cell can only be repaired by the
+    thing that decides what is left to do, so it counts the same way.
+
+    Records with no seed at all (temperature-0 collections, pre-sweep runs) fall back to the
+    record count, which is the right answer there.
+    """
+    seeds = collections.defaultdict(set)
+    rows = collections.Counter()
     for p in glob.glob(os.path.join(outdir, "*.jsonl")):
         for line in io.open(p, encoding="utf-8", errors="replace"):
             if not line.strip():
@@ -276,7 +290,15 @@ def collected(outdir):
                 r = json.loads(line)
             except ValueError:
                 continue
-            got[(r.get("model"), r.get("condition"))] += 1
+            key = (r.get("model"), r.get("condition"))
+            rows[key] += 1
+            if r.get("seed") is not None:
+                seeds[key].add(r["seed"])
+    if not by_seed:
+        return rows
+    got = collections.Counter()
+    for key, n in rows.items():
+        got[key] = len(seeds[key]) if seeds.get(key) else n
     return got
 
 
@@ -392,7 +414,8 @@ def main(argv=None):
     ap.add_argument("--force", action="store_true", help="with --freeze-panel, redefine it")
     ap.add_argument("--plan", action="store_true")
     ap.add_argument("--run", action="store_true")
-    ap.add_argument("--verify", default="", help="wave directory name to verify")
+    ap.add_argument("--verify", nargs="?", default="", const=ALL_WAVES,
+                    help="wave directory name to verify; bare --verify checks EVERY wave")
     ap.add_argument("--series", action="store_true")
     ap.add_argument("--date", default="", help="wave date (default: today)")
     ap.add_argument("--delay", type=float, default=2.0)
@@ -410,6 +433,21 @@ def main(argv=None):
         adopt_baseline(panel, force=args.force)
         return 0
     if args.verify:
+        # Bare `--verify` checks every wave present. A CI line that names one wave id goes
+        # stale the moment wave 1 lands, and stops checking the thing it was added for --
+        # the hardcoded-include-list defect this project has already paid for twice (see
+        # test_analysis_plumbing.py, `floor_table`'s run directories).
+        if args.verify == ALL_WAVES:
+            waves = wave_dirs()
+            if not waves:
+                print("no waves collected yet")
+                return 0
+            bad = 0
+            for d in waves:
+                bad += 1 if verify(d, panel) else 0
+            print("")
+            print("%d wave(s) checked, %d with findings" % (len(waves), bad))
+            return 1 if bad else 0
         d = args.verify if os.path.isdir(args.verify) else os.path.join(STUDY, "runs", args.verify)
         if not os.path.isdir(d):
             raise SystemExit("no such wave: %s" % args.verify)
@@ -433,8 +471,16 @@ def main(argv=None):
         existing = wave_dirs()
         if existing:
             last = os.path.basename(existing[-1])[: -len("-wave")]
-            if collected(existing[-1]) and len(collected(existing[-1])) < \
-                    len(panel["models"]) * len(ALL_CONDITIONS):
+            # COMPLETE cells, not cells with anything in them. This read
+            # `len(collected(...))`, which is the number of cells that hold ANY data -- so on
+            # 2026-09-06 the previous sitting had all 124 cells touched, 11 of them short of
+            # their five seeds, and this returned 124 < 124 == False and opened a second wave
+            # directory mid-repair. The same shape as the seed-vs-record count it was called
+            # to fix: a number that cannot distinguish present from finished.
+            prior = collected(existing[-1])
+            done = sum(1 for m in panel["models"] for c in ALL_CONDITIONS
+                       if prior.get((m, c), 0) >= panel["params"]["runs"])
+            if prior and done < len(panel["models"]) * len(ALL_CONDITIONS):
                 date = last
     outdir = os.path.join(STUDY, "runs", "%s-wave" % date)
     have = collected(outdir) if os.path.isdir(outdir) else collections.Counter()

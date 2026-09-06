@@ -493,7 +493,7 @@
       "venue": "unpublished",
       "year": 2026,
       "instrument": "politicalcompass.org 62 propositions, forced choice, four options, no neutral, no LLM judge in the scoring path",
-      "scale": "2,126 runs, 166 models, 16 vendor keys of which 12 are vendor families",
+      "scale": "2,896 runs, 166 models, 16 vendor keys of which 13 are vendor families",
       "provenance": "full-text",
       "headline": "Presentation order and same-version variation each move as many items as any deliberate manipulation measured",
       "status": {
