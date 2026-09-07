@@ -6,6 +6,12 @@
 > elicitation pipeline, weight ablation — not releases.** Releases are dated. See
 > [VERSIONING.md](VERSIONING.md), and read [CORRECTIONS.md](CORRECTIONS.md) first if a number
 > you have seen quoted disagrees with one here.
+>
+> What is coming next, and what it needs: [ROADMAP.md](ROADMAP.md).
+> [TODO.md](TODO.md) is the **historical** May-2026 handoff, kept as a record and superseded.
+> *(Neither was linked from here until 2026-09-07, which is how a file titled "TODO / Roadmap"
+> and instructing the reader to keep it current went three months and a whole second
+> instrument without an update.)*
 
 A reproducible study of how aligned LLMs shift their framing on contested-institution
 topics when the "be fair to both sides" instruction is removed — and a test of *where*

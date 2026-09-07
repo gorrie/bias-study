@@ -1,10 +1,33 @@
-# TODO / Roadmap
+# TODO / Roadmap — HISTORICAL, superseded 2026-09-07
 
-This repository is a standing instrument — a *bias measurement observatory* re-run on a
-roughly quarterly cadence (see `README.md`). This file is the live handoff: where the work
-stands and what to pick up next. Keep it current as legs complete.
+> **This is not the live handoff. [`ROADMAP.md`](ROADMAP.md) is.**
+>
+> This file was titled "TODO / Roadmap", described itself as "the live handoff", instructed
+> the reader to "keep it current as legs complete" — and was last updated **2026-05-30**,
+> three months and a whole second instrument earlier. Nothing in the repository linked to it,
+> so nothing pointed at the staleness either.
+>
+> Two documents both claiming to be the roadmap is the defect, not the stale dates in one of
+> them. `ROADMAP.md` owns what is coming and what it needs; `VERSIONING.md` owns the release
+> and rung vocabulary. This file is kept because its May-era state and its process notes are a
+> real record of how the judge-scored study was run, and deleting a handoff to tidy a
+> contradiction loses the history that makes the corrections legible.
+>
+> **Read every date and every "NEXT STEP" below as of 2026-05-30.** What has since changed
+> that this file cannot know:
+>
+> - The **forced-choice re-measurement** happened (September 2026): 62 propositions, four
+>   options, no LLM judge in the scoring path, its own twelve-plus floors, and wave 0 of the
+>   fixed panel. That instrument, not the judge panel, is where current numbers come from.
+> - The **matched-pair arm cut** planned in "Phase 2" below was collected 2026-09-07 as
+>   `runs/2026-09-07-ablation-wave` at the wave protocol — n=5, swept seed, stock against
+>   ablated, per ablator. Three of six pairs are usable; the other three failed for causes
+>   that are named rather than dropped.
+> - Several conclusions here were later **withdrawn or narrowed**. `CORRECTIONS.md` is
+>   authoritative over anything in this file.
+> - The repeatability procedure for the current instrument is the `barometer-wave` skill.
 
-## Current state (2026-05-30)
+## Current state as of 2026-05-30 (historical)
 
 - **Prompt rung + all analysis + pipeline-rung client** — runs on any platform (Python 3.11+
   and an OpenRouter key). `run_study` → `score` → `aggregate` → `ci_analysis` →

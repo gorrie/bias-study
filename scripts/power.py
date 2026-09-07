@@ -72,7 +72,19 @@ PUBLISHED_NULLS = [
      "where": "same claim, unscoped, as published on the live page this morning"},
     {"claim": "ablation does not move stance (arm-matched pairs)",
      "observed": 12, "stat": "side", "floor": "requantisation",
-     "where": "the weight-rung dissociation, worst pair qwen2.5-14B under D"},
+     "where": "the weight-rung dissociation, worst pair qwen2.5-14B under D",
+     # THE ONE ENTRY WHOSE OBSERVED EFFECT IS n=1, AND IT IS THE ONE THAT COMES BACK
+     # "SUPPORTED" -- so this audit's single most quotable output, "one null inverted
+     # outright", rested on the thinnest sample in the corpus.
+     #
+     # 12 side-flips between a stock and an ablated build, one run per arm. A one-run sheet is
+     # not a modal, and the run-to-run replicate floor is p90 5, so a 12 from n=1 sits inside
+     # its own noise before any ablation acts. The audit is still run on it, because dropping
+     # a published null from its own audit is the move this file exists to convict -- but the
+     # verdict is printed with the caveat attached, and "SUPPORTED" is not claimed.
+     "caveat": "observed effect is n=1 per arm; the replicate floor is p90 5, so this "
+               "verdict is not resolvable. Re-collected at n=5 in the 2026-09-07 "
+               "ablation wave; until that is analysed, UNDECIDED in both directions."},
     {"claim": "access tiers of one model are indistinguishable",
      "observed": 3, "stat": "side", "floor": "same-version variants",
      "where": "RESULTS-2026-08-30-access-tier, max after the temp-0 sweep"},
@@ -185,20 +197,47 @@ def main(argv=None):
         # ruled out. Observed movement below the MDE means the measurement had no power to
         # distinguish "nothing happened" from "something happened and we could not see it".
         supported = c["observed"] >= m
-        verdicts.append((c, thr, m, supported))
+        # A CAVEAT ON THE OBSERVED EFFECT DISQUALIFIES A "SUPPORTED" VERDICT, IT DOES NOT
+        # DECORATE IT. The one entry carrying a caveat is the one that came back SUPPORTED,
+        # and that verdict was published as "one null inverted outright" off a single run per
+        # arm. Printing the caveat under the word SUPPORTED would have changed nothing about
+        # how it got quoted.
+        caveat = c.get("caveat")
+        verdicts.append((c, thr, m, supported and not caveat))
         print("  %s" % c["claim"])
         print("    observed %d, floor '%s' (%s): threshold %.0f, MDE %.0f"
               % (c["observed"], c["floor"], c["stat"], thr, m))
-        print("    %s" % ("SUPPORTED -- the movement exceeds what the instrument can resolve, "
-                          "so calling it a null was wrong in the other direction"
-                          if supported else
-                          "UNDERPOWERED -- 'no effect' is not established; the instrument "
-                          "cannot distinguish this from an effect it is too blunt to see"))
+        if supported and caveat:
+            print("    NOT RESOLVABLE -- the movement exceeds the MDE, but the observed effect "
+                  "itself does not survive scrutiny:")
+            print("      %s" % caveat)
+        else:
+            print("    %s" % ("SUPPORTED -- the movement exceeds what the instrument can "
+                              "resolve, so calling it a null was wrong in the other direction"
+                              if supported else
+                              "UNDERPOWERED -- 'no effect' is not established; the instrument "
+                              "cannot distinguish this from an effect it is too blunt to see"))
+            if caveat:
+                print("      caveat: %s" % caveat)
         print("    %s" % c["where"])
         print()
 
-    bad = sum(1 for _, _, _, s in verdicts if not s)
-    print("%d of %d published nulls are underpowered." % (bad, len(verdicts)))
+    # THREE CATEGORIES, NOT TWO. This printed "%d of %d published nulls are underpowered"
+    # off `not supported`, which silently folded the one NOT-RESOLVABLE entry in with the
+    # underpowered ones -- so the same script reported 3 underpowered nulls in its body and 4
+    # in its summary, and the prose that quotes it says 3. Underpowered means the instrument
+    # could not have seen the effect. Not-resolvable means the observed effect is not a
+    # measurement. They call for different work and they are counted separately.
+    under = sum(1 for c, _, m, _ in verdicts if c["observed"] < m)
+    unresolvable = sum(1 for c, _, m, _ in verdicts
+                       if c["observed"] >= m and c.get("caveat"))
+    supported = len(verdicts) - under - unresolvable
+    print("%d of %d published nulls are underpowered -- the instrument could not have seen the"
+          % (under, len(verdicts)))
+    print("effect being ruled out. %d is not resolvable at all (its observed effect is n=1)."
+          % unresolvable)
+    print("%d clears its floor, which means calling it a null was wrong in the other direction."
+          % supported)
     print()
     print("This does not make the withdrawn claims true. It makes them UNDECIDED, which is a")
     print("different verdict and the honest one. Restoring any of them needs an instrument")

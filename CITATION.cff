@@ -2,27 +2,41 @@ cff-version: 1.2.0
 message: "If you cite this study, please use the metadata below."
 title: "The Hedge Is the Bias: A Multi-Vendor, Multi-Generation Audit of LLM Institutional-Skepticism Framing"
 abstract: >
-  A reproducible audit of how 36+ frontier large language models from 13 vendor
-  families shift their framing on contested-institution topics when a fairness
-  instruction is removed, and a test of where that framing lives, by escalating
-  force from prompt edits, to elicitation pipelines, to refusal-direction
-  ablation in the model weights. The study finds (a) US-closed frontier models
-  exhibit the largest masked institutional-skepticism lean, (b) the
-  Anthropic Opus arc shows roughly 3x growth from 4.0 to 4.7 inside a single
-  year, (c) the refusal direction and the institutional lean are dissociable
-  at the weight level (Jaccard ~0.3 text rewrite, stance change <=0.1),
-  (d) the lean does not generalize beyond civil-liberties topics except for
-  Opus 4.7, and (e) the result survives re-scoring under five materially
-  different judging procedures (84-91 percent exact-match against the
-  cross-vendor baseline, including a judge with the refusal direction
-  surgically removed from its weights).
+  A reproducible audit of how large language models shift their framing on
+  contested-institution topics when a fairness instruction is removed, and a
+  test of where that framing lives, by escalating force from prompt edits, to
+  elicitation pipelines, to refusal-direction ablation in the model weights.
+  Two instruments: a judge-scored battery (May 2026, 36+ models, 13 vendor
+  families) and a forced-choice re-measurement with no LLM judge in the scoring
+  path (September 2026, 2866 runs, 166 models, 16 vendor keys).
+  CITED CLAIMS MUST BE READ WITH CORRECTIONS.md. The forced-choice pass
+  confirmed one May headline, narrowed a second, withdrew the framing of a
+  third, and added the measurement the first study lacked: the noise floors the
+  effects have to clear. What currently stands is (a) refusal is elicited rather
+  than intrinsic -- 14 of 42 models measured under both arms decline all 62
+  propositions with no directive in the prompt and every one of them stops when
+  given a firm instruction, including a placebo with no stance content; (b) the
+  refusal direction and the institutional lean are dissociable at the weight
+  level, which holds and strengthens at temperature 0; and (c) the largest
+  single term in the corpus is model identity, not the prompt -- between-model
+  distance exceeds the estimator's own sampling error several times over, so a
+  study pooling across models averages over its own biggest source of variance.
+  Several published null results are underpowered against their own floors and
+  are recorded as undecided rather than refuted; one is not resolvable at all.
+  This abstract asserted five findings in the form "the study finds" until
+  2026-09-07, two of which had been withdrawn or narrowed in CORRECTIONS.md
+  before that text was written.
 authors:
   - family-names: Gorrie
     given-names: Ian
     affiliation: "4LULZ Press / locked.net"
 type: software
-date-released: 2026-05-26
-version: "v2-2026-05-30"
+date-released: 2026-09-07
+# DATED, not numbered. "v2-2026-05-30" was here until 2026-09-07 and collided head-on with
+# VERSIONING.md: v1/v2/v3 are the three INTERVENTION RUNGS in published prose -- prompt edit,
+# elicitation pipeline, weight ablation -- so a release called v2 names the pipeline rung to
+# anyone who has read the paper. Releases are dated for exactly this reason.
+version: "release-2026-09"
 license: MIT
 repository-code: "https://github.com/gorrie/bias-study"
 url: "https://evilrobots.lol/research/ai-bias-audit/"
