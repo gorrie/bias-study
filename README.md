@@ -7,6 +7,8 @@
 > [VERSIONING.md](VERSIONING.md), and read [CORRECTIONS.md](CORRECTIONS.md) first if a number
 > you have seen quoted disagrees with one here.
 >
+> Analysis plans fixed before their data was collected: [prereg/](prereg/) — five of them,
+> published 2026-09-07, and one has its stopping rule enforced in code.
 > What is coming next, and what it needs: [ROADMAP.md](ROADMAP.md).
 > [TODO.md](TODO.md) is the **historical** May-2026 handoff, kept as a record and superseded.
 > *(Neither was linked from here until 2026-09-07, which is how a file titled "TODO / Roadmap"
@@ -141,6 +143,7 @@ instrument, same model, same settings, in items moved of 62:
 | presentation order, one sitting | 85 | 1 / 10 / 21 | [3, 12] | 3 / 10 / 36 |
 | refusal-direction ablation | 12 | 6 / 9 / 12 | [6, 12] | 6 / 14 / 16 |
 | prompt condition A->D, one sitting, local open-weight † | 5 | 5 / 8 / 8 | [3, 8] | 10 / 16 / 16 |
+| refusal-direction ablation, one sitting | 14 | 2 / 8 / 9 | [2, 9] | 2 / 7 / 17 |
 | prompt condition A->D, one sitting | 25 | 3 / 7 / 14 | [4, 12] | 12 / 22 / 26 |
 | instruction paraphrase | 1067 | 3 / 6 / 14 | [5, 8] | 2 / 10 / 28 |
 | requantisation | 13 | 3 / 6 / 10 | [3, 10] | 1 / 3 / 7 |

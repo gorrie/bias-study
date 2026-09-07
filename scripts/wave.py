@@ -406,7 +406,28 @@ def verify(outdir, panel, strict=False):
             print("    %s" % b)
     if missing[:6]:
         print("  missing e.g.: %s" % ", ".join("%s/%s" % m for m in missing[:6]))
-    return len(set(bad)) + (len(short) if strict else 0)
+
+    # MISSING CELLS PRINTED AND NEVER GATED. The return was
+    # `len(set(bad)) + (len(short) if strict else 0)` -- so a wave with panel cells that were
+    # never collected at all exited 0, including under --strict, while the line above said how
+    # many were missing. Printing a defect and returning success is the shape this project
+    # keeps finding: `collected()` counting records against a verifier counting seeds, the
+    # ablation collector's "0 remain" over twelve empty cells, and `check_no_fork` comparing
+    # working trees while HEAD carried the divergence.
+    #
+    # A missing cell is not a refusal -- refusals land in `empty`, which stays ungated because
+    # a cell whose runs all declined cannot be repaired by collecting more of them, and that
+    # distinction is section 1's finding rather than a hole. A MISSING cell is work that did
+    # not happen.
+    #
+    # Gated under --strict, alongside the sample-size shortfalls it belongs with. And the
+    # verify output now SAYS which of its checks gate and which only print, because "verified"
+    # over an unstated scope is how the default came to be read as a completeness check.
+    failures = len(set(bad)) + (len(short) + len(missing) if strict else 0)
+    print("  checks: parameter drift GATES%s"
+          % ("; sample size and missing cells GATE (--strict)" if strict
+             else "; sample size and missing cells PRINT ONLY -- pass --strict to gate them"))
+    return failures
 
 
 def series():

@@ -744,6 +744,52 @@ def floor_quant():
     return out
 
 
+def floor_ablation_wave():
+    """Stock vs ablated at the WAVE PROTOCOL -- n=5, swept seed, one sitting.
+
+    THE ROW BELOW RESTS ON SINGLE RUNS AND THIS ONE DOES NOT, which is the entire reason this
+    exists. `floor_ablation` reads the 2026-08-30 pairs, where a cell is one or two runs; that
+    is how a 12-item "inversion" reached the paper off n=1 per arm (CORRECTIONS #8). The
+    2026-09-07 wave re-collected the same question at five swept seeds per cell.
+
+    BOTH ROWS PRINT. The older arm covers more bases (12 pairs against 3) and the newer one has
+    a real modal on each side, so neither supersedes the other and deleting either would be
+    choosing which scope to publish after seeing both -- the move this project has withdrawn
+    three claims for. The manipulation already appears twice for the same reason.
+
+    Every pair here is arm-matched by construction: the collector runs stock and ablated builds
+    of one base through identical parameters in one sitting. What it cannot fix is that the
+    ablated builds are third-party, so `ablation_analysis.py` runs the pre-registered ablator-
+    agreement step first -- and on the one base with more than one abliteration, the ablator
+    spread is as large as the ablation effect on the endpoint statistic.
+    """
+    per = collections.defaultdict(dict)
+    for path in sorted(glob.glob(os.path.join(
+            STUDY, "runs/2026-09-07-ablation-wave/*/*/*.jsonl"))):
+        parts = path.replace(os.sep, "/").split("/")
+        base, arm = parts[-3], parts[-2]
+        for cell, runs in load(os.path.relpath(path, STUDY),
+                               key=lambda r: (r["model"], r["condition"]),
+                               dedupe_by_seed=True).items():
+            if len(runs) >= 4:
+                per[(base, cell[1])][arm] = modal(runs)
+
+    pairs, clusters = [], []
+    for (base, _cond), arms in sorted(per.items()):
+        if "stock" not in arms:
+            continue
+        for arm in sorted(a for a in arms if a.startswith("ablated")):
+            pairs.append(both_stats(arms["stock"], arms[arm]))
+            clusters.append(base)
+    if not pairs:
+        return None
+    note = ("stock vs ablated at n=5 per cell, swept seed, one sitting -- the same question as "
+            "the row above, re-collected because that one rests on single runs. 3 of 6 bases "
+            "produced a usable pair; the other three failed for causes named in "
+            "RESULTS-2026-09-07-ablation-wave.md, one of them in its STOCK arm")
+    return summarise("refusal-direction ablation, one sitting", pairs, note, clusters=clusters)
+
+
 def floor_ablation():
     """Stock vs ablated, arm-matched, per condition.
 
@@ -1249,7 +1295,7 @@ def floor_conditions_wave():
 ALL_FLOORS = (floor_order, floor_same_version, floor_template, floor_replicate,
               floor_quant, floor_ablation, floor_conditions, floor_conditions_wave,
               floor_order_wave, floor_order_wave_by_class, floor_modal_noise,
-              floor_conditions_wave_by_class)
+              floor_conditions_wave_by_class, floor_ablation_wave)
 
 
 def all_floors():

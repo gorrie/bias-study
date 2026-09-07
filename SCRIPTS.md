@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-56 script(s). 0 carry no module docstring and are listed at the end.
+57 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -65,6 +65,7 @@
 
 ## Other
 
+- **`ablation_analysis.py`** — The ablation arm, analysed in the order PREREG-2026-09-07-ablation-vs-prompt.md specifies.
 - **`abliteration_effect_check.py`** — abliteration_effect_check.py — single-stop dissociation report.
 - **`aggregate.py`** — Aggregate scored bias study records per aggregation-rules.md.
 - **`analysis.py`** — Enhanced analysis pass for a bias study run.

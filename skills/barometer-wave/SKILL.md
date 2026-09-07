@@ -135,6 +135,7 @@ python scripts/floor_table.py --class-split    # the hosted-vs-local 2x2
 python scripts/floor_resolution.py --between    # between-model vs within-model, per vendor
 python scripts/model_cards.py --min-runs 4     # can each model carry a claim at all
 python scripts/refusal_table.py                # refusal rate by vendor and condition
+python scripts/ablation_analysis.py            # the ablation arm, in pre-registered order
 python scripts/power.py                        # detection limits per null
 python scripts/chart_intervention_budget.py    # the practitioner-facing scale
 ```
@@ -201,6 +202,13 @@ python scripts/gen_readme.py && python scripts/key_numbers.py --check-release
 - `scripts/floor_table.py` — every floor, both statistics, plus the class splits
 - `scripts/floor_resolution.py` — the estimator floor, between-vs-within, vendor consistency
 - `scripts/model_cards.py` — per-model verdict by exact permutation test
+- `scripts/ablation_analysis.py` — the stock-vs-ablated arm, run in the order
+  `PREREG-2026-09-07-ablation-vs-prompt.md` specifies. **Its step-1 stopping rule is enforced in
+  code**: if a base's ablator spread is as large as its own ablation effect, steps 2–5 are
+  withheld and `--force` is needed to print them as diagnostics. Run the steps in that order or
+  the pre-registration was decoration. The rule is evaluated PER BASE and like-for-like — a
+  first version compared one base's worst disagreement against a median effect pooled across
+  other bases, and fired on it.
 - `scripts/refusal_table.py` — refusal rate by vendor and condition. **Its `DEFAULT_EXCLUDE`
   matters**: the ablation wave is excluded because abliterated builds are engineered not to
   refuse, so pooling them would deflate the corpus rate by construction, and the deflation
