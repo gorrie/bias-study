@@ -78,13 +78,29 @@ def _template_key(r):
 
 
 def _order_key(r):
-    """The default key PLUS the template, so the order floor can hold the wrapper fixed.
+    """The default key PLUS every non-order factor the order floor must hold fixed.
 
-    Carries template as a fourth element rather than folding it in, so `_order_cells` can
-    filter on it and then group on the historical three-part key -- the floor's pairing logic
-    is unchanged, it just stops being fed cells that differ in something other than order.
+    `(model, condition, shuffle_seed, template, temperature)`. Template and temperature are
+    carried as extra elements rather than folded in, so `_order_cells` can filter or group on
+    each -- the floor's pairing logic is unchanged, it just stops being fed cells that differ in
+    something other than order.
+
+    THIS KEY HAS FAILED OPEN TWICE, ON A NEW FACTOR EACH TIME.
+    2026-09-04: ten instruction templates all hashed to the canonical-order cell, so 107 non-T01
+    runs made a cell's modal a majority vote across paraphrases. Template was added.
+    2026-09-07: temperature-0 and temperature-0.7 runs pooled in 28 of 186 canonical cells, for
+    exactly the same reason. Temperature was added.
+
+    **The pattern is the point, and it will happen again.** "Same model, same condition, item
+    order only" is a claim about everything held fixed, and this key is the only place that
+    claim is enforced. Anything a future collection varies -- max_tokens, a system-prompt
+    revision, a provider endpoint, a quantisation -- lands in the canonical cell and dilutes its
+    modal unless it is added here. When adding an arm that varies a new parameter, add it to
+    this key in the same commit, and measure the floor before and after so the dilution is on
+    the record rather than assumed.
     """
-    return (r["model"], r["condition"], r.get("shuffle_seed"), r.get("template", "T01"))
+    return (r["model"], r["condition"], r.get("shuffle_seed"), r.get("template", "T01"),
+            r.get("temperature"))
 
 
 #: What load() threw away on the last call, and why. A dropped run is a measurement that does
@@ -365,14 +381,19 @@ def floor_order():
     # for exactly this on 2026-09-04 and was wired to one row -- and the two rows the headline
     # comparison rests on, this and same-version, were not among them.
     pairs, clusters = [], []
-    for m, orders in by.items():
-        ks = list(orders)
+    # `by` is keyed (model, temperature) since 2026-09-07. The CLUSTER stays the model: two
+    # temperatures of one model are not two independent models, and clustering on the full key
+    # would hand the bootstrap more clusters than there are models -- the same
+    # narrower-than-the-data error the cluster bootstrap was added to fix.
+    for (m, _temp), orders in sorted(by.items(), key=lambda kv: str(kv[0])):
+        ks = sorted(orders, key=lambda k: (k is not None, k))
         for i in range(len(ks)):
             for j in range(i + 1, len(ks)):
                 pairs.append(both_stats(orders[ks[i]], orders[ks[j]]))
                 clusters.append(m)
-    return summarise("presentation order", pairs, "same model, same condition, item order only",
-                     clusters=clusters)
+    return summarise("presentation order", pairs,
+                     "same model, same condition, same template, same temperature, item order "
+                     "only", clusters=clusters)
 
 
 # Run directories deliberately withheld from the order floor, each with its reason. This is
@@ -415,6 +436,30 @@ def _order_cells(with_sources=False):
     the order floor holds every non-order factor fixed by construction: only the canonical
     template T01 enters, because "same model, same condition, item order only" is what the row
     claims to measure.
+
+    IT FAILED OPEN A THIRD TIME, ON TEMPERATURE, AND THE PARAGRAPH ABOVE PREDICTED IT.
+    2026-09-07: temperature was never in the cell key and never filtered, so **28 of 186
+    canonical-order cells pooled temperature-0 and temperature-0.7 runs** and their modal was a
+    majority vote across two temperatures. The fix after the paraphrase incident was to filter
+    the factor that had just broken it; the next new factor walked straight in.
+
+    What makes this one legible is that the contaminating runs contributed NOTHING. Every
+    shuffled-order sheet in this floor is condition A at temperature 0 -- the one-sitting order
+    arm is condition D, because A is 28.2% invalid on that panel -- so at temperature 0.7 there
+    are no shuffled sheets to pair against, and the temp-0.7 canonical runs from the waves could
+    only ever dilute a modal they could not contribute a pair to. Pure contamination, zero
+    contribution.
+
+    Measured before and after, so the scale of it is on the record rather than assumed:
+
+        as published (temperature ignored)   84 pairs, median 3, p90 11, max 23
+        temperature-matched                  84 pairs, median 3, p90 11, max 24
+
+    Identical pair count, identical median, identical p90. The max moves, which is the
+    statistic a diluted modal would be expected to move, and the headline p90 the paper rests on
+    is unaffected. Temperature is part of the key now, so a pair shares one temperature by
+    construction -- and the general lesson is written into the key's own docstring rather than
+    into this one, because the next factor will not be temperature either.
     """
     cells = collections.defaultdict(list)
     sources = collections.Counter()
@@ -426,12 +471,14 @@ def _order_cells(with_sources=False):
                               key=_order_key).items():
             if key[3] != "T01":
                 continue
-            cells[key[:3]].extend(runs)
+            # (model, condition, temperature) is the GROUP; the order is what varies within it.
+            # Temperature moved into the group on 2026-09-07 -- see this function's note.
+            cells[(key[0], key[1], key[4], key[2])].extend(runs)
             sources[rel.split("/")[0]] += len(runs)
     by = collections.defaultdict(dict)
-    for (m, c, o), runs in cells.items():
+    for (m, c, temp, o), runs in cells.items():
         if c == "A":
-            by[m][o] = modal(runs)
+            by[(m, temp)][o] = modal(runs)
     return (by, sources) if with_sources else by
 
 
@@ -473,10 +520,10 @@ def floor_order_by_class():
     for label, want_api in (("presentation order, local open-weight", False),
                             ("presentation order, frontier API", True)):
         pairs = []
-        for m, orders in by.items():
+        for (m, _temp), orders in sorted(by.items(), key=lambda kv: str(kv[0])):
             if ("/" in m) != want_api:
                 continue
-            ks = list(orders)
+            ks = sorted(orders, key=lambda k: (k is not None, k))
             for i in range(len(ks)):
                 for j in range(i + 1, len(ks)):
                     pairs.append(both_stats(orders[ks[i]], orders[ks[j]]))

@@ -136,7 +136,7 @@ instrument, same model, same settings, in items moved of 62:
 |---|---:|---|---|---|
 | prompt condition A->D | 20 | 3 / 15 / 19 | [5, 19] | 13 / 21 / 26 |
 | presentation order, one sitting, local open-weight | 10 | 10 / 14 / 21 | [9, 21] | 10 / 17 / 18 |
-| presentation order | 84 | 3 / 11 / 22 | [5, 14] | 4 / 10 / 18 |
+| presentation order | 84 | 3 / 11 / 24 | [5, 14] | 4 / 9 / 18 |
 | same-version variants | 97 | 5 / 11 / 24 | [8, 15] | 8 / 22 / 29 |
 | presentation order, one sitting | 85 | 1 / 10 / 21 | [3, 12] | 3 / 10 / 36 |
 | refusal-direction ablation | 12 | 6 / 9 / 12 | [6, 12] | 6 / 14 / 16 |

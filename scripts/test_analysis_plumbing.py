@@ -119,10 +119,70 @@ def test_order_floor_discovers_a_new_run_directory():
                 fh.write(json.dumps(record) + "\n")
 
         cells = F._order_cells()
-        assert model in cells, (
+        # KEYED (model, temperature) SINCE 2026-09-07, when temperature joined the set of
+        # non-order factors the floor holds fixed. This assertion read `model in cells` and
+        # failed on the key shape rather than on the behaviour it is here to protect -- which
+        # is that a NEW RUN DIRECTORY is discovered without being added to an include list.
+        # Matched on the model element so the next factor added to the key does not break it
+        # again for the same non-reason.
+        mine = {k: v for k, v in cells.items() if k[0] == model}
+        assert mine, (
             "a new run directory was invisible to the order floor -- the include-list "
             "regression is back")
-        assert set(cells[model]) == {101, 202}, cells.get(model)
+        assert len(mine) == 1, (
+            "the probe's two runs split across cells: %s -- they share a temperature (absent, "
+            "so None) and must land in one group" % list(mine))
+        assert set(next(iter(mine.values()))) == {101, 202}, mine
+    finally:
+        shutil.rmtree(probe_dir, ignore_errors=True)
+
+
+def test_no_order_cell_pools_two_temperatures():
+    """The order floor holds every non-order factor fixed, TEMPERATURE INCLUDED.
+
+    This key has failed open three times, on a new factor each time: 2026-09-04 ten instruction
+    templates all hashed to the canonical cell (107 runs, modal became a vote across
+    paraphrases), and 2026-09-07 temperature-0 and temperature-0.7 runs pooled in **28 of 186**
+    canonical cells. Each fix filtered the factor that had just broken it, which is why there
+    was a third time.
+
+    A FIRST VERSION OF THIS TEST WAS VACUOUS and passed for the wrong reason: it grouped the
+    runs BY temperature and then asserted that each group held one temperature, which is true
+    by construction whatever the code does. It would have passed against the buggy key just as
+    happily. So this probes the BEHAVIOUR instead: write two runs that differ only in
+    temperature, and assert the floor puts them in different cells.
+
+    A future arm that varies some other parameter will not be caught by this test. The
+    docstring on `_order_key` says what to do about that, and this is the shape of the test to
+    copy for it.
+    """
+    probe_dir = os.path.join(STUDY, "runs", "2026-09-07-temp-key-probe")
+    model = "test-vendor/temp-probe"
+    os.makedirs(probe_dir, exist_ok=True)
+    try:
+        # Same model, same condition, same order (canonical), same template. Different
+        # temperature. Under the pre-2026-09-07 key these two were ONE cell and their modal
+        # was a vote across temperatures.
+        for temp, offset in ((0.0, 0), (0.7, 1)):
+            record = {
+                "schema": "compass-run/1", "model": model, "condition": "A",
+                "shuffle_seed": None, "temperature": temp, "valid": True, "n_answers": 62,
+                "answers": [{"q": q, "position": (q + offset) % 4} for q in range(1, 63)],
+            }
+            with io.open(os.path.join(probe_dir, "probe_%s.jsonl" % temp), "w",
+                         encoding="utf-8", newline="\n") as fh:
+                fh.write(json.dumps(record) + "\n")
+
+        cells = F._order_cells()
+        mine = {k: v for k, v in cells.items() if k[0] == model}
+        assert len(mine) == 2, (
+            "two runs differing only in TEMPERATURE landed in %d cell(s), not 2 -- the order "
+            "floor is pooling across temperature again and its modal is a majority vote "
+            "across them: %s" % (len(mine), list(mine)))
+        assert {k[1] for k in mine} == {0.0, 0.7}, list(mine)
+        # And neither cell may pair with itself: one order each, so no order pairs at all.
+        for key, orders in mine.items():
+            assert list(orders) == [None], (key, list(orders))
     finally:
         shutil.rmtree(probe_dir, ignore_errors=True)
 

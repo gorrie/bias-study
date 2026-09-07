@@ -234,6 +234,192 @@ modal-based measurement of them means anything.
 Both manipulation rows now print in the floor table, the chart draws both reference lines, and
 the sample size behind each modal is disclosed on the row.
 
+### 8. "One null inverted outright" — withdrawn 2026-09-07
+
+**Published:** 2026-09-05, in the paper's §4, in `power.py`'s audit output, and in the README.
+**Withdrawn:** 2026-09-07.
+
+The null-power audit reported that of five published null results, four sat below their own
+detection limit and one **inverted**: an ablated model filed as showing no stance movement
+moved 12 items of 62 against a detection limit of 9, so the pair showed real stance movement
+after all.
+
+**That 12 is a single run per arm.** A one-run sheet is not a modal; every other
+modal-vs-modal number in this study rests on four or five swept seeds, and the run-to-run
+replicate floor is **p90 5**. A 12 derived from n=1 sits inside its own noise before any
+ablation acts. The "detection limit of 9" quoted beside it does not appear anywhere in the
+generated numbers either.
+
+It is the same defect the section convicts, committed one layer further in: the strongest
+verdict available — an *inversion* — resting on the thinnest sample in the corpus, inside the
+paragraph arguing that null results need their resolution computed before they are trusted.
+And it was the audit's single most quotable line.
+
+Two mechanical faults let it stand. `power.py` printed **SUPPORTED** for that entry, and a
+caveat on the observed effect now disqualifies that verdict rather than decorating it. Its
+summary line also counted "not supported" as one category, so the script reported 3
+underpowered nulls in its body and 4 in its summary while the prose quoting it said 3; there
+are three categories and they are counted separately now.
+
+**Also corrected in the same passage:** "four of our five" nulls below their resolution, where
+the generated figure is **three**.
+
+**What replaces it:** nothing yet, deliberately. The 2026-09-07 ablation wave re-collects that
+exact pair at n=5 with a swept seed. Until that is analysed the claim is undecided in both
+directions.
+
+### 9. The vendor comparison pooled five vendors as one — corrected 2026-09-07
+
+**Published:** 2026-09-07. **Corrected:** 2026-09-07, hours later, by review.
+
+`vendor()` returned the literal string `"local"` for every model name without a slash. So
+`gemma2`, `llama3.1`, `phi4`, `qwen2.5` and `mistral` — **five different vendors** — were
+pooled into one pseudo-vendor, and their ten *cross*-vendor pairs were counted as
+**same-vendor**.
+
+It flattered the conclusion it was used for. Corrected, same-vendor is median 5 / p90 9 under D
+and median 3 / p90 8 under P, against different-vendor 5/14 and 5/18. So the published claim
+that there is **"no house political position detectable at the median"** is withdrawn: it holds
+under the commitment instruction and is false under the placebo, where within-vendor is
+genuinely tighter (median 3 against 5) and the tail gap is wide (8 against 18). Vendors cluster
+*more* than the bug allowed. The table row reading "local, 2024 generation" as though it were a
+house is gone.
+
+**Withdrawn with it: the "2.5× to 5×" between-model ratios.** The numerator was a
+modal-vs-modal distance and the denominator a run-vs-run distance — two statistics with
+different noise floors, so the quotient has no interpretation. The like-for-like denominator is
+the modal's own sampling error, which is *smaller*, so the underlying conclusion survives and
+strengthens. `floor_resolution.py` printed those ratios for a further two commits after the
+document was corrected, which is how a retraction comes undone: the prose was fixed and the
+tool that generates the number was not.
+
+### 10. A band drawn partly out of measurement noise — corrected 2026-09-07
+
+The intervention-budget chart's whole argument is that an intervention must beat the spread
+between two off-the-shelf models. That band took its upper bound from a between-model p90 that
+included the ten cells `data/modal-noise.json` flags as having an unstable modal — one of which
+bootstraps to p90 27 on its own.
+
+Excluding them: p90 **14 → 9** under D and **18 → 14** under P. The band is median 4 to p90 14,
+published as 5 to 18, so roughly a third of its width was the estimator. Every intervention
+still lands inside it, so the chart's conclusion survives a narrower band.
+
+### 11. The per-model verdict used the wrong null — corrected 2026-09-07
+
+`model_cards.py` asks whether a model's largest measured effect can carry a claim. Two rules
+were wrong before the third was right:
+
+| rule | verdict | why it was wrong |
+|---|---|---|
+| effect vs the model's WORST within-cell pair | 29 of 30 "failed" | an extreme value is not a null |
+| effect vs the p90 of its run-vs-run spread | 8 of 30 "carried" | modal-vs-modal effect against a run-vs-run null, and the max of up to three contrasts uncorrected |
+| exact permutation on its own runs, Bonferroni | **1 of 30 carries** | the null is built from the same statistic as the effect |
+
+The middle rule was not merely loose, it was **inverted on the case the card exists to catch**:
+`grok-4.6` "carried" on an A→D effect of 14 and comes out at **p = 1.0** under permutation,
+because its runs are bimodal enough that shuffling reproduces 14 routinely. Only 2 of its 8
+survive at all.
+
+The multiplicity correction does almost all the remaining work — 5 models reach p < 0.05 on
+their best contrast, 1 survives correcting for having tested up to three — and that is reported
+rather than buried. A `no` verdict means "not resolvable at this n", not "no effect": the
+permutation null on a five-run modal is coarse, and perfect separation at n=4 gives p = 0.486,
+because a 3-1 reshuffle still flips the modal.
+
+### 12. The model-class split did not measure the axis it named — corrected 2026-09-07
+
+**Published:** 2026-09-07. **Corrected:** the same day, by the author.
+
+The split that carries §3's central finding was published with its two sides headed **"2026
+frontier API"** and **"2024-generation open-weight"**. The test in the code is `"/" in model`
+— hosted against local. It asserts an open-versus-closed axis this study does not test, and
+gets it backwards: **12 of the 20 hosted models ARE open weights** served by someone else
+(DeepSeek V4, Qwen3.8-Max, GLM-5.x, Kimi K2.5/K2.6/K3, Mistral Medium), all 2025–26 releases.
+Only 8 of the 20 are closed.
+
+Three properties move together across that line and this corpus cannot separate them: serving
+path, vintage, and quantisation. So **"newer models are more order-stable" is consistent with
+these rows and not established by them** — Q4 quantisation of a 7B model is an equally good
+explanation, and the requantisation floor is p90 6, the same order of magnitude as the gap
+being explained. The Röttger-predicted generational reading is a conjecture here, not a finding.
+
+The measurement that separates them is cheap and now possible: 2026-generation open weights run
+*locally* at Q4 put a 2026 model on the local side of the split.
+
+**A second fault in the same table.** Its manipulation column was published with the frontier
+cell holding the *pooled* figure and the local cell holding a number copied from a script
+docstring that had measured it on a different subset. A two-by-two is a claim that its four
+cells are commensurable; those four were not. `floor_conditions_wave_by_class()` computes the
+per-class manipulation now, on the same cells and in the same units as the order split, and the
+table is generated rather than typed.
+
+### 13. The public README was the least-gated surface in the project — corrected 2026-09-07
+
+Not a claim about models, and it belongs here anyway: it is the mechanism behind several
+entries above.
+
+An audit of the README against the run data found **seven hand-typed numbers stale in a single
+paragraph** — 36 models where there were 42, eight decliners where there were 14, "39 refusals
+in 499 runs" against 148 in 1076 — plus a same-version p90 stated as 12 nineteen lines below a
+generated table printing 11, a detection limit given as 16 where `power.py` computes 13, and a
+sentence saying a nuisance floor "has not been collected" directly beneath the table reporting
+it.
+
+Every one of those numbers was **already gated on the website surface**. `--check-release`
+covered *two* phrases on the repository whose entire purpose is that a stranger can check the
+claims. Worse, the paragraph asserted its own figures were generated, which is precisely what
+stopped anyone checking them.
+
+Fourteen numbers are gated there now, the class-split table is generated, and six scripts the
+v2 headline claims depend on — absent from the mirror entirely — are present, so the claims can
+be recomputed here rather than taken on trust. Regenerating the estimator floor from this
+repository's independently scrubbed runs reproduces the private cache byte for byte, which is
+the reproducibility claim demonstrated instead of asserted.
+
+### 14. The order floor pooled two temperatures — corrected 2026-09-07
+
+**Published:** from 2026-09-04 (when the same defect was fixed for a different factor).
+**Corrected:** 2026-09-07.
+
+The presentation-order floor's row reads "same model, same condition, item order only". Its
+cell key was `(model, condition, shuffle_seed)` plus a template filter — and **temperature was
+never in it**. So **28 of 186 canonical-order cells pooled temperature-0 and temperature-0.7
+runs**, and for those models the canonical modal was a majority vote across two temperatures.
+
+**This is the third time that key has failed open, on a different factor each time, and the
+function's own docstring predicted it.** On 2026-09-04, ten instruction templates all hashed to
+the canonical cell and 107 non-T01 runs made a modal a vote across paraphrases; the fix was to
+filter templates. The note written at the time said: *"An include list fails open on new
+directories; a read-everything default fails open on new FACTORS."* Then the next new factor
+walked in. Fixing the factor that just broke something is not the same as fixing the class of
+defect, and this file now contains two entries proving it.
+
+What makes the scale legible is that the contaminating runs **contributed nothing**. Every
+shuffled-order sheet in this floor is condition A at temperature 0 — the one-sitting order arm
+is condition D, because A is 28.2% invalid on that panel — so at temperature 0.7 there are no
+shuffled sheets to pair against. The temp-0.7 canonical runs could only ever dilute a modal
+they could not contribute a pair to.
+
+Measured before and after, because "the fix is safe" is a claim:
+
+| | pairs | median | p90 | max | endpoint p90 |
+|---|---:|---:|---:|---:|---:|
+| as published, temperature ignored | 84 | 3 | **11** | 22–23 | 10 |
+| temperature part of the key | 84 | 3 | **11** | **24** | **9** |
+
+Identical pair count, identical median, **identical p90** — so the headline figure the paper
+and the detection limits rest on is unaffected. What moved is the max, which is exactly the
+statistic a diluted modal would be expected to move, and it moved *up*: the pooling was
+suppressing the true worst case, not inflating it. Four surfaces quoted the old max and are
+updated (the research page, two dispatches, and the paper).
+
+**A side effect worth recording.** The private tree and the public mirror had disagreed by one
+on this max, because the private tree holds the 2026-09-07 ablation wave whose stock arm ran at
+temperature 0.7 and was landing in canonical cells. With temperature in the key the two trees
+produce **byte-identical floor tables**. The parity is now structural rather than a coincidence
+of which collections each tree happens to hold — which is the better fix, and it was reached by
+asking why the two disagreed instead of copying data across to make them agree.
+
 ---
 
 ## How to read this file
