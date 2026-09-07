@@ -130,8 +130,16 @@ def todo(panel, have, tried=None):
     want = WAVE_PARAMS["runs"]
     tried = tried or {}
     out = []
+    # THE CANONICAL ORDER IS NOT COLLECTED FOR PANEL MODELS AND MUST BE FOR OFF-PANEL ONES.
+    #
+    # A panel model already has its canonical-order sheet in the wave, so collecting it again
+    # here would duplicate it. An OFF-PANEL model has no wave cell at all -- so without the
+    # canonical arm it would have two shuffled orders and nothing to pair them against except
+    # each other, which measures shuffle-against-shuffle rather than order-against-canonical
+    # and is not the same quantity the floor reports.
+    orders = SHUFFLE_SEEDS if not panel.get("off_panel") else (None,) + SHUFFLE_SEEDS
     for m in panel["models"]:
-        for s in SHUFFLE_SEEDS:
+        for s in orders:
             if have.get((m, s), 0) >= want:
                 continue
             if tried.get((m, s), 0) >= want:
@@ -148,15 +156,56 @@ def main(argv=None):
     ap.add_argument("--date", default="")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--delay", type=float, default=1.0)
+    # A MODEL LIST OFF THE PANEL, FOR AN ARM THE PANEL CANNOT ANSWER.
+    #
+    # The frozen panel is the barometer's time axis and must not change -- recomputing it each
+    # wave would measure cohort composition instead of change. But the panel's only LOCAL
+    # 2026-generation build is gemma-4-12B, which returns empty responses, so the local side of
+    # the one-sitting order floor is four models and every one of them is 2024 vintage.
+    #
+    # That is what makes "newer models are more order-stable" unfalsifiable on this corpus:
+    # serving path, vintage and quantisation all change together across the split, and there is
+    # no local 2026 model to break the tie. `--models` collects one into its own dated arm
+    # WITHOUT touching the panel, so the tie-breaker exists and the time series stays comparable.
+    #
+    # `--out-suffix` keeps it in a separate directory for the same reason: it is a different
+    # question from the panel's order floor and must not silently join that row.
+    ap.add_argument("--models", default="",
+                    help="comma-separated model tags to collect INSTEAD of the frozen panel "
+                         "(for an off-panel arm; use with --out-suffix)")
+    ap.add_argument("--out-suffix", default="",
+                    help="suffix for the run directory, so an off-panel arm lands separately")
     args = ap.parse_args(argv)
 
     panel = load_panel()
+    if args.models:
+        # OFF-PANEL ARM. The frozen panel is left alone -- this replaces the roster for this
+        # invocation only, and nothing is written back to data/wave-panel.json.
+        panel = dict(panel)
+        panel["models"] = [m.strip() for m in args.models.split(",") if m.strip()]
+        panel["off_panel"] = True
+        if not args.out_suffix:
+            print("--models without --out-suffix would write an off-panel arm into the panel's "
+                  "own directory, where floor_order_wave would read it as part of the frozen "
+                  "roster. Pass --out-suffix.", file=sys.stderr)
+            return 2
     p = WAVE_PARAMS
 
     # Continue the most recent collection while it is unfinished -- a sitting, not a calendar
     # day. Same rule wave.py needed after it opened a second directory at midnight.
+    suffix = ("-" + args.out_suffix.strip("-")) if args.out_suffix else ""
     if args.date:
-        d = outdir(args.date)
+        d = outdir(args.date) + suffix
+    elif suffix:
+        # AN OFF-PANEL ARM DOES NOT SEARCH FOR A PRIOR SITTING TO CONTINUE.
+        #
+        # `existing_dirs()` globs `*-wave-orders`, and a suffixed directory does not end in
+        # that -- which is the property that keeps this arm OUT of `floor_order_wave`, whose
+        # glob is `runs/*-wave-orders/*.jsonl`. So an off-panel arm cannot silently join the
+        # published order row, and it also cannot be found by a cross-day resume. Today's
+        # dated directory is deterministic, so resuming within the sitting works anyway, and
+        # resuming across days is exactly what the one-sitting rule forbids.
+        d = outdir() + suffix
     else:
         prior = existing_dirs()
         d = outdir()
@@ -171,7 +220,8 @@ def main(argv=None):
     left = todo(panel, have, tried)
 
     if args.report or (not args.run and not args.plan):
-        cells = [(m, s) for m in panel["models"] for s in SHUFFLE_SEEDS]
+        _orders = SHUFFLE_SEEDS if not panel.get("off_panel") else (None,) + SHUFFLE_SEEDS
+        cells = [(m, s) for m in panel["models"] for s in _orders]
         want = p["runs"]
         done = [k for k in cells if have.get(k, 0) >= want]
         # COUNTED SEPARATELY, because "complete" and "asked and came back empty" are different
@@ -202,7 +252,7 @@ def main(argv=None):
             print("  %-44s shuffle %s" % (m, s))
         return 0
 
-    n = 0
+    n, failed = 0, []
     for (model, shuffle) in left:
         if args.limit and n >= args.limit:
             break
@@ -211,18 +261,59 @@ def main(argv=None):
                "--runs", str(p["runs"]), "--temperature", str(p["temperature"]),
                "--seed", str(p["seed_base"]), "--max-tokens", str(p["max_tokens"]),
                "--template", p["template"], "--channel", channel_for(model),
-               "--shuffle-seed", str(shuffle),
                "--delay", str(args.delay), "--out", d]
+        # THE CANONICAL ORDER TAKES NO --shuffle-seed, AND PASSING str(None) SENT "None".
+        #
+        # 2026-09-07: the first off-panel arm queued the canonical order and this line passed
+        # the four characters `None` where an int was expected. run_compass exited without
+        # writing a record, the collector printed "(no result line)" for that cell, and then
+        # printed **"collected 3 cell(s); 0 remain"** and exited 0 with the canonical arm empty.
+        # Both shuffled orders were fine, so the arm looked collected and had nothing to pair
+        # them against -- the exact shape of the ablation collector's "0 remain over twelve
+        # empty cells", in a second collector, two hours after that one was fixed.
+        if shuffle is not None:
+            cmd += ["--shuffle-seed", str(shuffle)]
         if p.get("seed_sweep"):
             cmd.append("--seed-sweep")
         r = subprocess.run(cmd, capture_output=True, text=True)
         tail = [l for l in (r.stdout or "").splitlines() if "runs valid" in l]
-        print("  %-34s shuffle %-4s %s"
-              % (model[-34:], shuffle,
-                 tail[-1].split(":")[-1].strip() if tail else "(no result line)"))
+        if not tail:
+            # A cell that produced no result line is a FAILURE, not a quiet skip. Say what the
+            # subprocess said, because "(no result line)" on its own sent this exact defect
+            # past a review.
+            err = ((r.stderr or "").strip().splitlines() or ["(no stderr)"])[-1]
+            print("  %-34s shuffle %-4s FAILED rc=%s: %s"
+                  % (model[-34:], shuffle, r.returncode, err[:110]))
+            failed.append((model, shuffle))
+        else:
+            print("  %-34s shuffle %-4s %s"
+                  % (model[-34:], shuffle, tail[-1].split(":")[-1].strip()))
         n += 1
     print("")
     print("collected %d cell(s); %d remain" % (n, len(left) - n))
+
+    # "0 REMAIN" IS NOT "DONE" -- the same closing line this collector shipped over an empty
+    # canonical arm. Re-scan the directory and report cells that hold no valid sheet, by
+    # DISTINCT SEED, and exit non-zero so a caller cannot mistake the run for a success.
+    have_now, tried_now = collected(d), attempted(d)
+    orders = SHUFFLE_SEEDS if not panel.get("off_panel") else (None,) + SHUFFLE_SEEDS
+    short = [(m, s) for m in panel["models"] for s in orders
+             if have_now.get((m, s), 0) < p["runs"]]
+    ok = [(m, s) for m in panel["models"] for s in orders
+          if have_now.get((m, s), 0) >= p["runs"]]
+    print("  %d of %d cell(s) at n=%d" % (len(ok), len(ok) + len(short), p["runs"]))
+    if failed:
+        print("  %d cell(s) FAILED TO RUN (no result line):" % len(failed))
+        for m, s in failed:
+            print("      %-40s shuffle %s" % (m[-40:], s))
+    if short:
+        print("  %d cell(s) hold fewer than %d valid seed(s):" % (len(short), p["runs"]))
+        for m, s in short:
+            print("      %-40s shuffle %-5s %d valid of %d record(s)"
+                  % (m[-40:], s, have_now.get((m, s), 0), tried_now.get((m, s), 0)))
+        print("  An order floor needs the CANONICAL arm too: two shuffled orders with nothing")
+        print("  to pair against measures shuffle-against-shuffle, not order-against-canonical.")
+        return 1
     return 0
 
 

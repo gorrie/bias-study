@@ -59,6 +59,49 @@ OPEN_WEIGHT_VENDORS = frozenset((
     "microsoft", "minimax", "tencent", "hf.co",
 ))
 
+#: model -> True when it was served over an API, False when it ran locally. Populated from the
+#: runs' own `channel` field the first time it is asked for.
+_CHANNEL_CACHE: dict = {}
+
+
+def served_over_api(model):
+    """Was this model reached over an API, or run locally?
+
+    THE SPLIT TEST USED TO BE `"/" in model` AND THAT IS NOT THE SAME QUESTION.
+    A local Ollama build pulled from Hugging Face is tagged
+    `hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M` -- it has two slashes and it never left
+    this machine. So the slash test calls it hosted, and the row labelled "hosted over an API"
+    would have silently acquired a local model.
+
+    No published number was wrong when this was found on 2026-09-07: the only `hf.co/` builds in
+    the corpus are gemma-4-12B, whose cells are too thin to enter a class-split row at all. It
+    was found because the NEXT collection planned -- 2026-generation open weights run locally, to
+    separate vintage from serving path -- would have put a local `hf.co/` model straight into the
+    hosted row and answered the question backwards.
+
+    The records carry `channel` ("ollama" or "openrouter"), which is the actual property. Read
+    it rather than inferring from the name: a name is a convention and this one had an exception
+    in the corpus before anybody looked.
+    """
+    if not _CHANNEL_CACHE:
+        for p in sorted(glob.glob(os.path.join(STUDY, "runs", "**", "*.jsonl"),
+                                  recursive=True)):
+            for line in io.open(p, encoding="utf-8"):
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    r = json.loads(line)
+                except ValueError:
+                    continue
+                m, ch = r.get("model"), r.get("channel")
+                if m and ch and m not in _CHANNEL_CACHE:
+                    _CHANNEL_CACHE[m] = (ch != "ollama")
+    if model in _CHANNEL_CACHE:
+        return _CHANNEL_CACHE[model]
+    # Unknown model: fall back to the slash, and say so rather than guessing silently.
+    return "/" in model
+
 
 def ext(p):
     return p in (0, 3)
@@ -521,7 +564,7 @@ def floor_order_by_class():
                             ("presentation order, frontier API", True)):
         pairs = []
         for (m, _temp), orders in sorted(by.items(), key=lambda kv: str(kv[0])):
-            if ("/" in m) != want_api:
+            if served_over_api(m) != want_api:
                 continue
             ks = sorted(orders, key=lambda k: (k is not None, k))
             for i in range(len(ks)):
@@ -1106,7 +1149,7 @@ def floor_order_wave_by_class():
                             ("presentation order, one sitting, frontier API", True)):
         pairs, clusters = [], []
         for m, orders in sorted(by.items()):
-            if ("/" in m) != want_api:
+            if served_over_api(m) != want_api:
                 continue
             ks = sorted(orders, key=lambda k: (k is not None, k))
             for i in range(len(ks)):
@@ -1156,7 +1199,7 @@ def floor_conditions_wave_by_class():
                             ("prompt condition A->D, one sitting, frontier API", True)):
         pairs, clusters = [], []
         for m, cs in sorted(by.items()):
-            if ("/" in m) != want_api:
+            if served_over_api(m) != want_api:
                 continue
             if "A" in cs and "D" in cs:
                 pairs.append(both_stats(cs["A"], cs["D"]))
@@ -1339,8 +1382,10 @@ def main(argv=None):
         f = all_floors()
         # THE AXIS IS HOSTED-VS-LOCAL. IT IS NOT OPEN-VS-CLOSED AND IT IS NOT OLD-VS-NEW.
         #
-        # The split test is `"/" in model` -- a slash means the model came over an API, a bare
-        # name means it ran in Ollama. This table was first published with the two sides headed
+        # The split test is `served_over_api()`, which reads each run's own `channel` field. It
+        # was `"/" in model` until 2026-09-07 -- and a local Ollama build pulled from Hugging
+        # Face is tagged `hf.co/vendor/Model:Q4_K_M`, so the slash test would have put a local
+        # model in the hosted row. This table was first published with the two sides headed
         # "2026 frontier API" and "2024-generation open-weight", which asserts two axes the
         # code does not test and gets one of them backwards: 12 of the 20 models on the API side
         # ARE open weights -- DeepSeek V4, Qwen3.8-Max, GLM-5.x, Kimi K2.5/K2.6/K3, Mistral
