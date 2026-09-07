@@ -47,7 +47,52 @@ more than one.
 | qwen38-27b | P | OBLITERATUS | huihui-uddw | 0 | 9 |
 | qwen38-27b | A | OBLITERATUS | 0bserverx Heretic | 1 | 3 |
 
-## The result, in the pre-registration's own terms
+## SETTLED, later the same day: the effect was the ablator
+
+The first pass of this arm ended on "the one base where abliteration measurably moves political
+position is the one base where we cannot check whether it is the ablation or the ablator."
+`qwen2.5-14b` had exactly one abliteration on disk, so step 1 could not run on it.
+
+**So two more independent abliterations of that base were collected**, both quant-matched
+Q4_K_M to the stock arm, at n=5 with a swept seed:
+
+| ablator | abliteration author | stock → ablated, A / D / P | vs estimator floor 3 |
+|---|---|---:|---|
+| `huihui_ai/qwen2.5-abliterate:14b` | huihui-ai (v1) | **8 / 9 / 9** | clears |
+| `Qwen2.5-14B-Instruct-abliterated-v2` | huihui-ai (v2, later separate job) | **8 / 9 / 9** | clears |
+| `Josiefied-Qwen2.5-14B-Instruct-abliterated-v2` | Goekdeniz-Guelmez (**different author**) | **0 / 2 / 0** | at or under |
+
+And the agreement between them:
+
+| pair | side-flips, A / D / P |
+|---|---:|
+| huihui v1 vs huihui v2 | **0 / 0 / 0** |
+| huihui v1 vs Josiefied | **8 / 9 / 9** |
+| huihui v2 vs Josiefied | **8 / 9 / 9** |
+
+**Two builds by the same author agree exactly. The build by a different author disagrees by
+precisely the size of the "effect" — and shows no effect at all.**
+
+So the ablator spread (median 8, max 9) equals the ablation effect (median 8, max 9), and the
+pre-registered stopping rule fires on the direction statistic, on the one base that appeared to
+show something:
+
+> **Abliteration does not measurably move political stance on any of the three usable bases.**
+> The one apparent effect is attributable to a single ablator's choices — an independent
+> abliteration of the same base, by a different author, at the same quantisation, moves nothing.
+
+That is outcome 4 as pre-registered, and it is a cleaner demonstration than the design hoped
+for: same-author builds agreeing at zero while a cross-author build accounts for the entire
+apparent effect is exactly the confound the agreement step was written to detect.
+
+**It also reverses a qualification entered against Book 3 earlier today.** `quiet-autocomplete`
+ch18's published prose says stripping the refusal direction "moves the institutional-skepticism
+*stance* by a tenth of a point or less… The lean is not in the layer you can strip." The first
+pass here read as a counter-example to that; it was not. The counter-example was one ablator.
+The dissociation claim is **better supported after this collection than before it**, and the
+source note in that chapter has been corrected to say so.
+
+## The result as first reported, in the pre-registration's own terms
 
 **On direction (side-flips), nothing on the checkable base is measurable in either direction.**
 

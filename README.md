@@ -142,8 +142,8 @@ instrument, same model, same settings, in items moved of 62:
 | same-version variants | 97 | 5 / 11 / 24 | [8, 15] | 8 / 22 / 29 |
 | presentation order, one sitting | 85 | 1 / 10 / 21 | [3, 12] | 3 / 10 / 36 |
 | refusal-direction ablation | 12 | 6 / 9 / 12 | [6, 12] | 6 / 14 / 16 |
+| refusal-direction ablation, one sitting | 20 | 2 / 9 / 9 | [2, 9] | 2 / 7 / 17 |
 | prompt condition A->D, one sitting, local open-weight † | 5 | 5 / 8 / 8 | [3, 8] | 10 / 16 / 16 |
-| refusal-direction ablation, one sitting | 14 | 2 / 8 / 9 | [2, 9] | 2 / 7 / 17 |
 | prompt condition A->D, one sitting | 25 | 3 / 7 / 14 | [4, 12] | 12 / 22 / 26 |
 | instruction paraphrase | 1067 | 3 / 6 / 14 | [5, 8] | 2 / 10 / 28 |
 | requantisation | 13 | 3 / 6 / 10 | [3, 10] | 1 / 3 / 7 |
