@@ -97,6 +97,13 @@ NOT_A_PROCEDURE = {
     "key_numbers.py": "named by barometer-wave step 4",
     "extend_manipulation_floor.py": "superseded by ablation_wave/wave",
     "check_no_fork.py": "named by barometer-wave step 0",
+    # A FEASIBILITY PROTOTYPE FOR A v3 INSTRUMENT, deliberately not in the current procedure.
+    # It scores the battery by logprob instead of parsing prose, failed its pre-registered
+    # agreement check against the parsed instrument (24 of 62 exact, 20 side-flips against a
+    # replicate floor of 5) and is kept as the measured account of why the obvious design
+    # fails. Naming it in barometer-wave would put a rejected instrument in the procedure a
+    # future run follows.
+    "logit_probe.py": "v3 feasibility prototype; failed its agreement check, kept as evidence",
 }
 
 

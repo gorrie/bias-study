@@ -24,7 +24,31 @@ a scaling coefficient, and any single build is one point on a curve nobody has p
 political answers. The question worth answering is whether position moves *before* competence
 breaks, or only along with it. **Needs:** the above.
 
-**Scoring by logprob instead of parsing prose.** The instrument currently asks for 62 answers as
+**Scoring by logprob instead of parsing prose — PROTOTYPED 2026-09-07, AND IT FAILED ITS
+AGREEMENT CHECK.** Full measurement in
+[`results/RESULTS-2026-09-07-logit-scoring-fails-agreement.md`](results/RESULTS-2026-09-07-logit-scoring-fails-agreement.md);
+the prototype is `scripts/logit_probe.py`.
+
+Three findings, because the entry below was written as though this were a small change:
+
+- **The option labels are not separable at the first token.** `Strongly Agree` and `Strongly
+  Disagree` both begin with the token `'Strong'` — three distinct tokens for four options, on
+  both models tested. Scoring the four labels directly is not available; that is the tokenizer,
+  not a tuning problem.
+- **The letter form (`A = Strongly Disagree … D`) works and is a different instrument.** It
+  scored 62 of 62 items — and matched the parsed instrument on only 24 of 62, with **20
+  side-flips** against a run-to-run replicate floor of 5. It cannot inherit any of the floors
+  below it.
+- **The letter form is not invariant to its own legend.** Reversing which letter denotes which
+  option — changing no proposition and no option, only their listed order — changed **48 of 62
+  positions**.
+
+**It is also not "free" except of API spend**: one call per item against one call per sheet.
+What would make it work is listed in the results document, and starts with scoring a forced
+continuation rather than a first token, so the original wording survives and the letter form is
+never introduced.
+
+*(The original entry, unedited:)* The instrument currently asks for 62 answers as
 text and parses them, which costs: four models that produce no valid answer sheet under any
 condition, one build exhausting its token budget on 12 of 15 runs, 28% of runs invalid under the
 balance instruction, and three model pairs excluded for emitting tokenizer garbage. For an
