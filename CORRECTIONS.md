@@ -181,11 +181,31 @@ mechanism we offered ("averaging reveals the position") assumes a single positio
 supporting claim that temperature-0 runs are near-identical is also false on this corpus: 263
 within-cell pairs, median 1, p90 5, **max 32**, only 10 of 57 cells byte-identical.
 
-**What replaced it:** the deliberate manipulation moves a median of 3 items of 62 and 23 of 25
-models move 8 or fewer, while the nuisance factors nobody controls for move comparable amounts.
-Which is largest is not settled by these collections. Settling it needs two item orders across
-the panel under the wave protocol — about 310 calls — and that is named as the next measurement
-rather than resolved by choosing a favourable number.
+**What replaced it, and then what settled it.** The immediate replacement was: the deliberate
+manipulation moves a median of 3 items of 62 and 23 of 25 models move 8 or fewer, while the
+nuisance factors move comparable amounts, and which is largest is unsettled.
+
+**The 310 calls were then run, the same day.** Two shuffled item orders across the same fixed
+panel, same frozen parameters, same five swept seeds, condition D — chosen because A is 28.2%
+invalid on this panel against D's 2.9%, so an order floor measured under the balance
+instruction is computed on whichever models happen not to refuse it.
+
+Like-for-like, a five-run consensus against a five-run consensus on both sides:
+
+| row | pairs | median | p90 | max | p90 95% CI |
+|---|---:|---:|---:|---:|---|
+| presentation order, one sitting | 85 | **1** | **10** | 21 | [3, 12] |
+| prompt condition A→D, one sitting | 25 | **3** | **7** | 14 | [4, 12] |
+
+**Neither is demonstrably larger.** The intervals overlap across nearly their whole length, and
+what distinguishes the two is shape rather than size: item order usually moves almost nothing
+and occasionally moves ten items; the manipulation moves a few on nearly every model and rarely
+more than eight. Rare-and-large against common-and-small.
+
+The claim the paper now makes is narrower than either version it reached for: **a factor nobody
+controls for and a factor built to move the answer are the same size on this instrument,
+measured the same way.** Any published effect below about ten items of 62 is inside the range
+item order alone produces.
 
 Both manipulation rows now print in the floor table, the chart draws both reference lines, and
 the sample size behind each modal is disclosed on the row.

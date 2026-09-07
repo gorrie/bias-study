@@ -847,6 +847,64 @@ def _condition_pairs(pattern, dedupe_by_seed=False):
     return pairs, by, split_day, raw
 
 
+def floor_order_wave():
+    """PRESENTATION ORDER UNDER THE WAVE PROTOCOL -- the missing half of the comparison.
+
+    §3 of the paper reported its central comparison as unsettled, and named the reason: the
+    manipulation row was collected in one sitting at n=5 with a swept seed, while the order row
+    pools mixed temperatures and dates and holds ONE run in 23 of its 37 shuffled cells. A
+    single draw against a five-run consensus is not a like-for-like comparison, and the size of
+    the difference was unmeasured.
+
+    This is that measurement. Same fixed panel, same frozen parameters, same five swept seeds,
+    varying ONLY the item order -- two shuffled orders collected 2026-09-06 against the
+    canonical order wave 0 already held. Three orders per model, three pairs each.
+
+    CONDITION D, NOT A. The pooled order floor is measured under the balance instruction, which
+    is the worst condition on this instrument to measure anything: A is 28.2% invalid on wave 0
+    against D's 2.9%, and fourteen panel models decline it outright, so that floor is computed
+    on whichever models happen not to refuse. D is what the position series already runs on, and
+    it makes the contrast direct -- the manipulation is A->D, and this is what item order alone
+    does inside D.
+    """
+    cells = collections.defaultdict(list)
+    for pattern in ("runs/*-wave/*.jsonl", "runs/*-wave-orders/*.jsonl"):
+        got = load(pattern, condition="D",
+                   key=lambda r: (r["model"], r.get("shuffle_seed")),
+                   dedupe_by_seed=True)
+        for (m, order), runs in got.items():
+            cells[(m, order)].extend(runs)
+
+    by = collections.defaultdict(dict)
+    # The canonical order is keyed None and the shuffles are ints, so a plain sort raises.
+    # Sorting matters here for the same reason it matters in load(): the read order must be
+    # canonical, not the filesystem's.
+    for (m, order), runs in sorted(cells.items(),
+                                   key=lambda kv: (kv[0][0], kv[0][1] is not None, kv[0][1])):
+        by[m][order] = modal(runs)
+
+    pairs, clusters = [], []
+    for m, orders in sorted(by.items()):
+        ks = sorted(orders, key=lambda k: (k is not None, k))
+        for i in range(len(ks)):
+            for j in range(i + 1, len(ks)):
+                pairs.append(both_stats(orders[ks[i]], orders[ks[j]]))
+                clusters.append(m)
+    if not pairs:
+        return None
+
+    n_models = len({m for m, cs in by.items() if len(cs) > 1})
+    thin = sorted(m for m, cs in by.items() if len(cs) < 3)
+    note = ("item order only, under the wave protocol -- condition D, temperature 0.7, swept "
+            "seed, 5 runs per cell, modal against modal on BOTH sides. %d model(s) contribute; "
+            "%d hold fewer than all three orders" % (n_models, len(thin)))
+    if thin:
+        note += (" (%s -- local builds whose runs exhausted their token budget or returned "
+                 "nothing parseable, asked and not re-queued)"
+                 % ", ".join(t.split("/")[-1] for t in thin[:4]))
+    return summarise("presentation order, one sitting", pairs, note, clusters=clusters)
+
+
 def _split_refusals(models, pattern="runs/2026-09-05-wave/*.jsonl", condition="A"):
     """Of the models with no usable sheet, which actually REFUSED and which failed otherwise.
 
@@ -967,7 +1025,8 @@ def floor_conditions_wave():
 #: the paper with nothing recomputing the sentences around it, which is the one thing that gate
 #: exists to prevent. One list, two readers.
 ALL_FLOORS = (floor_order, floor_same_version, floor_template, floor_replicate,
-              floor_quant, floor_ablation, floor_conditions, floor_conditions_wave)
+              floor_quant, floor_ablation, floor_conditions, floor_conditions_wave,
+              floor_order_wave)
 
 
 def all_floors():

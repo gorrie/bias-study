@@ -220,6 +220,7 @@ def build():
     order = f["presentation order"]
     manip = f["prompt condition A->D"]
     manip_sitting = f["prompt condition A->D, one sitting"]
+    order_sitting = f["presentation order, one sitting"]
     abl = f["refusal-direction ablation"]
     null = f["same-version variants"]
 
@@ -261,6 +262,32 @@ def build():
         # pairs; wave 0 says 7 over 25, collected in one sitting at one temperature with a
         # swept seed. Both are printed in the floors table and both are gated, so neither can
         # quietly become "the" reference scale in prose.
+        # THE OTHER HALF OF THE SETTLED COMPARISON. Both rows are gated, because the whole
+        # point of §3's conclusion is that the two numbers sit beside each other under one
+        # protocol -- a sentence stating one of them from a stale copy would restore exactly
+        # the mismatch that collection was run to remove.
+        # CROSS-REFERENCED, not literal. The first version of these read
+        # "presentation order, one sitting | 85 | **1** | **%d**", which pins the p90 and
+        # silently asserts the pair count AND the median -- the exact defect
+        # test_no_phrase_template_hides_a_second_number was written for, and it failed on the
+        # first run. Every other number in the row is named, so a stale one points at itself.
+        {"key": "order_pairs_sitting",
+         "value": order_sitting["n"],
+         "what": "pairs behind the one-sitting order floor",
+         "phrase": "presentation order, one sitting | %d |"},
+        # ANCHORED IN PROSE, not in the table row. `build()` phrases take exactly one plain
+        # `%d` and no other digits (the two tests above), and a markdown row carries four
+        # numbers -- so pinning the p90 there asserts the other three. The sentence under the
+        # table states this one number alone, which is what a gated phrase needs.
+        # The mirror's pre-commit gitleaks scores the next line's `"key": "..."` shape as a
+        # generic-api-key at entropy 3.62. It is a dict field name in a list of thirty
+        # identical rows. The allow is inline and scoped to that one line rather than added to
+        # a config, because a rule relaxed globally to pass one false positive stops catching
+        # the real thing everywhere else.
+        {"key": "order_p90_sitting",   # gitleaks:allow
+         "value": order_sitting["side"][1],
+         "what": "presentation-order p90 under the wave protocol, side-flips",
+         "phrase": "occasionally moves %d"},
         {"key": "manip_p90_sitting",
          "value": manip_sitting["side"][1],
          "what": "deliberate manipulation p90 under one protocol in one sitting, side-flips",

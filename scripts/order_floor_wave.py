@@ -93,10 +93,51 @@ def collected(d):
     return {k: len(v) for k, v in seeds.items()}
 
 
-def todo(panel, have):
+def attempted(d):
+    """(model, shuffle_seed) -> how many records exist, valid or not.
+
+    Needed because `collected()` counts only VALID runs, so a cell whose every run fails looks
+    identical to a cell nobody has touched -- and the collector re-attempts it on every
+    invocation, forever.
+    """
+    seen = collections.Counter()
+    for p in glob.glob(os.path.join(d, "*.jsonl")):
+        for line in io.open(p, encoding="utf-8", errors="replace"):
+            if not line.strip():
+                continue
+            try:
+                r = json.loads(line)
+            except ValueError:
+                continue
+            if r.get("condition") == CONDITION:
+                seen[(r.get("model"), r.get("shuffle_seed"))] += 1
+    return seen
+
+
+def todo(panel, have, tried=None):
+    """Cells still worth collecting.
+
+    A CELL THAT HAS HAD ITS RUNS AND CAME BACK SHORT IS NOT A GAP. The gemma-4-12B GGUF build
+    has 13 records here and ZERO valid ones -- every run exhausted its token budget or failed
+    in transport -- and `mistral:latest` returns nothing usable either. Re-running a model that
+    cannot answer produces another failure at ~100 seconds a call, and on a local model that is
+    seventeen minutes per restart spent proving the same thing.
+
+    So a cell is done being asked once it has been given its full run budget, whatever came
+    back. What it yielded is a property of the model and belongs in the disclosure beside the
+    floor, not in a queue that never empties.
+    """
     want = WAVE_PARAMS["runs"]
-    return [(m, s) for m in panel["models"] for s in SHUFFLE_SEEDS
-            if have.get((m, s), 0) < want]
+    tried = tried or {}
+    out = []
+    for m in panel["models"]:
+        for s in SHUFFLE_SEEDS:
+            if have.get((m, s), 0) >= want:
+                continue
+            if tried.get((m, s), 0) >= want:
+                continue        # asked, and answered as well as it can
+            out.append((m, s))
+    return out
 
 
 def main(argv=None):
@@ -121,21 +162,34 @@ def main(argv=None):
         d = outdir()
         if prior:
             last = prior[-1]
-            if todo(panel, collected(last)):
+            if todo(panel, collected(last), attempted(last)):
                 d = last
     os.makedirs(d, exist_ok=True)
 
     have = collected(d)
-    left = todo(panel, have)
+    tried = attempted(d)
+    left = todo(panel, have, tried)
 
     if args.report or (not args.run and not args.plan):
-        done = len(panel["models"]) * len(SHUFFLE_SEEDS) - len(left)
+        cells = [(m, s) for m in panel["models"] for s in SHUFFLE_SEEDS]
+        want = p["runs"]
+        done = [k for k in cells if have.get(k, 0) >= want]
+        # COUNTED SEPARATELY, because "complete" and "asked and came back empty" are different
+        # facts and folding them together would report a finished collection over cells that
+        # yielded nothing.
+        spent = [k for k in cells
+                 if have.get(k, 0) < want and tried.get(k, 0) >= want]
         print("ORDER FLOOR UNDER THE WAVE PROTOCOL -- %s" % os.path.basename(d))
         print("  condition %s, %d shuffled order(s), %d runs each, temp %s, swept seed"
               % (CONDITION, len(SHUFFLE_SEEDS), p["runs"], p["temperature"]))
-        print("  %d of %d cell(s) complete; %d to collect (%d call(s))"
-              % (done, len(panel["models"]) * len(SHUFFLE_SEEDS), len(left),
-                 len(left) * p["runs"]))
+        print("  %d of %d cell(s) at n=%d; %d to collect (%d call(s))"
+              % (len(done), len(cells), want, len(left), len(left) * want))
+        if spent:
+            print("  %d cell(s) had their runs and came back short -- not re-queued:"
+                  % len(spent))
+            for m, s in spent[:6]:
+                print("      %-44s shuffle %-4s %d valid of %d record(s)"
+                      % (m[-44:], s, have.get((m, s), 0), tried.get((m, s), 0)))
         print("")
         print("  The canonical order comes free: wave 0 already holds condition %s at the"
               % CONDITION)
