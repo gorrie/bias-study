@@ -104,6 +104,10 @@ NOT_A_PROCEDURE = {
     # fails. Naming it in barometer-wave would put a rejected instrument in the procedure a
     # future run follows.
     "logit_probe.py": "v3 feasibility prototype; failed its agreement check, kept as evidence",
+    # Same status as logit_probe: a prototype for a v3 instrument that does NOT agree with the
+    # parser arm (17 side-flips against a replicate floor of 5), kept because the disagreement
+    # is itself the finding. Not in the procedure a future run follows.
+    "constrained_probe.py": "v3 prototype; grammar-constrained decoding, 17 side-flips from the parser",
 }
 
 

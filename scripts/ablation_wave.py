@@ -157,6 +157,32 @@ PAIRS = [
     ]),
     ("gemma2-9b", "gemma2:latest", ["wash-gemma2-ablit:latest"]),
     ("llama31-8b", "llama3.1:8b", ["wash-llama31-8b-ablit:latest"]),
+
+    # THE SAME TWO PAIRS, QUANT-MATCHED, BECAUSE THEIR EXCLUSION WAS CONFOUNDED.
+    #
+    # `check_arm_match.INELIGIBLE_PAIRS` rules both of the pairs above ineligible, and its
+    # stated reason is TWO reasons at once:
+    #
+    #   gemma2-9b     stock Q4_0   vs ablated Q8_0  + emits SentencePiece markers as text
+    #   llama31-8b    stock Q4_K_M vs ablated Q8_0  + answers in prose, never a sheet
+    #
+    # The quantisation half is fixable at zero cost and was never fixed: both ablated builds
+    # are Q8_0, and the matching Q8_0 STOCK builds have been on this machine all along --
+    # `gemma2:9b-instruct-q8_0` and `llama3.1:8b-instruct-q8_0`, already used as the far arm of
+    # the requantisation floor. The pairs were mismatched only because the stock arm took
+    # ollama's default Q4 tag.
+    #
+    # So run them matched. The failure modes are almost certainly properties of the ablated
+    # builds and will recur -- and that is the point: with the quant held fixed, "this build
+    # emits tokenizer garbage" becomes a clean finding instead of a claim entangled with a
+    # two-step quantisation gap. An exclusion carrying two reasons is an exclusion that cannot
+    # be attributed to either.
+    #
+    # SEPARATE LABELS so the mismatched cells stay on disk as the record rather than being
+    # overwritten -- the same reason both ablation rows print in the floors table. The `-q8`
+    # suffix keeps the directories distinct, which `test_ablation_slugs.py` now asserts.
+    ("gemma2-9b-q8", "gemma2:9b-instruct-q8_0", ["wash-gemma2-ablit:latest"]),
+    ("llama31-8b-q8", "llama3.1:8b-instruct-q8_0", ["wash-llama31-8b-ablit:latest"]),
 ]
 
 

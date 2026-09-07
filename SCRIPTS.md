@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-59 script(s). 0 carry no module docstring and are listed at the end.
+60 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -72,6 +72,7 @@
 - **`analysis.py`** — Enhanced analysis pass for a bias study run.
 - **`chart_intervention_budget.py`** — One scale: how far does an intervention have to move a model before it means anything?
 - **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
+- **`constrained_probe.py`** — Score the instrument by CONSTRAINED DECODING: make an invalid answer ungenerable.
 - **`dl_model.py`** — dl_model.py — Robust HuggingFace model downloader (host-side, resume-until-valid).
 - **`dose_smoke_gate.py`** — Post-abliteration quality gate.
 - **`floor_resolution.py`** — What a modal-vs-modal floor can actually resolve, and which factor is bigger ON THE SAME MODELS.
