@@ -151,6 +151,7 @@ instrument, same model, same settings, in items moved of 62:
 | prompt condition A->D, one sitting, frontier API | 20 | 3 / 5 / 14 | [3, 14] | 13 / 23 / 26 |
 | presentation order, one sitting, frontier API | 75 | 1 / 3 / 20 | [2, 11] | 3 / 8 / 36 |
 | modal sampling error | 110 | 1 / 3 / 30 | not a pair arm | 1 / 8 / 39 |
+| presentation order, one sitting, local 2026 open-weight † | 3 | 3 / 3 / 3 | too few models | 2 / 3 / 3 |
 
 † fewer than 10 pairs, so the 90th percentile IS the maximum by nearest-rank and the two columns print one number, not two.
 
@@ -215,19 +216,33 @@ K2.5/K2.6/K3, Mistral Medium), all 2025–26 releases. The table was published w
 headed "2026 frontier API" and "2024-generation open-weight", which asserts an open-vs-closed
 axis this study does not test and gets backwards.
 
-Three things move together across that line and this corpus cannot separate them: **serving
-path** (someone's API against local Ollama), **vintage** (2025–26 against 2024), and
-**quantisation** (provider precision against Q4_K_M). So "newer models are more order-stable"
-is *consistent with* these rows and not established by them — Q4 quantisation of a 7B model is
-an equally good explanation, and the requantisation floor in the table above is p90 6, which is
-the same order of magnitude as the gap being explained.
+Three things move together across that line: **serving path** (someone's API against local
+Ollama), **vintage** (2025–26 against 2024), and **quantisation** (provider precision against
+Q4_K_M). So "newer models are more order-stable" was *consistent with* these rows and not
+established by them — Q4 quantisation of a 7B model was an equally good explanation, and the
+requantisation floor above is p90 6, the same order of magnitude as the gap being explained.
 
-**The measurement that separates them is cheap and is now possible.** 2026-generation open
-weights run locally at Q4 — Qwen3.8-27B and Gemma-4-12B are already on disk for the ablation
-arm — put a 2026 model on the *local* side of the split. If order sensitivity tracks vintage it
-should fall to frontier levels; if it tracks quantisation or serving it should stay near 14.
-That is one wave-protocol collection on hardware that is already here, and until it is run the
-vintage reading stays a conjecture rather than a finding.
+**So it was measured, 2026-09-07: a 2026-generation open weight, run LOCALLY at Q4.** Same
+condition, same two shuffled orders plus canonical, same five swept seeds. It puts a 2026 model
+on the *local* side of the split, holding serving path and quantisation fixed against the 2024
+local row.
+
+| presentation order, one sitting | pairs | side med / p90 / max |
+|---|---:|---|
+| hosted 2025–26 | 75 | 1 / **3** / 20 |
+| **local 2026 open-weight, Q4** | 3 | 3 / **3** / 3 |
+| local 2024 open-weight, Q4 | 10 | 10 / **14** / 21 |
+
+**The gap tracks vintage.** A 2026 open weight run locally at Q4 behaves like the hosted 2026
+models, not like the local 2024 ones — so quantisation and the serving stack are both refuted as
+the mechanism, since they are held fixed against the row it does not resemble. Its order effect
+of 2–3 items sits inside its *own* run-to-run spread (median 1–2, max 4): reordering the
+questionnaire does nothing measurable to it. Röttger et al. conjectured this in 2024 and this is
+it measured.
+
+**Size is still confounded**, and three pairs is three pairs: the 2024 builds are 7–14B and this
+is a 27B, so "newer" and "bigger" are not separated. Full result, caveats and the two collector
+defects it surfaced: [`results/RESULTS-2026-09-07-local-2026-order-floor.md`](results/RESULTS-2026-09-07-local-2026-order-floor.md).
 
 Both columns are rows of the generated table above. The manipulation column was briefly
 published here with the frontier cell holding the *pooled* 7 and the local cell holding an 8

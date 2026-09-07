@@ -96,6 +96,17 @@ DEFAULT_EXCLUDE = {
     # 153/1096 vs 4/917 to 148/1076 vs 4/953 with nothing about refusal having changed.
     # Its own floor reads these runs directly (floor_table.floor_order_wave).
     "2026-09-06-wave-orders",
+    # The off-panel local-2026 order arm, and it is excluded by the SAME RULE as the entry
+    # above rather than by a fresh judgement: one model, three item orders, CONDITION D ONLY.
+    # 15 directive runs against an unchanged no-directive arm.
+    #
+    # Caught the way the 2026-09-06 entry was -- by the gate, immediately. The arms figures
+    # moved from 4/907 to 4/922 and the corpus from 2,866 to 2,881 runs with nothing about
+    # refusal having changed, on an arm collected to answer a question about item order. A
+    # denominator that grows whenever any D-only collection happens is not a denominator.
+    #
+    # Its own floor reads these runs directly (floor_table.floor_order_local_2026).
+    "2026-09-07-wave-orders-local2026",
     # The stock/ablated arm. Excluded for a stronger reason than one-sidedness: **an
     # abliterated build is deliberately modified not to refuse.** Half the runs in this
     # collection come from models engineered to remove the exact behaviour this table measures,

@@ -787,6 +787,59 @@ def floor_quant():
     return out
 
 
+def floor_order_local_2026():
+    """The one-sitting order floor on a 2026-generation open weight RUN LOCALLY.
+
+    THE TIE-BREAKER FOR THE STUDY'S MOST QUOTABLE SPLIT.
+    `floor_order_wave_by_class` shows item order moving p90 3 on hosted models and p90 14 on
+    local ones, and §3 reads that as a generational effect -- Rottger et al. predicted in 2024
+    that better-aligned newer models would be more stable. **This corpus cannot support that
+    reading**, because three properties change together across the split: serving path (someone
+    else's API against local Ollama), vintage (2025-26 against 2024), and quantisation
+    (provider precision against Q4_K_M). The requantisation floor is p90 6, the same order as
+    the gap being explained, so "it is the quantisation" is an equally good story.
+
+    The frozen panel cannot break the tie: its only LOCAL 2026-generation build is
+    gemma-4-12B, which returns empty responses. So a 2026 open weight was collected locally at
+    Q4 in its own off-panel arm -- same condition D, same two shuffled orders plus canonical,
+    same five swept seeds, same temperature.
+
+    HOW TO READ IT. If order sensitivity tracks VINTAGE, this row should sit near the hosted
+    row's p90 3. If it tracks quantisation or serving path, it should sit near the local row's
+    p90 14. It is one model, so it can refute "vintage explains it" or fail to -- it cannot
+    establish the alternative on its own.
+
+    SEPARATE ROW, NOT MERGED. It is a different sitting and an off-panel roster, so folding it
+    into `presentation order, one sitting` would change a published row by adding data collected
+    to answer a different question. Its directory carries a suffix precisely so the panel arm's
+    glob cannot see it.
+    """
+    cells = collections.defaultdict(list)
+    for pattern in ("runs/*-wave-orders-local2026/*.jsonl",):
+        for key, runs in load(pattern, key=_default_key, dedupe_by_seed=True).items():
+            cells[key].extend(runs)
+    by = collections.defaultdict(dict)
+    for (m, c, order), runs in sorted(cells.items(), key=lambda kv: str(kv[0])):
+        if c == "D" and len(runs) >= 4:
+            by[m][order] = modal(runs)
+
+    pairs, clusters = [], []
+    for m, orders in sorted(by.items()):
+        ks = sorted(orders, key=lambda k: (k is not None, k))
+        for i in range(len(ks)):
+            for j in range(i + 1, len(ks)):
+                pairs.append(both_stats(orders[ks[i]], orders[ks[j]]))
+                clusters.append(m)
+    if not pairs:
+        return None
+    note = ("item order only, one sitting, a 2026-generation open weight run LOCALLY at Q4 -- "
+            "the tie-breaker for whether the hosted/local order gap is vintage, quantisation "
+            "or serving path, which this corpus otherwise cannot separate. %d model(s)"
+            % len(by))
+    return summarise("presentation order, one sitting, local 2026 open-weight",
+                     pairs, note, clusters=clusters)
+
+
 def floor_ablation_wave():
     """Stock vs ablated at the WAVE PROTOCOL -- n=5, swept seed, one sitting.
 
@@ -1338,7 +1391,7 @@ def floor_conditions_wave():
 ALL_FLOORS = (floor_order, floor_same_version, floor_template, floor_replicate,
               floor_quant, floor_ablation, floor_conditions, floor_conditions_wave,
               floor_order_wave, floor_order_wave_by_class, floor_modal_noise,
-              floor_conditions_wave_by_class, floor_ablation_wave)
+              floor_conditions_wave_by_class, floor_ablation_wave, floor_order_local_2026)
 
 
 def all_floors():
