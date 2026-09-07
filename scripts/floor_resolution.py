@@ -62,6 +62,11 @@ import floor_table as F  # noqa: E402
 #: every count tested, so only the endpoint row was ever at risk. Do not lower this to make a
 #: run faster: the endpoint floor is what the ablation arm's effect is judged against, and the
 #: difference between 7 and 8 is the difference between an effect clearing its floor and not.
+BOOT = 2000
+SEED = 20260906
+WAVE = "runs/*-wave/*.jsonl"
+ORDERS = "runs/*-wave-orders/*.jsonl"
+
 #: THE VENDOR OF A LOCAL BUILD IS NOT "local".
 #:
 #: `vendor()` returned the literal string "local" for every model name without a slash, which
@@ -122,12 +127,6 @@ def _cached_modal_noise():
     if rec.get("median") is None or rec.get("p90") is None:
         return None
     return rec
-
-
-BOOT = 2000
-SEED = 20260906
-WAVE = "runs/*-wave/*.jsonl"
-ORDERS = "runs/*-wave-orders/*.jsonl"
 
 
 def p90(v):
