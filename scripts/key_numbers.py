@@ -254,19 +254,6 @@ def build():
          "value": order["n"],
          "what": "pairs behind the order floor",
          "phrase": "The order floor rests on %d pairs"},
-        # THE SAME-VERSION p90 ITSELF, not just its detection limit. The README stated it as 12
-        # in two places while the table above those sentences printed 11, and neither was
-        # gated -- `null_mde` gates the limit DERIVED from this distribution, which is a
-        # different number and cannot catch a stale copy of the p90. A floor quoted in prose
-        # needs its own key or the prose is unguarded.
-        {"key": "null_p90",
-         "value": null["side"][1],
-         "what": "same-version null p90, side-flips -- two variants of one declared version",
-         "phrase": "differ by **p90 %d**"},
-        {"key": "null_pairs_prose",
-         "value": null["n"],
-         "what": "pairs behind the same-version null, as stated in prose",
-         "phrase": "over %d pairs"},
         {"key": "manip_p90",
          "value": manip["side"][1],
          "what": "deliberate manipulation p90, side-flips",
@@ -622,6 +609,18 @@ def surface_numbers():
         {"key": "audit_ours_pass_comparable", "value": a["ours_pass_comparable"],
          "what": "of the comparable controls our own run passes -- the only self-score that "
                  "may sit beside another study's"},
+        # THE SAME-VERSION p90 ITSELF, not just its detection limit. The README stated it as
+        # 12 in two places while the generated table nineteen lines above printed 11, and
+        # neither was gated: `null_mde` gates the limit DERIVED from that distribution, which
+        # is a different number and cannot catch a stale copy of the p90.
+        #
+        # HERE rather than in build(), for the reason the block below gives -- these two were
+        # added to build() first and the paper gate immediately demanded two sentences the
+        # paper has never contained, because the paper states this floor inside its generated
+        # table rather than in prose. A README-only sentence gated against the paper fails
+        # forever on prose that was never supposed to be there.
+        # (both are appended via `optional` below, so a checkout that cannot compute the
+        # same-version row NAMES it rather than raising KeyError -- see that block's note)
         # CONCLUSION FIVE's numbers. They live here rather than in build() because build()'s
         # rows are grepped against the PAPER, and the paper states these figures inside its
         # generated floors table rather than in these sentences. A website-only sentence gated
@@ -652,12 +651,21 @@ def surface_numbers():
          "worst case between two variants of one release"),
         ("manipulation_p90", "prompt condition A->D", 1,
          "the deliberate manipulation's p90 -- the bar the nuisance factors clear"),
+        # The same-version floor as the README states it IN PROSE: its p90 and its pair count.
+        # `idx=None` means the row's pair count rather than a side-flip percentile.
+        ("null_p90", "same-version variants", 1,
+         "same-version null p90, side-flips -- two variants of one declared version"),
+        ("null_pairs_prose", "same-version variants", None,
+         "pairs behind the same-version null, as stated in prose"),
     ]
     for key, row, idx, what in optional:
-        if row in fl:
-            out.append({"key": key, "value": fl[row]["side"][idx], "what": what})
-        else:
+        if row not in fl:
             MISSING_FLOORS.add(row)
+            continue
+        # idx None asks for the row's n. Added rather than a second loop because the guard
+        # above -- absent is not zero and not a pass -- is the part that must not be duplicated.
+        value = fl[row]["n"] if idx is None else fl[row]["side"][idx]
+        out.append({"key": key, "value": value, "what": what})
     return out
 
 

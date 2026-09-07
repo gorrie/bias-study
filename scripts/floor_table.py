@@ -935,7 +935,7 @@ def floor_modal_noise():
     Measured by bootstrap in `scripts/floor_resolution.py`: resample a cell's runs with
     replacement twice, take the modal of each, count the side-flips between two modals of the
     SAME cell under the SAME condition. Everything that differs differs because the modal
-    moved. Cached to `data/modal-noise.json` because it is 400 resamples across 110 cells and
+    moved. Cached to `data/modal-noise.json` because it is 2000 resamples across 110 cells and
     `all_floors()` is read by four gates and the chart.
 
     It comes out at median 1, p90 3 -- small enough that the frontier effects clear it, and
