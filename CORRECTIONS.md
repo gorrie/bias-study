@@ -197,15 +197,39 @@ Like-for-like, a five-run consensus against a five-run consensus on both sides:
 | presentation order, one sitting | 85 | **1** | **10** | 21 | [3, 12] |
 | prompt condition A→D, one sitting | 25 | **3** | **7** | 14 | [4, 12] |
 
-**Neither is demonstrably larger.** The intervals overlap across nearly their whole length, and
-what distinguishes the two is shape rather than size: item order usually moves almost nothing
-and occasionally moves ten items; the manipulation moves a few on nearly every model and rarely
-more than eight. Rare-and-large against common-and-small.
+**And that pooled comparison was ALSO wrong, corrected the same day.** §2 of the paper argues
+the order row is two populations rather than one and calls splitting it the most important line
+in the paper; the comparison against the manipulation pooled it anyway. Two measurements fix it.
 
-The claim the paper now makes is narrower than either version it reached for: **a factor nobody
-controls for and a factor built to move the answer are the same size on this instrument,
-measured the same way.** Any published effect below about ten items of 62 is inside the range
-item order alone produces.
+**The estimator's own error, which nothing had measured.** Every floor pairs a *modal* answer
+sheet — the per-item majority across a cell's runs — and a modal is a statistic that moves when
+you draw again. Bootstrapped over 110 cells, two modals of the *same* cell under the *same*
+condition: **median 1, p90 3.** It is now a row in the floor table, because it is the
+denominator every other row needed and never had.
+
+**Split by model generation, and the ordering inverts.** On the 24 models in both arms:
+
+| | models | order med / p90 | manipulation med / p90 | order larger on |
+|---|---:|---|---|---|
+| 2026 frontier APIs | 20 | 1 / **3** | 2.5 / **5** | 4 of 20 |
+| 2024 open-weight, 7–14B | 4 | 11 / **12** | 4 / **8** | 4 of 4 |
+
+Paired within each model: median difference **−1** item, 95% CI [−2, +0.5], sign test p = 0.29
+over the 22 that differ. Pooled, order looked larger; within models the manipulation is larger
+on 14 of 24. **A net aggregate concealing gross movement between two populations — this paper's
+own charge, in its own headline, twice in one day.**
+
+**What the study now claims, by generation:** on current frontier models item order is not
+measurable (p90 3 = the modal's own error) while the manipulation is small but real (median 2.5,
+p90 5, larger on 16 of 20); on the 2024-generation open-weight models most of this literature
+was built on, item order dominates (p90 12 vs 8, on every model). Röttger predicted that split
+in 2024.
+
+The sentence this project reached for twice, in both directions, was never available. The answer
+depends on which generation you measure, the effects are small enough that the estimator
+matters, and a study pooling the two cannot say which factor moved its result. Ten cells in this
+corpus have a modal so unstable — `deepseek-v4-flash` under P reaches p90 27 — that no
+modal-based measurement of them means anything.
 
 Both manipulation rows now print in the floor table, the chart draws both reference lines, and
 the sample size behind each modal is disclosed on the row.

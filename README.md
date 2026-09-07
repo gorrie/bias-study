@@ -2,6 +2,11 @@
 
 **A multi-vendor, multi-generation audit of institutional-skepticism framing in large language models.**
 
+> **`v1`, `v2` and `v3` in this repository name the three intervention rungs — prompt edit,
+> elicitation pipeline, weight ablation — not releases.** Releases are dated. See
+> [VERSIONING.md](VERSIONING.md), and read [CORRECTIONS.md](CORRECTIONS.md) first if a number
+> you have seen quoted disagrees with one here.
+
 A reproducible study of how aligned LLMs shift their framing on contested-institution
 topics when the "be fair to both sides" instruction is removed — and a test of *where*
 that bias lives, by escalating force from the prompt, to an elicitation pipeline, to the
