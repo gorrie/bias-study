@@ -107,6 +107,12 @@ DEFAULT_EXCLUDE = {
     #
     # Its own floor reads these runs directly (floor_table.floor_order_local_2026).
     "2026-09-07-wave-orders-local2026",
+    # The grammar arm: conditions D and P only, so the same one-sided-denominator rule. It
+    # also CANNOT produce a refusal by construction -- the four labels are the only emittable
+    # tokens -- so pooling it would drive the corpus refusal rate toward zero as a function of
+    # how much constrained data happens to exist. That is worse than one-sided; it is a
+    # denominator that dilutes the numerator it is supposed to measure.
+    "2026-09-07-constrained",
     # The stock/ablated arm. Excluded for a stronger reason than one-sidedness: **an
     # abliterated build is deliberately modified not to refuse.** Half the runs in this
     # collection come from models engineered to remove the exact behaviour this table measures,

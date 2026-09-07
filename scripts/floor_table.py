@@ -141,9 +141,17 @@ def _order_key(r):
     modal unless it is added here. When adding an arm that varies a new parameter, add it to
     this key in the same commit, and measure the floor before and after so the dilution is on
     the record rather than assumed.
+
+    THE THIRD FACTOR ARRIVED THE SAME WEEK, AND IS ADDED IN THE SAME COMMIT AS THE ARM THAT
+    VARIES IT -- which is what the paragraph above asks for. `decoding` distinguishes a prose
+    run the parser read from a grammar-constrained run where the four labels were the only
+    emittable tokens. Those disagree by 17 side-flips of 62, larger than the deliberate
+    manipulation, so pooling them into one canonical-order cell would be the largest
+    contamination this key has seen -- and it would have happened silently the first time
+    anyone collected a constrained condition-A run.
     """
     return (r["model"], r["condition"], r.get("shuffle_seed"), r.get("template", "T01"),
-            r.get("temperature"))
+            r.get("temperature"), r.get("decoding", "prose"))
 
 
 #: What load() threw away on the last call, and why. A dropped run is a measurement that does
@@ -787,6 +795,128 @@ def floor_quant():
     return out
 
 
+def floor_elicitation_format():
+    """PROSE vs GRAMMAR: how much does the way you ASK move the answer?
+
+    Every other row here varies something about the model or the prompt's content. This varies
+    only how the answer is COLLECTED: the parser arm asks for 62 answers as prose and reads
+    them with a regex; the grammar arm sends the identical prompt with a JSON schema pinning
+    the output to an array of 62 enum values, so a refusal, a truncation, tokenizer garbage and
+    a malformed sheet are all ungenerable rather than produced-and-rejected.
+
+    The prompt is built by the same `run_compass.build_prompt` in both arms and the protocol is
+    the wave's in both -- temperature 0.7, five swept seeds from 20260830, template T01. Only
+    the decoding differs, which is what makes this a clean contrast rather than two instruments.
+
+    THIS ROW REFUSES TO REPORT A FLOOR, AND THE REFUSAL IS THE MEASUREMENT.
+    ---------------------------------------------------------------------
+    The across-arm distance is median 23, p90 34 of 62 -- which would make it far the largest
+    factor in this table, seven times the deliberate manipulation, and that is what it was
+    about to be written up as. It is not a factor. **The grammar arm does not agree with
+    ITSELF.**
+
+    Measured over the same 10 cells, five swept seeds each:
+
+        arm         its own run-to-run spread (median across cells)
+        prose        3
+        grammar     26
+        across      24
+
+    The prose arm at temperature 0.7 returns a stable position -- median 3 side-flips between
+    two of its own runs, which is inside the replicate floor. The grammar arm's runs disagree
+    with each other by 26, as much as they disagree with prose. An instrument whose repeat
+    measurements differ by 26 items of 62 is not measuring a position, so the across-arm
+    distance is not a comparison between two instruments; it is one instrument against noise.
+
+    A misalignment artifact was ruled out separately: rotating the grammar sheet by +/-1 and
+    +/-2 items does not reduce the distance (24 at k=0, 24 at k=+1, 28 at k=+2), so the answers
+    are not correctly ordered answers assigned to the wrong items.
+
+    WHAT IT MEANS FOR THE PROPOSAL. Grammar-constrained decoding removes every parse failure
+    the release document listed -- 28.2% invalid condition-A runs, budget exhaustion, tokenizer
+    garbage -- by making them ungenerable, and it does so at the cost of the measurement
+    replicating at all. The plausible mechanism is that free generation lets the model condition
+    each answer on the ones it has written, and a bare array of 62 enum values gives it no such
+    anchor, so each position is close to an independent sample from a wide posterior. The prose
+    arm's stability is doing work that looked like overhead.
+
+    So the row prints the STABILITY numbers rather than a floor, and a caller cannot mistake it
+    for a nuisance factor to compare against. Restoring it as a floor requires a grammar arm
+    that passes its own replicate test first.
+    """
+    grammar = load("runs/*-constrained/*.jsonl",
+                   key=lambda r: (r["model"], r["condition"]), dedupe_by_seed=True)
+    prose = load("runs/*-wave/*.jsonl",
+                 key=lambda r: (r["model"], r["condition"]), dedupe_by_seed=True)
+
+    def selfspread(sheets):
+        v = sorted(both_stats(sheets[i], sheets[j])[0]
+                   for i in range(len(sheets)) for j in range(i + 1, len(sheets)))
+        return v[len(v) // 2] if v else None
+
+    across, g_self, p_self, seen = [], [], [], []
+    for key in sorted(set(grammar) & set(prose), key=str):
+        g, p = grammar[key], prose[key]
+        if len(g) < 4 or len(p) < 4:
+            continue
+        across.append(both_stats(modal(p), modal(g)))
+        g_self.append(selfspread(g))
+        p_self.append(selfspread(p))
+        seen.append("%s/%s" % (key[0].split("/")[-1], key[1]))
+    if not across:
+        return None
+
+    def med(v):
+        v = sorted(x for x in v if x is not None)
+        return v[len(v) // 2] if v else None
+
+    gm, pm = med(g_self), med(p_self)
+    am = med([a[0] for a in across])
+
+    # THE ARM MUST PASS ITS OWN REPLICATE TEST BEFORE ITS DISTANCE MEANS ANYTHING.
+    # A floor row here would be compared against the manipulation and the order floors by
+    # every reader of the table, and this arm cannot support that.
+    if gm is not None and am is not None and gm >= am * 0.5:
+        note = ("NOT A FACTOR -- THE GRAMMAR ARM FAILS ITS OWN REPLICATE TEST. Over %d cell(s), "
+                "two grammar runs of the SAME cell differ by a median of %s side-flips against "
+                "%s for two prose runs, and the across-arm distance is %s. An arm whose repeat "
+                "measurements differ as much as it differs from the other arm is measuring "
+                "noise, so the across-arm number is not an elicitation-format effect. "
+                "Misalignment ruled out: rotating the sheet by +/-1 or +/-2 items does not "
+                "reduce the distance. Cells: %s"
+                % (len(seen), gm, pm, am, ", ".join(sorted(seen)[:6])))
+        # THE COLUMNS MEAN WHAT THE HEADER SAYS THEY MEAN.
+        #
+        # A first version put (prose_self, grammar_self, across) into the med/p90/max slots,
+        # so the row read "3 / 26 / 24" under a header saying "side-flip med / p90 / max" --
+        # three different quantities wearing the labels of one distribution, and a max smaller
+        # than the p90 as the giveaway. That is a worse defect than the one it was trying to
+        # disclose. The columns carry the real across-arm distribution; the disqualification
+        # lives in the NAME and the note, where a reader cannot mistake it for a floor.
+        side = [a[0] for a in across]
+        endp = [a[1] for a in across]
+
+        def trip(v):
+            v = sorted(v)
+            p90 = v[int(0.9 * len(v)) - 1] if len(v) >= 10 else max(v)
+            return (v[len(v) // 2], p90, max(v))
+
+        return {"name": "elicitation format -- ARM UNSTABLE, NOT A FLOOR",
+                "n": len(across), "side": trip(side), "endpoint": trip(endp),
+                "side_ci": (None, None), "note": note,
+                "small_n": False, "p90_is_max": False,
+                "clustered": False, "n_clusters": None,
+                "disqualified": True}
+
+    note = ("the same prompt and the same wave protocol, collected two ways: prose read by the "
+            "parser against a JSON schema pinning the four labels. Only the DECODING differs. "
+            "Grammar arm's own replicate median %s against prose %s, so the arm is stable "
+            "enough for the contrast. %d cell(s): %s"
+            % (gm, pm, len(seen), ", ".join(sorted(seen)[:6])))
+    return summarise("elicitation format (prose vs grammar)", across, note,
+                     clusters=[s.split("/")[0] for s in seen])
+
+
 def floor_order_local_2026():
     """The one-sitting order floor on a 2026-generation open weight RUN LOCALLY.
 
@@ -1391,7 +1521,8 @@ def floor_conditions_wave():
 ALL_FLOORS = (floor_order, floor_same_version, floor_template, floor_replicate,
               floor_quant, floor_ablation, floor_conditions, floor_conditions_wave,
               floor_order_wave, floor_order_wave_by_class, floor_modal_noise,
-              floor_conditions_wave_by_class, floor_ablation_wave, floor_order_local_2026)
+              floor_conditions_wave_by_class, floor_ablation_wave, floor_order_local_2026,
+              floor_elicitation_format)
 
 
 def all_floors():
@@ -1493,6 +1624,17 @@ def main(argv=None):
             for label, why in r.get("skipped") or ():
                 print()
                 print("**%s excludes `%s`:** %s" % (r["name"], label, why))
+        # A DISQUALIFIED ROW MUST CARRY ITS REASON INTO THE MARKDOWN.
+        #
+        # `note` was printed only in the text output, so a row named "ARM UNSTABLE, NOT A
+        # FLOOR" would reach a document as bare numbers under a scary label with no
+        # explanation -- and the numbers are the largest in the table, which is exactly the
+        # combination a reader quotes. If a row is not a floor, the table has to say why where
+        # the table is read.
+        for r in rows:
+            if r.get("disqualified") and r.get("note"):
+                print()
+                print("**%s:** %s" % (r["name"], r["note"]))
         return 0
 
     print("MEASURED FLOORS -- every row computed from runs/, both statistics")
