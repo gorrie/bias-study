@@ -536,6 +536,18 @@ SURFACES = {
             "same_version_max": "a median of five and up to %d",
         },
     },
+    #: The barometer's own demo page (2026-09-07). Every figure in its layout is rendered from
+    #: static/tech/barometer/barometer.json, which tools/gen-barometer.py reads through build()
+    #: and floors() -- so the layout cannot drift. The PROSE above the layout types three numbers
+    #: (panel size, the two MDEs), and those are gated here like every other typed copy.
+    "website-barometer": {
+        "path": _find_surface("website", "content", "tech", "barometer.md"),
+        "phrases": {
+            "wave_panel_size": "A frozen panel of %d models answers",
+            "null_mde": "the same-version floor, which resolves %d items",
+            "order_mde": "the presentation-order floor, which resolves %d.",
+        },
+    },
     "release": {
         "path": _find_surface("bias-study-release", "README.md"),
         # THIS SURFACE GATED TWO PHRASES WHILE THE WEBSITE GATED FIFTEEN, AND IT SHOWED.
@@ -979,7 +991,7 @@ def main(argv=None):
         # unchecked, which is the same silence as not declaring it -- and is how the dispatch
         # ran a day behind a corrected page.
         for name, wanted in ([(n, args.check_website) for n in SURFACES
-                              if n == "website" or n.startswith("dispatch-")]
+                              if n.startswith("website") or n.startswith("dispatch-")]
                              + [("release", args.check_release)]):
             if wanted:
                 failures += [(name,) + f for f in check_surface(name, rows)]
