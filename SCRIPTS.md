@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-58 script(s). 0 carry no module docstring and are listed at the end.
+59 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -59,6 +59,7 @@
 ## Tests and development
 
 - **`selftest_analysis.py`** — selftest_analysis.py — ten assertions over the committed May data. Zero API cost.
+- **`test_ablation_slugs.py`** — Two independent abliterations of one base must never share a directory.
 - **`test_analysis_plumbing.py`** — Regression tests for the analysis plumbing: encoding, run discovery, gate templates.
 - **`test_compass_parser.py`** — Fixtures for the forced-choice parser in run_compass.py. Run before any collection.
 - **`test_floor_resolution.py`** — Tests for the modal-resolution layer and the per-model verdict.

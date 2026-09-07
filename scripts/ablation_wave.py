@@ -129,7 +129,32 @@ PAIRS = [
     # and because the excluded ones need re-running at n=5 rather than excluding on n=1, but
     # they collect LAST -- nobody deploys these and a 2026 claim cannot rest on them.
     ("phi4-14b", "phi4:latest", ["huihui_ai/phi4-abliterated:latest"]),
-    ("qwen25-14b", "qwen2.5:14b", ["huihui_ai/qwen2.5-abliterate:14b"]),
+    # THE BASE THAT SHOWS THE EFFECT, AND IT HAD ONE ABLATOR.
+    #
+    # 2026-09-07: of three bases with a usable pair, this is the only one whose ablation effect
+    # clears the estimator floor -- 8/9/9 side-flips of 62 under A/D/P against a floor of 3.
+    # And it had exactly ONE abliteration on disk, so the pre-registered ablator-agreement step
+    # could not run on it. The one base that could be checked (qwen38-27b) shows nothing above
+    # noise, which left the arm's headline as "the base that shows the effect is the base that
+    # cannot be checked".
+    #
+    # Two more INDEPENDENT abliteration jobs of the same base, both quant-matched to the stock
+    # arm's Q4_K_M, so the check can run where the effect is:
+    #
+    #   huihui-ai v1     the build already here (995k+ downloads via ollama)
+    #   huihui-ai v2     a LATER, SEPARATE abliteration by the same author
+    #   Josiefied v2     Goekdeniz-Guelmez -- a DIFFERENT author and method
+    #
+    # PROVENANCE, because `mradermacher` is a QUANTISER and not an ablator. Both new tags are
+    # mradermacher requantisations, and the abliteration author is what agreement is about:
+    # two builds by the same author agreeing is weaker evidence than two authors agreeing. The
+    # requantisers `maicog` and `Lucy-in-the-Sky` were rejected for the opposite reason -- both
+    # repackage huihui v2, so using both would have counted ONE abliteration job twice.
+    ("qwen25-14b", "qwen2.5:14b", [
+        "huihui_ai/qwen2.5-abliterate:14b",
+        "hf.co/mradermacher/Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M",
+        "hf.co/mradermacher/Josiefied-Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M",
+    ]),
     ("gemma2-9b", "gemma2:latest", ["wash-gemma2-ablit:latest"]),
     ("llama31-8b", "llama3.1:8b", ["wash-llama31-8b-ablit:latest"]),
 ]
@@ -168,9 +193,29 @@ def _scan(d):
 
 def _slug(model_id):
     """A directory name for one ablated build. Several share a base, so the ablator has to be
-    in the path or the second one overwrites the first."""
-    tail = model_id.split("/")[-2] if model_id.count("/") >= 2 else model_id.split("/")[0]
-    return tail.replace(":", "_").replace(".", "_").lower()[:24]
+    in the path or the second one overwrites the first.
+
+    IT TOOK THE UPLOADER AND THE UPLOADER IS NOT THE ABLATOR, AND TWO BUILDS COLLIDED.
+    This returned the second-to-last path segment, which for `hf.co/<uploader>/<repo>:<quant>`
+    is the UPLOADER. Adding two independent abliterations of qwen2.5-14b -- huihui-ai v2 and
+    Josiefied v2 -- both routed through mradermacher's requantisations, so both slugged to
+    `ablated-mradermacher` and would have written into ONE directory.
+
+    That is not a cosmetic clash. `ablation_analysis.py` derives the arm from the directory
+    name, so two different ablations would have been read as one cell, their runs pooled, and
+    the ablator-agreement step -- the whole reason these builds were pulled -- would have
+    compared a build against itself. Caught by reading `--plan` before collecting, which is
+    the only reason it is a note rather than a retraction.
+
+    So the slug is built from the REPO name, which identifies the abliteration, and the
+    uploader is dropped. Long enough to keep `Josiefied` distinct from the plain v2, and the
+    collision is asserted against in the tests rather than trusted.
+    """
+    part = model_id.split("/")[-1] if "/" in model_id else model_id
+    part = part.split(":")[0]                     # drop the quant tag
+    for junk in ("-GGUF", "-gguf", "Qwen2.5-", "qwen2.5-", "-Instruct"):
+        part = part.replace(junk, "")
+    return part.replace(":", "_").replace(".", "_").strip("-_").lower()[:28] or "ablated"
 
 
 def cells():
