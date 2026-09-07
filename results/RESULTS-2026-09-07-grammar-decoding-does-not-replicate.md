@@ -81,12 +81,45 @@ other than the item order, `zip` would assign every answer to the wrong item and
 this. Rotating the grammar sheet by ±1 and ±2 items does not reduce the distance (24 at k=0, 24
 at k=+1, 28 at k=+2), so these are not correctly-ordered answers attached to the wrong items.
 
-## The likely mechanism, and why it matters for the proposal
+## Two candidate mechanisms, both tested, both refuted
 
-Free generation lets a model condition each answer on the ones it has already written. A bare
-array of 62 enum values gives it no such anchor, so each position looks close to an independent
-draw from a wide posterior. **The prose arm's verbosity was doing work that looked like
-overhead.**
+**Hypothesis 1 — the missing anchor.** Free generation lets a model condition each answer on the
+ones it has already written; a bare array of enums gives it no such anchor, so each position
+looks like an independent draw. Testable by restoring the anchor and changing nothing else:
+a schema of `{"reasoning": string, "answer": enum}` per item, so the model may write before
+committing to a still-pinned answer. This is also what Ovando's framing actually supports — a
+grammar constrains the *authorized surface*, not the whole utterance.
+
+**Refuted.** `qwen2.5:14b` / D, five swept seeds, `reasoned` mode: own run-to-run spread median
+**21**, against the bare sheet's **22** on the same cell. Restoring free text before each answer
+changed nothing.
+
+**Hypothesis 2 — renormalised sampling.** Constraining the sampler to four tokens renormalises
+the distribution over them, so temperature 0.7 samples from something much flatter than free
+generation does, inflating variance. Testable at temperature 0, where there is no sampling
+variance at all.
+
+**Refuted.** At temperature 0 the grammar arm still sits **15** side-flips (sheet) and **17**
+(reasoned) from the prose modal over 38 valid condition-D runs. A deterministic decode that
+lands 16 items away from the prose consensus is not a sampling artifact.
+
+## What the evidence does support
+
+Both facts together — unstable under temperature, *and* systematically shifted when
+deterministic — say the constraint is not a neutral change of clothes:
+
+> **Grammar-constrained decoding changes both the central tendency and the reliability of the
+> answer. It is not a formatting choice.**
+
+The remaining explanation this data is consistent with, and does not establish, is that a JSON
+array of enum labels is far off-distribution for a chat model answering a political
+questionnaire. Off-distribution inputs give flatter, less reliable next-token distributions,
+which would produce exactly this pair of symptoms — a shifted mode and a wide one. The
+`reasoned` mode does not escape it because its reasoning field is *also* inside the JSON
+grammar, and a constrained string is not free prose.
+
+**That is a useful negative result for anyone treating constrained decoding as a free win for
+evaluation harnesses.** It buys guaranteed-parseable output and it changes what you measured.
 
 That is a real cost of the constitutive approach in this setting, and it is not the cost the
 release document anticipated. `RELEASE-v2` expected the trade to be *"a second instrument needs
@@ -100,17 +133,21 @@ invalid runs.
 
 ## What would make it work
 
-Stated so the next attempt starts here:
+The second bullet below was tried and refuted (above). What is left, stated so the next attempt
+starts from here rather than from the top:
 
 - **Constrain per item, not per sheet.** One call per proposition with a four-way enum gives the
-  model the whole context for a single decision instead of 62 decisions in one array. It is 62×
-  the calls, and it is the version that might replicate.
-- **Or constrain a reasoned field plus the answer.** A schema of `{"reasoning": string, "answer":
-  enum}` per item keeps the anchor free generation provides while still making an invalid answer
-  ungenerable. This is the design Ovando's framing actually supports — the grammar constrains the
-  *authorized surface*, not the whole utterance.
-- **Re-run the replicate test first, before any comparison.** That is the test this arm failed,
-  and it costs five runs of one cell.
+  model the whole context for a single decision instead of 62 decisions in one array, and keeps
+  the request shape much closer to ordinary chat. It is 62× the calls. **This is the untested
+  option and it is the one worth trying.**
+- ~~Constrain a reasoned field plus the answer.~~ **Tried, refuted**: median 21 against the bare
+  sheet's 22.
+- **Run the replicate test FIRST, on one cell, before collecting anything.** Five runs. The
+  previous attempt collected 50 runs across five models and computed a cross-arm distance before
+  ever asking whether the arm agreed with itself, and nearly published the answer as the largest
+  factor in the study. `constrained_probe.py --replicate` is that check.
+- **If a variant does replicate, it still needs the agreement check**, and it still cannot
+  measure refusal.
 
 ## Status
 

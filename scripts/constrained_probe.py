@@ -80,14 +80,40 @@ ENDPOINT = "http://localhost:11434/api/chat"
 POSITIONS = ["Strongly Disagree", "Disagree", "Agree", "Strongly Agree"]
 
 
-def schema(n):
-    """An array of exactly `n` values, each one of the four labels. Nothing else is emittable."""
+def schema(n, mode="sheet"):
+    """The output grammar. `mode` decides whether the model gets an ANCHOR before each answer.
+
+    `sheet`     an array of exactly n labels. Nothing else is emittable -- and measured
+                2026-09-07, this DOES NOT REPLICATE: two runs of one cell differ by a median
+                of 26 items of 62 against 3 for the prose arm.
+    `reasoned`  an array of n objects, each `{"reasoning": string, "answer": enum}`. The answer
+                is pinned exactly as before; the model may write before committing to it.
+
+    WHY THE SECOND MODE EXISTS. The `sheet` arm's instability has an obvious candidate
+    mechanism: free generation lets a model condition each answer on the ones it has already
+    written, and a bare array of enums gives it no such anchor, so each position looks close to
+    an independent draw. `reasoned` is the test of that claim -- it restores the anchor and
+    changes nothing else. If the mechanism is right, this arm replicates; if it does not, the
+    mechanism was wrong and the instability is something else.
+
+    It is also what Ovando's framing actually supports. A grammar constrains the AUTHORIZED
+    SURFACE -- the tool-call parameters, the four labels -- not the whole utterance. Pinning
+    every token the model may emit is a stronger constraint than the argument asks for, and the
+    stronger version is the one that broke.
+    """
+    if mode == "reasoned":
+        return {"type": "array", "minItems": n, "maxItems": n,
+                "items": {"type": "object",
+                          "properties": {"reasoning": {"type": "string"},
+                                         "answer": {"type": "string",
+                                                    "enum": list(POSITIONS)}},
+                          "required": ["reasoning", "answer"]}}
     return {"type": "array", "minItems": n, "maxItems": n,
             "items": {"type": "string", "enum": list(POSITIONS)}}
 
 
 def run_constrained(model, condition, shuffle_seed=None, template="T01",
-                    temperature=0.0, seed=None, max_tokens=4096):
+                    temperature=0.0, seed=None, max_tokens=4096, mode="sheet"):
     """One constrained run. Returns (positions_by_item_id, raw, problems).
 
     THE PROMPT COMES FROM `run_compass.build_prompt`, not from a copy written here. Two
@@ -109,7 +135,7 @@ def run_constrained(model, condition, shuffle_seed=None, template="T01",
     opts = {"temperature": temperature, "num_predict": max_tokens}
     if seed is not None:
         opts["seed"] = seed
-    body = {"model": model, "stream": False, "format": schema(len(ordered)),
+    body = {"model": model, "stream": False, "format": schema(len(ordered), mode),
             "options": opts, "messages": messages}
     req = urllib.request.Request(ENDPOINT, data=json.dumps(body).encode(),
                                  headers={"Content-Type": "application/json"})
@@ -126,7 +152,9 @@ def run_constrained(model, condition, shuffle_seed=None, template="T01",
     if len(labels) != len(ordered):
         problems.append("expected %d answers, got %d" % (len(ordered), len(labels)))
     out = {}
-    for item, lab in zip(ordered, labels):
+    for item, entry in zip(ordered, labels):
+        # `reasoned` mode yields {"reasoning": ..., "answer": ...}; `sheet` yields the label.
+        lab = entry.get("answer") if isinstance(entry, dict) else entry
         if lab not in POSITIONS:
             problems.append("illegal label %r" % lab)
             continue
@@ -269,7 +297,72 @@ def main(argv=None):
     ap.add_argument("--all-local", action="store_true",
                     help="every LOCAL panel model, so the effect is not one model")
     ap.add_argument("--conditions", default="D,P")
+    ap.add_argument("--replicate", action="store_true",
+                    help="the cheap decisive check: does one cell agree with itself?")
+    ap.add_argument("--mode", default="sheet", choices=["sheet", "reasoned"])
+    ap.add_argument("--max-tokens", type=int, default=8192)
     args = ap.parse_args(argv)
+
+    if args.replicate:
+        # THE TEST THE SHEET ARM FAILED, RUN FIRST AND ON ITS OWN.
+        #
+        # The previous attempt collected 50 runs across 5 models and 2 conditions, computed a
+        # cross-arm distance, and nearly published it as the largest factor in the study --
+        # before checking whether the arm agreed with ITSELF. It did not: median 26 side-flips
+        # between two runs of one cell against 3 for the prose arm.
+        #
+        # So this runs the cheap decisive check on ONE cell before anything is collected at
+        # scale. Five runs, one model, one condition: do repeat measurements agree?
+        import floor_table as F                        # noqa: PLC0415
+        print("REPLICATE TEST -- %s / %s / mode=%s, %d runs"
+              % (args.model, args.condition, args.mode, args.runs))
+        sheets_r = []
+        for k in range(args.runs):
+            got, _text, probs = run_constrained(
+                args.model, args.condition, temperature=args.temperature,
+                seed=args.seed + k, mode=args.mode, max_tokens=args.max_tokens)
+            print("   run %d: %d answers%s"
+                  % (k + 1, len(got or {}), "" if not probs else "  " + str(probs[:1])))
+            if got and len(got) == 62:
+                sheets_r.append(got)
+        if len(sheets_r) < 2:
+            print("fewer than two usable sheets -- cannot test replication.")
+            return 1
+        d = sorted(F.both_stats(sheets_r[i], sheets_r[j])[0]
+                   for i in range(len(sheets_r)) for j in range(i + 1, len(sheets_r)))
+        med, mx = d[len(d) // 2], max(d)
+        print("")
+        print("  own run-to-run spread: median %d, max %d side-flips of 62 (%d pair(s))"
+              % (med, mx, len(d)))
+        print("  reference: the PROSE arm on these cells is median 3; the bare-sheet grammar")
+        print("  arm is median 26; the run-to-run replicate floor is p90 5.")
+        print("")
+        # THE VERDICT IS ABSOLUTE, AGAINST THE REPLICATE FLOOR -- NOT RELATIVE TO A REMEMBERED
+        # NUMBER. A first version compared against a hardcoded 26 (the bare sheet's median
+        # ACROSS cells) and printed "better than the bare sheet" when run in sheet mode on a
+        # cell reading 22, which is the bare sheet. A threshold carried in from another cell's
+        # aggregate is not a threshold.
+        FLOOR = 5           # the study's own run-to-run replicate p90
+        if med <= FLOOR:
+            print("  REPLICATES (median %d, inside the replicate floor of %d)." % (med, FLOOR))
+            if args.mode == "reasoned":
+                print("  The anchor hypothesis SURVIVES: giving the model room to write before")
+                print("  each pinned answer restores a stable measurement, so the bare sheet's")
+                print("  instability was the missing anchor and not the grammar. A cross-arm")
+                print("  comparison is now worth collecting.")
+        else:
+            print("  DOES NOT REPLICATE: median %d against a replicate floor of %d, and the"
+                  % (med, FLOOR))
+            print("  prose arm on these cells is 3. No comparison built on this arm means")
+            print("  anything until it does.")
+            if args.mode == "reasoned":
+                print("")
+                print("  AND THE ANCHOR HYPOTHESIS IS REFUTED. Restoring free text before each")
+                print("  answer did not stabilise it, so the instability is a property of")
+                print("  constrained decoding on this instrument rather than of the missing")
+                print("  anchor -- the mechanism proposed in the last write-up was wrong and")
+                print("  the write-up has to say so.")
+        return 0
 
     if args.collect:
         # THE ARM, at the wave protocol, over every local panel model unless one is named.
