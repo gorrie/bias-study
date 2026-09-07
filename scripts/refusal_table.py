@@ -96,6 +96,14 @@ DEFAULT_EXCLUDE = {
     # 153/1096 vs 4/917 to 148/1076 vs 4/953 with nothing about refusal having changed.
     # Its own floor reads these runs directly (floor_table.floor_order_wave).
     "2026-09-06-wave-orders",
+    # The stock/ablated arm. Excluded for a stronger reason than one-sidedness: **an
+    # abliterated build is deliberately modified not to refuse.** Half the runs in this
+    # collection come from models engineered to remove the exact behaviour this table measures,
+    # so pooling them would deflate the corpus refusal rate by construction and the deflation
+    # would scale with however many ablated builds happen to be on disk. It also collects A, P
+    # and D but not B, which is the same one-sided-denominator problem as the entries above.
+    # Its own floor reads these runs directly (floor_table.floor_ablation).
+    "2026-09-07-ablation-wave",
 }
 
 

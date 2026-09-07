@@ -49,6 +49,16 @@ from classify_lineage import classify, parse  # noqa: E402
 BOOT_N = 2000
 BOOT_SEED = 20260831
 
+#: Vendors whose models ship downloadable weights. Used ONLY to state honestly how many models
+#: on the hosted side of a hosted-vs-local split are open-weight, because a table headed
+#: "frontier API" against "open-weight" reads as closed-against-open and this corpus is not
+#: that: most of the hosted roster is open weights served by someone else. Not used to select
+#: or filter any pair -- it labels, it does not measure.
+OPEN_WEIGHT_VENDORS = frozenset((
+    "qwen", "z-ai", "deepseek", "moonshotai", "mistralai", "google", "meta-llama",
+    "microsoft", "minimax", "tencent", "hf.co",
+))
+
 
 def ext(p):
     return p in (0, 3)
@@ -267,6 +277,11 @@ def ci_str(pair, clustered=False):
     whose pair count is its most impressive number.
     """
     lo, hi = pair
+    # None, not NaN: the modal-sampling-error row is not a pair distribution at all -- it is
+    # the estimator's own spread, read from a cache -- so it has no bootstrap interval rather
+    # than a failed one. Distinguishing the two matters: "n too small" would claim we tried.
+    if lo is None or hi is None:
+        return "not a pair arm"
     if lo != lo or hi != hi:
         return "too few models" if clustered else "n too small"
     return "[%.0f, %.0f]" % (lo, hi)
@@ -465,8 +480,12 @@ def floor_order_by_class():
             for i in range(len(ks)):
                 for j in range(i + 1, len(ks)):
                     pairs.append(both_stats(orders[ks[i]], orders[ks[j]]))
-        note = ("2026 frontier models served over an API"
-                if want_api else "7-14B open-weight models of the 2024 generation")
+        note = ("2025-26 models served over an API, MOST OF THEM OPEN WEIGHTS -- this axis is "
+                "hosted-vs-local, not open-vs-closed"
+                if want_api else
+                "7-14B open-weight builds of the 2024 generation, run LOCALLY at Q4 -- serving "
+                "path, vintage and quantisation all differ from the hosted row, and this "
+                "corpus cannot separate them")
         out[label] = summarise(label, pairs, note)
     return out
 
@@ -905,6 +924,162 @@ def floor_order_wave():
     return summarise("presentation order, one sitting", pairs, note, clusters=clusters)
 
 
+def floor_modal_noise():
+    """THE FLOOR UNDER THE FLOORS: the sampling error of the modal sheet itself.
+
+    Every row above pairs two MODAL answer sheets, and a modal is a statistic -- draw five more
+    runs from the same cell and it moves. Nothing measured how much until 2026-09-06, which
+    means no row in this table had a denominator: an effect of p90 7 against an estimator that
+    wobbles p90 6 is the estimator.
+
+    Measured by bootstrap in `scripts/floor_resolution.py`: resample a cell's runs with
+    replacement twice, take the modal of each, count the side-flips between two modals of the
+    SAME cell under the SAME condition. Everything that differs differs because the modal
+    moved. Cached to `data/modal-noise.json` because it is 400 resamples across 110 cells and
+    `all_floors()` is read by four gates and the chart.
+
+    It comes out at median 1, p90 3 -- small enough that the frontier effects clear it, and
+    NOT small enough to ignore: presentation order on frontier models is p90 3 under the wave
+    protocol, which is exactly this number. That row is not measuring item order. It is
+    measuring the modal.
+
+    Ten cells are worse than the pooled figure suggests, with modal p90 >= 7 -- deepseek-v4-
+    flash under P reaches 27. Those are the bimodal models, and no modal-based measurement of
+    them means anything; they are named in the cache.
+    """
+    import json as _json
+    path = os.path.join(STUDY, "data", "modal-noise.json")
+    if not os.path.exists(path):
+        return None
+    try:
+        rec = _json.load(io.open(path, encoding="utf-8"))
+    except ValueError:
+        return None
+    med, p90v, mx = rec.get("median"), rec.get("p90"), rec.get("max")
+    if med is None or p90v is None:
+        return None
+    # THE ENDPOINT FLOOR IS ITS OWN NUMBER. This row printed the side-flip triple in both
+    # columns, which understated the endpoint estimator by nearly a factor of three -- p90 3
+    # against a measured 8 -- and the ablation arm's first result is an endpoint effect. A
+    # denominator copied from the wrong statistic is worse than no denominator.
+    e_med = rec.get("endpoint_median", med)
+    e_p90 = rec.get("endpoint_p90", p90v)
+    e_max = rec.get("endpoint_max", mx)
+    unstable = rec.get("unstable") or []
+    note = ("NOT A FACTOR -- the estimator. Side-flips between two bootstrap modals of the "
+            "SAME cell, %d resamples over %d cell(s). Every modal-vs-modal row above is "
+            "measured with this much slack before any factor acts. %d cell(s) are far worse "
+            "individually (modal p90 >= 7): %s"
+            % (rec.get("boot", 0), rec.get("cells", 0), len(unstable),
+               ", ".join(u.split("/")[-1] for u in unstable[:4])))
+    return {"name": "modal sampling error", "n": rec.get("cells", 0),
+            "side": (med, p90v, mx), "endpoint": (e_med, e_p90, e_max),
+            "side_ci": (None, None), "note": note,
+            "small_n": False, "p90_is_max": False,
+            "clustered": False, "n_clusters": None}
+
+
+def floor_order_wave_by_class():
+    """The one-sitting order floor SPLIT BY MODEL CLASS, because pooling it inverts the result.
+
+    §2 already establishes that the pooled order row is a net aggregate concealing two
+    populations -- 2024-generation open-weight models move far more than 2026 frontier APIs --
+    and calls that the most important line in the paper. The comparison against the
+    manipulation then pooled it anyway.
+
+    Split, on the 24 models measured in BOTH arms:
+
+        frontier API (n=20)        order median 1, p90 3   manipulation median 2.5, p90 5
+        local open-weight (n=4)    order median 11, p90 12  manipulation median 4,   p90 8
+
+    The two classes order the two factors OPPOSITELY, so the pooled p90 comparison answers
+    neither question. On frontier models the manipulation is the larger effect and item order
+    sits at the modal's own sampling error; on 2024-generation local builds item order is far
+    larger. Both are in `RESULTS-2026-09-06-order-floor-one-sitting.md`.
+    """
+    cells = collections.defaultdict(list)
+    for pattern in ("runs/*-wave/*.jsonl", "runs/*-wave-orders/*.jsonl"):
+        got = load(pattern, condition="D",
+                   key=lambda r: (r["model"], r.get("shuffle_seed")), dedupe_by_seed=True)
+        for k, runs in got.items():
+            cells[k].extend(runs)
+    by = collections.defaultdict(dict)
+    for (m, order), runs in sorted(cells.items(),
+                                   key=lambda kv: (kv[0][0], kv[0][1] is not None, kv[0][1])):
+        by[m][order] = modal(runs)
+
+    out = {}
+    for label, want_api in (("presentation order, one sitting, local open-weight", False),
+                            ("presentation order, one sitting, frontier API", True)):
+        pairs, clusters = [], []
+        for m, orders in sorted(by.items()):
+            if ("/" in m) != want_api:
+                continue
+            ks = sorted(orders, key=lambda k: (k is not None, k))
+            for i in range(len(ks)):
+                for j in range(i + 1, len(ks)):
+                    pairs.append(both_stats(orders[ks[i]], orders[ks[j]]))
+                    clusters.append(m)
+        if pairs:
+            note = ("item order only, one sitting, %s"
+                    % ("2025-26 models served over an API, most of them open weights -- at or "
+                       "under the modal's own sampling error (p90 3), so this row is close to "
+                       "unmeasurable"
+                       if want_api else
+                       "7-14B open-weight builds of the 2024 generation, run LOCALLY at Q4 -- "
+                       "serving path, vintage and quantisation all differ from the hosted row, "
+                       "and this corpus cannot separate them"))
+            out[label] = summarise(label, pairs, note, clusters=clusters)
+    return out
+
+
+def floor_conditions_wave_by_class():
+    """The one-sitting MANIPULATION split by model class -- the other half of the comparison.
+
+    `floor_order_wave_by_class` splits the nuisance factor and shows it inverting between
+    populations: item order is p90 3 on 2026 frontier APIs and p90 14 on 2024-generation open
+    weights. The README then compared each of those against a POOLED manipulation of p90 7, and
+    a pooled number cannot support a claim about which factor is larger *on a class* -- it is
+    the same pooling error the order row was split to escape, one column over.
+
+    Worse, it was briefly published as a two-by-two table with a per-class manipulation figure
+    that NOTHING IN THIS FILE COMPUTED. The frontier cell held the pooled 7 and the local cell
+    held an 8 copied out of a sibling docstring, which had measured it on a different subset (the
+    24 models present in both arms, not the models in this row). A table is a claim that the
+    four cells are commensurable; those four were not.
+
+    So this measures it. Same cells, same protocol, same modal-vs-modal units as the order
+    split, cut on the same test -- `"/" in model` marks a hosted frontier model, a bare name
+    marks a local build.
+
+    Both classes are reported even when a class is thin, because "n=4" is a fact about the
+    estimate and dropping the row would leave the pooled figure standing unqualified.
+    """
+    _pairs, by, _split_day, _raw = _condition_pairs("runs/*-wave/*.jsonl", dedupe_by_seed=True)
+    if not by:
+        return None
+    out = {}
+    for label, want_api in (("prompt condition A->D, one sitting, local open-weight", False),
+                            ("prompt condition A->D, one sitting, frontier API", True)):
+        pairs, clusters = [], []
+        for m, cs in sorted(by.items()):
+            if ("/" in m) != want_api:
+                continue
+            if "A" in cs and "D" in cs:
+                pairs.append(both_stats(cs["A"], cs["D"]))
+                clusters.append(m)
+        if pairs:
+            note = ("the balance instruction against the commitment instruction, one sitting, "
+                    "%s" % ("2025-26 models served over an API, most of them open weights -- "
+                            "this axis is hosted-vs-local, not open-vs-closed"
+                            if want_api else
+                            "7-14B open-weight builds of the 2024 generation, run LOCALLY at "
+                            "Q4 -- serving path, vintage and quantisation all differ from the "
+                            "hosted row, and this corpus cannot separate them"))
+            out[label] = summarise(label, pairs, note, clusters=clusters)
+    return out
+
+
 def _split_refusals(models, pattern="runs/2026-09-05-wave/*.jsonl", condition="A"):
     """Of the models with no usable sheet, which actually REFUSED and which failed otherwise.
 
@@ -1026,15 +1201,27 @@ def floor_conditions_wave():
 #: exists to prevent. One list, two readers.
 ALL_FLOORS = (floor_order, floor_same_version, floor_template, floor_replicate,
               floor_quant, floor_ablation, floor_conditions, floor_conditions_wave,
-              floor_order_wave)
+              floor_order_wave, floor_order_wave_by_class, floor_modal_noise,
+              floor_conditions_wave_by_class)
 
 
 def all_floors():
-    """Every floor that measured something, keyed by name."""
+    """Every floor that measured something, keyed by name.
+
+    A floor function may return one record or a DICT of them -- `floor_order_by_class` and
+    `floor_order_wave_by_class` each yield two rows, because a factor whose effect inverts
+    between populations is two measurements wearing one name.
+    """
     out = {}
     for fn in ALL_FLOORS:
         r = fn()
-        if r:
+        if not r:
+            continue
+        if isinstance(r, dict) and "name" not in r:
+            for rec in r.values():
+                if rec:
+                    out[rec["name"]] = rec
+        else:
             out[r["name"]] = r
     return out
 
@@ -1042,10 +1229,59 @@ def all_floors():
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--markdown", action="store_true")
+    ap.add_argument("--class-split", action="store_true",
+                    help="the 2x2 of nuisance-vs-manipulation by model class, as markdown")
     args = ap.parse_args(argv)
 
     rows = list(all_floors().values())
     rows.sort(key=lambda r: -r["side"][1])
+
+    if args.class_split:
+        # GENERATED, because a hand-typed version of this table was published on 2026-09-07
+        # with a pooled figure in one cell and a foreign-subset figure in another. Its four
+        # cells are the whole argument that the two factors invert between populations, so
+        # they have to be four rows of the same computation. The phrase gate cannot protect a
+        # markdown row -- a template pinning one number silently asserts the rest -- so the
+        # table is emitted rather than checked.
+        f = all_floors()
+        # THE AXIS IS HOSTED-VS-LOCAL. IT IS NOT OPEN-VS-CLOSED AND IT IS NOT OLD-VS-NEW.
+        #
+        # The split test is `"/" in model` -- a slash means the model came over an API, a bare
+        # name means it ran in Ollama. This table was first published with the two sides headed
+        # "2026 frontier API" and "2024-generation open-weight", which asserts two axes the
+        # code does not test and gets one of them backwards: 12 of the 20 models on the API side
+        # ARE open weights -- DeepSeek V4, Qwen3.8-Max, GLM-5.x, Kimi K2.5/K2.6/K3, Mistral
+        # Medium -- all 2025-26 releases. "Open-weight" is not the property that distinguishes
+        # the two sides. Being hosted is.
+        #
+        # Vintage and quantisation ride along with it: the local side is five 2024-generation
+        # 7-14B builds at Q4, the hosted side is 2025-26 models at whatever precision the
+        # provider serves. So the difference between the rows cannot be attributed to any one
+        # of serving path, vintage or quantisation -- they move together in this corpus. The
+        # count below is computed rather than typed so the header cannot drift from the roster.
+        _p, by, _sd, _raw = _condition_pairs("runs/*-wave/*.jsonl", dedupe_by_seed=True)
+        paired = [m for m, cs in by.items() if "A" in cs and "D" in cs]
+        hosted = [m for m in paired if "/" in m]
+        open_hosted = [m for m in hosted if m.split("/")[0] in OPEN_WEIGHT_VENDORS]
+        cells = [
+            ("hosted over an API — 2025-26, %d of %d open-weight"
+             % (len(open_hosted), len(hosted)),
+             "presentation order, one sitting, frontier API",
+             "prompt condition A->D, one sitting, frontier API"),
+            ("run locally at Q4 — 2024-generation 7-14B",
+             "presentation order, one sitting, local open-weight",
+             "prompt condition A->D, one sitting, local open-weight"),
+        ]
+        print("| on this class | presentation order, one sitting | manipulation A->D, one sitting |")
+        print("|---|---:|---:|")
+        for label, ord_row, man_row in cells:
+            def cell(name):
+                r = f.get(name)
+                if not r:
+                    return "not computable here"
+                return "p90 **%d** (%d pairs)" % (r["side"][1], r["n"])
+            print("| %s | %s | %s |" % (label, cell(ord_row), cell(man_row)))
+        return 0
 
     if args.markdown:
         print("| factor | n pairs | side-flip med / p90 / max | p90 95% CI | endpoint med / p90 / max |")

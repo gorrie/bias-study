@@ -36,6 +36,9 @@ README = os.path.join(ROOT, "README.md")
 
 BLOCKS = {
     "floors": [sys.executable, os.path.join(HERE, "floor_table.py"), "--markdown"],
+    # The class-split 2x2. Generated for the reason the floors table is: it was hand-typed
+    # once and two of its four cells came from the wrong computation.
+    "class_split": [sys.executable, os.path.join(HERE, "floor_table.py"), "--class-split"],
 }
 
 

@@ -221,6 +221,7 @@ def build():
     manip = f["prompt condition A->D"]
     manip_sitting = f["prompt condition A->D, one sitting"]
     order_sitting = f["presentation order, one sitting"]
+    order_frontier = f["presentation order, one sitting, frontier API"]
     abl = f["refusal-direction ablation"]
     null = f["same-version variants"]
 
@@ -253,6 +254,19 @@ def build():
          "value": order["n"],
          "what": "pairs behind the order floor",
          "phrase": "The order floor rests on %d pairs"},
+        # THE SAME-VERSION p90 ITSELF, not just its detection limit. The README stated it as 12
+        # in two places while the table above those sentences printed 11, and neither was
+        # gated -- `null_mde` gates the limit DERIVED from this distribution, which is a
+        # different number and cannot catch a stale copy of the p90. A floor quoted in prose
+        # needs its own key or the prose is unguarded.
+        {"key": "null_p90",
+         "value": null["side"][1],
+         "what": "same-version null p90, side-flips -- two variants of one declared version",
+         "phrase": "differ by **p90 %d**"},
+        {"key": "null_pairs_prose",
+         "value": null["n"],
+         "what": "pairs behind the same-version null, as stated in prose",
+         "phrase": "over %d pairs"},
         {"key": "manip_p90",
          "value": manip["side"][1],
          "what": "deliberate manipulation p90, side-flips",
@@ -284,10 +298,16 @@ def build():
         # identical rows. The allow is inline and scoped to that one line rather than added to
         # a config, because a rule relaxed globally to pass one false positive stops catching
         # the real thing everywhere else.
-        {"key": "order_p90_sitting",   # gitleaks:allow
-         "value": order_sitting["side"][1],
-         "what": "presentation-order p90 under the wave protocol, side-flips",
-         "phrase": "occasionally moves %d"},
+        # THE POOLED one-sitting p90 is deliberately NOT gated in prose. It lives only inside
+        # the generated floors table, which `gen_paper --check` owns, and §3 now argues that
+        # pooling the two model classes is the wrong comparison -- a prose sentence asserting
+        # the pooled figure would be one the section spends four paragraphs telling the reader
+        # not to use. The class-split number is what the argument rests on.
+        {"key": "order_p90_frontier_sitting",   # gitleaks:allow
+         "value": order_frontier["side"][1],
+         "what": "presentation-order p90 on 2026 frontier models under the wave protocol -- "
+                 "equal to the modal's own sampling error, so unmeasurable",
+         "phrase": "Its p90 of %d is exactly the modal's own sampling error"},
         {"key": "manip_p90_sitting",
          "value": manip_sitting["side"][1],
          "what": "deliberate manipulation p90 under one protocol in one sitting, side-flips",
@@ -531,9 +551,35 @@ SURFACES = {
     },
     "release": {
         "path": _find_surface("bias-study-release", "README.md"),
+        # THIS SURFACE GATED TWO PHRASES WHILE THE WEBSITE GATED FIFTEEN, AND IT SHOWED.
+        #
+        # Review 2026-09-07 read the README against runs/ and found seven hand-typed numbers
+        # stale in one paragraph -- 36 models where there were 42, eight decliners where there
+        # were 14, "39 refusals in 499 runs" against 148 in 1076 -- plus a same-version p90 of
+        # 12 stated 19 lines under a generated table printing 11, and a detection limit given
+        # as 16 where power.py computes 13.
+        #
+        # Every one of those numbers was ALREADY gated on the website surface. The public
+        # mirror, the artifact whose entire purpose is that a stranger can check the claims,
+        # was the least-guarded surface in the project. The paragraph even asserted its own
+        # figures were generated, which is what stopped anyone checking them.
+        #
+        # So: the same phrase set, on the repository that matters most.
         "phrases": {
             "corpus_runs": "across %s runs",
             "corpus_models": "runs, %d models",
+            "arms_models": "Across %d models measured under both arms",
+            "arms_declining": "arms, %d decline all",
+            "arms_nodir_refusals": "there are %(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
+            "arms_nodir_runs": "there are %(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
+            "arms_silenced": "**all %d of them stop**",
+            "arms_dir_only": "**%d other models decline only when told to commit**",
+            "arms_dir_refusals": "%d of those runs are refusals",
+            "arms_dir_runs": "against %d runs where it carries one",
+            "order_mde": "minimum detectable effect at **%d items",
+            "null_mde": "and **%d** against the same-version floor",
+            "null_p90": "differ by **p90 %d**",
+            "null_pairs_prose": "over %d pairs",
         },
     },
 }

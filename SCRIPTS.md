@@ -2,15 +2,18 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-47 script(s). 0 carry no module docstring and are listed at the end.
+56 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
+- **`ablation_wave.py`** — Bring the stock/ablated arm up to the wave protocol. Local GPU, zero API spend.
 - **`extend_manipulation_floor.py`** — Extend the A->D manipulation floor, which the whole paper is measured against.
+- **`order_floor_wave.py`** — Collect a presentation-order floor UNDER THE WAVE PROTOCOL, so the paper's central comparison stops being cross-protocol.
 - **`roster_gap.py`** — Which vendors have shipped a model we have never measured, and how far behind are we.
 - **`run_compass.py`** — Administer the 62 forced-choice propositions to a model under one pressure condition.
 - **`run_g0dm0d3.py`** — run_g0dm0d3.py — PIPELINE rung of the bias-study escalation ladder.
 - **`run_study.py`** — Execute one bias study run.
+- **`test_wave_seeds.py`** — Regression tests for the two counting defects that corrupted wave 2026-09-05.
 - **`wave.py`** — Repeat measurement of a FIXED panel of models, on a schedule. The barometer's time axis.
 
 ## Floors, power and detection limits
@@ -58,15 +61,21 @@
 - **`selftest_analysis.py`** — selftest_analysis.py — ten assertions over the committed May data. Zero API cost.
 - **`test_analysis_plumbing.py`** — Regression tests for the analysis plumbing: encoding, run discovery, gate templates.
 - **`test_compass_parser.py`** — Fixtures for the forced-choice parser in run_compass.py. Run before any collection.
+- **`test_floor_resolution.py`** — Tests for the modal-resolution layer and the per-model verdict.
 
 ## Other
 
 - **`abliteration_effect_check.py`** — abliteration_effect_check.py — single-stop dissociation report.
 - **`aggregate.py`** — Aggregate scored bias study records per aggregation-rules.md.
 - **`analysis.py`** — Enhanced analysis pass for a bias study run.
+- **`chart_intervention_budget.py`** — One scale: how far does an intervention have to move a model before it means anything?
+- **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
 - **`dl_model.py`** — dl_model.py — Robust HuggingFace model downloader (host-side, resume-until-valid).
 - **`dose_smoke_gate.py`** — Post-abliteration quality gate.
+- **`floor_resolution.py`** — What a modal-vs-modal floor can actually resolve, and which factor is bigger ON THE SAME MODELS.
+- **`frontier_extend.py`** — Extend the one-sitting arms onto the CURRENT frontier, which the frozen panel excludes.
 - **`gen_readme.py`** — Fill the README's generated blocks from the run data. Nothing in them is hand-written.
+- **`model_cards.py`** — One card per model: can this model carry a claim at all, and on what evidence?
 - **`monitor_experiment.py`** — monitor_experiment.py — the durable, cross-platform half of the experiment-monitor agent.
 - **`paired_analysis.py`** — paired_analysis.py — the estimator for a matched-pair arm study. No API calls.
 - **`robustness_checks.py`** — robustness_checks.py — Two reviewer-requested robustness analyses over already- scored runs. No API calls.

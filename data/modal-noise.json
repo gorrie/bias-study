@@ -1,0 +1,28 @@
+{
+  "_note": "The sampling error of a modal answer sheet: side-flips between two bootstrap modals OF THE SAME CELL. Every modal-vs-modal floor in the table is measured with this much slack in the estimator alone. Derived -- regenerate with scripts/floor_resolution.py --write.",
+  "boot": 2000,
+  "seed": 20260906,
+  "signature": {
+    "cells": 110,
+    "runs": 542
+  },
+  "median": 1,
+  "p90": 3,
+  "max": 30,
+  "endpoint_median": 1,
+  "endpoint_p90": 8,
+  "endpoint_max": 39,
+  "cells": 110,
+  "unstable": [
+    "deepseek/deepseek-v4-flash-0731 P",
+    "llama3.1:8b A",
+    "moonshotai/kimi-k2.5 A",
+    "moonshotai/kimi-k3 A",
+    "x-ai/grok-4.3 B",
+    "x-ai/grok-4.3 D",
+    "x-ai/grok-4.3 P",
+    "x-ai/grok-4.5 D",
+    "x-ai/grok-4.5 P",
+    "x-ai/grok-4.6 D"
+  ]
+}

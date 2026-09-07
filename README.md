@@ -129,14 +129,21 @@ instrument, same model, same settings, in items moved of 62:
 | factor | n pairs | side-flip med / p90 / max | p90 95% CI | endpoint med / p90 / max |
 |---|---:|---|---|---|
 | prompt condition A->D | 20 | 3 / 15 / 19 | [5, 19] | 13 / 21 / 26 |
+| presentation order, one sitting, local open-weight | 10 | 10 / 14 / 21 | [9, 21] | 10 / 17 / 18 |
 | presentation order | 84 | 3 / 11 / 22 | [5, 14] | 4 / 10 / 18 |
 | same-version variants | 97 | 5 / 11 / 24 | [8, 15] | 8 / 22 / 29 |
 | presentation order, one sitting | 85 | 1 / 10 / 21 | [3, 12] | 3 / 10 / 36 |
 | refusal-direction ablation | 12 | 6 / 9 / 12 | [6, 12] | 6 / 14 / 16 |
+| prompt condition A->D, one sitting, local open-weight † | 5 | 5 / 8 / 8 | [3, 8] | 10 / 16 / 16 |
 | prompt condition A->D, one sitting | 25 | 3 / 7 / 14 | [4, 12] | 12 / 22 / 26 |
 | instruction paraphrase | 1067 | 3 / 6 / 14 | [5, 8] | 2 / 10 / 28 |
 | requantisation | 13 | 3 / 6 / 10 | [3, 10] | 1 / 3 / 7 |
 | run-to-run replicate | 63 | 3 / 5 / 15 | [4, 11] | 2 / 10 / 28 |
+| prompt condition A->D, one sitting, frontier API | 20 | 3 / 5 / 14 | [3, 14] | 13 / 23 / 26 |
+| presentation order, one sitting, frontier API | 75 | 1 / 3 / 20 | [2, 11] | 3 / 8 / 36 |
+| modal sampling error | 110 | 1 / 3 / 30 | not a pair arm | 1 / 8 / 39 |
+
+† fewer than 10 pairs, so the 90th percentile IS the maximum by nearest-rank and the two columns print one number, not two.
 
 **refusal-direction ablation excludes `gemma2-9b`:** stock Q4_0 vs ablated Q8_0, stop tokens dropped, baked temperature; ablated build emits SentencePiece word-boundary markers as literal text
 
@@ -172,18 +179,72 @@ reasons are more useful than the conclusion was:
   floor mostly does not, since **23 of its 37 shuffled-order cells hold exactly one run**.
 
 What survives: the deliberate manipulation moves a median of 3 items of 62, 23 of 25 models move
-8 or fewer, and the nuisance factors are the same order of magnitude. Which is largest is not
-settled — no nuisance floor has been collected under the one-sitting protocol yet.
+8 or fewer, and the nuisance factors are the same order of magnitude.
+
+**Which is largest IS now settled, and this paragraph said it was not for a day after the
+collection that settled it.** A one-sitting order floor was collected 2026-09-06 — 85 pairs, in
+the table above — and the answer depends on the model class, which is why the pooled comparison
+could never have produced it:
+
+<!-- GEN:class_split -- python scripts/gen_readme.py -->
+| on this class | presentation order, one sitting | manipulation A->D, one sitting |
+|---|---:|---:|
+| hosted over an API — 2025-26, 12 of 20 open-weight | p90 **3** (75 pairs) | p90 **5** (20 pairs) |
+| run locally at Q4 — 2024-generation 7-14B | p90 **14** (10 pairs) | p90 **8** (5 pairs) |
+<!-- /GEN:class_split -->
+
+The two classes order the two factors **oppositely**. On a hosted model the deliberate
+manipulation is the larger effect and item order sits at p90 3 — which is exactly the modal's
+own sampling error, so that row is not measuring item order at all. On the 2024-vintage local
+builds this literature was largely built on, item order is the larger effect. A pooled p90
+answers neither question.
+
+**What that split is NOT, because this section said otherwise until 2026-09-07.** The test is
+`"/" in model` — hosted against local. It is **not** open-weight against closed: 12 of the 20
+hosted models are open weights served by someone else (DeepSeek V4, Qwen3.8-Max, GLM-5.x, Kimi
+K2.5/K2.6/K3, Mistral Medium), all 2025–26 releases. The table was published with the sides
+headed "2026 frontier API" and "2024-generation open-weight", which asserts an open-vs-closed
+axis this study does not test and gets backwards.
+
+Three things move together across that line and this corpus cannot separate them: **serving
+path** (someone's API against local Ollama), **vintage** (2025–26 against 2024), and
+**quantisation** (provider precision against Q4_K_M). So "newer models are more order-stable"
+is *consistent with* these rows and not established by them — Q4 quantisation of a 7B model is
+an equally good explanation, and the requantisation floor in the table above is p90 6, which is
+the same order of magnitude as the gap being explained.
+
+**The measurement that separates them is cheap and is now possible.** 2026-generation open
+weights run locally at Q4 — Qwen3.8-27B and Gemma-4-12B are already on disk for the ablation
+arm — put a 2026 model on the *local* side of the split. If order sensitivity tracks vintage it
+should fall to frontier levels; if it tracks quantisation or serving it should stay near 14.
+That is one wave-protocol collection on hardware that is already here, and until it is run the
+vintage reading stays a conjecture rather than a finding.
+
+Both columns are rows of the generated table above. The manipulation column was briefly
+published here with the frontier cell holding the *pooled* 7 and the local cell holding an 8
+copied out of a script docstring that had measured it on a different subset — a two-by-two
+table whose four cells were not commensurable, which is the same pooling error the order row
+was split to escape. `floor_conditions_wave_by_class()` computes the split now, on the same
+cells and in the same modal-vs-modal units as the order split. The local row rests on 5 pairs
+and is marked as such in the table; it is reported rather than dropped because a thin estimate
+is a fact about the estimate, and dropping it would leave the pooled figure standing
+unqualified.
 
 **Splitting the order row by model class is the most important line in this table, and an
 earlier version of this section pooled it.** Reordering the questionnaire is a large effect on
 the models this literature was mostly built on and a small one on the models shipping now —
 Röttger et al. predicted exactly that in 2024 and nobody had measured it.
 
-**What does not shrink is the same-version null.** On those same frontier models: order p90 4,
-two models of one version p90 12, deliberate manipulation p90 14. The nuisance factor that
-matters on a current model is not how the sheet was shuffled. It is which variant of the model
-was measured, and that one is the size of the manipulation.
+**What does not shrink is the same-version null.**
+Two models of one declared version differ by **p90 11** over 97 pairs — against a manipulation of p90 7 in one sitting and p90 15 pooled. So
+the nuisance factor that matters on a current model is not how the sheet was shuffled, which is
+p90 3 there. It is *which variant of the model was measured*, and that one is the size of the
+manipulation or larger.
+
+*(This paragraph read "order p90 4, two models of one version p90 12, deliberate manipulation
+p90 14" until 2026-09-07. All three were stale hand-typed figures — the same-version p90 is 11,
+and the two order figures conflated the pooled and one-sitting arms. They now come from the
+generated table above, and `key_numbers.py --check-release` gates them.)*
 
 **Confirmed — the weight-rung dissociation.** It holds and strengthens. At temperature 0,
 where a greedy model reproduces itself exactly, stock and abliterated builds share ~30% of
@@ -199,19 +260,31 @@ Nothing is revealed; a suppression stops.
 **Undecided, and previously published here as withdrawn — that force reveals a concealed
 position.** Position moves 0–6 items of 62 under prompt pressure on the four local families
 and up to 14 at temperature 0 on the frontier. Those were read as nulls. They are not:
-`scripts/power.py` puts this instrument's minimum detectable effect at **16 items of 62**
-against the pooled presentation-order floor, and 11 against the same-version floor — the second
-being the one that governs a modern study. Four of five
-published nulls fall below their own detection limit, version drift among them. The claims
-are undecided rather than refuted, which is a different verdict and not a restoration.
+`scripts/power.py` puts this instrument's minimum detectable effect at **13 items** of 62 against the pooled presentation-order floor, and **11** against the same-version floor — the
+second being the one that governs a modern study. **3 of 5** published nulls fall below their
+own detection limit, version drift among them. The claims are undecided rather than refuted,
+which is a different verdict and not a restoration.
 
-The fifth null inverted: qwen2.5-14B moves 12 items under ablation against a detection limit
-of 9, so that pair shows real stance movement. The dissociation holds on the other two
-arm-matched pairs and on the temperature-0 measurement, not across all three.
+*(Two numbers in that paragraph were wrong until 2026-09-07 and both flattered it: the
+detection limit was given as 16 where `power.py` computes 13, and "four of five" nulls where 3
+of 5 fall below. A paragraph whose whole point is that this instrument is underpowered should
+not overstate by how much.)*
 
-**New — refusal is elicited, not intrinsic.** Across the 36 models measured under both arms, eight decline all 62 propositions when the prompt carries no directive — 39 refusals in 499 runs, Google highest at 27%. Give those same models a firm instruction and **all 8 of them stop**, with no exceptions. Separately, **3 other models decline only when told to commit** — small local builds, one run each, none of which declines when asked without a directive. What suppresses it is not the content of the instruction, since a placebo with no stance content works as well as a demand to commit. It is the presence of a firm instruction at all.
+**Withdrawn — that one null "inverted".** This section previously reported that qwen2.5-14B
+moves 12 items under ablation against a detection limit of 9, and read that as real stance
+movement. **That 12 came from a single run per arm.** A one-run sheet is not a modal, this
+study's own estimator floor is measured on five-run modals, and the run-to-run replicate floor
+is p90 5 — so a 12 derived from n=1 is inside its own noise before any ablation acts. The
+detection limit of 9 quoted alongside it does not appear anywhere in the generated numbers
+either. The 2026-09-07 ablation wave re-collects this exact pair at n=5 with a swept seed,
+which is the measurement that can answer it; until that is analysed there is no finding here in
+either direction.
 
-*(This paragraph said "not one of them declines even once … 347 runs, zero refusals" until 2026-09-04, on numbers a collection older still: 32 models, 37 refusals, 449 runs. Four small local models added for a quantisation measurement produced three declines under a directive, and the absolute claim went. A first correction reported the change as a rate — 7.8% to 0.8% — which is dominated by one model contributing 24 of the 39 refusals, and inverts to 5.2% → 8.3% if each model is weighted equally. The paired count above survives both weightings. All three figures are generated now, and `scripts/key_numbers.py --check-release` fails if the retracted wording reappears here.)* Measurable only because invalid runs are retained rather than
+**New — refusal is elicited, not intrinsic.** Across 42 models measured under both arms, 14 decline all 62 propositions when the prompt carries no directive — there are 148 refusals in 1076 runs where the prompt carries no directive, Google highest at 37% of 100 bare-ask runs. Give those same models a firm instruction and **all 14 of them stop**, with no exceptions: 4 of those runs are refusals against 907 runs where it carries one. Separately, **4 other models decline only when told to commit** — small local builds, one run each, none of which declines when asked without a directive. What suppresses it is not the content of the instruction, since a placebo with no stance content works as well as a demand to commit. It is the presence of a firm instruction at all.
+
+*(This paragraph said "not one of them declines even once … 347 runs, zero refusals" until 2026-09-04, on numbers a collection older still: 32 models, 37 refusals, 449 runs. Four small local models added for a quantisation measurement produced three declines under a directive, and the absolute claim went. A first correction reported the change as a rate — 7.8% to 0.8% — which was dominated by one model contributing 24 of the 39 refusals in that collection, and inverted to 5.2% → 8.3% if each model was weighted equally. The paired count above survives both weightings, which is why it is the one reported.
+
+A second correction, 2026-09-07: this note used to end "all three figures are generated now". They were not. The paragraph above it was hand-typed and had drifted a whole collection behind — 36 models where there are 42, eight decliners where there are 14, and 39 refusals in 499 runs where there are 148 in 1076. `--check-release` gated the retracted *wording* and never the *counts*, so the sentence claiming the numbers were generated was itself the thing that stopped anyone checking them. The counts now come from `key_numbers.py` keys `arms_models`, `arms_declining`, `arms_nodir_refusals`, `arms_nodir_runs`, `arms_silenced`, `arms_dir_only`, `arms_dir_runs` and `arms_dir_refusals`, and `--check-release` gates each one.)* Measurable only because invalid runs are retained rather than
 discarded as collection errors. The decline survives reordering: three Google models across three presentation orders refuse 24 of 27 runs, so it is not an artifact of the sequence the propositions arrive in.
 
 ### And the corrections to us

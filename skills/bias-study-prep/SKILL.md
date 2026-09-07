@@ -50,8 +50,15 @@ that speak to the current instrument. If you only have time for part of this, it
 
 ## Procedure
 
-`scripts/refresh.py` runs all of this end to end and writes the audit record. The steps are
-documented so a failure is diagnosable, not so they are performed by hand.
+`skills/bias-study-prep/scripts/refresh.py` runs all of this end to end and writes the audit
+record. The steps are documented so a failure is diagnosable, not so they are performed by
+hand.
+
+*(Until 2026-09-07 this line gave that path without its `skills/bias-study-prep/` prefix — a
+path that does not exist, and one this document contradicted twelve lines further down where
+the invocation is correct. `check_skill_docs.py` gates it now. The retracted path is described
+rather than quoted here on purpose: the gate reads backticked paths, so re-typing a dead one
+inside its own correction would keep the gate red forever.)*
 
 1. **Update the repo.** `git pull` on a clean working tree so the run records which commit it
    ran against. If you are also running the pipeline or weight rungs, update those upstream
@@ -75,7 +82,9 @@ documented so a failure is diagnosable, not so they are performed by hand.
    - `scripts/key_numbers.py --check` — the sentences quoting those tables
    - `scripts/controls_audit.py --strict` — no verdict about another study sourced from notes
    - `scripts/test_compass_parser.py` — the 13 answer-parser fixtures
-   - `scripts/check_no_fork.py` — no script exists in two trees with different content
+   - `check_no_fork.py` — no script exists in two trees with different content. **Private
+     working tree only**: it compares this mirror against the working study, so it lives on
+     the side that can see both and is not shipped here. Skip it when prepping from a clone.
 5. **Snapshot every noise floor's pair count, before the run.** This is the check this skill
    most needed and did not have. Twice — 27 runs on 2026-09-01 and 14 on 2026-09-02 — runs
    were collected specifically to extend a floor and contributed **nothing** to it, because

@@ -1,0 +1,211 @@
+---
+name: barometer-wave
+description: Run and verify a forced-choice barometer wave end-to-end — the fixed-panel repeat measurement (wave.py), the shuffled-order arm (order_floor_wave.py), the stock-vs-ablated arm (ablation_wave.py), then the floors, the estimator floor, the per-model cards and every publication gate. Use when collecting a new wave, extending a floor onto more models, re-running the ablation arm, or checking that a collection actually landed. This is the barometer's repeatability procedure; the judge-scored ladder skills (api-judge-sweep, abliteration-run, cross-method-analysis) cover the May 2026 instrument instead.
+---
+
+# barometer-wave
+
+The repeatability procedure for the **forced-choice barometer** — 62 externally authored
+propositions, four options, no LLM judge anywhere in the scoring path.
+
+**Why this skill exists.** Eight of the nine scripts that do this work — `wave.py`,
+`order_floor_wave.py`, `ablation_wave.py`, `floor_table.py`, `floor_resolution.py`,
+`model_cards.py`, `frontier_extend.py`, `chart_intervention_budget.py` — were referenced by
+**no skill at all** as of 2026-09-07. `bias-study-prep` knew `run_compass.py` and
+`key_numbers.py` and nothing else. So the entire current instrument was undocumented as a
+procedure, and every defect below was found by hand, twice in some cases, because there was
+nowhere to write down that it had been found already.
+
+## TRIGGER when
+
+- Collecting a new wave, or resuming one that was interrupted.
+- Extending any floor onto more models (`frontier_extend.py`, `order_floor_wave.py`).
+- Running or re-running the stock-vs-ablated arm.
+- Someone asks whether a collection "finished", or quotes a floor you want to re-derive.
+
+## SKIP
+
+- The judge-scored May 2026 battery — that is `bias-study-prep` steps 1–2 plus
+  `api-judge-sweep` / `abliterated-judge-sweep` / `cross-method-analysis`.
+- Abliterating weights yourself — `abliteration-run` (CUDA) or `abliteration-on-mps` (Apple).
+  This skill *consumes* third-party or locally produced ablated builds; it does not make them.
+
+## THE FOUR RULES THAT ARE NOT OPTIONAL
+
+Every one of these was violated in a real collection and every one published a wrong number.
+
+**1. Sample size is DISTINCT SEEDS AMONG VALID RUNS. Not records.**
+A cell with five records and two seeds is n=2. A cell with five records and zero parsed answer
+sheets is n=0, whatever the collector's exit code says. This was learned twice: a resume that
+restarted the seed sweep left 11 of 124 wave-0 cells at n=3 wearing n=5, and separately the
+collector's `collected()` counted records while `--verify` counted seeds, so the gate could
+name damage the collector could not reach.
+
+**2. "0 remain" IS NOT "done".**
+`ablation_wave.py --run` printed `collected 35 cell(s); 0 remain` and exited 0 with **12 of 36
+cells holding zero valid sheets**. `left` empties when every cell has been *asked*, and the
+skip rule then stops re-queueing exactly the cells that failed. Always re-verify by seed after
+a collection; the run summary now prints short cells and returns 1, but verify anyway.
+
+**3. A wave is ONE SITTING.**
+The whole point of the wave protocol is that order, condition and replicate contrasts come
+from one sitting so drift cannot leak in. A collection that spans midnight into a second wave
+directory is two sittings wearing one name. `wave.py` counts COMPLETE cells for this check,
+not touched ones — an earlier version counted touched cells and opened a second directory.
+
+**4. Both statistics, always.**
+Side-flip and endpoint are different questions with different noise floors (side p90 3,
+endpoint p90 8). A row that prints one in the other's column understated the endpoint
+estimator threefold and nearly supported "ablation removes instruction-responsiveness" from
+7-versus-0 where both sit under the endpoint floor of 8.
+
+## Procedure
+
+### Step 0 — pre-flight
+
+```bash
+python scripts/test_compass_parser.py          # 13 parser fixtures. The instrument is the parser.
+python -m pytest scripts/ -q                   # 43 tests incl. seed-sweep and permutation nulls
+python scripts/check_no_fork.py                # private/public divergence, AS COMMITTED
+python scripts/check_corpus.py                 # no third-party instrument text staged
+```
+
+`check_no_fork.py` compares `git show HEAD:`, not the working tree — a fix that exists only as
+an uncommitted edit is the divergence it exists to catch. If it reports uncommitted edits on
+shared files, commit them and re-run before trusting it.
+
+### Step 1 — collect
+
+Pick the arm. All three write `compass-run/1` records and are resumable.
+
+```bash
+python scripts/wave.py --plan                  # what the fixed panel still needs
+python scripts/wave.py --run                   # the panel, all conditions, swept seed
+python scripts/order_floor_wave.py --run       # the shuffled-order arm, same sitting
+python scripts/ablation_wave.py --report       # stock vs ablated, per ablator
+python scripts/ablation_wave.py --run
+python scripts/ablation_wave.py --run --redo <pair>   # re-queue spent cells after a param change
+python scripts/frontier_extend.py --report     # extend onto more hosted models
+```
+
+**`--redo` exists because the skip rule is right and becomes wrong the moment a parameter
+changes.** A cell that was asked its full budget is not re-asked — correct for a model that
+cannot answer, wrong after raising `MAX_TOKENS` for the build that was exhausting it.
+
+Local arms need Ollama and the builds pulled (`ollama list`). Hosted arms need
+`OPENROUTER_API_KEY`. Local collection costs GPU time and no money; do not stack two GPU arms
+concurrently.
+
+### Step 2 — verify the collection landed
+
+```bash
+python scripts/wave.py --verify --strict       # --strict IS THE SAMPLE-SIZE GATE. See below.
+python scripts/wave.py --verify                # structure only: no n check
+python scripts/ablation_wave.py --report       # short cells named, exit 1 if any
+```
+
+**`--verify` alone does NOT check sample size.** `--strict` is what gates "cells short of n
+runs, or holding duplicate draws", and it is off by default — deliberately, because a cell
+whose runs all *refused* cannot be repaired by collecting more of them, so strictness would
+fail forever on a real finding. The consequence is that the default verify is a structural
+check wearing the name of a completeness check. **Always pass `--strict` after a collection**,
+read the short cells, and then decide which are refusals (a finding, leave them) and which are
+missing draws (a defect, re-collect them). This is the same shape as rule 2: the gate is
+correct and its default is not the one you want after a run.
+
+Then read the per-cell table. A cell with records and no valid sheets has a *cause*, and the
+three seen so far are distinguishable and worth classifying rather than guessing:
+
+| symptom | cause | what it means |
+|---|---|---|
+| `▁▁` / `[UNK_BYTE_0x…]` in the text | broken tokenizer/vocab in the build | the model answered; the text is unreadable. Exclude the pair, name it. |
+| `response_text` empty, len 0 | the build returns nothing | not an ablation effect if the STOCK arm does it too — check both arms before blaming the intervention. |
+| answers in prose, no sheet | instruction-following lost | for an ablated build this is itself a result about abliteration, not merely missing data. |
+
+Record exclusions in the floor's own `skipped` list so they print beside the row. A row resting
+on three of six collected pairs while saying only "arm-matched pairs only" reads as a method
+note rather than as half the data being withheld.
+
+### Step 3 — analyse
+
+```bash
+python scripts/floor_resolution.py --write     # the ESTIMATOR floor -> data/modal-noise.json
+python scripts/floor_table.py --markdown       # every floor, both statistics
+python scripts/floor_table.py --class-split    # the hosted-vs-local 2x2
+python scripts/floor_resolution.py --between    # between-model vs within-model, per vendor
+python scripts/model_cards.py --min-runs 4     # can each model carry a claim at all
+python scripts/refusal_table.py                # refusal rate by vendor and condition
+python scripts/power.py                        # detection limits per null
+python scripts/chart_intervention_budget.py    # the practitioner-facing scale
+```
+
+**Run `floor_resolution.py --write` FIRST.** Every modal-vs-modal row is measured against the
+estimator's own spread, and `all_floors()` reads that cache. Without it the table has no
+denominator and the chart draws its band partly out of measurement noise.
+
+`BOOT = 2000` is not arbitrary: the endpoint p90 is 8 at 200/300/800/1600/2000 resamples and 7
+at exactly 400, which was the old default. Do not lower it to make a run faster — the ablation
+arm's endpoint effect is judged against that number.
+
+### Step 4 — gates before anything is published
+
+```bash
+python scripts/gen_readme.py --check           # generated blocks vs run data
+python scripts/key_numbers.py --check-release  # 14 hand-typed README numbers vs run data
+python scripts/key_numbers.py --check-website  # every website + dispatch surface
+python scripts/gen_script_inventory.py --check # SCRIPTS.md vs scripts on disk
+python scripts/check_no_fork.py                # again, after committing
+```
+
+If a number moved, regenerate rather than retype: `gen_readme.py`, and
+`key_numbers.py --sync-ours` for the audit's self-description.
+
+## The interpretation traps
+
+- **The class split is HOSTED vs LOCAL.** The test is `"/" in model`. It is not open-vs-closed
+  — 12 of the 20 hosted models are open weights served by someone else — and serving path,
+  vintage and quantisation all move together across that line, so the corpus cannot attribute
+  the gap to any one of them.
+- **A pooled floor can invert a per-class result.** Item order is p90 3 on hosted models and
+  p90 14 on local 2024-vintage builds; the two classes order order-versus-manipulation
+  oppositely, so the pooled p90 answers neither question.
+- **x-ai builds carry the tail of nearly every floor.** Remove the three and the pooled
+  manipulation p90 drops 15 to 8. A study that includes them without reporting their
+  instability lets three unstable builds set its reference scale.
+- **A `no` on a model card means "not resolvable at this n", not "no effect".** The
+  permutation null on a five-run modal is coarse: perfect separation at n=4 gives p = 0.486,
+  because a 3-1 reshuffle still flips the modal. See `test_floor_resolution.py`.
+- **Exclude an arm only for a stated reason, never to make a number come out.** The ablation
+  wave is excluded from the refusal table because abliterated builds are *engineered not to
+  refuse*, which would deflate the corpus rate by construction. That is a reason. "It moved
+  the number" is not.
+
+## How to invoke
+
+```bash
+# full pass, in order
+python scripts/test_compass_parser.py && python -m pytest scripts/ -q
+python scripts/wave.py --plan
+python scripts/wave.py --run && python scripts/wave.py --verify --strict
+python scripts/floor_resolution.py --write && python scripts/floor_table.py --markdown
+python scripts/gen_readme.py && python scripts/key_numbers.py --check-release
+```
+
+## Files
+
+- `scripts/wave.py` — fixed-panel repeat measurement, the barometer's time axis
+- `scripts/order_floor_wave.py` — shuffled-order arm under the wave protocol
+- `scripts/ablation_wave.py` — stock vs ablated, per ablator, at the wave protocol
+- `scripts/frontier_extend.py` — extend the panel onto more hosted models
+- `scripts/run_compass.py` — the collector all three drive; owns the failure classifier
+- `scripts/floor_table.py` — every floor, both statistics, plus the class splits
+- `scripts/floor_resolution.py` — the estimator floor, between-vs-within, vendor consistency
+- `scripts/model_cards.py` — per-model verdict by exact permutation test
+- `scripts/refusal_table.py` — refusal rate by vendor and condition. **Its `DEFAULT_EXCLUDE`
+  matters**: the ablation wave is excluded because abliterated builds are engineered not to
+  refuse, so pooling them would deflate the corpus rate by construction, and the deflation
+  would scale with however many ablated builds happen to be on disk.
+- `scripts/power.py` — detection limit per null
+- `scripts/chart_intervention_budget.py` — the practitioner-facing scale
+- `scripts/key_numbers.py` — every generated number and the phrase each surface uses
+- `data/modal-noise.json` — cached estimator floor; regenerate, never hand-edit
