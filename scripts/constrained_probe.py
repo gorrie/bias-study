@@ -57,6 +57,9 @@ grammar arm for position. Stated here so nobody adopts it as a drop-in.
 from __future__ import annotations
 
 import argparse
+import datetime
+import hashlib
+import time
 import collections
 import glob
 import io
@@ -132,6 +135,79 @@ def run_constrained(model, condition, shuffle_seed=None, template="T01",
     return out, text, problems
 
 
+def collect(model, condition, out_dir, runs=None, temperature=None, seed_base=None,
+            template=None, delay=0.5):
+    """Collect constrained runs AT THE WAVE PROTOCOL and write `compass-run/1` records.
+
+    WHY RECORDS AND NOT A PRIVATE FORMAT. The elicitation-format effect can only become a
+    FLOOR if the existing machinery can read it -- `floor_table`, `floor_resolution`,
+    `refusal_table`, the seed-dedupe rule, the degenerate-sheet rule, the modal convention.
+    Writing a parallel analysis beside them would be a second implementation of every one of
+    those, which is the fork this project has spent the day removing.
+
+    So the grammar arm emits the same schema the parser arm does, with two fields that say
+    what it is: `decoding: "grammar"` and `format_schema_sha256`. A record without those is a
+    parser-arm record; the distinction is IN THE DATA rather than in the directory name,
+    because a directory name is a convention and this project has already been bitten by one
+    (`*-wave` matching the ablation arm).
+
+    THE PROTOCOL IS THE WAVE'S, taken from `WAVE_PARAMS` rather than retyped: temperature 0.7,
+    swept seed from 20260830, 5 runs, template T01. That is what makes the comparison
+    like-for-like -- the previous check compared 5 swept-seed constrained runs against 33
+    pooled parsed runs and the mismatch was worth 3 side-flips of the 20 it reported.
+    """
+    from wave import WAVE_PARAMS                      # noqa: PLC0415
+    p = WAVE_PARAMS
+    runs = runs or p["runs"]
+    temperature = p["temperature"] if temperature is None else temperature
+    seed_base = p["seed_base"] if seed_base is None else seed_base
+    template = template or p["template"]
+
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, "%s__%s.jsonl"
+                        % (model.replace("/", "__").replace(":", "_"), condition))
+    schema_sha = hashlib.sha256(
+        json.dumps(schema(62), sort_keys=True).encode()).hexdigest()
+
+    wrote = 0
+    with io.open(path, "a", encoding="utf-8", newline="\n") as fh:
+        for k in range(runs):
+            seed = seed_base + k
+            t0 = time.time()
+            try:
+                got, text, problems = run_constrained(
+                    model, condition, template=template,
+                    temperature=temperature, seed=seed, max_tokens=p["max_tokens"])
+            except Exception as exc:                   # noqa: BLE001
+                got, text, problems = None, "", ["transport: %s" % exc]
+            answers = ([{"q": q, "position": got[q]} for q in sorted(got)] if got else [])
+            # `valid` uses the SAME rule as the parser arm: a full sheet of 62 answers. The
+            # grammar guarantees legal labels, not a complete array, so this is not vacuous.
+            rec = {
+                "schema": "compass-run/1",
+                "decoding": "grammar",
+                "format_schema_sha256": schema_sha,
+                "model": model, "condition": condition, "template": template,
+                "shuffle_seed": None, "seed": seed, "run_no": k + 1,
+                "temperature": temperature, "max_tokens": p["max_tokens"],
+                "channel": "ollama",
+                "answers": answers, "n_answers": len(answers), "n_items": 62,
+                "valid": len(answers) == 62 and not problems,
+                "ok": not problems, "problems": problems,
+                "failure_mode": None if not problems else "constrained/incomplete",
+                "response_text": text[:4000],
+                "latency_ms": int((time.time() - t0) * 1000),
+                "collected_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            }
+            fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            wrote += 1
+            print("      run %d/%d seed %d: %d answers%s"
+                  % (k + 1, runs, seed, len(answers),
+                     "" if not problems else "  " + str(problems[:1])))
+            time.sleep(delay)
+    return path, wrote
+
+
 def parsed_modal(model, condition=None):
     """The model's parsed modal sheet, RESTRICTED TO ONE CONDITION.
 
@@ -181,13 +257,46 @@ def side(p):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--model", required=True)
+    ap.add_argument("--model", default="")
     ap.add_argument("--condition", default="D")
     ap.add_argument("--runs", type=int, default=1)
     ap.add_argument("--seed", type=int, default=20260830)
     ap.add_argument("--temperature", type=float, default=0.0)
     ap.add_argument("--agreement", action="store_true")
+    ap.add_argument("--collect", action="store_true",
+                    help="write compass-run/1 records at the wave protocol into "
+                         "runs/<date>-constrained/ so the existing floors machinery reads them")
+    ap.add_argument("--all-local", action="store_true",
+                    help="every LOCAL panel model, so the effect is not one model")
+    ap.add_argument("--conditions", default="D,P")
     args = ap.parse_args(argv)
+
+    if args.collect:
+        # THE ARM, at the wave protocol, over every local panel model unless one is named.
+        # Local only: the grammar arm needs `format`, which is an ollama feature, and the
+        # hosted models in the panel go through OpenRouter.
+        from wave import load_panel                    # noqa: PLC0415
+        if args.all_local:
+            models = [m for m in load_panel()["models"] if "/" not in m]
+        else:
+            models = [args.model]
+        conditions = [c.strip() for c in args.conditions.split(",") if c.strip()]
+        out_dir = os.path.join(
+            STUDY, "runs",
+            "%s-constrained" % datetime.date.today().isoformat())
+        print("GRAMMAR ARM at the wave protocol -> %s"
+              % os.path.relpath(out_dir, STUDY))
+        print("  %d model(s) x %d condition(s), 5 swept seeds each, no API spend"
+              % (len(models), len(conditions)))
+        total = 0
+        for m in models:
+            for c in conditions:
+                print("  %s / %s" % (m, c))
+                _path, n = collect(m, c, out_dir)
+                total += n
+        print("")
+        print("wrote %d record(s)" % total)
+        return 0
 
     sheets = []
     for k in range(args.runs):
