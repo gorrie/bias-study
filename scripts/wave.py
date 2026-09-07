@@ -112,11 +112,32 @@ ALL_CONDITIONS = REFUSAL_CONDITIONS + SERIES_CONDITIONS
 
 
 def wave_dirs():
-    """Every collected wave, oldest first."""
+    """Every collected PANEL wave, oldest first. Identified by SHAPE, not by name.
+
+    `runs/*-wave` is a name pattern and `2026-09-07-ablation-wave` matches it while being a
+    different experiment entirely -- six base models with stock and ablated arms, not the fixed
+    panel. Left to the glob, `--verify` read it as a panel wave and reported **"0 cells present,
+    124 panel cells missing"**, which is not a finding about anything. Gating missing cells
+    under --strict would then have failed the audit on a directory that was never supposed to
+    hold the panel.
+
+    A panel wave writes its runs at the TOP level of its directory (`<wave>/<model>__<cond>.jsonl`).
+    The ablation arm nests them one level per base and arm (`<wave>/<base>/<arm>/...`). So the
+    shape distinguishes them, and it does so for a reason rather than by coincidence: the panel
+    is flat because every cell is one model, and the ablation arm is nested because every cell
+    is a model *within* a comparison.
+
+    Resolving by content rather than by directory name is the same repair `studypaths` made for
+    the two run roots, and for the same reason: a name is a convention someone else can match by
+    accident, and this one was matched within two days of being adopted.
+    """
     out = []
     for p in sorted(glob.glob(os.path.join(STUDY, "runs", "*-wave"))):
-        if os.path.isdir(p):
-            out.append(p)
+        if not os.path.isdir(p):
+            continue
+        if not glob.glob(os.path.join(p, "*.jsonl")):
+            continue          # nested layout: a different experiment that shares the suffix
+        out.append(p)
     return out
 
 
@@ -371,7 +392,21 @@ def verify(outdir, panel, strict=False):
     # already fixed once by refusing to wire the truncation scan until it could pass.
     #
     # So shortfalls and duplicate draws print, and `--strict` gates them for an audit pass.
-    empty, short = [], []
+    # THREE OUTCOMES, NOT TWO, AND ONLY ONE OF THEM IS A SHORTFALL.
+    #
+    # `short` used to carry both "fewer distinct seeds than wanted" and "the target number of
+    # distinct seeds, plus duplicate draws". The second is NOT SHORT: a cell with 10 valid runs
+    # across 5 distinct seeds has sample size 5 and meets its target exactly. It was being
+    # counted as a shortfall and would have failed --strict on cells that are fine, which is
+    # the mirror image of a gate that passes by not looking -- a gate that fails by
+    # miscounting. 31 cells were reported "not n=5" in wave 0 and a large share of them were
+    # this.
+    #
+    # The duplicate draws are real and worth disclosing: they come from repairing the
+    # seed-restart defect, which ADDED the missing positions without removing the duplicated
+    # ones. The floors dedupe by seed (`load(dedupe_by_seed=True)`), so they change no number.
+    # Disclosure, not a failure.
+    empty, short, dupes = [], [], []
     if panel["params"].get("seed_sweep"):
         want = panel["params"]["runs"]
         for (m, c), rs in sorted(cell_runs.items()):
@@ -385,21 +420,29 @@ def verify(outdir, panel, strict=False):
                 short.append("%s %s: %d valid run(s) over %d distinct seed(s) -- sample size "
                              "is %d, not %d" % (m, c, len(valid), n, n, want))
             elif len(valid) > n:
-                short.append("%s %s: %d valid run(s) at %d seed(s) -- %d duplicate draw(s), "
-                             "not independent samples (the floors dedupe by seed)"
-                             % (m, c, len(valid), n, len(valid) - n))
+                dupes.append("%s %s: %d valid run(s) at %d seed(s) -- %d duplicate draw(s); "
+                             "sample size IS %d, and the floors dedupe by seed"
+                             % (m, c, len(valid), n, len(valid) - n, n))
     print("%s" % os.path.basename(outdir))
     print("  %d cell(s) present, %d panel cell(s) missing" % (len(seen), len(missing)))
     if empty:
         print("  %d cell(s) produced no valid run (refusal or failure, not drift): %s"
               % (len(empty), ", ".join(empty[:5]) + (" ..." if len(empty) > 5 else "")))
     if short:
-        print("  SAMPLE SIZE -- %d cell(s) are not n=%d (prints; --strict gates):"
+        print("  SAMPLE SIZE -- %d cell(s) are SHORT of n=%d (prints; --strict gates):"
               % (len(short), panel["params"]["runs"]))
         for s in short[:8]:
             print("    %s" % s)
         if len(short) > 8:
             print("    ...and %d more" % (len(short) - 8))
+    if dupes:
+        print("  %d cell(s) MEET n=%d and also hold duplicate draws (disclosure, not a "
+              "failure): the floors dedupe by seed, so no number moves"
+              % (len(dupes), panel["params"]["runs"]))
+        for s in dupes[:4]:
+            print("    %s" % s)
+        if len(dupes) > 4:
+            print("    ...and %d more" % (len(dupes) - 4))
     if bad:
         print("  PARAMETER DRIFT -- this wave is not comparable to the others:")
         for b in sorted(set(bad))[:12]:

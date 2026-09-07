@@ -104,14 +104,31 @@ python scripts/wave.py --verify                # structure only: no n check
 python scripts/ablation_wave.py --report       # short cells named, exit 1 if any
 ```
 
-**`--verify` alone does NOT check sample size.** `--strict` is what gates "cells short of n
-runs, or holding duplicate draws", and it is off by default — deliberately, because a cell
-whose runs all *refused* cannot be repaired by collecting more of them, so strictness would
-fail forever on a real finding. The consequence is that the default verify is a structural
-check wearing the name of a completeness check. **Always pass `--strict` after a collection**,
-read the short cells, and then decide which are refusals (a finding, leave them) and which are
-missing draws (a defect, re-collect them). This is the same shape as rule 2: the gate is
-correct and its default is not the one you want after a run.
+**`--verify` alone does NOT check sample size or missing cells.** `--strict` gates both, and it
+is off by default — deliberately, because a cell whose runs all *refused* cannot be repaired by
+collecting more of them, so strictness would fail forever on a real finding. The default verify
+is a structural check wearing the name of a completeness check. **Always pass `--strict` after
+a collection.**
+
+It reports four outcomes and only two are defects:
+
+| outcome | meaning | action |
+|---|---|---|
+| **missing** cell | the panel cell was never collected | collect it — this is work that did not happen, and it gated nothing until 2026-09-07 |
+| **no valid run** | every run refused or failed | leave it. This is section 1's finding, not a hole |
+| **SHORT of n** | fewer distinct valid seeds than the target | see below |
+| **meets n, duplicate draws** | target reached, plus repeated seeds | disclosure only. The floors dedupe by seed, so no number moves |
+
+The last two were one category until 2026-09-07, and lumping them together over-reported wave
+0's shortfall as **31 cells** when the real figure is **12** — a cell with 10 valid runs across
+5 distinct seeds has sample size 5 and meets its target exactly.
+
+**Do NOT top up a short cell in a wave that has already been collected.** `--plan` will offer
+to start a *new* dated wave rather than add to the old one, and that is correct: a wave is ONE
+SITTING (rule 3), so adding runs days later turns the one-sitting floors into cross-sitting
+ones. Wave 0's 12 short cells are permanent disclosed state — 8 sit at n=4, above the n≥4
+threshold the floors apply, and the rest are builds that fail for their own reasons. `--strict`
+exiting 1 on them is an audit signal, not a release blocker.
 
 Then read the per-cell table. A cell with records and no valid sheets has a *cause*, and the
 three seen so far are distinguishable and worth classifying rather than guessing:
