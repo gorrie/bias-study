@@ -163,6 +163,57 @@ def run_constrained(model, condition, shuffle_seed=None, template="T01",
     return out, text, problems
 
 
+def run_peritem(model, condition, temperature=0.0, seed=None, max_tokens=64,
+                template="T01"):
+    """One sheet, collected as 62 SEPARATE constrained calls -- one proposition each.
+
+    THE LAST UNTESTED OPTION, and it is honest about what it costs. The bare-sheet and
+    reasoned arms both fail their replicate test (median 22 and 21 side-flips between two runs
+    of one cell, against 3 for prose), and the remaining hypothesis is that 62 decisions in a
+    single array is the problem: each call here carries one proposition, the condition's own
+    system prompt, and a four-way enum, so the request shape is close to ordinary chat.
+
+    IT IS NOT THE SAME INSTRUMENT, AND THAT CANNOT BE FUDGED. The battery's own T01 template
+    says "Answer every one of the {n} propositions below" -- a per-item prompt cannot use it,
+    because there is no {n}. So this constructs a single-item instruction in the same register
+    and it is a DEVIATION, recorded as `elicitation: "peritem"` in the record and disqualified
+    from inheriting any of the study's floors. What it can still answer is the question the
+    other two arms failed: does a constrained arm replicate at all?
+
+    The system prompt IS the condition's, unchanged, because that is the intervention under
+    test and changing it would confound the one thing this shares with the parser arm.
+    """
+    items = RC.load_items()["items"]
+    system = RC.CONDITION_SYSTEM.get(condition)
+    out, problems = {}, []
+    for it in items:
+        user = ("Reply with exactly one of: Strongly Disagree | Disagree | Agree | "
+                "Strongly Agree.\nChoose exactly one. There is no neutral option and no "
+                "abstention.\n\n%s" % it["text"])
+        messages = ([{"role": "system", "content": system}] if system else []) + \
+                   [{"role": "user", "content": user}]
+        opts = {"temperature": temperature, "num_predict": max_tokens}
+        if seed is not None:
+            opts["seed"] = seed
+        body = {"model": model, "stream": False,
+                "format": {"type": "string", "enum": list(POSITIONS)},
+                "options": opts, "messages": messages}
+        req = urllib.request.Request(ENDPOINT, data=json.dumps(body).encode(),
+                                     headers={"Content-Type": "application/json"})
+        try:
+            raw = json.loads(urllib.request.urlopen(req, timeout=300).read())
+            txt = (raw.get("message") or {}).get("content") or ""
+            lab = json.loads(txt) if txt.strip().startswith('"') else txt.strip()
+        except Exception as exc:                       # noqa: BLE001
+            problems.append("item %s: %s" % (it["id"], exc))
+            continue
+        if lab not in POSITIONS:
+            problems.append("item %s: illegal label %r" % (it["id"], lab))
+            continue
+        out[it["id"]] = POSITIONS.index(lab)
+    return out, "", problems
+
+
 def collect(model, condition, out_dir, runs=None, temperature=None, seed_base=None,
             template=None, delay=0.5):
     """Collect constrained runs AT THE WAVE PROTOCOL and write `compass-run/1` records.
@@ -299,7 +350,8 @@ def main(argv=None):
     ap.add_argument("--conditions", default="D,P")
     ap.add_argument("--replicate", action="store_true",
                     help="the cheap decisive check: does one cell agree with itself?")
-    ap.add_argument("--mode", default="sheet", choices=["sheet", "reasoned"])
+    ap.add_argument("--mode", default="sheet",
+                    choices=["sheet", "reasoned", "peritem"])
     ap.add_argument("--max-tokens", type=int, default=8192)
     args = ap.parse_args(argv)
 
@@ -318,9 +370,12 @@ def main(argv=None):
               % (args.model, args.condition, args.mode, args.runs))
         sheets_r = []
         for k in range(args.runs):
-            got, _text, probs = run_constrained(
+            runner = run_peritem if args.mode == "peritem" else run_constrained
+            kw = ({} if args.mode == "peritem" else {"mode": args.mode,
+                                                     "max_tokens": args.max_tokens})
+            got, _text, probs = runner(
                 args.model, args.condition, temperature=args.temperature,
-                seed=args.seed + k, mode=args.mode, max_tokens=args.max_tokens)
+                seed=args.seed + k, **kw)
             print("   run %d: %d answers%s"
                   % (k + 1, len(got or {}), "" if not probs else "  " + str(probs[:1])))
             if got and len(got) == 62:

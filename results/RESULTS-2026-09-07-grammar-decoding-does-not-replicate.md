@@ -138,8 +138,28 @@ starts from here rather than from the top:
 
 - **Constrain per item, not per sheet.** One call per proposition with a four-way enum gives the
   model the whole context for a single decision instead of 62 decisions in one array, and keeps
-  the request shape much closer to ordinary chat. It is 62× the calls. **This is the untested
-  option and it is the one worth trying.**
+  the request shape much closer to ordinary chat. **Implemented** as
+  `constrained_probe.py --mode peritem`, and **not yet run**, for a reason worth recording
+  separately (below). Note it is not the same instrument either: the battery's T01 template
+  opens *"Answer every one of the {n} propositions below"*, which a per-item prompt cannot use,
+  so the single-item instruction is a deviation and cannot inherit the study's floors. What it
+  can still answer is the question the other two arms failed — does a constrained arm replicate
+  at all?
+
+  **Why it is not run yet: on this machine ollama reloads the model on every request.**
+  Measured 2026-09-07 across five consecutive calls, with and without the grammar, with
+  `keep_alive` set: `load_duration` 17–21s against `eval_duration` **0.0–0.1s**. An explicit
+  preload with `keep_alive: 15m` took 15.4s and left `ollama ps` empty. No `OLLAMA_*` variable
+  is set at process, user or machine scope, and no stale process holds VRAM — the 10.8 GB
+  reading that first looked like a leak was the model mid-load, and settles to 2.6 GB.
+
+  So a per-item sheet is 62 model loads: ~22 min per run, ~108 min for a five-seed replicate
+  test, of which under two seconds is inference. That is not a reason the design is wrong; it is
+  a reason to fix model residency first, after which the same job is about two minutes.
+
+  **This taxes every local arm, not just this one** — the ablation wave, the local-2026 order arm
+  and the grammar arm each paid a full load per run, which is why 27B cells ran near 100s each.
+  Worth fixing before the next local collection of any size.
 - ~~Constrain a reasoned field plus the answer.~~ **Tried, refuted**: median 21 against the bare
   sheet's 22.
 - **Run the replicate test FIRST, on one cell, before collecting anything.** Five runs. The
