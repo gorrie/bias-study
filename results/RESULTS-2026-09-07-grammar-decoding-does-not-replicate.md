@@ -1,12 +1,19 @@
-# Grammar-constrained decoding removes every parse failure and does not replicate
+# Whole-sheet constrained decoding does not replicate. Per-item may.
 
-> **CORRECTED 2026-09-07, before publication, by the validity check this document originally
-> did not run.** An earlier version of this file was titled *"elicitation format is a large
-> effect"* and reported the prose-vs-grammar distance as the largest nuisance factor in the
-> study — median 23 of 62 against a deliberate manipulation of 3. **That reading was wrong.**
-> The grammar arm does not agree with *itself*, so its distance from the prose arm is not a
-> comparison between two instruments. The superseded reading is described below rather than
-> deleted.
+> **CORRECTED TWICE ON 2026-09-07, both times before publication. Both superseded readings are
+> described below rather than deleted.**
+>
+> **First**, this file was titled *"elicitation format is a large effect"* and reported the
+> prose-vs-grammar distance as the largest nuisance factor in the study — median 23 of 62
+> against a deliberate manipulation of 3. Wrong: the grammar arm does not agree with *itself*
+> (median 26), so its distance from the prose arm is one arm against noise, not a comparison
+> between two instruments.
+>
+> **Second**, the replacement conclusion was written as being about constrained decoding in
+> general. Also too broad: a per-item run returned a distribution indistinguishable from the
+> prose arm (3% of answers in the "Strongly" band against prose's 5%, while both whole-sheet
+> variants sit at 68–71%). The pathology belongs to **62 decisions in one array**, not to the
+> grammar. Whether per-item *replicates* is still being measured.
 
 **Measured** 2026-09-07, local, no API spend. 5 local panel models × conditions D and P × 5
 swept seeds, at the wave protocol.
@@ -103,7 +110,36 @@ variance at all.
 (reasoned) from the prose modal over 38 valid condition-D runs. A deterministic decode that
 lands 16 items away from the prose consensus is not a sampling artifact.
 
-## What the evidence does support
+## The array is the culprit, not the grammar
+
+One per-item run landed after the above was written — 62 of 62 answers, 1,366 seconds — and it
+reframes everything. Distributions on `qwen2.5:14b` / condition D:
+
+| arm | SD | D | A | SA | extreme share |
+|---|---:|---:|---:|---:|---:|
+| **prose (parser)**, modal of 38 valid runs | 3 | 32 | 27 | 0 | **5%** |
+| grammar, whole sheet, temp 0 | 44 | 4 | 14 | 0 | **71%** |
+| grammar, reasoned array, temp 0 | 39 | 5 | 15 | 3 | **68%** |
+| **grammar, per item**, temp 0.7 | 2 | 35 | 25 | 0 | **3%** |
+
+**Per-item tracks the prose arm; both whole-sheet variants do not.** Asking a model to emit a
+62-element array pushes it to the extremes — 68–71% of answers in the "Strongly" band against
+the prose arm's 5% — while asking it one proposition at a time under the same grammar returns
+a distribution indistinguishable from prose at this resolution.
+
+So the conclusion below is **narrower than it was written**: the pathology belongs to
+*whole-sheet* constrained decoding, and specifically to 62 decisions in one array. Constrained
+decoding as such is not implicated — the per-item arm is as constrained as the others.
+
+**Two limits on that, stated plainly.** A shared distribution is not agreement: two sheets can
+match on the histogram and differ on every item, and the item-level number is the one that
+matters. It cannot be computed from this run, because the smoke test printed the distribution
+and **discarded the sheet** — 23 minutes of GPU for a statistic that cannot answer the question.
+`--replicate` now persists every sheet as it lands, incrementally, so an interrupted run keeps
+what it finished. And the per-item replicate test has not returned yet; until it does, per-item
+is a promising distribution and not a working arm.
+
+## What the evidence supports about the whole-sheet arms
 
 Both facts together — unstable under temperature, *and* systematically shifted when
 deterministic — say the constraint is not a neutral change of clothes:

@@ -380,6 +380,35 @@ def main(argv=None):
                   % (k + 1, len(got or {}), "" if not probs else "  " + str(probs[:1])))
             if got and len(got) == 62:
                 sheets_r.append(got)
+                # PERSIST EVERY SHEET AS IT LANDS. A per-item run is 62 model loads and 23
+                # minutes on this machine, and the first one was thrown away: the smoke test
+                # printed its distribution and discarded the sheet, so the distribution could
+                # be compared against the prose arm and the ITEM-LEVEL AGREEMENT could not --
+                # which is the number that matters, because two sheets can share a
+                # distribution and disagree on every item. Twenty-three minutes of GPU for a
+                # statistic that cannot answer the question.
+                #
+                # Written incrementally rather than at the end, so an interrupted run leaves
+                # the sheets it did finish.
+                rep_dir = os.path.join(STUDY, "runs", "%s-constrained-replicate"
+                                       % datetime.date.today().isoformat())
+                os.makedirs(rep_dir, exist_ok=True)
+                fn = "%s__%s__%s.jsonl" % (args.model.replace("/", "__").replace(":", "_"),
+                                           args.condition, args.mode)
+                with io.open(os.path.join(rep_dir, fn), "a",
+                             encoding="utf-8", newline="\n") as fh:
+                    fh.write(json.dumps({
+                        "schema": "compass-run/1", "decoding": "grammar",
+                        "elicitation": args.mode, "model": args.model,
+                        "condition": args.condition, "template": "T01",
+                        "shuffle_seed": None, "seed": args.seed + k, "run_no": k + 1,
+                        "temperature": args.temperature, "channel": "ollama",
+                        "answers": [{"q": q, "position": got[q]} for q in sorted(got)],
+                        "n_answers": len(got), "n_items": 62,
+                        "valid": True, "ok": True, "problems": probs,
+                        "collected_at": datetime.datetime.now(
+                            datetime.timezone.utc).isoformat(),
+                    }, ensure_ascii=False) + "\n")
         if len(sheets_r) < 2:
             print("fewer than two usable sheets -- cannot test replication.")
             return 1
