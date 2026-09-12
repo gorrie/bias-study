@@ -54,6 +54,11 @@ SKILLS = os.path.join(ROOT, "skills")
 #: Scripts that are deliberately not part of any procedure. Each needs a reason, so that
 #: adding one is a decision rather than a way to quiet the report.
 NOT_A_PROCEDURE = {
+    "add_controls_2026_09.py": "one-shot migration, run once with --apply on 2026-09-05 to add "
+                               "four columns to the audit matrix. Kept because its docstring is "
+                               "the record of WHY those four are columns and why every external "
+                               "study is scored `unknown` rather than `no` -- controls_audit.py "
+                               "cites it by name",
     "studypaths.py": "shared path/RNG resolution, imported never invoked",
     "references.py": "bibliography helper",
     "gen_readme.py": "named by barometer-wave step 4 via its --check form",
