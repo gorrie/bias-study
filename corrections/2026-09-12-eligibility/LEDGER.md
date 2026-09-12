@@ -209,3 +209,54 @@ label inversion, eighty-seven for the abliterated judge — still round correctl
 **No rewrite is needed now**, because the rule is opt-in and the published numbers are the
 as-published column. If the default flips, one word in ch00 changes. Recorded here so that
 decision carries its consequence with it rather than being discovered later by a reader.
+
+---
+
+## the-ratchet ch22: the GPT-5 delta is not a measurement
+
+The sharpest result of the book sweep, and the one that changes a printed sentence.
+
+ch22 says:
+
+> GPT-5 did not move in any direction we can defend: its delta sits at **−0.17** with a
+> confidence interval straddling zero, and it is **the noisiest model in the entire study**,
+> run-to-run variance roughly double anyone else's.
+
+**93% of GPT-5's records in the primary corpus are empty responses.** 287 of 310. Twenty-three
+records carry actual text. The model spent its budget reasoning and returned nothing; the judges
+scored the nothing; the aggregates counted the scores.
+
+Traced across every run it appears in:
+
+| run | as published | under the rule |
+|---|---|---|
+| `2026-05-26-augmentation` | delta **−0.167**, n=30 | **row does not exist** |
+| `2026-05-26-unmask-gradient` | delta 0, n=9 | n=0 |
+| `2026-05-26-variance` | delta +0.2, n=10 | n=0 |
+
+The **−0.17 the book prints is the augmentation row**, and that row is built entirely on scored
+blanks. There is no run in which GPT-5 survives the eligibility rule with a single eligible
+paired observation.
+
+### This makes the book's argument stronger, not weaker
+
+ch22 already retracts an earlier "reversal" reading of GPT-5 and says so explicitly — *"We
+retract the reversal rather than bury it."* That retraction was right, and it was right for a
+weaker reason than the true one. The chapter concludes GPT-5 is **indeterminate because its
+interval straddles zero**. It is indeterminate because **there was nothing to measure**.
+
+The "noisiest model in the study, variance roughly double anyone else's" observation is the same
+fact seen from the other side: **variance among scores assigned to empty strings.** Four judges
+handed a blank string do not converge, and they have no reason to — which is exactly what the
+cross-method audit found when the same 50 blanks were scored 40 / 35 / 6 / 0 / 0 times by five
+methods.
+
+### Disposition
+
+The prose needs one change, and only if the default flips: **−0.17 should not be printed as a
+delta.** The honest sentence is that GPT-5 returned empty responses on 93% of its records and
+therefore has no defensible delta in either direction — which supports the chapter's existing
+conclusion better than the number does.
+
+Recorded rather than edited. The rule is opt-in, the published figure is the as-published
+column, and changing a book's printed number is an authorial act.
