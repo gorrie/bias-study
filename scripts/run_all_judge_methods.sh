@@ -20,7 +20,15 @@ STUDY_DIR="$( dirname "$SCRIPT_DIR" )"
 LOG="$STUDY_DIR/runs/_aggregated/judge-methods-run.log"
 mkdir -p "$(dirname "$LOG")"
 
-PYTHON=/c/Python314/python.exe
+# Portable interpreter resolution. This was hardcoded to /c/Python314/python.exe -- one
+# machine's MSYS path -- so the script could not run on macOS, Linux, or any Windows box with
+# Python installed anywhere else. $PYTHON still overrides, which is how the venv recipes in
+# M5-QUEUE.md and DEVELOPER.md drive it.
+PYTHON="${PYTHON:-$(command -v python3 || command -v python)}"
+if [ -z "$PYTHON" ]; then
+  echo "no python3 or python on PATH; set \$PYTHON to your interpreter" >&2
+  exit 2
+fi
 
 METHODS=(grok-solo adversarial-pair reversed-rubric blind-condition)
 RUNS=(
