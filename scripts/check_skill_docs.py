@@ -179,6 +179,17 @@ def check_not_in_repo_still_absent():
     first draft of this check asserted absence on disk and fired immediately on a working
     copy that had simply run fetch_items.py.
     """
+    # ...AND ONLY WHERE SHIPPING IS THE POINT. This declaration means "must never leave the
+    # public mirror". The private working study legitimately TRACKS the instrument text -- that
+    # is what makes it the working study -- so firing there says nothing about republication and
+    # only pressures someone into deleting a true declaration or forking this file. It forked
+    # this file on 2026-09-12, which is how the distinction got noticed.
+    #
+    # The mirror is the tree whose runs live in data/; the private study keeps runs/ and uses
+    # data/ for config. Same content-based test studypaths.runs_root() resolves by, kept local
+    # so this checker does not acquire an import it otherwise has no use for.
+    if os.path.isdir(os.path.join(ROOT, "runs")):
+        return []
     try:
         r = subprocess.run(["git", "ls-files", "--"] + sorted(NOT_IN_REPO),
                            capture_output=True, text=True, encoding="utf-8",
