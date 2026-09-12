@@ -1,0 +1,4212 @@
+{
+  "schema": "bias-response-quality/1",
+  "scope": "primary scored/ only",
+  "total_records": 5051,
+  "unusable_records": 561,
+  "unusable_with_scores": 466,
+  "by_run": {
+    "2026-05-25-full": 33,
+    "2026-05-26-augmentation": 63,
+    "2026-05-26-cn-expansion": 68,
+    "2026-05-26-timeseries": 60,
+    "2026-05-26-unmask-gradient": 130,
+    "2026-05-26-variance": 101,
+    "2026-05-27-ood": 11
+  },
+  "records": [
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 1,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T01-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 2,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T01-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 3,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T01-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 6,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T01-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 7,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T02-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 8,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T02-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 10,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T02-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 11,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T02-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 13,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T03-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 15,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T03-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 16,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T03-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 18,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T03-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 19,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T04-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 21,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 22,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T04-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 23,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T04-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 26,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T05-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 29,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T05-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 31,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T06-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 33,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T06-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 34,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T06-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 36,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T06-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 38,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T07-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 44,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T08-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 46,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T08-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 48,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T08-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 51,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T09-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 53,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T09-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 54,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T09-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 55,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T10-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 57,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T10-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 58,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T10-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-25-full/scored/z-ai__glm-4.7.jsonl",
+      "line": 59,
+      "file_sha256": "5f893a83704b4d8822d227cdfdc43342274c6818f2a3a6eb63313956936be03c",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T10-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/deepseek__deepseek-r1.jsonl",
+      "line": 3,
+      "file_sha256": "efee435f9c33e48377ea2e796707ffa170cdeafae3f2f4e57f95aeb7104a9916",
+      "model": "deepseek/deepseek-r1",
+      "question_id": "T01-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/deepseek__deepseek-r1.jsonl",
+      "line": 43,
+      "file_sha256": "efee435f9c33e48377ea2e796707ffa170cdeafae3f2f4e57f95aeb7104a9916",
+      "model": "deepseek/deepseek-r1",
+      "question_id": "T08-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/deepseek__deepseek-r1.jsonl",
+      "line": 47,
+      "file_sha256": "efee435f9c33e48377ea2e796707ffa170cdeafae3f2f4e57f95aeb7104a9916",
+      "model": "deepseek/deepseek-r1",
+      "question_id": "T08-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 1,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 2,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 3,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 4,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 5,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 6,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 7,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 8,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 9,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 10,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 11,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 12,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 13,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 14,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 15,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 16,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 17,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 18,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 19,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 20,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 21,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 22,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 23,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 24,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 25,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 26,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 27,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 28,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 29,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 30,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 31,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 32,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 33,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 34,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 35,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 36,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 37,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 38,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 39,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 40,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 41,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 42,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 43,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 44,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 45,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 46,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 47,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 48,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 49,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 50,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 51,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 52,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 53,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 54,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 55,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 56,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 57,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 58,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 59,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-augmentation/scored/openai__gpt-5.jsonl",
+      "line": 60,
+      "file_sha256": "e25af003f554749ac47bfa4c1ac5c4ae5a7bff77cbf5c15deea7ee656d0b8061",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 2,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T01-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 5,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T01-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 6,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T01-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 8,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T02-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 12,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T02-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 13,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T03-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 14,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T03-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 16,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T03-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 21,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 25,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T05-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 26,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T05-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 29,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T05-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 30,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T05-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 31,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T06-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 37,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T07-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 38,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T07-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 39,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T07-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 41,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T07-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 42,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T07-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 47,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T08-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 49,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T09-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 50,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T09-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 53,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T09-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 54,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T09-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 56,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T10-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 57,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T10-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/moonshotai__kimi-k2.6.jsonl",
+      "line": 59,
+      "file_sha256": "23cfac9ab0fef08aafe6a767fc25e1beec5dfb53486cee91c657c181abbe951e",
+      "model": "moonshotai/kimi-k2.6",
+      "question_id": "T10-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 1,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T01-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 2,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T01-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 3,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T01-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 4,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T01-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 5,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T01-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 7,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T02-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 9,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T02-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 11,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T02-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 12,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T02-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 13,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T03-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 14,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T03-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 15,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T03-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 16,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T03-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 17,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T03-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 18,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T03-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 19,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T04-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 25,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T05-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 26,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T05-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 27,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T05-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 28,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T05-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 29,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T05-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 30,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T05-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 36,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T06-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 37,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T07-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 38,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T07-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 39,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T07-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 40,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T07-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 41,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T07-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 43,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T08-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 44,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T08-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 46,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T08-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 47,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T08-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 49,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T09-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 52,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T09-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 53,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T09-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 54,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T09-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 55,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T10-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 56,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T10-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 57,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T10-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 59,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T10-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-cn-expansion/scored/z-ai__glm-4.7.jsonl",
+      "line": 60,
+      "file_sha256": "398dcd6fca8b5e4b5430dd4cd5ba7d0b5cd7adbc8a78207a5a65600101113ded",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T10-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/moonshotai__kimi-k2-thinking.jsonl",
+      "line": 3,
+      "file_sha256": "49726e8de92234b43d88381cb0b5d0968ad3115935a4bcfcf04692f4965c3843",
+      "model": "moonshotai/kimi-k2-thinking",
+      "question_id": "T01-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/moonshotai__kimi-k2-thinking.jsonl",
+      "line": 21,
+      "file_sha256": "49726e8de92234b43d88381cb0b5d0968ad3115935a4bcfcf04692f4965c3843",
+      "model": "moonshotai/kimi-k2-thinking",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/moonshotai__kimi-k2-thinking.jsonl",
+      "line": 38,
+      "file_sha256": "49726e8de92234b43d88381cb0b5d0968ad3115935a4bcfcf04692f4965c3843",
+      "model": "moonshotai/kimi-k2-thinking",
+      "question_id": "T07-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/moonshotai__kimi-k2-thinking.jsonl",
+      "line": 42,
+      "file_sha256": "49726e8de92234b43d88381cb0b5d0968ad3115935a4bcfcf04692f4965c3843",
+      "model": "moonshotai/kimi-k2-thinking",
+      "question_id": "T07-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/moonshotai__kimi-k2-thinking.jsonl",
+      "line": 48,
+      "file_sha256": "49726e8de92234b43d88381cb0b5d0968ad3115935a4bcfcf04692f4965c3843",
+      "model": "moonshotai/kimi-k2-thinking",
+      "question_id": "T08-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/moonshotai__kimi-k2.jsonl",
+      "line": 37,
+      "file_sha256": "30a24b8d700337db911a5c34c9474697cfb35df9625eac692158da30e47960df",
+      "model": "moonshotai/kimi-k2",
+      "question_id": "T07-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 12,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T02-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 17,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T03-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 18,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T03-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 21,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 22,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T04-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 23,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T04-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 30,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T05-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 32,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T06-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 34,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T06-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 43,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T08-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 45,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T08-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 47,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T08-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 48,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T08-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 49,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T09-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 50,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T09-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 53,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T09-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 54,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T09-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 56,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T10-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/qwen__qwen-2.5-72b-instruct.jsonl",
+      "line": 60,
+      "file_sha256": "27abc5fd0a51abbf76dc40f62cc4e0c80f7fb8e8ca276d662b02c512be440d98",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "question_id": "T10-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.5.jsonl",
+      "line": 7,
+      "file_sha256": "6dff71327bdf8ae223f620561714287d70a762bd4a93424b0ac281ab20a51962",
+      "model": "z-ai/glm-4.5",
+      "question_id": "T02-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.5.jsonl",
+      "line": 17,
+      "file_sha256": "6dff71327bdf8ae223f620561714287d70a762bd4a93424b0ac281ab20a51962",
+      "model": "z-ai/glm-4.5",
+      "question_id": "T03-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.5.jsonl",
+      "line": 33,
+      "file_sha256": "6dff71327bdf8ae223f620561714287d70a762bd4a93424b0ac281ab20a51962",
+      "model": "z-ai/glm-4.5",
+      "question_id": "T06-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.5.jsonl",
+      "line": 42,
+      "file_sha256": "6dff71327bdf8ae223f620561714287d70a762bd4a93424b0ac281ab20a51962",
+      "model": "z-ai/glm-4.5",
+      "question_id": "T07-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.5.jsonl",
+      "line": 47,
+      "file_sha256": "6dff71327bdf8ae223f620561714287d70a762bd4a93424b0ac281ab20a51962",
+      "model": "z-ai/glm-4.5",
+      "question_id": "T08-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.5.jsonl",
+      "line": 53,
+      "file_sha256": "6dff71327bdf8ae223f620561714287d70a762bd4a93424b0ac281ab20a51962",
+      "model": "z-ai/glm-4.5",
+      "question_id": "T09-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 1,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T01-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 2,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T01-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 4,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T01-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 5,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T01-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 9,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T02-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 13,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T03-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 15,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T03-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 16,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T03-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 19,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T04-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 21,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 24,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T04-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 25,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T05-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 27,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T05-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 28,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T05-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 32,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T06-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 33,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T06-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 35,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T06-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 36,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T06-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 38,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T07-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 40,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T07-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 43,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T08-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 44,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T08-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 46,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T08-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 47,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T08-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 48,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T08-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 56,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T10-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 57,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T10-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 59,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T10-Q3",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-timeseries/scored/z-ai__glm-4.6.jsonl",
+      "line": 60,
+      "file_sha256": "36c0cad46726401c144dfb0e33af22631f6bacf0d91cecb2b4b6aba5eb7a5b4f",
+      "model": "z-ai/glm-4.6",
+      "question_id": "T10-Q3",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 1,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 2,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 3,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 4,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 5,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 6,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 7,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 8,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 10,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 11,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 12,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 13,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 14,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 15,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 16,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 17,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 18,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 20,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 21,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 23,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 25,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 26,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 29,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 30,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 32,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 34,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 35,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 36,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 38,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 39,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 40,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 41,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 42,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 43,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 44,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 45,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 46,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 47,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 48,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 49,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 50,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 51,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 52,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 53,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 54,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 55,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 56,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 57,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 58,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 59,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 60,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 61,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 62,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 63,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 64,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 65,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 66,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 67,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 68,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 70,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 71,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 72,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 73,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 74,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 75,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 77,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 78,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 79,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 80,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 81,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 82,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 83,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 84,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 86,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 88,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 89,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 91,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 92,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 93,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 94,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 95,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 96,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 97,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 98,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 99,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 100,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 102,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 103,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 104,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 105,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 106,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 107,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 108,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 110,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 111,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 112,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 113,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 114,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 115,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 116,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 117,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 118,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 119,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 120,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 121,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 122,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 123,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 124,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 125,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 126,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 128,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 130,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 131,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 133,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 135,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 136,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 137,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 138,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 139,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 140,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 141,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 142,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 143,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 144,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "C",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 145,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 146,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 147,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "D",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 148,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 149,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-unmask-gradient/scored/openai__gpt-5.jsonl",
+      "line": 150,
+      "file_sha256": "b1448544e6e175ae26614134dfe4033e0b49fb80649e5bb777fa289aca4955ad",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "E",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/anthropic__claude-opus-4.7.jsonl",
+      "line": 77,
+      "file_sha256": "86b0e6bc61111bbd7c8952fd37a987fafd2f7af6f61323dc16149b6568c0d98d",
+      "model": "anthropic/claude-opus-4.7",
+      "question_id": "T08-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/anthropic__claude-opus-4.7.jsonl",
+      "line": 79,
+      "file_sha256": "86b0e6bc61111bbd7c8952fd37a987fafd2f7af6f61323dc16149b6568c0d98d",
+      "model": "anthropic/claude-opus-4.7",
+      "question_id": "T08-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/google__gemini-3.1-pro-preview.jsonl",
+      "line": 39,
+      "file_sha256": "2d5e9dc0cf280aae77dfd5686ba9826f706a5e5aeac5e3f1c42988b7b65bf4cc",
+      "model": "google/gemini-3.1-pro-preview",
+      "question_id": "T04-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/google__gemini-3.1-pro-preview.jsonl",
+      "line": 50,
+      "file_sha256": "2d5e9dc0cf280aae77dfd5686ba9826f706a5e5aeac5e3f1c42988b7b65bf4cc",
+      "model": "google/gemini-3.1-pro-preview",
+      "question_id": "T05-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 1,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 2,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 3,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 4,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 5,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 6,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 7,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 8,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 9,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 10,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T01-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 11,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 12,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 13,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 14,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 15,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 16,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 17,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 18,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T02-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 21,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 22,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 23,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 24,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 25,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 26,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 27,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 28,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 29,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 30,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T03-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 31,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 32,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 33,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 34,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 35,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 36,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 37,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 38,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 39,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 40,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T04-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 41,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 42,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 43,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 44,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 45,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 46,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 47,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 48,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 49,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 50,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T05-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 52,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 53,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 54,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 55,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 56,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 57,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 58,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 59,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 60,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T06-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 61,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 62,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 63,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 64,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 65,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 66,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 67,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 68,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 69,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 70,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T07-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 72,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 73,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 74,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 75,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 76,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 77,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 78,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 79,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 80,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T08-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 81,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 82,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 83,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 84,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 85,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 86,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 87,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 88,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 89,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 90,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T09-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 91,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 92,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 93,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 94,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 95,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 96,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 97,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 98,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 99,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/openai__gpt-5.jsonl",
+      "line": 100,
+      "file_sha256": "2fffb88263783cb4d06d7432a1f6ad814eaf4f4217526942299147f0ff60c3cb",
+      "model": "openai/gpt-5",
+      "question_id": "T10-Q2",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-26-variance/scored/x-ai__grok-4.3.jsonl",
+      "line": 35,
+      "file_sha256": "29893911024c4788c8ba0bdf20271449ba8f431a391f046d6fd945a01f19ea03",
+      "model": "x-ai/grok-4.3",
+      "question_id": "T04-Q2",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-27-ood/scored/z-ai__glm-4.7.jsonl",
+      "line": 2,
+      "file_sha256": "4c31832bd4b080dfa4990f1dd240aff0455ea001d5a78fba09452972028c350e",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T11-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-27-ood/scored/z-ai__glm-4.7.jsonl",
+      "line": 3,
+      "file_sha256": "4c31832bd4b080dfa4990f1dd240aff0455ea001d5a78fba09452972028c350e",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T12-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-27-ood/scored/z-ai__glm-4.7.jsonl",
+      "line": 4,
+      "file_sha256": "4c31832bd4b080dfa4990f1dd240aff0455ea001d5a78fba09452972028c350e",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T12-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-27-ood/scored/z-ai__glm-4.7.jsonl",
+      "line": 5,
+      "file_sha256": "4c31832bd4b080dfa4990f1dd240aff0455ea001d5a78fba09452972028c350e",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T13-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-27-ood/scored/z-ai__glm-4.7.jsonl",
+      "line": 7,
+      "file_sha256": "4c31832bd4b080dfa4990f1dd240aff0455ea001d5a78fba09452972028c350e",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T14-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-27-ood/scored/z-ai__glm-4.7.jsonl",
+      "line": 8,
+      "file_sha256": "4c31832bd4b080dfa4990f1dd240aff0455ea001d5a78fba09452972028c350e",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T14-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-27-ood/scored/z-ai__glm-4.7.jsonl",
+      "line": 9,
+      "file_sha256": "4c31832bd4b080dfa4990f1dd240aff0455ea001d5a78fba09452972028c350e",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T15-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-27-ood/scored/z-ai__glm-4.7.jsonl",
+      "line": 11,
+      "file_sha256": "4c31832bd4b080dfa4990f1dd240aff0455ea001d5a78fba09452972028c350e",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T16-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-27-ood/scored/z-ai__glm-4.7.jsonl",
+      "line": 12,
+      "file_sha256": "4c31832bd4b080dfa4990f1dd240aff0455ea001d5a78fba09452972028c350e",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T16-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-27-ood/scored/z-ai__glm-4.7.jsonl",
+      "line": 13,
+      "file_sha256": "4c31832bd4b080dfa4990f1dd240aff0455ea001d5a78fba09452972028c350e",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T17-Q1",
+      "condition": "A",
+      "reason": "empty-or-missing-response"
+    },
+    {
+      "file": "2026-05-27-ood/scored/z-ai__glm-4.7.jsonl",
+      "line": 14,
+      "file_sha256": "4c31832bd4b080dfa4990f1dd240aff0455ea001d5a78fba09452972028c350e",
+      "model": "z-ai/glm-4.7",
+      "question_id": "T17-Q1",
+      "condition": "B",
+      "reason": "empty-or-missing-response"
+    }
+  ]
+}
