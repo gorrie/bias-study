@@ -49,9 +49,25 @@ def has_score(rec: dict) -> bool:
     return rec.get("score_classifier") is not None
 
 
+def is_failed_call(rec: dict) -> bool:
+    """Transport failed. A DISTINCT category from an empty response, because the causes are
+    different and AGENTS.md requires them kept apart: a failed call produced nothing because
+    the request did not complete; an empty response is a completed call that returned no text,
+    usually a model spending its whole budget on reasoning tokens.
+
+    RECONCILIATION NOTE, 2026-09-12. Two independent correction passes wrote this rule four
+    days apart -- `record_quality.py` on codex/bias-study-corrections-2026-09-08 (Sept 8) and
+    this module (Sept 12). The Sept-8 rule excluded `ok is False` and this one did not. On the
+    primary corpus the two are EQUIVALENT, verified rather than assumed: of 5,051 scored
+    records, 77 have ok=False and every one of them is unscored, so `has_score` already
+    excluded all 77. Records where the rules disagree: zero. The guard is kept anyway --
+    equivalence on today's corpus is not equivalence on tomorrow's collection."""
+    return rec.get("ok") is False
+
+
 def is_eligible(rec: dict) -> bool:
     """May this record enter an aggregate, a CI, a drift series or a chart?"""
-    return has_score(rec) and not is_empty_response(rec)
+    return has_score(rec) and not is_empty_response(rec) and not is_failed_call(rec)
 
 
 def is_scored_empty(rec: dict) -> bool:
@@ -64,7 +80,7 @@ def partition(records):
     caller can report what it excluded instead of quietly shrinking its own denominator."""
     eligible, scored_empty, unscored = [], [], []
     for r in records:
-        if not has_score(r):
+        if is_failed_call(r) or not has_score(r):
             unscored.append(r)
         elif is_empty_response(r):
             scored_empty.append(r)
