@@ -121,13 +121,27 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 >
 > That is why every run record is keyed by item id — `{"q": 17, "position": 2}` — and carries
 > `forcing_prompt_sha256` instead of the prompt. Run `scripts/fetch_items.py` to retrieve the
-> items at your end, then `--verify-run` to prove you hold the same instrument we did. See
-> **Replicating the barometer** below.
+> items at your end. See **Replicating the barometer** below.
+>
+> **Be precise about what that proves, because this paragraph was not.** The propositions
+> originate with politicalcompass.org; `fetch_items.py` retrieves them from aipolcom.net,
+> which is the source every run record names. Two hashes come back. The **normalized** hash —
+> the item set after folding curly quotes, dashes and entities to ASCII — reproduces exactly,
+> `c49d38f9…`, so you can establish you hold the same 62 propositions. The **canonical**
+> byte-exact hash does **not**: that source now serves different typography than the
+> collection used, so `--verify-run` cannot rebuild prompts byte-for-byte and will tell you
+> so rather than pass. Until 2026-09-12 this paragraph said `--verify-run` would "prove you
+> hold the same instrument we did", which promised the stronger check and delivered the
+> weaker one. You can confirm the item set. You cannot, from that source today, confirm the
+> bytes.
 >
 > Two honest caveats. `PAPER-below-the-floor.md`, the academic writeup, is not here — that is
-> an authorial decision, and none of the floors depend on it. And 19 run records had their
+> an authorial decision, and none of the floors depend on it. And 38 run records had their
 > `response_text` withheld because the MODEL echoed propositions back; their answers are
-> intact, so no number changes, and `runs/COMPASS-EXPORT-MANIFEST.json` records the count.
+> intact, so no number changes. Root `MANIFEST.json` describes the export, and
+> `python scripts/key_numbers.py` recounts the redactions from the shipped files. That
+> sentence said 19 and cited `runs/COMPASS-EXPORT-MANIFEST.json`, a file this repository does
+> not contain, until 2026-09-12; the count is generated now.
 
 ### Replicating the barometer
 
@@ -424,6 +438,19 @@ Full analysis with tables and caveats: [`results/WRITEUP-2026-05-26.md`](results
 
 ## Reproduce it
 
+> **Cloning on Windows: enable long paths, or the checkout silently comes up empty.**
+>
+> ```bash
+> git clone -c core.longpaths=true https://github.com/gorrie/bias-study.git
+> ```
+>
+> Twelve files under `runs/2026-09-07-ablation-wave/` carry 145–165-character paths — they are
+> named for the HuggingFace repo, quantisation and condition that produced them, which is the
+> provenance and not decoration. Add a clone directory deeper than about 95 characters and you
+> pass Windows' 260-character limit: `git clone` reports **"Clone succeeded, but checkout
+> failed"**, the working tree is empty, and `git status` shows every file deleted. Nothing is
+> wrong with the repository. macOS and Linux are unaffected.
+
 ### Prompt rung (anyone with an OpenRouter key)
 
 Requires Python 3.11+ and an [OpenRouter](https://openrouter.ai/) API key — all models,
@@ -444,9 +471,14 @@ python scripts/score.py $(date +%F) \
 python scripts/aggregate.py $(date +%F)
 
 # 4. Statistics: bootstrap CIs + inter-judge agreement, then FDR + length control
-python scripts/ci_analysis.py
-python scripts/robustness_checks.py
+python scripts/ci_analysis.py $(date +%F)
+python scripts/robustness_checks.py $(date +%F)
 ```
+
+> Step 4 took no argument here until 2026-09-12, exactly as printed, and neither command
+> worked that way: `ci_analysis.py` exits on its usage line, and `robustness_checks.py`
+> printed nothing at all and returned success — the silent-pass mode `.pre-commit-config.yaml`
+> records having fixed once already. Both take one or more run dates.
 
 To re-derive the published numbers without spending any API budget, the full scored data
 ships in `data/` — re-run steps 3–4 against any existing run, e.g.

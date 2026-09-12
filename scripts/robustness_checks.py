@@ -173,6 +173,16 @@ def within_leg_fdr(run_dir, split_by: str = "position", q: float = 0.05) -> dict
 
 
 def main() -> int:
+    # No arguments used to mean "loop over nothing, print nothing, exit 0" -- a silent pass
+    # from the script whose job is to say whether the effects survive correction. The README
+    # printed it argument-less as step 4 of "Reproduce it", so the documented way to run it
+    # was the way that did nothing and said it worked.
+    if len(sys.argv) < 2:
+        print(__doc__.strip().splitlines()[-1] if __doc__ else "", file=sys.stderr)
+        print("usage: robustness_checks.py <run_date> [<run_date> ...]", file=sys.stderr)
+        print("  e.g. robustness_checks.py 2026-05-26-variance", file=sys.stderr)
+        return 2
+
     failed = 0
     for rd in sys.argv[1:]:
         try:

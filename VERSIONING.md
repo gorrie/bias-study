@@ -27,7 +27,13 @@ dated instead:
 | tag | date | what it is |
 |---|---|---|
 | `release-2026-05-27` | 2026-05-27 | first public release: the judge-panel study across the three rungs |
-| `release-2026-09` | 2026-09 | the forced-choice re-measurement, its twelve floors, the controls audit, and wave 0 |
+| `release-2026-09-11` | 2026-09-11 | the forced-choice re-measurement, its twelve floors, the controls audit, and wave 0 |
+| `release-2026-09-12` | 2026-09-12 | all twelve studies read against the scoring controls; the correction pass; CI green for the first time |
+
+> This table listed a tag called `release-2026-09` that was never created, in the file whose
+> subject is what a release tag has to mean. It also said `CORRECTIONS.md` held seven entries
+> when it held fourteen. Both fixed 2026-09-12. The dates above are the tags that exist; check
+> with `git tag`, and if this table and the tags disagree again, the tags are right.
 
 **A dated tag cannot collide with a rung, and it says when the numbers were true** — which
 matters more than a sequence number in a study whose own finding is that numbers move.
@@ -47,9 +53,10 @@ when this work was published relative to others working the same question. A tid
 loses the priority date would cost more than it buys.
 
 Corrections are therefore **additive**. Every claim this study published and then withdrew is in
-`CORRECTIONS.md` with the date it went out, the date it came back, and what replaced it — seven
-entries, three of them from 2026-09-06 alone. The commits that carried the retracted claims stay
-in the log.
+`CORRECTIONS.md` with the date it went out, the date it came back, and what replaced it —
+**14 entries** as of 2026-09-12. This said seven for as long as there were fourteen, which
+is a small irony in a file arguing that the record has to be additive: the count was typed once
+and the entries kept arriving. The commits that carried the retracted claims stay in the log.
 
 ## How to tell what you are looking at
 

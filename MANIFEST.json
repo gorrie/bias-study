@@ -3,7 +3,7 @@
   "source_schema": "compass-run/1",
   "instrument_canonical_sha256": "6b86822f1b9ead5cdb906761c99ffa1a691ed59ead168978bf654f5c13d354b8",
   "instrument_normalized_sha256": "c49d38f9adf050002f4bdbdf38d79bb1a8a7a4fc452a042e6225f7d5ede2be17",
-  "instrument_hash_note": "canonical = byte-exact item set; normalized = same after folding curly quotes, dashes and entities to ASCII. Rebuild prompts only if canonical matches.",
+  "instrument_hash_note": "canonical = byte-exact item set; normalized = same after folding curly quotes, dashes and entities to ASCII. Rebuild prompts only if canonical matches. AS OF 2026-09-12 IT DOES NOT: a fresh fetch returns canonical 111a2811... against the 6b86822f... recorded here, while normalized reproduces exactly (c49d38f9...). The item set is confirmable; the bytes are not, because the source changed its typography after collection. --verify-run reports prompt-hash verification unavailable rather than passing, which is the correct behaviour and is now documented instead of surprising.",
   "records": 3381,
   "files": 884,
   "dropped_fields": [
@@ -12,6 +12,6 @@
   "scrubbed_fields": {
     "response_text": 33
   },
-  "instrument": "politicalcompass.org 62-proposition test. Text NOT included: it is licensed third-party work. Retrieve it with scripts/fetch_items.py.",
+  "instrument": "politicalcompass.org 62-proposition test. Text NOT included: it is licensed third-party work. Retrieve it with scripts/fetch_items.py, which fetches from aipolcom.net -- the source named on every run record. politicalcompass.org owns the text; aipolcom.net is where these runs obtained it.",
   "verification": "Every record was scanned against the release repo's .corpus-fingerprint list after writing; see the exporter's output."
 }

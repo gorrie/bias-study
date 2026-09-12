@@ -593,6 +593,16 @@ SURFACES = {
             "order_mde": "the presentation-order floor, which resolves %d.",
         },
     },
+    # VERSIONING.md was never gated, and it drifted exactly where you would expect a file
+    # about release discipline to drift: it named a tag `release-2026-09` that was never
+    # created, and said CORRECTIONS.md held "seven entries" for as long as it held fourteen.
+    # It is checked by --check-release along with the README.
+    "versioning": {
+        "path": os.path.join(STUDY, "VERSIONING.md"),
+        "phrases": {
+            "corrections_entries": "**%d entries**",
+        },
+    },
     "release": {
         "path": _find_surface("bias-study-release", "README.md"),
         # THIS SURFACE GATED TWO PHRASES WHILE THE WEBSITE GATED FIFTEEN, AND IT SHOWED.
@@ -616,6 +626,7 @@ SURFACES = {
             # unbeaten effect of 0.30, and "larger than two of them" survived five documents
             # because nobody could see the gap.
             "judge_spread": "our judges spanned %.4f points",
+            "withheld_records": "%d run records had their",
             "arms_models": "Across %d models measured under both arms",
             "arms_declining": "arms, %d decline all",
             "arms_nodir_refusals": "there are %(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
@@ -641,6 +652,30 @@ SURFACES = {
 #: the gate. A set rather than a flag because the caller has to NAME them: "3 numbers were not
 #: verifiable here" is a usable sentence, "some checks were skipped" is not.
 MISSING_FLOORS = set()
+
+
+def _corrections_entries():
+    """Numbered entries in CORRECTIONS.md, counted from its own headings."""
+    path = os.path.join(STUDY, "CORRECTIONS.md")
+    if not os.path.exists(path):
+        return None
+    text = io.open(path, encoding="utf-8", errors="replace").read()
+    return sum(1 for line in text.splitlines() if line.startswith("### "))
+
+
+def _withheld_records():
+    """Records carrying a `[withheld: ...]` marker, across data/ and runs/."""
+    import glob as _glob
+    n = 0
+    for root in ("data", "runs"):
+        for p in sorted(_glob.glob(os.path.join(STUDY, root, "**", "*.jsonl"), recursive=True)):
+            try:
+                for line in io.open(p, encoding="utf-8", errors="replace"):
+                    if "[withheld" in line:
+                        n += 1
+            except OSError:
+                continue
+    return n
 
 
 def _judge_spread():
@@ -679,6 +714,15 @@ def surface_numbers():
         # inside judge_lean.py and it was wrong: the spread is 0.2926 and the third-smallest
         # effect is 0.3000. Five documents copied it. Gated here so the self-criticism is held
         # to the standard the rest of the file holds the findings to.
+        # WITHHELD RECORDS. Typed as 19 in the README against 38 on disk, beside a pointer to
+        # `runs/COMPASS-EXPORT-MANIFEST.json`, a file that does not exist -- check_doc_links.py
+        # missed it because it was backticked rather than written as a markdown link. A
+        # redaction count is exactly the number a reader checks when deciding whether a
+        # published corpus is complete, so it is counted rather than remembered.
+        {"key": "corrections_entries", "value": _corrections_entries(),
+         "what": "claims this study published and then withdrew or narrowed"},
+        {"key": "withheld_records", "value": _withheld_records(),
+         "what": "records whose response_text is withheld, counted across both run roots"},
         {"key": "judge_spread", "value": _judge_spread(),
          "what": "points between the most skeptical and most deferential judge, over the "
                  "per-judge records in THIS repository"},
@@ -1083,7 +1127,8 @@ def main(argv=None):
         asked = present = 0
         for name, wanted in ([(n, args.check_website) for n in SURFACES
                               if n.startswith("website") or n.startswith("dispatch-")]
-                             + [("release", args.check_release)]):
+                             + [("release", args.check_release),
+                                ("versioning", args.check_release)]):
             if wanted:
                 asked += 1
                 present += os.path.exists(SURFACES[name]["path"])

@@ -2,9 +2,36 @@
 
 This directory is the immutable record of every scored sweep this study has
 ever run. One subdirectory per run; runs are named by the date they began
-(`YYYY-MM-DD` or `YYYY-MM-DD-<slug>`). The internal working copy at
-an internal working copy uses the directory name `runs/`
-instead of `data/` — content is identical; scripts auto-detect either.
+(`YYYY-MM-DD` or `YYYY-MM-DD-<slug>`). An internal working copy uses the
+directory name `runs/` instead of `data/` — content is identical, and the
+scripts auto-detect either.
+
+## Licence for the data in this directory
+
+The code in this repository is MIT (see `LICENSE`). **The run records here are
+released under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)**:
+reuse, redistribute and build on them, including commercially, with attribution
+to this repository. That covers the model responses, the judge scores, the
+per-run manifests and the aggregates.
+
+Two carve-outs, and both matter to anyone redistributing:
+
+1. **The instrument is not ours to license and is not here.** The 62
+   propositions are politicalcompass.org's text. Records reference items by id
+   and position, never by their text, and `scripts/check_corpus.py` runs in CI
+   to keep it that way. If you reconstruct the questionnaire from another
+   source, its licence is between you and them.
+2. **Model responses are model output.** Each vendor's terms governed the
+   account that generated them. We assert no ownership over a model's words and
+   cannot grant you rights we do not hold; the CC BY grant covers this project's
+   own contribution — the collection, the scoring, the structure and the
+   aggregates.
+
+Redacted records carry `[withheld: <reason>]` in place of the response text; the
+scored fields are intact, so no published number depends on the redacted prose.
+There are 38 of them across both run roots. Do not take that figure from here —
+`python scripts/key_numbers.py` recounts it from the shipped files, and
+`--check-release` fails if the README's copy of it drifts.
 
 ## Per-run layout
 

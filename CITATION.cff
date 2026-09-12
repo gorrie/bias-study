@@ -31,12 +31,12 @@ authors:
     given-names: Ian
     affiliation: "4LULZ Press / locked.net"
 type: software
-date-released: 2026-09-07
+date-released: 2026-09-12
 # DATED, not numbered. "v2-2026-05-30" was here until 2026-09-07 and collided head-on with
 # VERSIONING.md: v1/v2/v3 are the three INTERVENTION RUNGS in published prose -- prompt edit,
 # elicitation pipeline, weight ablation -- so a release called v2 names the pipeline rung to
 # anyone who has read the paper. Releases are dated for exactly this reason.
-version: "release-2026-09"
+version: "release-2026-09-12"
 license: MIT
 repository-code: "https://github.com/gorrie/bias-study"
 url: "https://evilrobots.lol/research/ai-bias-audit/"
