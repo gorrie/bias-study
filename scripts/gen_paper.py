@@ -115,6 +115,18 @@ def main(argv=None):
     ap.add_argument("--check", action="store_true")
     args = ap.parse_args(argv)
 
+    # The paper is not distributed with this repository -- it is written against the internal
+    # working copy and published as prose elsewhere. This script IS distributed, because it is
+    # named in the documented gate list, so on a fresh clone it used to die with a
+    # FileNotFoundError traceback. A cloner running a gate the README tells them to run should
+    # get an explanation, not a stack trace: absent target, nothing to check, exit 0.
+    if not os.path.exists(PAPER):
+        print("%s is not in this repository, so there is nothing to generate or check."
+              % os.path.basename(PAPER))
+        print("The generated tables are reproduced in README.md instead; "
+              "`python scripts/key_numbers.py --check` is the gate that guards them here.")
+        return 0
+
     raw = io.open(PAPER, encoding="utf-8", newline="").read()
     nl = "\r\n" if "\r\n" in raw else "\n"
     text = raw.replace("\r\n", "\n")
