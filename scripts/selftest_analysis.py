@@ -407,6 +407,16 @@ GATES = {"G1": g1, "G2": g2, "G3": g3, "G4": g4, "G5": g5, "G6": g6, "G7": g7, "
 
 
 def main(argv: list[str]) -> int:
+    # THIS GATE VALIDATES THE PUBLISHED CORPUS, so it only means anything in the release
+    # mirror. Run from the private study it checks a layout that tree does not have and
+    # reports 7/10 -- three failures that are not defects but a wrong address. Reporting
+    # "protocol/pairs-v1.json is missing" in a tree that never had it invites someone to
+    # create one. Exit 2 is neither pass nor fail: the question was not applicable.
+    if not (STUDY_DIR / "protocol" / "pairs-v1.json").is_file():
+        print("NOT THE RELEASE MIRROR: %s has no protocol/pairs-v1.json." % STUDY_DIR)
+        print("These ten gates check the PUBLISHED corpus and layout, so they are meaningless")
+        print("here. Run this in the public mirror. Exit 2 -- not applicable, not a failure.")
+        return 2
     if "--list" in argv:
         for k, f in GATES.items():
             print(f"{k}  {(f.__doc__ or '').strip().splitlines()[0]}")
