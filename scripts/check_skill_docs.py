@@ -60,6 +60,18 @@ NOT_A_PROCEDURE = {
                                "study is scored `unknown` rather than `no` -- controls_audit.py "
                                "cites it by name",
     "studypaths.py": "shared path/RNG resolution, imported never invoked",
+    "eligibility.py": "shared read-time record filter (DATA-EMPTY-SCORES-002), imported by "
+                      "aggregate / ci_analysis / analysis / cross_method_report, never invoked",
+    "audit_response_quality.py": "inventory of scored-empty records; --check is expected to "
+                                 "FAIL while the historical corpus retains them, so it is a "
+                                 "standing report rather than a step in a procedure",
+    "calibration_study.py": "one-off simulation answering STATS-BOOTSTRAP-CALIBRATION-001; its "
+                            "output is RESULTS-2026-09-12-calibration.md, not a run step",
+    "three_axis_score.py": "scorer and prereg constraint-checker for the three-axis instrument, "
+                           "which is a DRAFT item set: --check is expected to fail until the "
+                           "author has cut and balanced it. No skill can name it as a step "
+                           "until the instrument exists, and gating the v2 release on a v3 "
+                           "instrument's draft scorer is the wrong dependency",
     "references.py": "bibliography helper",
     "gen_readme.py": "named by barometer-wave step 4 via its --check form",
     "check_skill_docs.py": "this checker",

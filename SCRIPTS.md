@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-65 script(s). 0 carry no module docstring and are listed at the end.
+68 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -74,12 +74,15 @@
 - **`abliteration_effect_check.py`** — abliteration_effect_check.py — single-stop dissociation report.
 - **`aggregate.py`** — Aggregate scored bias study records per aggregation-rules.md.
 - **`analysis.py`** — Enhanced analysis pass for a bias study run.
+- **`audit_response_quality.py`** — Inventory every scored record whose response was empty — DATA-EMPTY-SCORES-001 / -002.
+- **`calibration_study.py`** — STATS-BOOTSTRAP-CALIBRATION-001 — does this study's inference actually control its errors?
 - **`chart_intervention_budget.py`** — One scale: how far does an intervention have to move a model before it means anything?
 - **`check_doc_links.py`** — Gate: every relative markdown link in this tree's documents resolves to a real file.
 - **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
 - **`constrained_probe.py`** — Score the instrument by CONSTRAINED DECODING: make an invalid answer ungenerable.
 - **`dl_model.py`** — dl_model.py — Robust HuggingFace model downloader (host-side, resume-until-valid).
 - **`dose_smoke_gate.py`** — Post-abliteration quality gate.
+- **`eligibility.py`** — One rule for whether a scored record may enter an aggregate — DATA-EMPTY-SCORES-002.
 - **`floor_resolution.py`** — What a modal-vs-modal floor can actually resolve, and which factor is bigger ON THE SAME MODELS.
 - **`frontier_extend.py`** — Extend the one-sitting arms onto the CURRENT frontier, which the frozen panel excludes.
 - **`gen_readme.py`** — Fill the README's generated blocks from the run data. Nothing in them is hand-written.
@@ -92,3 +95,4 @@
 - **`run_local.py`** — run_local.py — Run the bias question set against a LOCAL transformers model (stock or OBLITERATUS-abliterated), writing raw JSONL in the study schema so `score.py` / `aggregate.py` / `ci_analysis.py` consume it unchanged.
 - **`supervised_dose_series.py`** — Supervised wrapper around run_dose_series.py.
 - **`validate_runs.py`** — validate_runs.py — does each run directory say what it actually contains?
+
