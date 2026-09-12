@@ -4,8 +4,8 @@ anthropic/claude-opus-4.1,us-closed,50,10,3,3.1,0.1,0.316,0.0,0.0,0.301,0.245
 anthropic/claude-opus-4.5,us-closed,50,10,3,3.14,0.2,0.422,0.0,0.0,0.348,0.167
 anthropic/claude-opus-4.6,us-closed,50,10,3,3.38,0.4,0.516,0.0,0.0,0.306,0.166
 anthropic/claude-opus-4.7,us-closed,50,10,3,3.625,0.5,0.527,0.0,0.0,0.149,0.102
-deepseek/deepseek-r1,chinese-open,50,8,2.959,2.653,0.125,0.354,0.0,0.0,0.217,0.124
-google/gemini-3.1-pro-preview,us-closed,50,3,2.568,2.738,0.333,0.577,0.0,0.0,0.064,0.075
+deepseek/deepseek-r1,chinese-open,49,10,2.959,2.653,0.1,0.316,0.0,0.0,0.222,0.127
+google/gemini-3.1-pro-preview,us-closed,50,7,2.568,2.738,0.286,0.756,0.0,0.0,0.064,0.075
 openai/gpt-4.1,us-closed,50,10,3,3.04,0.1,0.316,0.0,0.0,0.21,0.241
 openai/gpt-5,us-closed,2,0,3,5,,,0.0,0.0,0.159,0.075
 qwen/qwen3-235b-a22b-2507,chinese-open,50,10,3,3.18,0.2,0.422,0.0,0.0,0.191,0.237
