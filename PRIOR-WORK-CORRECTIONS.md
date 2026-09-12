@@ -177,19 +177,31 @@ is the quantity the control is reaching for, without isolating an individual jud
 model in its scoring path is introduced as *parsing*, not judging — a fallback for responses the
 regular expression could not read. But a language model mapping free text to a numeric Likert
 rating is scoring, whatever it is called, and it decided the disposition of every response the
-regex failed on. **The model is never identified** — no vendor, no version, no family, anywhere
-in the paper. So unlike `rottger2024` and `rozado2024`, where both roles are named and merely
-not reconciled, here a reader cannot even establish whether the scorer was one of the thirteen
-subjects. That is the one `no` on self-judging disclosure.
+regex failed on. **The model is not identified** — no vendor, no version, no family — in the
+paper or in its published dataset card, which are what we read. Nor does the paper report the
+share of responses that reached that second stage, which is the figure that would settle how
+much of the result the fallback decided: if it is a handful, the label "parsing" is fair; if it
+is a third, it is a scoring layer with no provenance. So unlike `rottger2024` and `rozado2024`,
+where both roles are named and merely not reconciled, here a reader cannot establish whether
+the scorer was one of the thirteen subjects. That is the one `no` on self-judging disclosure.
 
 In the other cases the scorer is drawn from the same family as a subject. Only `messing2026`
 states it outright — "Three LLM judge models (GPT-4o, Gemini 2.0 Flash, Claude Haiku 4.5) and
 three SUTs (GPT-4o, Gemini 2.0 Flash, DeepSeek Chat v3.1)" — which is why it holds the single
 `yes`.
 
-**`rozado2024` is the sharpest case, and it is worth stating without ornament.** The paper's
-subject is the political preference of language models. Its scorer is a language model. That
-scorer is also one of its twenty-four subjects. Its lean is never measured.
+**`rozado2024` is the sharpest case, and it is worth stating without ornament — including the
+part that is in his favour.** The paper's subject is the political preference of language
+models. Its scorer is a language model, and per the published data that scorer is also one of
+its twenty-four subjects.
+
+The scorer is **not unchecked**: Rozado validates it against his own hand-coding of a random
+sample of 119 test questions, reporting **93% agreement, Cohen's κ = 0.91**. That is a real
+control and more than most of this table runs. It is also a different quantity from the one
+this column asks for — agreement with a human on a sample bounds the scorer's *accuracy*, not
+its *lean*, and a scorer can agree with a human 93% of the time while the 7% falls
+systematically one way. The lean is not reported, and the subject/scorer overlap is not
+discussed. Any criticism of this scoring layer has to be made with the validation on the table.
 
 **We failed the same control.** Scoring retained since May showed **0.2926 points between our
 most skeptical and most deferential judge**, against five published CI-clean effects of +0.90,
