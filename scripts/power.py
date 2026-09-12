@@ -16,8 +16,15 @@ WHAT IT COMPUTES
 ----------------
 For each measured null distribution:
 
-  threshold   the value an observation must EXCEED to be distinguishable from that null at
-              alpha=0.05 -- the null's 95th percentile. Anything at or below is inside noise.
+  threshold   the reference distribution's empirical 95th percentile. An observation must
+              EXCEED it -- strictly; at it is not above it -- to be called distinguishable.
+
+              IT IS NOT AN ALPHA=0.05 REJECTION THRESHOLD, and this file said it was until
+              2026-09-12. A rejection region is defined under a null's assumptions; these
+              reference distributions pool heterogeneous model variants with shared-model
+              pair dependence, so their p95 is a descriptive order statistic and nothing
+              more. Clearing it does not carry a false-positive rate. The independent
+              2026-09-08 correction pass reached this same conclusion separately.
 
   MDE         minimum detectable effect at 80% power. The smallest true effect size such
               that, if it were real, 80% of measurements of it would land above `threshold`.
@@ -27,7 +34,7 @@ For each measured null distribution:
               the standard assumption and is stated here so it can be argued with.
 
 Then it takes each NULL RESULT this project has published and asks the only question that
-matters about it: is the observed movement below the MDE? If it is, the honest verdict is
+matters about it: is the observed movement below the reference? If it is, the honest verdict is
 NOT "no effect." It is "underpowered -- this instrument cannot tell," and any claim built on
 that null is unsupported in both directions.
 
@@ -176,8 +183,9 @@ def main(argv=None):
             rows.append((name, stat, len(vals), thr, mde(vals, thr)))
 
     print("DETECTION LIMITS -- what this instrument can resolve, per null, of 62 items")
-    print("threshold = must exceed to clear the null at alpha=0.05 (null p95)")
-    print("MDE       = smallest true effect detectable 80% of the time")
+    print("threshold = reference p95, an order statistic; NOT an alpha=0.05 rejection region")
+    print("MDE       = smallest shift with 80% of mass above p95; a design sensitivity,")
+    print("            NOT achieved power, and NOT a cutoff for reading an observation")
     print()
     print("%-28s %-9s %6s %11s %6s" % ("null", "statistic", "pairs", "threshold", "MDE"))
     for name, stat, n, thr, m in rows:
@@ -206,7 +214,11 @@ def main(argv=None):
         # returns threshold 10, MDE 9: an observed 9 is called supported without exceeding 10.
         # Clearing the threshold is what licenses the claim; clearing the MDE only says the
         # instrument was not too blunt to look.
-        exceeds_threshold = c["observed"] >= thr
+        # STRICTLY greater. An observation EQUAL to the reference p95 does not exceed it,
+        # and `>=` called it supported. No published verdict turns on this -- no observation
+        # currently sits exactly at its reference -- but the boundary was anti-conservative
+        # in the same direction as every other defect this file exists to fix.
+        exceeds_threshold = c["observed"] > thr
         above_mde = c["observed"] >= m
         supported = exceeds_threshold
         # A CAVEAT ON THE OBSERVED EFFECT DISQUALIFIES A "SUPPORTED" VERDICT, IT DOES NOT
