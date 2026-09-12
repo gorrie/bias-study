@@ -125,3 +125,43 @@ treated with more suspicion than a correction that hurt us, not less.** Three gu
 Whoever writes this up should state the before-and-after, not just the after. A robustness
 criterion that is only cleared after a correction is a weaker claim than one cleared outright,
 and the reader is entitled to see which one this is.
+
+---
+
+## Aggregates regenerated out-of-place, and a reproducibility defect found on the way
+
+`aggregate.py` now takes `--out DIR`, so a correction can be generated beside its evidence
+instead of on top of it. Before this, comparing before-and-after meant running the script,
+copying the output, and `git checkout`-ing the originals back -- which works exactly until
+someone forgets the third step. All 14 runs regenerated under the rule into
+`aggregates-strict/`; not one published artifact touched.
+
+**The defect found while doing it.** `write_csv` opened with `newline=""` and let
+`csv.DictWriter` use its default `\r\n`, so every aggregate was written CRLF while every
+committed aggregate is LF. Running the documented pipeline on *unchanged* data therefore
+produced a modified working tree, and the README's claim that "every committed run under
+`data/` reproduces its aggregated CSVs via `scripts/aggregate.py`" was false byte-for-byte.
+
+That is worse than untidy. The one signal that says *your correction moved something* was
+buried in a diff that always fired. Fixed with `lineterminator="\n"`; verified across five
+runs that re-running now leaves `git status` clean.
+
+### Per-model rows whose n changes under the rule
+
+| run | model | attempted | scored | delta A→B |
+|---|---|---|---|---|
+| `2026-05-25-full` | `z-ai/glm-4.7` | 30 → 13 | 29 → 3 | -0.138 → 0 |
+| `2026-05-26-augmentation` | `deepseek/deepseek-r1` | 30 → 27 | 29 → 26 | 0.138 → 0.154 |
+| `2026-05-26-augmentation` | `openai/gpt-5` | **row removed** | | |
+| `2026-05-26-cn-expansion` | `moonshotai/kimi-k2.6` | 30 → 16 | 30 → 11 | 0.167 → 0.364 |
+| `2026-05-26-cn-expansion` | `z-ai/glm-4.7` | 30 → 7 | 30 → 4 | 0.267 → -0.25 |
+| `2026-05-26-timeseries` | `moonshotai/kimi-k2` | 30 → 29 | 28 → 27 | 0.464 → 0.444 |
+| `2026-05-26-timeseries` | `moonshotai/kimi-k2-thinking` | 30 → 28 | 30 → 25 | 0.5 → 0.48 |
+| `2026-05-26-timeseries` | `qwen/qwen-2.5-72b-instruct` | 30 → 22 | 25 → 12 | 0.08 → 0.083 |
+| `2026-05-26-timeseries` | `z-ai/glm-4.5` | 30 → 25 | 30 → 24 | 0.567 → 0.333 |
+| `2026-05-26-timeseries` | `z-ai/glm-4.6` | 30 → 15 | 30 → 8 | -0.067 → 0.125 |
+| `2026-05-26-unmask-gradient` | `openai/gpt-5` | 30 → 3 | 9 → 0 | 0 →  |
+| `2026-05-26-variance` | `deepseek/deepseek-r1` | 50 → 50 | 9 → 8 | 0.111 → 0.125 |
+| `2026-05-26-variance` | `google/gemini-3.1-pro-preview` | 50 → 50 | 7 → 3 | 0.429 → 0.333 |
+| `2026-05-26-variance` | `openai/gpt-5` | 50 → 2 | 10 → 0 | 0.2 →  |
+| `2026-05-27-ood` | `z-ai/glm-4.7` | 8 → 2 | 8 → 1 | 0.125 → 0 |

@@ -238,8 +238,15 @@ def write_csv(path: Path, rows: list[dict]) -> None:
         path.write_text("", encoding="utf-8")
         return
     path.parent.mkdir(parents=True, exist_ok=True)
+    # lineterminator="\n" is load-bearing, not style. csv.DictWriter defaults to \r\n, so with
+    # newline="" this wrote CRLF while every committed aggregate is LF -- meaning running the
+    # documented pipeline on UNCHANGED data produced a modified working tree, and the README's
+    # "every committed run reproduces its aggregated CSVs via scripts/aggregate.py" was false
+    # byte-for-byte. Worse than untidy: it buries a real data change in line-ending noise, so
+    # the one signal that says "your correction moved something" is lost in a diff that always
+    # fires. Verified 2026-09-12: with this, re-running a zero-exclusion run leaves git clean.
     with path.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -247,6 +254,13 @@ def write_csv(path: Path, rows: list[dict]) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Aggregate scored bias study records.")
     parser.add_argument("run_date", help="Run date YYYY-MM-DD")
+    # A CORRECTION MUST NOT BE WRITTEN ON TOP OF ITS OWN EVIDENCE. Regenerating under a changed
+    # rule used to mean overwriting the published artifacts in place, so the only way to compare
+    # before and after was to run it, copy the output somewhere, and `git checkout` the
+    # originals back -- which works exactly until the day someone forgets the third step.
+    parser.add_argument("--out", metavar="DIR",
+                        help="write the aggregates here instead of <run>/aggregated/ "
+                             "(use for dated correction directories; leaves originals alone)")
     args = parser.parse_args()
 
     run_dir = runs_root() / args.run_date
@@ -254,7 +268,7 @@ def main() -> int:
         print(f"ERROR: {run_dir / 'scored'} not found — run score.py first", file=sys.stderr)
         return 2
 
-    agg_dir = run_dir / "aggregated"
+    agg_dir = Path(args.out) if args.out else run_dir / "aggregated"
     agg_dir.mkdir(parents=True, exist_ok=True)
 
     records = load_scored(run_dir)
@@ -274,7 +288,7 @@ def main() -> int:
     # the newline, this writer removed it again -- so following the documented pipeline on a
     # clean clone dirtied a tracked file inside a directory DEVELOPER.md §2 calls immutable.
     # Re-deriving a published number must be a no-op against the repository.
-    (run_dir / "run-summary.json").write_text(
+    (agg_dir.parent / "run-summary.json" if not args.out else agg_dir / "run-summary.json").write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     print(f"Aggregated {len(records)} records across {len({r['model'] for r in records})} models")
