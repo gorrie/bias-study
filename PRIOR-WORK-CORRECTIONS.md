@@ -125,33 +125,42 @@ by as much as the intervention, there is no intervention to report.
 
 ## 3. The scoring layer: four studies put a model in it, and none reports what that model's own lean is
 
-**Added 2026-09-11**, after re-reading ten of the twelve in full for four controls that were
-`unknown` across the whole matrix until that day. Those four columns were added on 2026-09-05
-and every one of them was found by **failing it ourselves** — which is why they are columns and
-not a paragraph.
+**Added 2026-09-11**, after re-reading **all twelve** in full for four controls that were
+`unknown` across the whole matrix until that day. These four columns are complete: no study is
+`unknown` on any of them. Each was added on 2026-09-05 and every one was found by **failing it
+ourselves** — which is why they are columns and not a paragraph.
 **Reproduce:** `python scripts/controls_audit.py --gaps`.
 
-| control | yes | partial | no | n/a | unknown |
-|---|---:|---:|---:|---:|---:|
-| `judge_free_scoring` — no model anywhere in the scoring path | 6 | 1 | **3** | – | 2 |
-| `judge_lean_reported` — if a model scores, its own lean is reported as a magnitude | **0** | 1 | 3 | 6 | 2 |
-| `self_judging_disclosed` — no subject also scores, or the study says so | 1 | 3 | – | 6 | 2 |
-| `longitudinal` — a subject re-measured over calendar time | **1** | – | 9 | – | 2 |
+| control | yes | partial | no | n/a |
+|---|---:|---:|---:|---:|
+| `judge_free_scoring` — no model anywhere in the scoring path | 7 | 2 | **3** | – |
+| `judge_lean_reported` — if a model scores, its own lean is reported as a magnitude | **0** | 1 | 4 | 7 |
+| `self_judging_disclosed` — no subject also scores, or the study says so | 1 | 3 | 1 | 7 |
+| `longitudinal` — a subject re-measured over calendar time | 1 | 1 | **10** | – |
 
-**Four studies put a language model in the scoring path.** `rottger2024` classifies its
-open-ended arm with GPT-4 0125; `rozado2024` parses every response through gpt-3.5-turbo for
-stance detection; `cen` pre-processes through GPT-4o mini; `messing2026` uses a three-judge
-panel by design.
+**Five studies put a language model in the scoring path.** `rozado2024` parses every response
+through gpt-3.5-turbo for stance detection; `cen` pre-processes through GPT-4o mini;
+`messing2026` uses a three-judge panel by design; `rottger2024` classifies its open-ended arm
+with GPT-4 0125; and `naser2026` runs a regex first and then **"applied a backup language model
+parser for responses deviating from the expected format."**
 
-**Not one of them reports that scorer's own lean as a magnitude.** `messing2026` comes closest
-and is scored `partial`: it reports variance components for judge *disagreement*, which is the
-quantity the control is reaching for, without isolating an individual judge's bias.
+**Not one of the five reports that scorer's own lean as a magnitude.** `messing2026` comes
+closest and is scored `partial`: it reports variance components for judge *disagreement*, which
+is the quantity the control is reaching for, without isolating an individual judge's bias.
 
-And in all four the scorer is drawn from the same family as a subject. Only `messing2026`
-states it as such — "Three LLM judge models (GPT-4o, Gemini 2.0 Flash, Claude Haiku 4.5) and
+**`naser2026` is the one a reader is most likely to miss, and it is worth its own line.** The
+model in its scoring path is introduced as *parsing*, not judging — a fallback for responses the
+regular expression could not read. But a language model mapping free text to a numeric Likert
+rating is scoring, whatever it is called, and it decided the disposition of every response the
+regex failed on. **The model is never identified** — no vendor, no version, no family, anywhere
+in the paper. So unlike `rottger2024` and `rozado2024`, where both roles are named and merely
+not reconciled, here a reader cannot even establish whether the scorer was one of the thirteen
+subjects. That is the one `no` on self-judging disclosure.
+
+In the other cases the scorer is drawn from the same family as a subject. Only `messing2026`
+states it outright — "Three LLM judge models (GPT-4o, Gemini 2.0 Flash, Claude Haiku 4.5) and
 three SUTs (GPT-4o, Gemini 2.0 Flash, DeepSeek Chat v3.1)" — which is why it holds the single
-`yes`. In the other three the overlap is establishable from the paper's own text and is not
-flagged, which is `partial`.
+`yes`.
 
 **`rozado2024` is the sharpest case, and it is worth stating without ornament.** The paper's
 subject is the political preference of language models. Its scorer is a language model. That
@@ -171,9 +180,17 @@ number a reader can compare against the effect.
 ### The one control where we are behind
 
 `longitudinal` — the same subject re-measured over calendar time, as opposed to a cross-section
-of versions taken on one date. **Nine of the twelve do not do it. One does: `cen`, querying 12
-models near-daily from July to November 2024.** Our own row is `partial`: the forced-choice
+of versions taken on one date. **Ten of the twelve do not do it. One does: `cen`, querying 12
+models near-daily from July to November 2024**, and `aipolcom` earns a `partial` for a rolling
+collection with named re-collection dates. Our own row is `partial` too: the forced-choice
 corpus spans six days, which is not a time series.
+
+`naser2026` is the sharpest near-miss, because it names the problem and then does not run the
+control. Its subject is moral drift *across model generations*, its collection is one pass per
+model — "we completed all probes for each model before proceeding to the next" — and its own
+limitations section says: *"Test-retest reliability faces complications when models are updated
+between testing occasions and may conflate measurement error with genuine change."* That is an
+accurate description of why the control is hard, offered in place of the control.
 
 `liu2025` is the instructive near-miss. Its finding is a *"statistically significant rightward
 shift in political values over time"*, and what it compares is builds 0613 against 1106 — its

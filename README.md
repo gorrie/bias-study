@@ -2,7 +2,7 @@
 
 **A multi-vendor, multi-generation audit of institutional-skepticism framing in large language models.**
 
-### Four sentences, if you are only here for one
+### Five sentences, if you are only here for one
 
 > **Two models that differ only in snapshot date, size or serving mode — not in version —
 > disagree on a median of 5 of 62 propositions.** That sets a detection limit of 11. An effect
@@ -22,10 +22,11 @@
 > Abliteration does not measurably move political stance on any usable base. The intensity
 > belonged to the ablator.
 
-> **Four of the audited studies put a language model in the scoring path. Not one reports that
-> model's own lean.** In every case the scorer comes from the same family as a subject; one
-> paper says so. We failed this control too — our judges spanned 0.29 points, larger than two
-> of our own five published effects, and we had not computed it either.
+> **Five of the audited studies put a language model in the scoring path. Not one reports that
+> model's own lean.** In three the scorer is drawn from the same family as a subject and only one
+> paper says so; in a fourth the scoring model is never identified at all. We failed this control
+> too — our judges spanned 0.29 points, larger than two of our own five published effects, and we
+> had not computed it either.
 
 *Every number above recomputes: `python scripts/key_numbers.py`,
 `python scripts/controls_audit.py --gaps`, `python scripts/ablation_analysis.py`. Read

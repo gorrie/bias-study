@@ -56,10 +56,10 @@
         "reported_mde": "no",
         "forcing_disclosed": "yes",
         "open_raw": "yes",
-        "judge_free_scoring": "unknown",
-        "judge_lean_reported": "unknown",
-        "self_judging_disclosed": "unknown",
-        "longitudinal": "unknown"
+        "judge_free_scoring": "partial",
+        "judge_lean_reported": "no",
+        "self_judging_disclosed": "no",
+        "longitudinal": "no"
       },
       "notes": {
         "item_order": "Each probe is an independent call with the context cleared, so there is no sequence for order to act on. This control does not apply to a per-probe design and claiming otherwise would be wrong.",
@@ -68,10 +68,10 @@
         "retained_failures": "GPT-5 (2025-08-07) excluded entirely for a 33.1% parse success rate. Two-thirds unparseable on the newest flagship is the study's most interesting cell and it is the one cell not in it.",
         "reported_mde": "Reliability is reported as ICC 0.89-1.00 (median 0.98) with 82.2% of model-probe cells byte-identical across 10 trials. That is sampling variability at T=0, which is near zero by construction, and it is then used to certify effects against factors that were never varied.",
         "open_raw": "huggingface.co/datasets/mznaser/moral-tracing-in-LLMs",
-        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
-        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
-        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
-        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters.",
+        "judge_free_scoring": "Re-read 2026-09-11 from the publisher PDF (Technology in Society 87, 103431). A model IS in the scoring path, and it is easy to miss because the paper calls it parsing rather than judging: \"Our response parsing method employed a two-stage procedure, wherein the first stage extracted numeric ratings using regular expression matching against expected formats, and the second stage applied a backup language model parser for responses deviating from the expected format.\" Stage one is mechanical; stage two is a language model mapping free text to a numeric rating, which is the scoring path. `partial` for that reason.",
+        "judge_lean_reported": "Re-read 2026-09-11. The backup language-model parser's own lean is not reported, and the model is never even identified -- the paper names no vendor, version or family for it anywhere.",
+        "self_judging_disclosed": "Re-read 2026-09-11. Because the backup parser is unnamed, a reader cannot establish whether it is one of the 13 subject models, and the paper does not say. The control asks that no subject also scores OR that the study discloses it; neither holds. Recorded `no` rather than `partial` precisely because the overlap is not establishable from the text at all, where rottger2024 and rozado2024 name both roles and merely fail to flag the tension.",
+        "longitudinal": "Re-read 2026-09-11. One pass per subject: \"we completed all probes for each model before proceeding to the next\", with timestamps logged only to spot provider-announced changes mid-collection. The paper's drift is measured ACROSS VERSIONS spanning release dates November 2022 to August 2025 -- a version cross-section, the same shape as liu2025. The paper is aware of the distinction and says so: \"Test-retest reliability faces complications when models are updated between testing occasions and may conflate measurement error with genuine change.\" It names the problem without running the control.",
         "nuisance_magnitude": "PARTIAL, and scored to match rozado2024, whose run-to-run CV earns the same mark. Naser reports run-to-run reliability directly -- ICC 0.89-1.00 (median 0.98), 82.2% of model-probe cells byte-identical across ten trials -- which is a nuisance magnitude, and a small one, honestly measured. What is NOT reported is the magnitude of the nuisance factors this paper is about: nothing bounds what item order, a reworded prompt, a size sibling or a requantisation would move, so the reliability figure certifies sampling stability at T=0 and not measurement stability. Recorded as `no` with no note until 2026-09-06, which was the only unexplained negative verdict about a named author in this file."
       },
       "quotes": {
@@ -474,18 +474,18 @@
         "reported_mde": "no",
         "forcing_disclosed": "yes",
         "open_raw": "yes",
-        "judge_free_scoring": "unknown",
-        "judge_lean_reported": "unknown",
-        "self_judging_disclosed": "unknown",
-        "longitudinal": "unknown"
+        "judge_free_scoring": "yes",
+        "judge_lean_reported": "n/a",
+        "self_judging_disclosed": "n/a",
+        "longitudinal": "partial"
       },
       "notes": {
         "item_order": "108 whole-questionnaire ordering runs, reported at coordinate level as negligible. Our item-level re-analysis of the same data shows the churn is real and cancels unevenly -- llama3.1-8B moves 22.6 points of agree-rate from reordering alone. Both statements are true at different aggregation levels.",
         "disclosure": "This is the project's own observatory. Any use of it as external replication must be disclosed as half-internal.",
-        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
-        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
-        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
-        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
+        "judge_free_scoring": "Re-read 2026-09-11 (live site). Deterministic, no model in the scoring path: \"Scores come from submitting each answer set to the real politicalcompass.org test with an automated, verified form-filler.\" The instrument's own algorithm does the scoring.",
+        "judge_lean_reported": "Re-read 2026-09-11. No model scores.",
+        "self_judging_disclosed": "Re-read 2026-09-11. Scoring is judge-free. Claude models appear elsewhere on the site as research agents gathering evidence, but not in the scoring path, so the control does not apply.",
+        "longitudinal": "Re-read 2026-09-11. A rolling collection rather than a one-time cross-section -- window 2026-07-29 to 2026-09-07 with named re-collection dates -- which is the only other non-`no` on this control besides cen. `partial` rather than `yes` because the repeat collections at held parameters are not reported systematically enough to read a per-subject series off the page."
       },
       "first_public": "2026-07-29",
       "of_record": null,
