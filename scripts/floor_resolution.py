@@ -190,23 +190,12 @@ def modal_noise(cells, boot=BOOT, seed=SEED):
 
 
 def between_vs_within(condition="D", min_runs=4):
-    """Do models differ from each other more than they differ from themselves?
+    """Describe run/run and modal/modal distances in the selected finite model panel.
 
-    THE MEASUREMENT THE STUDY NEEDED AND NEVER HAD. Every floor here asks how far a model moves
-    when something nuisance changes. None asked whether the instrument can separate two models
-    at all -- and if between-model distance were comparable to within-model noise, every
-    per-model number in the paper would be measuring the questionnaire.
-
-    It is not: between-model median is 5 side-flips against a within-model median of 1-2, and
-    the between-model p90 (14-18) is three to four times the within-model p90. Model identity
-    is the largest term in this study, larger than the manipulation, the item order or the
-    estimator.
-
-    Also splits same-vendor from different-vendor pairs, which answers the house-style question
-    -- and the answer is that the MEDIANS ARE EQUAL. Two models from one lab differ about as
-    much as two from different labs; vendors separate only in the tail. Where they do differ
-    sharply is internal consistency: moonshot's line agrees with itself within 2 items, x-ai's
-    disagrees by 10-11.
+    These are different estimators; their ratio is not a variance decomposition.
+    Model pairs share endpoints, and vendor pairs are not independent samples.
+    The pooled same-cell modal bootstrap is a descriptive reference, not a calibrated
+    null for a particular between-model contrast or a test of scorer validity.
     """
     raw = F.load(WAVE, key=lambda r: (r["model"], r["condition"]), dedupe_by_seed=True)
     cells = {k: v for k, v in raw.items() if len(v) >= min_runs}
@@ -236,6 +225,8 @@ def between_vs_within(condition="D", min_runs=4):
                 "p90": p90(v), "max": max(v) if v else None}
 
     return {"condition": condition, "models": len(models),
+            "inference_status": "descriptive-only",
+            "comparison_scope": "different estimators; dependent model pairs; no variance decomposition or calibrated null",
             "within": summ(within), "between": summ(between),
             "same_vendor": summ(same), "diff_vendor": summ(diff),
             "per_vendor": {v: summ(d) for v, d in sorted(per_vendor.items()) if len(d) >= 2}}
@@ -306,6 +297,8 @@ def paired(boot=BOOT, seed=SEED):
     lo, hi = meds[int(0.025 * boot)], meds[int(0.975 * boot) - 1]
 
     return {"models": len(rows), "rows": rows,
+            "inference_status": "descriptive-only; median interval coverage unvalidated for the selected model panel",
+            "sign_assumptions": "independent nonzero model signs with P(positive)=1/2; lineage dependence not validated",
             "median_diff": st.median(diffs), "ci95": [lo, hi],
             "order_larger": wins, "tied": ties, "manip_larger": losses,
             "sign_test_p": round(pval, 4)}
@@ -407,16 +400,15 @@ def main(argv=None):
             # which is how a retraction comes undone -- the document was corrected and the tool
             # that generates the number was not.
             #
-            # The like-for-like denominator for a modal-vs-modal distance is the MODAL's own
-            # sampling error, from data/modal-noise.json. It is SMALLER than run-vs-run
-            # (median 1, p90 3), so the conclusion survives and gets slightly stronger; the
-            # run-vs-run row stays printed above, labelled as the different statistic it is.
+            # Matching the modal estimator is necessary but does not calibrate this pooled
+            # same-cell bootstrap as a null for a between-model contrast.
             est = _cached_modal_noise()
             if est:
-                print("   like-for-like denominator (the modal's OWN sampling error): "
+                print("   pooled same-cell modal bootstrap reference (descriptive): "
                       "median %d, p90 %d" % (est["median"], est["p90"]))
-                print("   between-model median %d against estimator median %d -- model "
-                      "identity is the larger term" % (r["between"]["median"], est["median"]))
+                print("   between-model median %d; reference median %d -- "
+                      "no calibrated contrast test or variance decomposition"
+                      % (r["between"]["median"], est["median"]))
             else:
                 print("   like-for-like denominator unavailable (no data/modal-noise.json): "
                       "run --write first. NOT falling back to the run-vs-run median, which is "
@@ -463,10 +455,12 @@ def main(argv=None):
             print("")
             print("  order larger on %d model(s), manipulation larger on %d, tied on %d"
                   % (pr["order_larger"], pr["manip_larger"], pr["tied"]))
-            print("  median within-model difference %+.1f items, 95%% CI [%s, %s]"
+            print("  median within-model difference %+.1f items, legacy percentile interval [%s, %s]"
                   % (pr["median_diff"], pr["ci95"][0], pr["ci95"][1]))
-            print("  sign test on the %d models that differ: p = %s"
+            print("  sign-balance diagnostic on the %d models that differ: p = %s"
                   % (pr["order_larger"] + pr["manip_larger"], pr["sign_test_p"]))
+            print("  Descriptive selected-panel comparison: interval coverage and independence "
+                  "of model signs are unvalidated; no significance or equivalence claim.")
 
     if args.json:
         if not out:

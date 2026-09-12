@@ -355,6 +355,8 @@ def call_ollama(model: str, messages: list[dict], timeout: int = 120,
             "latency_ms": latency_ms,
             "tokens_in": d.get("prompt_eval_count"),
             "tokens_out": d.get("eval_count"),
+            "ollama_timing_ns": {key: d.get(key) for key in (
+                "total_duration", "load_duration", "prompt_eval_duration", "eval_duration")},
         }
     except Exception as e:
         latency_ms = int((time.time() - start) * 1000)
@@ -519,16 +521,7 @@ def main() -> int:
 
     # OpenRouter key is only required when the run actually includes cloud models — a
     # local-only run (dmr/ollama, e.g. on a Mac) needs no API key or network.
-    #
-    # And --dry-run needs no key at all, because it makes no calls. It used to exit 2 here,
-    # which made the one command a person runs to see what a collection WOULD do impossible
-    # to run before they had credentials — while DEVELOPER.md §3 said "--dry-run prints plan,
-    # no API calls". The plan is exactly what somebody without a key wants to read.
-    if args.dry_run and not api_key:
-        print("NOTE: OPENROUTER_API_KEY is not set. This is a dry run, so nothing is called "
-              "and the plan below is complete; a real run of this model set would need the "
-              "key.", file=sys.stderr)
-    elif any(ch == "openrouter" for ch, _ in models) and not api_key:
+    if any(ch == "openrouter" for ch, _ in models) and not api_key:
         print("ERROR: OPENROUTER_API_KEY not set, but the model set includes openrouter models. "
               "Export it or put it in a repo-root .env (see .env.example), or run a local-only "
               "set (e.g. --models local-large).", file=sys.stderr)
@@ -537,12 +530,7 @@ def main() -> int:
     run_date = args.date or datetime.date.today().isoformat()
     run_dir = STUDY_DIR / "data" / run_date
     raw_dir = run_dir / "raw"
-    # NOT created yet -- see the dry-run return below. A dry run documented as "prints plan,
-    # no API calls" was creating `data/<today>/raw/` and leaving it behind empty. That is a
-    # side effect a dry run must not have, and it is not cosmetic: an empty run directory is
-    # a run with no manifest, so `validate_runs.py` flagged it and selftest gate G8 --
-    # "validate_runs reports exactly the known manifest defects, and nothing else" -- failed.
-    # A command for looking without touching created the thing that broke the gate.
+    raw_dir.mkdir(parents=True, exist_ok=True)
 
     conditions_to_run = [c.strip() for c in args.conditions.split(",") if c.strip()]
     n_samples = max(1, args.samples)
@@ -556,11 +544,7 @@ def main() -> int:
     if args.dry_run:
         for ch, m in models:
             print(f"  {ch:10} {m}")
-        print()
-        print(f"DRY RUN -- nothing called, and {run_dir} was not created.")
         return 0
-
-    raw_dir.mkdir(parents=True, exist_ok=True)
 
     manifest = {
         "run_date": run_date,

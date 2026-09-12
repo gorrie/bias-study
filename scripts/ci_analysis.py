@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 """
 ci_analysis.py — Bootstrap confidence intervals + inter-judge agreement over
-already-scored bias-study runs. No API calls; reads <run-root>/<date>/scored/*.jsonl, where
-the run root is `data/` in this repository and `runs/` in the working study — `studypaths`
-auto-detects. The docstring said `runs/` unconditionally, which is the directory that does
-NOT hold the May data here, and SCRIPTS.md is generated from this line.
+already-scored bias-study runs. No API calls; reads runs/<date>/scored/*.jsonl.
 
-Addresses the audit's two statistical killshots:
-  1. Report every per-model B-A delta as mean +/- 95% CI (bootstrap over the
-     per-question deltas), and flag deltas whose CI crosses zero as
-     "not distinguishable from zero" at the study's noise floor.
-  2. Report Krippendorff's alpha (ordinal) across the LLM judges as the
-     inter-judge reliability statistic.
+Reports descriptive per-question B-A means, legacy percentile-bootstrap diagnostics,
+and inter-judge agreement. The bootstrap has demonstrated coverage failures; its
+nominal 95% endpoints do not authorize significance or equivalence claims. See
+audits/inference-2026-09-08/ for the counterexamples. No calibrated mean inference
+is implemented here.
 
 Usage:
     python ci_analysis.py <run_date> [<run_date> ...]
@@ -19,18 +15,16 @@ Usage:
 """
 from __future__ import annotations
 
-import json
 import os
 import sys
 from collections import defaultdict
 from itertools import combinations
 from pathlib import Path
 
-import eligibility as _elig
-
 sys.path.insert(0, str(Path(__file__).parent))
+from eligibility import load_scored_records  # noqa: E402
 from studypaths import (  # noqa: E402
-    STUDY_DIR, RunNotFound, analysis_seed, resolve_run, stream)
+    RunNotFound, analysis_seed, resolve_run, stream)
 
 SCRIPT_DIR = Path(__file__).parent
 # 10000 for real analysis. The self-test lowers it to keep the determinism check fast --
@@ -44,13 +38,7 @@ BOOTSTRAP_N = int(os.environ.get("BIAS_STUDY_BOOTSTRAP_N") or 10000)
 
 
 def load_scored(run_dir: Path) -> list[dict]:
-    recs = []
-    sdir = run_dir / "scored"
-    for f in sorted(sdir.glob("*.jsonl")):
-        for line in f.read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                recs.append(json.loads(line))
-    return _elig.apply_rule(recs, label='ci_analysis.py')
+    return load_scored_records(run_dir / "scored")
 
 
 def per_model_deltas(recs: list[dict]) -> dict[str, list[float]]:
@@ -76,9 +64,14 @@ def per_model_deltas(recs: list[dict]) -> dict[str, list[float]]:
 
 
 def bootstrap_ci(deltas: list[float], rng, n: int = BOOTSTRAP_N, alpha: float = 0.05):
-    """`rng` is this cell's own generator -- see studypaths.stream. Passing it in is
-    what makes a cell's interval independent of the order cells were processed in."""
+    """Legacy percentile endpoints, retained for reproducibility, not calibrated CIs.
+
+    `rng` is this cell's own generator (studypaths.stream), so processing order does
+    not change the draws. More draws do not remedy finite-sample coverage failures.
+    """
     k = len(deltas)
+    if not k:
+        return None, None, None
     mean = sum(deltas) / k
     if k < 2:
         return mean, None, None
@@ -94,10 +87,15 @@ def bootstrap_ci(deltas: list[float], rng, n: int = BOOTSTRAP_N, alpha: float = 
     return mean, lo, hi
 
 
-def krippendorff_alpha_ordinal(ratings: list[list[int]]) -> float | None:
+def krippendorff_alpha_ordinal(ratings: list[list[int | None]]) -> float | None:
     """Ordinal Krippendorff's alpha. `ratings` = list of items, each a list of
-    judge scores (missing judges omitted). Standard coincidence-matrix method."""
-    # Build value set
+    judge scores (missing judges omitted or None). Standard coincidence-matrix
+    method: Krippendorff, Computing Alpha-Reliability (2011/2013), pp. 6, 8-9.
+    Only pairable ratings contribute margins; identical ratings have distance zero.
+    """
+    ratings = [[v for v in item if v is not None] for item in ratings]
+    ratings = [item for item in ratings if len(item) >= 2]
+    # Categories observed only in singleton units cannot supply expected variance.
     values = sorted({v for item in ratings for v in item})
     if len(values) < 2:
         return None
@@ -120,6 +118,8 @@ def krippendorff_alpha_ordinal(ratings: list[list[int]]) -> float | None:
         return None
     # Ordinal distance metric
     def delta2(i, j):
+        if i == j:
+            return 0.0
         lo, hi = (i, j) if i <= j else (j, i)
         s = n_c[lo] / 2 + n_c[hi] / 2 + sum(n_c[lo + 1:hi])
         return s * s
@@ -131,21 +131,18 @@ def krippendorff_alpha_ordinal(ratings: list[list[int]]) -> float | None:
 
 
 def pairwise_agreement(ratings: list[list[int]]) -> dict:
-    """Raw pairwise agreement across judges -- the statistic the protocol mandates.
+    """Raw agreement and ordinal absolute differences; neither establishes validity.
 
-    rubric.md, run-protocol.md step 9, and the report skill all forbid leading with
-    Krippendorff's alpha, because alpha is a chance-corrected coefficient and this
-    rubric's score distribution is extremely skewed (82.6% of scores are "3"), which
-    drives alpha toward zero however well the judges actually agree. That is the
-    prevalence paradox, not disagreement. WRITEUP section 2.4 publishes exact, unanimous
-    and mean-difference figures and names this script as the reproducer -- and this
-    script computed only alpha, so the cited numbers could not be reproduced by the
-    thing cited. They can now.
+    Report alongside corrected alpha and the score distribution. The former alpha
+    implementation counted identical scores as disagreement; skew alone does not
+    explain those erroneous values. Perfect agreement with pairable variation has
+    alpha=1 even under extreme skew.
     """
     pairs = tot_pairs = 0
     unanimous = items = 0
     diffs = []
     for item in ratings:
+        item = [v for v in item if v is not None]
         if len(item) < 2:
             continue
         items += 1
@@ -196,7 +193,14 @@ def main() -> int:
         recs = load_scored(run_dir)
         print(f"\n=== {rd} ({len(recs)} scored records) ===")
         deltas_by_model = per_model_deltas(recs)
-        print(f"  {'model':<42} {'n':>3} {'meanD':>7} {'95% CI':>18}  verdict")
+        if not deltas_by_model:
+            print(f"[error] {rd}: no eligible A/B pairs after response-quality filtering",
+                  file=sys.stderr)
+            failed += 1
+            continue
+        print("  [inference withheld] Legacy nominal 95% bootstrap endpoints are "
+              "uncalibrated; flags below are descriptive diagnostics.")
+        print(f"  {'model':<42} {'n':>3} {'meanD':>7} {'legacy interval':>18}  diagnostic")
         n_sig = n_null = 0
         for model in sorted(deltas_by_model):
             d = deltas_by_model[model]
@@ -205,11 +209,11 @@ def main() -> int:
                 verdict = "n<2 (single delta)"
                 ci = "  --"
             elif lo <= 0 <= hi:
-                verdict = "NOT distinguishable from 0"
+                verdict = "legacy interval includes 0; inference withheld"
                 ci = f"[{lo:+.2f}, {hi:+.2f}]"
                 n_null += 1
             else:
-                verdict = "significant"
+                verdict = "legacy interval excludes 0; inference withheld"
                 ci = f"[{lo:+.2f}, {hi:+.2f}]"
                 n_sig += 1
             print(f"  {model:<42} {len(d):>3} {mean:>+7.2f} {ci:>18}  {verdict}")
@@ -228,11 +232,14 @@ def main() -> int:
         else:
             print("  raw agreement: n/a (no item has two judges)")
         if alpha is not None:
-            print(f"  [footnote] Krippendorff's alpha (ordinal) = {alpha:.4f}. NOT the headline: "
-                  f"the score distribution is skewed enough that alpha reports near zero at high")
-            print("             raw agreement (prevalence paradox). Reported for completeness only.")
+            print(f"  [footnote] Krippendorff's alpha (ordinal) = {alpha:.4f}. "
+                  "Corrected zero-distance diagonal; agreement does not establish scorer validity.")
+        else:
+            print("  [footnote] Krippendorff's alpha (ordinal): undefined "
+                  "(no pairable variation).")
         if deltas_by_model:
-            print(f"  --> {n_sig} model(s) with CI excluding 0; {n_null} not distinguishable from 0")
+            print(f"  --> legacy intervals: {n_sig} exclude 0; {n_null} include 0. "
+                  "No significance or equivalence conclusion.")
         print(f"  [seed] analysis_seed={seed} (per-cell derived streams)")
     return 1 if failed else 0
 

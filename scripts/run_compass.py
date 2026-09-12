@@ -79,7 +79,7 @@ def _client():
     return call_ollama, call_openrouter, load_env, safe_filename
 
 SCRIPT_DIR = Path(__file__).parent
-STUDY_DIR = SCRIPT_DIR.parent
+from studypaths import STUDY_DIR
 ITEMS_PATH = STUDY_DIR / "data" / "compass-propositions.json"
 
 #: Version of the failure classifier below, stamped onto every record it labels.
@@ -461,6 +461,7 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
         "latency_ms": result.get("latency_ms"),
         "tokens_in": result.get("tokens_in"),
         "tokens_out": result.get("tokens_out"),
+        "ollama_timing_ns": result.get("ollama_timing_ns"),
     }
     if not result.get("ok"):
         # A transport failure is not a measurement. Recorded 2026-08-31: 66 such rows across

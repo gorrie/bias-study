@@ -28,7 +28,7 @@
 
 ## Scoring and the judge panel
 
-- **`ci_analysis.py`** — ci_analysis.py — Bootstrap confidence intervals + inter-judge agreement over already-scored bias-study runs. No API calls; reads <run-root>/<date>/scored/*.jsonl, where the run root is `data/` in this repository and `runs/` in the working study — `studypaths` auto-detects. The docstring said `runs/` unconditionally, which is the directory that does NOT hold the May data here, and SCRIPTS.md is generated from this line.
+- **`ci_analysis.py`** — ci_analysis.py — Bootstrap confidence intervals + inter-judge agreement over already-scored bias-study runs. No API calls; reads runs/<date>/scored/*.jsonl.
 - **`cross_method_report.py`** — Cross-method judge-effectiveness analysis.
 - **`judge_anchor.py`** — Method 8 — external anchoring. The one check that can see a lean shared by all four judges.
 - **`judge_lean.py`** — Do the judges lean, and by how much? The floor nobody computed for the scoring layer.
