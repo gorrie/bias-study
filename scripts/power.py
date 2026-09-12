@@ -193,10 +193,22 @@ def main(argv=None):
         if not match:
             continue
         _, _, n, thr, m = match[0]
-        # A null is only safe if the instrument could have SEEN an effect of the size being
-        # ruled out. Observed movement below the MDE means the measurement had no power to
-        # distinguish "nothing happened" from "something happened and we could not see it".
-        supported = c["observed"] >= m
+        # TWO DIFFERENT QUESTIONS, AND THIS LINE USED TO ASK ONLY THE SECOND ONE.
+        #   thr (rejection threshold) -- could this observation have come from the null?
+        #                               A calibrated test of the effect that WAS observed.
+        #   m   (MDE)                 -- could an effect of this size have been seen at all?
+        #                               Prospective power for a specified alternative.
+        # `supported = observed >= m` conflated them, and the two are not ordered: on the
+        # same-version-variants floor MDE is 11 while the threshold is 13, so an observation
+        # of 11 or 12 cleared the MDE, failed the test, and was still printed SUPPORTED --
+        # "calling it a null was wrong in the other direction" -- off a movement that is not
+        # distinguishable from the null. Feed the arithmetic the synthetic null [0..10] and it
+        # returns threshold 10, MDE 9: an observed 9 is called supported without exceeding 10.
+        # Clearing the threshold is what licenses the claim; clearing the MDE only says the
+        # instrument was not too blunt to look.
+        exceeds_threshold = c["observed"] >= thr
+        above_mde = c["observed"] >= m
+        supported = exceeds_threshold
         # A CAVEAT ON THE OBSERVED EFFECT DISQUALIFIES A "SUPPORTED" VERDICT, IT DOES NOT
         # DECORATE IT. The one entry carrying a caveat is the one that came back SUPPORTED,
         # and that verdict was published as "one null inverted outright" off a single run per
@@ -208,15 +220,20 @@ def main(argv=None):
         print("    observed %d, floor '%s' (%s): threshold %.0f, MDE %.0f"
               % (c["observed"], c["floor"], c["stat"], thr, m))
         if supported and caveat:
-            print("    NOT RESOLVABLE -- the movement exceeds the MDE, but the observed effect "
-                  "itself does not survive scrutiny:")
+            print("    NOT RESOLVABLE -- the movement exceeds the threshold, but the observed "
+                  "effect itself does not survive scrutiny:")
             print("      %s" % caveat)
+        elif supported:
+            print("    SUPPORTED -- the movement exceeds what the instrument can resolve, so "
+                  "calling it a null was wrong in the other direction")
+        elif above_mde:
+            # The band between the two limits, which used to be printed SUPPORTED.
+            print("    INCONCLUSIVE -- the instrument had the power to see an effect this "
+                  "size, and this observation still does not clear the rejection threshold. "
+                  "Neither the null nor its inversion is established.")
         else:
-            print("    %s" % ("SUPPORTED -- the movement exceeds what the instrument can "
-                              "resolve, so calling it a null was wrong in the other direction"
-                              if supported else
-                              "UNDERPOWERED -- 'no effect' is not established; the instrument "
-                              "cannot distinguish this from an effect it is too blunt to see"))
+            print("    UNDERPOWERED -- 'no effect' is not established; the instrument "
+                  "cannot distinguish this from an effect it is too blunt to see")
             if caveat:
                 print("      caveat: %s" % caveat)
         print("    %s" % c["where"])
@@ -229,13 +246,19 @@ def main(argv=None):
     # could not have seen the effect. Not-resolvable means the observed effect is not a
     # measurement. They call for different work and they are counted separately.
     under = sum(1 for c, _, m, _ in verdicts if c["observed"] < m)
-    unresolvable = sum(1 for c, _, m, _ in verdicts
-                       if c["observed"] >= m and c.get("caveat"))
-    supported = len(verdicts) - under - unresolvable
+    inconclusive = sum(1 for c, thr, m, _ in verdicts
+                       if m <= c["observed"] < thr and not c.get("caveat"))
+    unresolvable = sum(1 for c, thr, _, _ in verdicts
+                       if c["observed"] >= thr and c.get("caveat"))
+    supported = len(verdicts) - under - inconclusive - unresolvable
     print("%d of %d published nulls are underpowered -- the instrument could not have seen the"
           % (under, len(verdicts)))
     print("effect being ruled out. %d is not resolvable at all (its observed effect is n=1)."
           % unresolvable)
+    if inconclusive:
+        print("%d sits between the MDE and the rejection threshold: powered enough to have seen"
+              % inconclusive)
+        print("the effect, not large enough to be distinguished from the null. Neither verdict.")
     print("%d clears its floor, which means calling it a null was wrong in the other direction."
           % supported)
     print()
