@@ -45,6 +45,8 @@ No API calls. Arithmetic on data already on disk.
 """
 from __future__ import annotations
 
+import math
+
 import argparse
 import os
 import sys
@@ -109,12 +111,28 @@ def pctile(vals, q):
     return v[min(i, len(v) - 1)]
 
 
+#: The barometer's item count. A side or endpoint count cannot exceed it.
+BOUND = 62
+
+
 def mde(vals, threshold, power=POWER):
-    """Smallest upward shift of the empirical null that clears `threshold` `power` of the time."""
+    """Smallest upward shift of the empirical reference that clears `threshold` `power` of the time.
+
+    THE SHIFT MODEL CLIPS AT THE INSTRUMENT'S BOUND. The barometer has 62 items, so a side
+    count cannot exceed 62 and a shift that would require it is not a smaller effect we failed
+    to detect -- it is unreachable. This returned a finite 1 for mde([62], 62), describing a
+    sensitivity the instrument cannot have. If the threshold sits at the bound, NO shift clears
+    it, and the honest answer is undefined rather than a number that will be read as achievable.
+    """
+    if power <= 0 or power > 1:
+        raise ValueError("power must be in (0, 1]; a shift clearing a threshold 0%% of the "
+                         "time is not a detectable effect")
+    if any(v > BOUND for v in vals):
+        raise ValueError("reference value above the instrument's %d-item bound" % BOUND)
     if not vals:
         return float("nan")
-    for delta in range(0, 63):
-        shifted = [v + delta for v in vals]
+    for delta in range(0, BOUND + 1):
+        shifted = [min(v + delta, BOUND) for v in vals]
         if sum(1 for s in shifted if s > threshold) / len(shifted) >= power:
             return delta
     return float("nan")
@@ -129,10 +147,10 @@ def collect():
         # floor_table.summarise() discards the raw pairs, so re-derive them the same way it
         # does and keep them. Any divergence between this and floor_table is a bug in one of
         # the two, which is why both read the same loaders.
-        name, pairs = _pairs_for(fn)
-        if pairs:
-            out[name] = {"side": [p[0] for p in pairs],
-                         "endpoint": [p[1] for p in pairs]}
+        for name, pairs in _pairs_for(fn):
+            if pairs:
+                out[name] = {"side": [p[0] for p in pairs],
+                             "endpoint": [p[1] for p in pairs]}
     return out
 
 
@@ -145,8 +163,14 @@ def collect():
 
 
 def _pairs_for(fn):
-    """Call the floor function but intercept the pair list before it is summarised away."""
-    captured = {}
+    """Call the floor function and intercept EVERY pair list before it is summarised away.
+
+    A floor function may emit more than one row. `floor_conditions_wave` emits a local
+    open-weight row and a hosted row, and this captured a single dict, so the second call
+    overwrote the first: the local one-sitting order row (10 pairs) vanished behind the hosted
+    row (75 pairs) and its threshold silently became the hosted one. Rows are a list now.
+    """
+    captured = []
     original = F.summarise
 
     def spy(name, pairs, note="", **kw):
@@ -154,8 +178,7 @@ def _pairs_for(fn):
         # (`clusters=`, for the cluster bootstrap) and this spy raised TypeError, taking every
         # detection limit down with it -- a monkeypatch that mirrors a signature has to be
         # updated in lockstep or written not to care. Written not to care.
-        captured["pairs"] = pairs
-        captured["name"] = name
+        captured.append((name, pairs))
         return original(name, pairs, note, **kw)
 
     F.summarise = spy
@@ -163,7 +186,38 @@ def _pairs_for(fn):
         fn()
     finally:
         F.summarise = original
-    return captured.get("name", fn.__name__), captured.get("pairs", [])
+    return captured or [(fn.__name__, [])]
+
+
+def reference_kind(name):
+    """What KIND of distribution this row is -- and none of them is a calibrated null.
+
+    An INTERVENTION is something we did to the model on purpose: a changed prompt condition,
+    a refusal-direction ablation, a different elicitation format. Its spread is the effect of
+    the manipulation, not nuisance variation, so folding it into the reference distribution
+    inflates the very threshold an observed effect must clear. Only "prompt condition A->D"
+    was excluded here; refusal-direction ablation was still being used as a reference, which
+    is the September 8 correction record's third item.
+    """
+    if name.startswith(("prompt condition", "refusal-direction ablation", "elicitation format")):
+        return "intervention"
+    if name == "same-version variants":
+        return "model variants (not a null)"
+    return "nuisance reference (not calibrated)"
+
+
+def classify_observation(observed, threshold, caveat=None):
+    """Quality caveats take precedence; equality never clears the reference.
+
+    Extracted from main()'s print loop so the decision rule can be tested directly. It was
+    inline, which is why the `>=` boundary went unnoticed: exercising it meant reading the
+    report rather than asserting on a function.
+    """
+    if caveat:
+        return "MEASUREMENT LIMITED"
+    if not math.isfinite(threshold):
+        return "REFERENCE UNAVAILABLE"
+    return "ABOVE REFERENCE" if observed > threshold else "AT OR BELOW REFERENCE"
 
 
 def main(argv=None):
@@ -175,7 +229,7 @@ def main(argv=None):
 
     rows = []
     for name, d in floors.items():
-        if name == "prompt condition A->D":
+        if reference_kind(name) == "intervention":
             continue                       # a manipulation, not a null
         for stat in ("side", "endpoint"):
             vals = d[stat]
@@ -195,10 +249,24 @@ def main(argv=None):
     print("PUBLISHED NULLS, AUDITED AGAINST THE LIMIT ABOVE")
     print()
     verdicts = []
+    missing_refs = []
     for c in PUBLISHED_NULLS:
         key = (c["floor"], c["stat"])
         match = [r for r in rows if r[0] == c["floor"] and r[1] == c["stat"]]
         if not match:
+            # A PUBLISHED NULL WHOSE REFERENCE IS GONE IS REPORTED, NOT SKIPPED. `continue`
+            # meant that excluding a reference -- as the intervention rule now does -- quietly
+            # removed the audit of every claim resting on it, and the report still ended
+            # "N of 5 published nulls", counting the survivors as though nothing were missing.
+            print("  %s" % c["claim"])
+            print("    observed %d, floor '%s' (%s): %s"
+                  % (c["observed"], c["floor"], c["stat"],
+                     classify_observation(c["observed"], float("nan"))))
+            print("    REFERENCE UNAVAILABLE -- this claim's reference is not in the table "
+                  "above, so it is not audited here at all. That is a gap, not a pass.")
+            print("    %s" % c["where"])
+            print()
+            missing_refs.append(c)
             continue
         _, _, n, thr, m = match[0]
         # TWO DIFFERENT QUESTIONS, AND THIS LINE USED TO ASK ONLY THE SECOND ONE.
@@ -278,6 +346,15 @@ def main(argv=None):
     print("different verdict and the honest one. Restoring any of them needs an instrument")
     print("that can resolve the effect size in question -- more seeds, more orders, or a")
     print("narrower item set -- not a re-reading of these runs.")
+    if missing_refs:
+        print()
+        print("%d published null(s) could not be audited because the reference they were "
+              "measured against is no longer in the table:" % len(missing_refs))
+        for c in missing_refs:
+            print("  - %s (floor '%s', %s)" % (c["claim"], c["floor"], c["stat"]))
+        print("Exit 1. A report that silently drops the claims it cannot check is how a")
+        print("withdrawn finding stays withdrawn on paper and unexamined in fact.")
+        return 1
     return 0
 
 

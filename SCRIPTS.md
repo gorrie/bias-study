@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-69 script(s). 0 carry no module docstring and are listed at the end.
+70 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -62,6 +62,7 @@
 
 ## Tests and development
 
+- **`check_no_fork.py`** — Fail if any script exists in both trees with different content.
 - **`selftest_analysis.py`** — selftest_analysis.py — ten assertions over the committed May data. Zero API cost.
 - **`test_ablation_slugs.py`** — Two independent abliterations of one base must never share a directory.
 - **`test_analysis_plumbing.py`** — Regression tests for the analysis plumbing: encoding, run discovery, gate templates.

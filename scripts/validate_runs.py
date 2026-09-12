@@ -148,7 +148,14 @@ def _split_known(reports):
             else:
                 live.append(f)
         r["_known"], r["_live"] = known, live
-    return sorted(set(KNOWN) - seen)
+    # ROT IS ONLY CLAIMABLE FOR RUNS THAT WERE ACTUALLY SCANNED. "Listed as known and no
+    # longer occurs" is a statement about a run we looked at and did not find the finding in.
+    # Comparing against the whole registry instead made every scoped invocation -- an explicit
+    # run name, or a fixture corpus under STUDY_ROOT -- report the entire registry as rotted,
+    # because it had not examined those runs at all. Absence of evidence was being reported as
+    # evidence of repair, in the one file whose job is to notice the difference.
+    scanned = {r["run"] for r in reports}
+    return sorted(k for k in set(KNOWN) - seen if k[0] in scanned)
 
 
 def _is_manifest_layout(d) -> bool:

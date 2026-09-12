@@ -35,6 +35,7 @@ import hashlib
 import json
 import re
 import os
+import sys
 import random
 from pathlib import Path
 
@@ -119,8 +120,17 @@ def runs_root() -> Path:
     if len(populated) == 1:
         return populated[0]
     if candidates:
-        raise RunNotFound(f"ambiguous data/ and runs/ under {STUDY_DIR}; "
-                          "exactly one must contain run records")
+        # AMBIGUOUS, AND SAID SO EVERY TIME -- but not fatal here. The public mirror really
+        # does hold two populated corpora, and several scripts call this at MODULE level, so
+        # raising took `--help` down with it and made the tree unusable rather than careful.
+        # The strictness lives where it can act: resolve_run() fails hard when a RUN NAME is
+        # present in both roots, which is the case where picking would actually read the wrong
+        # records. This returns a root and never does it quietly.
+        chosen = (populated or candidates)[0]
+        print("[studypaths] WARNING: both data/ and runs/ under %s hold runs; using %s/. "
+              "Set STUDY_RUN_LAYOUT=data|runs to choose deliberately."
+              % (STUDY_DIR, chosen.name), file=sys.stderr)
+        return chosen
     raise RunNotFound(f"neither data/ nor runs/ exists under {STUDY_DIR}")
 
 
@@ -152,7 +162,8 @@ def resolve_run(run_date: str, *, require_scored: bool = True) -> Path:
     holding = [r for r in roots if (r / run_date).is_dir()]
     if len(holding) > 1:
         raise RunNotFound(
-            f"run {run_date} exists in {' and '.join(r.name for r in holding)}; "
+            f"ambiguous run {run_date}: it exists in "
+            f"{' and '.join(r.name for r in holding)}; "
             "set STUDY_RUN_LAYOUT to choose the corpus")
     if not holding:
         have = sorted({p.name for r in roots for p in r.iterdir() if p.is_dir()})
