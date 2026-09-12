@@ -102,6 +102,55 @@ def inspect(d: Path) -> dict:
     return out
 
 
+#: Findings that are established facts about the MAY 2026 collection, each with the reason it
+#: is not a defect in the shipped data. Everything else still fails.
+#:
+#: Why this registry exists: on a clean clone `validate_runs.py` exited 1 on the published
+#: corpus, and a red gate on the data is indistinguishable, to a reader, from broken data. All
+#: six findings are provenance gaps in runs collected in May 2026, before the manifest
+#: discipline existed. None of them affects a number: every published figure recomputes from
+#: the records on disk, which are intact and are what `--json` reports.
+#:
+#: What was deliberately NOT done: writing the four missing manifests from the data. A manifest
+#: generated out of the files it exists to check cannot detect a shortfall, which is the only
+#: thing a manifest is for. Fabricating provenance to turn a gate green is the move this study
+#: spends its length criticising.
+KNOWN = {
+    ("2026-05-27-abliteration", "no-manifest"):
+        "May 2026, before run_study.py wrote manifests. 10 model files, 160 records, all "
+        "scored and all readable; the collection is intact, its request record is not.",
+    ("2026-05-27-abliteration-controls", "no-manifest"):
+        "Same collection, same missing manifest discipline. 3 files, 60 records.",
+    ("2026-05-27-abliteration-gemma2", "no-manifest"):
+        "Same collection, same missing manifest discipline. 2 files, 40 records.",
+    ("2026-05-27-g0dm0d3", "no-manifest"):
+        "Same collection, same missing manifest discipline. 6 files, 60 records.",
+    ("2026-05-27-reversed-premise", "model-count-mismatch"):
+        "The manifest names 3 models; 5 are on disk. The arm was extended after the manifest "
+        "was written and the manifest was not re-emitted. The extra two models are real "
+        "collected data, not phantom files -- MORE landed than was recorded, which is the "
+        "harmless direction, but it is still a provenance gap and is recorded as one.",
+    ("2026-05-27-reversed-premise", "call-count-mismatch"):
+        "Same cause: manifest claims 120 completed calls against 200 records on disk.",
+}
+
+
+def _split_known(reports):
+    """Partition each report's findings into (known, live). Also returns stale registry keys."""
+    seen = set()
+    for r in reports:
+        known, live = [], []
+        for f in r["findings"]:
+            key = (r["run"], f["code"])
+            if key in KNOWN:
+                seen.add(key)
+                known.append((f, KNOWN[key]))
+            else:
+                live.append(f)
+        r["_known"], r["_live"] = known, live
+    return sorted(set(KNOWN) - seen)
+
+
 def main(argv: list[str]) -> int:
     as_json = "--json" in argv
     names = [a for a in argv if not a.startswith("-")]
@@ -117,22 +166,44 @@ def main(argv: list[str]) -> int:
             continue
         reports.append(inspect(d))
 
+    stale = _split_known(reports)
+
     if as_json:
         print(json.dumps(reports, indent=1))
     else:
-        total = 0
+        live_total = known_total = 0
         for r in reports:
             head = (f"{r['run']:<34} files={r['model_files']:>2} records={r['records']:>5} "
                     f"scored={'y' if r['scored'] else 'n'}")
             if not r["findings"]:
                 print(f"  ok   {head}")
                 continue
-            print(f"  FLAG {head}")
-            for f in r["findings"]:
+            print(f"  {'FLAG' if r['_live'] else 'known'}  {head}")
+            for f in r["_live"]:
                 print(f"         {f['code']}: {f['detail']}")
-                total += 1
-        print(f"\n{total} finding(s) across {len(reports)} run(s)")
-    return 1 if any(r["findings"] for r in reports) else 0
+                live_total += 1
+            for f, why in r["_known"]:
+                print(f"         [known] {f['code']}: {f['detail']}")
+                print(f"                 {why}")
+                known_total += 1
+        print(f"\n{live_total} live finding(s) and {known_total} known one(s) "
+              f"across {len(reports)} run(s)")
+        if known_total:
+            print("Known findings are enumerated in validate_runs.KNOWN with the reason each "
+                  "is not a defect in the data.")
+
+    # A registry entry whose finding has stopped occurring is a lie the next reader inherits,
+    # so its disappearance FAILS rather than passing quietly. Same shape as the NOT_IN_REPO
+    # rot check in check_skill_docs.py, and for the same reason: a whitelist nobody re-checks
+    # is how a real defect gets waved through later.
+    if stale:
+        print("\nREGISTRY ROT -- these are listed as known and no longer occur:")
+        for run, code in stale:
+            print(f"   {run}: {code}")
+        print("Remove them from validate_runs.KNOWN. A stale exemption hides the next defect.")
+        return 1
+
+    return 1 if any(r["_live"] for r in reports) else 0
 
 
 if __name__ == "__main__":

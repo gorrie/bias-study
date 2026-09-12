@@ -233,8 +233,16 @@ def print_table(state: dict, gaps_only: bool = False) -> None:
     print("## Downstream-analysis outputs")
     print()
     for name, present in state["summary"]["cross_method_outputs"].items():
-        mark = "OK" if present else "MISSING"
-        print(f"  {mark:>8s}  {name}")
+        # `charts_dir` holds a PATH or the literal string "MISSING", not a bool -- and
+        # "MISSING" is truthy, so this printed `OK  charts_dir` when the directory was
+        # absent. A status tool that reports OK for a missing artifact is worse than one
+        # that says nothing.
+        if isinstance(present, str):
+            ok = present != "MISSING"
+            print(f"  {'OK' if ok else 'MISSING':>8s}  {name}"
+                  + (f"  ({present})" if ok else ""))
+            continue
+        print(f"  {'OK' if present else 'MISSING':>8s}  {name}")
     print()
 
     # Next-step recommendation
@@ -242,7 +250,13 @@ def print_table(state: dict, gaps_only: bool = False) -> None:
         info["complete_all_runs"]
         for info in state["summary"]["methods"].values()
     )
-    cross_method_done = state["summary"]["cross_method_outputs"]["cross_method_report.json"]
+    # The builder above emits "cross-method-runs-index.json"; this line asked for
+    # "cross_method_report.json", a key it has never produced, so `sweep_status.py` --
+    # the tool whose whole job is "state check from the data, not the prose", and the
+    # first command in WRITEUP's reproducibility pipeline -- died with a KeyError on a
+    # clean clone. Read the key that exists, and tolerate its absence rather than crash.
+    cross_method_done = state["summary"]["cross_method_outputs"].get(
+        "cross-method-runs-index.json", False)
     if not methods_complete:
         incomplete = [
             (info["method_number"], info["label"])

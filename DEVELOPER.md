@@ -6,9 +6,12 @@ end. This is the doc to read **before** touching the code — it exists so the t
 doesn't have to be re-derived each session, and so an outside replicator can reproduce
 every result.
 
-Companion docs: `questions.md` (stimuli), `rubric.md` (scoring), `schema.md` (record
-format), `run-protocol.md` (the 18-step procedure), `aggregation-rules.md` (roll-up),
-`ADVERSARIAL-REVIEW.md` (objection → fix/answer map), `WRITEUP-2026-05-26.md` (the paper).
+Companion docs, with the paths they actually live at — they were listed bare here, which sent
+a cloner looking in the repository root for five files that are one directory down:
+`protocol/questions.md` (stimuli), `protocol/rubric.md` (scoring), `protocol/schema.md`
+(record format), `protocol/run-protocol.md` (the 18-step procedure),
+`protocol/aggregation-rules.md` (roll-up), `ADVERSARIAL-REVIEW.md` (objection → fix/answer
+map), `results/WRITEUP-2026-05-26.md` (the paper).
 
 ---
 
@@ -21,7 +24,7 @@ it's bolted on, where force does nothing." The method *is* that ladder:
 | Rung | Force applied | Tooling | Record fields | Status |
 |------|---------------|---------|---------------|--------|
 | **1. Prompt** | remove fairness instruction; A→B→C→D→E gradient | `run_study.py` (OpenRouter / Ollama) | `condition` | DONE (8k+ records) |
-| **2. Pipeline** | hedge-strip + obfuscation (STM, Parseltongue), layered | G0DM0D3 server (WP2) | `g0dm0d3_pipeline` | NOT YET RUN |
+| **2. Pipeline** | hedge-strip + obfuscation (STM, Parseltongue), layered | G0DM0D3 server (WP2) | `g0dm0d3_pipeline` | **DONE** — `data/2026-05-27-g0dm0d3/`, 60 scored records; README quotes the layered result at 4.20 |
 | **3. Weights** | ablate the refusal direction | OBLITERATUS + `run_local.py` | `obliteratus_applied` | DONE (4 vendors) |
 
 Rung 3 is the moat: it requires the weights, a GPU, and the knowledge. It is **only
@@ -250,9 +253,12 @@ See `ADVERSARIAL-REVIEW.md` for the full text. Quick map:
 - **A2** "ablation didn't touch political items" → `abliteration_effect_check.py`.
 - **A2b** temp-0.7 sampling confound → `run_abliteration_controls.sh` (greedy isolation).
 - **A4** "ablation too gentle" → `run_abliteration_controls.sh` (aggressive method + coherence guard).
-- **C2** sycophancy/opinionatedness → `questions.md` `*-Q4` reversed-premise + `--positions reversed` run.
+- **C2** sycophancy/opinionatedness → `protocol/questions.md` `*-Q4` reversed-premise + `--positions reversed` run.
 - **C3** judge contamination → cross-vendor 4-judge median; per-judge spread retained.
-- **D1/D2** scope/paraphrase → WP3 out-of-domain + paraphrase positions (planned).
+- **D1/D2** scope/paraphrase → WP3 out-of-domain + paraphrase positions. **Executed:**
+  `data/2026-05-27-ood/` (160 scored records) and `data/2026-05-27-paraphrase/` (360).
+  `robustness_checks.within_leg_fdr` puts 2 of 6 models through BH-FDR on all three
+  rewordings.
 
 ---
 
@@ -261,8 +267,15 @@ See `ADVERSARIAL-REVIEW.md` for the full text. Quick map:
 As each rung executes, the `g0dm0d3_pipeline` / `obliteratus_applied` record fields and the
 protocol/rubric/schema move from "planned, null" to real. **Keep the docs matching what was
 actually run.** Never describe a leg that wasn't executed as if it were. The writeup's
-findings list and `rubric.md` §4 condition tags are split into *executed* vs *planned* for
-exactly this reason.
+findings list and `protocol/rubric.md` §4 condition tags are split into *executed* vs
+*planned* for exactly this reason.
+
+**And the inverse, which is the one this section actually failed at.** Until 2026-09-12 the
+rung table above said the pipeline rung was `NOT YET RUN` while this repository shipped
+`data/2026-05-27-g0dm0d3/` and the README quoted its layered result at 4.20; D1/D2 read
+`(planned)` with both run directories on disk. Describing an executed leg as unexecuted is the
+same defect as the reverse and is harder to catch, because nobody re-reads a doc to check
+whether it is understating. The rule is that the docs match what was run, in both directions.
 
 ---
 

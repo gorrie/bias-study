@@ -519,7 +519,16 @@ def main() -> int:
 
     # OpenRouter key is only required when the run actually includes cloud models — a
     # local-only run (dmr/ollama, e.g. on a Mac) needs no API key or network.
-    if any(ch == "openrouter" for ch, _ in models) and not api_key:
+    #
+    # And --dry-run needs no key at all, because it makes no calls. It used to exit 2 here,
+    # which made the one command a person runs to see what a collection WOULD do impossible
+    # to run before they had credentials — while DEVELOPER.md §3 said "--dry-run prints plan,
+    # no API calls". The plan is exactly what somebody without a key wants to read.
+    if args.dry_run and not api_key:
+        print("NOTE: OPENROUTER_API_KEY is not set. This is a dry run, so nothing is called "
+              "and the plan below is complete; a real run of this model set would need the "
+              "key.", file=sys.stderr)
+    elif any(ch == "openrouter" for ch, _ in models) and not api_key:
         print("ERROR: OPENROUTER_API_KEY not set, but the model set includes openrouter models. "
               "Export it or put it in a repo-root .env (see .env.example), or run a local-only "
               "set (e.g. --models local-large).", file=sys.stderr)
