@@ -19,14 +19,16 @@
 
 > **Two abliterations of one model by the same author agree exactly; a third by a different
 > author disagrees by precisely the size of the "effect," and shows no effect at all.**
-> Abliteration does not measurably move political stance on any usable base. The intensity
-> belonged to the ablator.
+> On two of three usable bases nothing clears the floor; on the third, two ablations move
+> position by 8–9 items of 62 and disagree with each other by the same 8–9. So the movement is
+> **not separable from which build you downloaded** — unattributable, which is not the same as
+> absent. The intensity belonged to the ablator.
 
 > **Five of the audited studies put a language model in the scoring path. Not one reports that
-> model's own lean.** In three the scorer is drawn from the same family as a subject and only one
-> paper says so; in a fourth the scoring model is never identified at all. We failed this control
-> too — our judges spanned 0.29 points, larger than two of our own five published effects, and we
-> had not computed it either.
+> model's own lean.** In four the scorer shares a vendor family with a subject and only one of
+> those four says so; in a fifth the scoring model is never identified at all. We failed this
+> control too — our judges spanned 0.2926 points, larger than the smallest of our own five
+> published effects and within a hundredth of the next, and we had not computed it either.
 
 *Every number above recomputes: `python scripts/key_numbers.py`,
 `python scripts/controls_audit.py --gaps`, `python scripts/ablation_analysis.py`. Read
@@ -195,7 +197,7 @@ instrument, same model, same settings, in items moved of 62:
 
 **requantisation excludes `mistral-7b`:** gated ELIGIBLE but contributed no pair -- every condition lost one arm to an invalid run
 
-**elicitation format -- ARM UNSTABLE, NOT A FLOOR:** NOT A FACTOR -- THE GRAMMAR ARM FAILS ITS OWN REPLICATE TEST. Over 10 cell(s), two grammar runs of the SAME cell differ by a median of 26 side-flips against 3 for two prose runs, and the across-arm distance is 24. An arm whose repeat measurements differ as much as it differs from the other arm is measuring noise, so the across-arm number is not an elicitation-format effect. Misalignment ruled out: rotating the sheet by +/-1 or +/-2 items does not reduce the distance. Cells: gemma2:latest/D, gemma2:latest/P, llama3.1:8b/D, llama3.1:8b/P, mistral:latest/D, mistral:latest/P
+**elicitation format -- ARM UNSTABLE, NOT A FLOOR:** NOT A FACTOR -- THE GRAMMAR ARM FAILS ITS OWN REPLICATE TEST. Over 10 cell(s), two grammar runs of the SAME cell differ by a median of 26 side-flips against 3 for two prose runs, and the across-arm distance is 24. An arm whose repeat measurements differ as much as it differs from the other arm is measuring noise, so the across-arm number is not an elicitation-format effect. Misalignment ruled out: rotating the sheet by +/-1 or +/-2 items does not reduce the distance. THE CAUSE IS ITEMS PER CALL, NOT THE GRAMMAR: every run behind this row asks for all 62 answers in one array, and the arm replicates once the sheet is asked in chunks -- see RESULTS-2026-09-07-constrained-decoding-batch-size.md and `constrained_probe.py --batch-sweep`. So this row disqualifies the WHOLE-SHEET arm, not constrained decoding, and it stays disqualified until a batched arm is collected at the wave protocol. Cells: gemma2:latest/D, gemma2:latest/P, llama3.1:8b/D, llama3.1:8b/P, mistral:latest/D, mistral:latest/P
 <!-- /GEN:floors -->
 
 **The manipulation appears twice, on purpose.** `prompt condition A->D` is pooled across

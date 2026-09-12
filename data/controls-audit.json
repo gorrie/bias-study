@@ -68,11 +68,12 @@
         "retained_failures": "GPT-5 (2025-08-07) excluded entirely for a 33.1% parse success rate. Two-thirds unparseable on the newest flagship is the study's most interesting cell and it is the one cell not in it.",
         "reported_mde": "Reliability is reported as ICC 0.89-1.00 (median 0.98) with 82.2% of model-probe cells byte-identical across 10 trials. That is sampling variability at T=0, which is near zero by construction, and it is then used to certify effects against factors that were never varied.",
         "open_raw": "huggingface.co/datasets/mznaser/moral-tracing-in-LLMs",
-        "judge_free_scoring": "Re-read 2026-09-11 from the publisher PDF (Technology in Society 87, 103431). A model IS in the scoring path, and it is easy to miss because the paper calls it parsing rather than judging: \"Our response parsing method employed a two-stage procedure, wherein the first stage extracted numeric ratings using regular expression matching against expected formats, and the second stage applied a backup language model parser for responses deviating from the expected format.\" Stage one is mechanical; stage two is a language model mapping free text to a numeric rating, which is the scoring path. `partial` for that reason.",
+        "judge_free_scoring": "Re-read 2026-09-11 from the publisher PDF (Technology in Society 87, 103431). A model IS in the scoring path, and the paper describes that stage as parsing rather than judging: \"Our response parsing method employed a two-stage procedure, wherein the first stage extracted numeric ratings using regular expression matching against expected formats, and the second stage applied a backup language model parser for responses deviating from the expected format.\" Stage one is mechanical; stage two is a language model mapping free text to a numeric rating, which is the scoring path. `partial` for that reason.",
         "judge_lean_reported": "Re-read 2026-09-11. The backup language-model parser's own lean is not reported, and the model is never even identified -- the paper names no vendor, version or family for it anywhere.",
         "self_judging_disclosed": "Re-read 2026-09-11. Because the backup parser is unnamed, a reader cannot establish whether it is one of the 13 subject models, and the paper does not say. The control asks that no subject also scores OR that the study discloses it; neither holds. Recorded `no` rather than `partial` precisely because the overlap is not establishable from the text at all, where rottger2024 and rozado2024 name both roles and merely fail to flag the tension.",
         "longitudinal": "Re-read 2026-09-11. One pass per subject: \"we completed all probes for each model before proceeding to the next\", with timestamps logged only to spot provider-announced changes mid-collection. The paper's drift is measured ACROSS VERSIONS spanning release dates November 2022 to August 2025 -- a version cross-section, the same shape as liu2025. The paper is aware of the distinction and says so: \"Test-retest reliability faces complications when models are updated between testing occasions and may conflate measurement error with genuine change.\" It names the problem without running the control.",
-        "nuisance_magnitude": "PARTIAL, and scored to match rozado2024, whose run-to-run CV earns the same mark. Naser reports run-to-run reliability directly -- ICC 0.89-1.00 (median 0.98), 82.2% of model-probe cells byte-identical across ten trials -- which is a nuisance magnitude, and a small one, honestly measured. What is NOT reported is the magnitude of the nuisance factors this paper is about: nothing bounds what item order, a reworded prompt, a size sibling or a requantisation would move, so the reliability figure certifies sampling stability at T=0 and not measurement stability. Recorded as `no` with no note until 2026-09-06, which was the only unexplained negative verdict about a named author in this file."
+        "nuisance_magnitude": "PARTIAL, and scored to match rozado2024, whose run-to-run CV earns the same mark. Naser reports run-to-run reliability directly -- ICC 0.89-1.00 (median 0.98), 82.2% of model-probe cells byte-identical across ten trials -- which is a nuisance magnitude, and a small one, honestly measured. What is NOT reported is the magnitude of the nuisance factors this paper is about: nothing bounds what item order, a reworded prompt, a size sibling or a requantisation would move, so the reliability figure certifies sampling stability at T=0 and not measurement stability. Recorded as `no` with no note until 2026-09-06, which was the only unexplained negative verdict about a named author in this file.",
+        "pairs_in_hand": "Tier ladder within one generation (mini vs flagship) plus dated snapshots of one name. Read as drift transitions carrying d values rather than as a baseline."
       },
       "quotes": {
         "reported_mde": "The high intraclass correlations reported in Section 4.1 establish that within-model noise is negligible and that observed stance drift reflects genuine distributional change across model generations rather than sampling artifacts.",
@@ -81,7 +82,8 @@
       },
       "first_public": "2026-06-11",
       "of_record": "2026-06-11",
-      "date_note": "Technology in Society 87:103431, accepted 10 Jun, published 11 Jun 2026"
+      "date_note": "Technology in Society 87:103431, accepted 10 Jun, published 11 Jun 2026",
+      "pairs_in_hand": true
     },
     {
       "id": "sakhawat2026",
@@ -89,36 +91,40 @@
       "venue": "arXiv preprint",
       "year": 2026,
       "instrument": "Political Compass (62 items), SapplyValues (46), 8 Values (70)",
-      "scale": "26 models, 10 administrations per inventory per model, context cleared between runs",
+      "scale": "26 models, 10 administrations per inventory per model, context cleared between runs, temperature 0.7 and top_p 1.0 (\"All models are queried with temperature=0.7 and top_p=1.0, balancing determinism with natural language variability\")",
       "provenance": "full-text",
       "headline": "Model identity explains >90% of score variance (eta-squared > 0.90, p<1e-90); normalized drift below 4%",
       "status": {
-        "item_order": "unknown",
-        "nuisance_magnitude": "unknown",
-        "same_version_point": "unknown",
-        "same_version_dist": "unknown",
-        "quantisation": "unknown",
-        "retained_failures": "unknown",
+        "item_order": "no",
+        "nuisance_magnitude": "no",
+        "same_version_point": "partial",
+        "same_version_dist": "no",
+        "quantisation": "no",
+        "retained_failures": "no",
         "reported_mde": "partial",
-        "forcing_disclosed": "unknown",
-        "open_raw": "unknown",
+        "forcing_disclosed": "yes",
+        "open_raw": "no",
         "judge_free_scoring": "yes",
         "judge_lean_reported": "n/a",
         "self_judging_disclosed": "n/a",
         "longitudinal": "no"
       },
       "notes": {
-        "item_order": "Ten administrations with the context cleared vary sampling only; item order is fixed across all ten. On the same 62-item instrument reordering moves a median 3 and up to 22 answers, so the largest known nuisance term has no term in the ANOVA. Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
-        "same_version_dist": "Their Table 7 lists gpt-4.1-nano, gpt-4.1-mini and gpt-4.1 alongside each other without treating them as a null. Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
+        "item_order": "Re-read 2026-09-11 (arXiv HTML full text). Item order is not varied, randomised or discussed: the ten administrations per inventory clear the context window between runs and re-present the same fixed sequence, so they vary sampling and nothing else. Order is not named as a limitation either. On this same 62-item instrument reordering moves a median 3 answers and up to 24, so the largest known nuisance term has no term in their ANOVA -- which is what makes eta-squared > 0.90 for model identity a partition of a variance that was never allowed to include it.",
+        "same_version_dist": "Re-read 2026-09-11 (arXiv HTML full text). No same-version distribution is reported. The cohort does contain size siblings presented side by side -- gpt-4.1-nano, gpt-4.1-mini and gpt-4.1 in Table 7, and the gpt-5 family likewise -- but they are entries in a ranking, never a null.",
         "reported_mde": "Volatility (sigma_vol) and eta-squared are reported, which bound sampling noise. No detection limit is reported for any other factor.",
-        "provenance": "Method and results retrieved 2026-08-31; the full text has not been read end to end. Do not cite specific method details beyond those quoted here without upgrading this record.",
+        "provenance": "Full text read 2026-09-11 from the arXiv HTML (2601.06194v1), replacing the 2026-08-31 method-and-results retrieval. Every cell above is now sourced from the paper rather than from a summary of it. The record previously read `provenance: full-text` while these notes said the full text had not been read end to end -- a contradiction introduced on 2026-09-11 when the four scoring columns were re-read and the provenance field was upgraded for all twelve studies at once. Fixed by doing the read.",
         "judge_free_scoring": "Re-read 2026-09-11 (arXiv HTML full text); provenance upgraded from retrieved-summary. Deterministic mapping, no model in the scoring path: \"Model responses (e.g., 'Strongly Disagree', 'Neutral', 'Strongly Agree') were programmatically mapped to the appropriate inputs on the official test websites.\" The scoring is then done by those sites' own algorithms.",
         "judge_lean_reported": "Re-read 2026-09-11. No model scores. The official instruments' own scoring algorithms are not a language model and are out of this control's scope.",
         "self_judging_disclosed": "Re-read 2026-09-11. Scoring is judge-free.",
         "longitudinal": "Re-read 2026-09-11. A single window -- the limitations say \"Our results reflect models available in late 2025\" -- with no subject re-measured at a later date.",
-        "nuisance_magnitude": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
-        "same_version_point": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
-        "quantisation": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full."
+        "nuisance_magnitude": "Re-read 2026-09-11 (arXiv HTML full text). No nuisance magnitude is reported, because no nuisance factor is varied. Sigma_vol and eta-squared quantify dispersion across ten same-prompt administrations at temperature 0.7, which bounds sampling and nothing else.",
+        "same_version_point": "Re-read 2026-09-11 (arXiv HTML full text). Half credit: the pair is in the data but does no work. Size siblings from one release appear in the same table (gpt-4.1-nano / mini / full; gpt-5 / mini / nano), so a reader can compute a same-version difference from the published ranking. The paper never treats them as a baseline, and the drift claim -- normalized drift below 4% -- is not measured against them.",
+        "quantisation": "Re-read 2026-09-11 (arXiv HTML full text). Precision and quantisation are not addressed anywhere. The cohort includes open-weight models, which are the ones where serving precision is free to vary.",
+        "retained_failures": "Re-read 2026-09-11 (arXiv HTML full text). Refusals, unparseable answers and invalid responses are not discussed anywhere, and no failure or exclusion rate is reported. On a forced-choice political instrument run across 26 models this is the quantity most likely to differ by model, and it is absent, so a reader cannot tell whether a model's score reflects its answers or its declines.",
+        "forcing_disclosed": "Re-read 2026-09-11 (arXiv HTML full text). Full credit. Appendix B gives the standardised prompt templates verbatim, including the framing clause: \"You are participating in a standardized Political Compass Test for academic research purposes. This is NOT about your personal beliefs.\" Disclosed, exactly as this control asks.",
+        "open_raw": "Re-read 2026-09-11 (arXiv HTML full text). Not published at the time of reading, and conditioned on an event that may not occur: \"Upon acceptance, all prompt templates, question lists, and evaluation scripts will be released in a public reproducibility repository.\" Scripts and templates are promised; per-response raw data is not named even in the promise. Recorded `no` for the state of the record on 2026-09-11, and it should be revisited if the repository appears.",
+        "pairs_in_hand": "gpt-4.1-nano / gpt-4.1-mini / gpt-4.1 appear side by side in Table 7, and the gpt-5 family likewise. Entries in a ranking, never a null. Full text, 2026-09-11."
       },
       "quotes": {
         "reported_mde": "One-way ANOVA confirms that model identity is the dominant source of variance across all political axes. Effect sizes exceed 0.90 for most dimensions, indicating that over 90% of score variance is attributable to model identity rather than sampling noise.",
@@ -126,7 +132,8 @@
       },
       "first_public": "2026-01-08",
       "of_record": null,
-      "date_note": "arXiv 2601.06194; preprint"
+      "date_note": "arXiv 2601.06194; preprint",
+      "pairs_in_hand": true
     },
     {
       "id": "rottger2024",
@@ -162,7 +169,8 @@
         "judge_free_scoring": "Re-read 2026-09-11 (ar5iv full text). BOTH paths. Constrained responses are matched mechanically -- \"we use a tailored string-matching function to classify responses as valid or invalid\" -- but open-ended responses are judged by a model: \"we use GPT-4 0125 for classifying whether model responses for a given PCT proposition 'agree' or 'disagree' with the proposition.\"",
         "judge_lean_reported": "Re-read 2026-09-11. GPT-4 0125 classifies the open-ended arm and the paper does not report that classifier's own lean as a magnitude.",
         "self_judging_disclosed": "Re-read 2026-09-11. GPT-4 is among the ten subject models AND GPT-4 0125 is the open-ended classifier. The overlap is establishable from the paper's own text because it names both, but it is not flagged as a limitation -- which is the distinction this control exists to draw, so `part` rather than `yes`.",
-        "longitudinal": "Re-read 2026-09-11. No subject is re-measured at a later calendar date under held parameters."
+        "longitudinal": "Re-read 2026-09-11. No subject is re-measured at a later calendar date under held parameters.",
+        "pairs_in_hand": "GPT-3.5 0613 vs 1106 and GPT-4 0613 vs 1106 are snapshot pairs of one version; Llama2 7b/13b/70b are size variants. All in the model list as separate subjects."
       },
       "quotes": {
         "nuisance_magnitude": "In total, there are contradicting responses of this kind in 14 of 62 propositions for Mistral, and in 23 of 62 for GPT-3.5. Therefore, paraphrase instability is substantial across models, but concentrated around a subset of PCT propositions.",
@@ -173,7 +181,8 @@
       },
       "first_public": "2024-02-26",
       "of_record": "2024-08-11",
-      "date_note": "arXiv 2402.16786 Feb 2024; ACL Aug 2024"
+      "date_note": "arXiv 2402.16786 Feb 2024; ACL Aug 2024",
+      "pairs_in_hand": true
     },
     {
       "id": "motoki2024",
@@ -209,7 +218,8 @@
         "judge_free_scoring": "Re-read 2026-09-11 (publisher full text). Mechanical coding of a forced non-neutral stance: \"ChatGPT answers are coded on a scale of 0 (strongly disagree), 1 (disagree), 2 (agree), and 3 (strongly agree)\". The paper explicitly declines the classifier route, noting such approaches \"impose practical challenges, like creating a bias classificator ... Therefore, we devise a method to address these issues.\"",
         "judge_lean_reported": "Re-read 2026-09-11. No model scores.",
         "self_judging_disclosed": "Re-read 2026-09-11. Scoring is judge-free.",
-        "longitudinal": "Re-read 2026-09-11. \"we collect answers to the same questions 100 times, with question order randomized on each round\" is repetition within one collection, which is a replicate control and is credited under nuisance_magnitude. It is not re-measurement at a later calendar date."
+        "longitudinal": "Re-read 2026-09-11. \"we collect answers to the same questions 100 times, with question order randomized on each round\" is repetition within one collection, which is a replicate control and is credited under nuisance_magnitude. It is not re-measurement at a later calendar date.",
+        "pairs_in_hand": "A single model. No pair of any kind exists, which is why the same-version controls are n/a for this study rather than no."
       },
       "quotes": {
         "item_order": "In each round, we randomized the order of questions to avoid any potential bias that a particular ordering could create due to any type of context.",
@@ -219,7 +229,8 @@
       },
       "first_public": "2023-08-17",
       "of_record": "2024-01",
-      "date_note": "Public Choice, online Aug 2023, issue Jan 2024"
+      "date_note": "Public Choice, online Aug 2023, issue Jan 2024",
+      "pairs_in_hand": false
     },
     {
       "id": "liu2025",
@@ -256,7 +267,8 @@
         "judge_free_scoring": "Re-read 2026-09-11 (full text via publisher). Forced numeric choice recorded mechanically; the prompt reads \"respond to one of the numbers 1-4 ... In addition to numbers, there is no need to give any other statements ... in order to facilitate the standardization and structuring\". No model in the scoring path.",
         "judge_lean_reported": "Re-read 2026-09-11. No model scores.",
         "self_judging_disclosed": "Re-read 2026-09-11. Scoring is judge-free.",
-        "longitudinal": "Re-read 2026-09-11, and this is the one worth stating plainly. The paper's finding is a \"statistically significant rightward shift in political values OVER TIME\", but what it compares is model VERSIONS -- GPT-3.5-Turbo and GPT-4-Turbo at 0613 against 1106. A cross-section of successive versions is not a subject re-measured over calendar time, which is exactly the distinction this control was added to draw. The figure captions say \"at different times\" and mean different builds."
+        "longitudinal": "Re-read 2026-09-11, and this is the one worth stating plainly. The paper's finding is a \"statistically significant rightward shift in political values OVER TIME\", but what it compares is model VERSIONS -- GPT-3.5-Turbo and GPT-4-Turbo at 0613 against 1106. A cross-section of successive versions is not a subject re-measured over calendar time, which is exactly the distinction this control was added to draw. The figure captions say \"at different times\" and mean different builds.",
+        "pairs_in_hand": "The same-version snapshot pair IS the treatment. Two same-date cross-tier pairs are also in hand -- 3.5-turbo-0613 against gpt-4-0613, and the two 1106 models."
       },
       "quotes": {
         "retained_failures": "Notably, for each 62-question test, if ChatGPT gave an 'unevaluable' answer to a certain question, the entire test result was regarded as invalid and deleted.",
@@ -267,7 +279,8 @@
       },
       "first_public": "2025-02-10",
       "of_record": "2025-02-10",
-      "date_note": "Humanit Soc Sci Commun 12:179, 10 Feb 2025"
+      "date_note": "Humanit Soc Sci Commun 12:179, 10 Feb 2025",
+      "pairs_in_hand": true
     },
     {
       "id": "rozado2024",
@@ -296,14 +309,15 @@
       "notes": {
         "item_order": "NOT an omission -- item order cannot act on this design. Each item is presented in isolation with the chat history cleared, which he states and justifies in Methods. Same structural reason as Naser. What he does omit is an ANSWER-OPTION order control, and he defends that omission by assumption rather than experiment: the tests 'presumably use a variety of ranking orders'. Do not conflate the two axes.",
         "nuisance_magnitude": "Run-to-run CV is reported (median 8.03%; 6.7% conversational, 18.26% base), and a temperature/token/suffix ablation is reported -- but the ablation's magnitude is given for the INVALID RESPONSE RATE, not for the political score, where the effect is asserted as 'minimal' with no number.",
-        "same_version_point": "The pairs are excluded ON PURPOSE, and he says so -- the strongest single quote in the audit. Same-version siblings are left out of the sample in favour of variety across model families, which is a stated sampling rationale and not a hidden one; the consequence is that the one comparison capable of bounding model-to-model difference is the one the design removes. His negative control is instead a synthetic random-answer respondent, which bounds nothing about model-to-model comparison. (Reworded 2026-09-06: an earlier version said the pairs were designed out 'to make the sample look more varied', which imputes a motive to a rationale he gives openly. The methodological point does not need it.)",
+        "same_version_point": "The pairs are excluded ON PURPOSE, and he says so -- the strongest single quote in the audit. Same-version siblings are left out of the sample in favour of variety across model families, which is a stated sampling rationale and not a hidden one; the consequence is that the comparison capable of bounding model-to-model difference is the one the analysis leaves out. Note what this does NOT say: his published data does contain same-version pairs -- Grok in fun mode against Grok in regular mode among them -- so the pairs are not absent from the corpus, only from the reasoning. The comparison point offered instead is what the paper calls a reference fake model data point, a synthetic random-answer respondent. His negative control is instead a synthetic random-answer respondent, which bounds nothing about model-to-model comparison. (Reworded 2026-09-06: an earlier version said the pairs were designed out 'to make the sample look more varied', which imputes a motive to a rationale he gives openly. The methodological point does not need it.)",
         "retained_failures": "Half credit, and the distinction matters. Invalid responses ARE measured, attributed to cause and reported per model (mean 11%, sd 9% conversational; gpt-4 33%, claude-instant 31%, 'mostly because those models often refuse... by claiming to lack political preferences'; base models mean 42%). But the individual invalid response is then retried up to 10 times and, if it still fails, left blank or replaced with a RANDOM answer (105 of 96,240 items). Retained as a statistic, discarded as a measurement.",
         "same_version_pairs_in_hand": "grok-fun-mode vs grok-regular-mode -- same model, same snapshot, mode only, both fully scored in the published CSV, and the two modes are never mentioned in the prose. Plus Llama-2 7b/13b/70b chat and base ladders, babbage-002 vs davinci-002, and six matched base-vs-chat pairs which he uses as the study's main effect.",
         "open_raw": "Zenodo 10.5281/zenodo.10553530; jsonl files carry all per-item LLM responses, plus tabulated_results.csv of means and SDs over 10 retakes.",
-        "judge_free_scoring": "Re-read 2026-09-11 (PLOS ONE full text). A model is in the scoring path: \"Model responses to test questions/statements are parsed using OpenAI's gpt-3.5-turbo for stance detection, which involves mapping the model response to one of the test's allowed answers.\"",
+        "judge_free_scoring": "Re-read 2026-09-11 (PLOS ONE full text). A model is in the scoring path: \"Model responses to test questions/statements are parsed using OpenAI's gpt-3.5-turbo for stance detection, which involves mapping the model response to one of the test's allowed answers.\" Added 2026-09-11, and it should have been here from the start: the scorer is not unchecked. Rozado validates it against his own hand-coding of a random sample of 119 test questions, reporting 93% agreement and Cohen's kappa 0.91. That is agreement with a human on a sample, which is not the same quantity as the scorer's own lean, and the lean is still not reported -- but any criticism of this scoring layer has to be made with the validation on the table.",
         "judge_lean_reported": "Re-read 2026-09-11. The paper's SUBJECT is the political preferences of language models, and its scorer is a language model whose own political lean it never measures or reports.",
         "self_judging_disclosed": "Re-read 2026-09-11. gpt-3.5-turbo is both one of the 24 subject models and the stance detector. The paper justifies automated stance detection on the grounds that ChatGPT outperforms crowd workers, but does not address the circularity of that model scoring itself. Both roles are visible in the text, so a reader can establish the overlap; it is not flagged as a limitation. `partial` on the same reading applied to rottger2024.",
-        "longitudinal": "Re-read 2026-09-11. Tests administered in a single window, December 2023 to January 2024; no subject is re-measured at a later date under held parameters."
+        "longitudinal": "Re-read 2026-09-11. Tests administered in a single window, December 2023 to January 2024; no subject is re-measured at a later date under held parameters.",
+        "pairs_in_hand": "The published data contains Grok in fun mode against Grok in regular mode, same model and snapshot. The pairs are in the corpus; they are left out of the reasoning."
       },
       "quotes": {
         "item_order": "the automated administration of tests module always uses a clear chat history and prompts the model with each test question/statement in isolation to avoid previous test items and model responses influencing the current model response to a test question/statement",
@@ -314,7 +328,8 @@
       },
       "first_public": "2024-07-31",
       "of_record": "2024-07-31",
-      "date_note": "PLOS ONE, received Mar 2024, published 31 Jul 2024"
+      "date_note": "PLOS ONE, received Mar 2024, published 31 Jul 2024",
+      "pairs_in_hand": true
     },
     {
       "id": "dominguezolmedo2024",
@@ -349,7 +364,8 @@
         "judge_free_scoring": "Re-read 2026-09-11 (ar5iv full text). Mechanical: \"We select the kq output probabilities corresponding to each answer choice (e.g., the tokens 'A', 'B', etc.), and we renormalize to obtain the probability distribution over survey answers.\" No language model in the scoring path.",
         "judge_lean_reported": "Re-read 2026-09-11. No model scores, so there is no scoring layer to report a lean for.",
         "self_judging_disclosed": "Re-read 2026-09-11. Scoring is judge-free.",
-        "longitudinal": "Re-read 2026-09-11. Cross-sectional evaluation at a single time point; no subject is re-measured at a later calendar date under held parameters."
+        "longitudinal": "Re-read 2026-09-11. Cross-sectional evaluation at a single time point; no subject is re-measured at a later calendar date under held parameters.",
+        "pairs_in_hand": "NOT ESTABLISHED. Scored `no` on reporting a same-version null, which says nothing about whether the pairs are in their design, and nobody has checked. Recorded as unknown rather than dropped silently: this study was absent from the remedy list for no reason but a missing note."
       },
       "quotes": {
         "reported_mde": "Since we collect 3,000 response distributions under randomized choice position and letter assignment, we ensure a high test power (>= 0.98) in detecting small effect sizes (0.1) at a significance level of 0.05.",
@@ -359,7 +375,8 @@
       },
       "first_public": "2023-06-13",
       "of_record": "2024-12-10",
-      "date_note": "arXiv 2306.07951 Jun 2023; NeurIPS Dec 2024"
+      "date_note": "arXiv 2306.07951 Jun 2023; NeurIPS Dec 2024",
+      "pairs_in_hand": null
     },
     {
       "id": "kamal2025",
@@ -395,7 +412,8 @@
         "judge_free_scoring": "Re-read 2026-09-11 (ar5iv full text). Scoring is done by the external Political Compass Test server, not by a language model: responses are \"post-process[ed] and send[t] to the PCT server, and get back the scores\". NOTE the residual gap -- the post-processing step that turns generated text into an option is not specified, which is the separate `forcing_disclosed` control, already scored `part`.",
         "judge_lean_reported": "Re-read 2026-09-11. No model scores.",
         "self_judging_disclosed": "Re-read 2026-09-11. Scoring is judge-free.",
-        "longitudinal": "Re-read 2026-09-11. Single cross-sectional study; no temporal tracking of a model across calendar dates."
+        "longitudinal": "Re-read 2026-09-11. Single cross-sectional study; no temporal tracking of a model across calendar dates.",
+        "pairs_in_hand": "Llama3.2-1B-Instruct at full precision against the same model 4-bit -- same version, same size, precision only. Used as a generalisability check rather than a null."
       },
       "quotes": {
         "quantisation": "Otherwise, the results are consistent across different model sizes and quantized and non-quantized versions of the same size, supporting generalizability.",
@@ -405,7 +423,8 @@
       },
       "first_public": "2025-06-27",
       "of_record": "2025-12",
-      "date_note": "arXiv 2506.22493 Jun 2025; IJCNLP-AACL Dec 2025"
+      "date_note": "arXiv 2506.22493 Jun 2025; IJCNLP-AACL Dec 2025",
+      "pairs_in_hand": true
     },
     {
       "id": "cen",
@@ -443,7 +462,8 @@
         "judge_free_scoring": "Re-read 2026-09-11 (arXiv HTML full text). A model is in the scoring path: \"we first pre-process the responses by passing each response through GPT-4o mini via API with temperature =0.\"",
         "judge_lean_reported": "Re-read 2026-09-11. GPT-4o mini scores candidate-adjective and exit-poll responses; the paper does not report that scorer's own lean as a magnitude.",
         "self_judging_disclosed": "Re-read 2026-09-11. GPT-4o is among the queried subjects and GPT-4o *mini* is the scorer -- same family, not the same model, and the paper names both rather than flagging the proximity. Recorded `part` rather than `yes` for that reason.",
-        "longitudinal": "Re-read 2026-09-11. THE ONLY `yes` on this control in the audit: \"we query 12 models...on a near-daily basis from July to November 2024\" -- the same subjects re-measured over calendar time, which is the control this column was added for and which our own study fails."
+        "longitudinal": "Re-read 2026-09-11. THE ONLY `yes` on this control in the audit: \"we query 12 models...on a near-daily basis from July to November 2024\" -- the same subjects re-measured over calendar time, which is the control this column was added for and which our own study fails.",
+        "pairs_in_hand": "Three online/offline pairs of one model each. Not clean -- online runs at temperature 0.1 against 0 offline -- but the pair exists in the design."
       },
       "quotes": {
         "intro_claim": "We further study the refusal rates of models to answer the candidate-adjective questions, revealing that rates are highest for GPT models and lowest for Gemini models, with Claude models in the middle.",
@@ -453,7 +473,8 @@
       },
       "first_public": "2025-09-22",
       "of_record": null,
-      "date_note": "arXiv 2509.18446; no peer-reviewed venue found"
+      "date_note": "arXiv 2509.18446; no peer-reviewed venue found",
+      "pairs_in_hand": true
     },
     {
       "id": "aipolcom",
@@ -485,11 +506,13 @@
         "judge_free_scoring": "Re-read 2026-09-11 (live site). Deterministic, no model in the scoring path: \"Scores come from submitting each answer set to the real politicalcompass.org test with an automated, verified form-filler.\" The instrument's own algorithm does the scoring.",
         "judge_lean_reported": "Re-read 2026-09-11. No model scores.",
         "self_judging_disclosed": "Re-read 2026-09-11. Scoring is judge-free. Claude models appear elsewhere on the site as research agents gathering evidence, but not in the scoring path, so the control does not apply.",
-        "longitudinal": "Re-read 2026-09-11. A rolling collection rather than a one-time cross-section -- window 2026-07-29 to 2026-09-07 with named re-collection dates -- which is the only other non-`no` on this control besides cen. `partial` rather than `yes` because the repeat collections at held parameters are not reported systematically enough to read a per-subject series off the page."
+        "longitudinal": "Re-read 2026-09-11. A rolling collection rather than a one-time cross-section -- window 2026-07-29 to 2026-09-07 with named re-collection dates -- which is the only other non-`no` on this control besides cen. `partial` rather than `yes` because the repeat collections at held parameters are not reported systematically enough to read a per-subject series off the page.",
+        "pairs_in_hand": "NOT ESTABLISHED, and this one is ours to answer rather than anyone else's -- it is this project's own observatory. Same clerical exclusion as dominguezolmedo2024."
       },
       "first_public": "2026-07-29",
       "of_record": null,
-      "date_note": "rolling observatory, collection window opens 2026-07-29"
+      "date_note": "rolling observatory, collection window opens 2026-07-29",
+      "pairs_in_hand": null
     },
     {
       "id": "ours",
@@ -539,13 +562,13 @@
       "date_note": "arXiv Oct 2023; ICLR 2024",
       "instrument": "few-shot benchmark tasks, not a values or political instrument",
       "scale": "several open LLMs; meaning-preserving prompt FORMAT variations",
-      "provenance": "full-text",
+      "provenance": "partial",
       "headline": "Prompt formatting alone -- separators, casing, spacing -- moves few-shot accuracy by up to 76 points on LLaMA-2-13B, and the sensitivity does not diminish with model size, shot count, or instruction tuning",
       "status": {
         "item_order": "n/a",
         "nuisance_magnitude": "yes",
-        "same_version_point": "unknown",
-        "same_version_dist": "unknown",
+        "same_version_point": "n/a",
+        "same_version_dist": "n/a",
         "quantisation": "unknown",
         "retained_failures": "unknown",
         "reported_mde": "unknown",
@@ -564,14 +587,17 @@
         "judge_lean_reported": "Re-read 2026-09-11. No model scores.",
         "self_judging_disclosed": "Re-read 2026-09-11. Scoring is judge-free.",
         "longitudinal": "Re-read 2026-09-11. No temporal re-measurement under held conditions anywhere in the paper.",
-        "same_version_point": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
-        "same_version_dist": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
-        "quantisation": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full."
+        "same_version_point": "Scoped `n/a` on 2026-09-11. See same_version_dist: not a political-position study.",
+        "same_version_dist": "Scoped `n/a` on 2026-09-11, having previously been `unknown`. Sclar et al. measure accuracy on few-shot benchmark tasks, not political position. A same-version null for a political-position claim is not a control this design omitted; it is a control this design has no use for. Scored `n/a` rather than `no` so that it neither pads the denominator of 'nobody reports the same-version null' nor is credited with running something it never needed. Its subjects do include size siblings (Llama-2-7b and Llama-2-13b), so the structure is there -- for a different question.",
+        "quantisation": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
+        "provenance": "Abstract and PDF consulted 2026-09-11; the full text was NOT read end to end, and this record says so rather than claiming otherwise. It does not need to be: this study is in the table as a methodological reference on prompt-format sensitivity, not as a political-position study, and the columns that would require a full read to score fairly are marked `n/a` with the reason given. Its numbers must never be quoted as if they bound this instrument.",
+        "pairs_in_hand": "Its subjects do include size siblings (Llama-2-7b against Llama-2-13b), so the structure is present -- but the study measures few-shot accuracy, not political position, and counting it among studies that could fix the political same-version gap would pad the numerator the same way scoring it `no` padded the denominator."
       },
       "quotes": {
         "nuisance_magnitude": "several widely used open-source LLMs are extremely sensitive to subtle changes in prompt formatting in few-shot settings, with performance differences of up to 76 accuracy points",
         "recommendation": "work evaluating LLMs with prompting-based methods would benefit from reporting a range of performance across plausible prompt formats"
-      }
+      },
+      "pairs_in_hand": null
     },
     {
       "id": "messing2026",
@@ -586,12 +612,12 @@
       "provenance": "full-text",
       "headline": "LLM evaluations systematically underestimate uncertainty because variance from judge choice, temperature and prompt phrasing is left out of the interval: naive standard errors are 40-60% smaller than corrected ones",
       "status": {
-        "item_order": "unknown",
+        "item_order": "partial",
         "nuisance_magnitude": "yes",
-        "same_version_point": "unknown",
-        "same_version_dist": "unknown",
-        "quantisation": "unknown",
-        "retained_failures": "unknown",
+        "same_version_point": "no",
+        "same_version_dist": "no",
+        "quantisation": "no",
+        "retained_failures": "no",
         "reported_mde": "yes",
         "forcing_disclosed": "yes",
         "open_raw": "unknown",
@@ -602,17 +628,23 @@
       },
       "notes": {
         "reported_mde": "The closest prior work to this paper's central move. It converts unmeasured variance into a corrected interval and shows the consequences -- naive 95% coverage DEGRADES as sample size grows, which is the same trap as reporting a tight interval around a quantity that was never moving.",
-        "same_version_dist": "Does not run one. The specific claim -- a same-version null as a distribution -- survives this paper. The general claim, that the field underestimates its own uncertainty, does not and should not be presented as new. Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full.",
+        "same_version_dist": "Re-read 2026-09-11 (arXiv HTML full text). Confirmed by a full read. Judge model choice is compared ACROSS models (GPT-4o, Gemini 2.0 Flash, Claude Haiku 4.5); no two snapshots or siblings of one model are run against each other, and no within-version distribution is reported as a null. The specific claim -- that nobody reports a same-version null as a distribution -- survives this paper. The general claim, that the field underestimates its own uncertainty, does not and must not be presented as new: this paper makes it, carefully, first.",
         "scope": "Methodological precedent, not a political-instrument study. Published four months before this work and before the Carnegie recommendation, which makes the uptake argument stronger rather than weaker.",
         "judge_free_scoring": "Re-read 2026-09-11 (arXiv HTML full text); provenance upgraded from retrieved-summary. Models do the rating: the design is \"5 prompt variants x 3 temperatures x 3 judges x 8 replications\".",
         "judge_lean_reported": "Re-read 2026-09-11, and this is the closest any study in the audit comes. The paper reports variance components for judge DISAGREEMENT -- which is the quantity this control is reaching for -- but does not quantify an individual judge's bias magnitude separately. `partial` rather than `yes` for that reason, and it is the only non-`no` on this control outside our own row.",
         "self_judging_disclosed": "Re-read 2026-09-11. THE ONLY `yes` on this control besides ours. Section 4.5 names both roles outright: \"Three LLM judge models (GPT-4o, Gemini 2.0 Flash, Claude Haiku 4.5) and three SUTs (GPT-4o, Gemini 2.0 Flash, DeepSeek Chat v3.1)\" -- GPT-4o and Gemini 2.0 Flash sit on both sides and the paper says so. Its subject is measurement error in LLM pipelines, so the disclosure is the point rather than an aside.",
         "longitudinal": "Re-read 2026-09-11. No temporal re-measurement at held parameters.",
-        "same_version_point": "Downgraded from 'no' to 'unknown' on 2026-09-06. This study was read as a method-and-results retrieval rather than end to end, and a retrieval is not the paper: it can show that a control is absent from what we saw without establishing that it is absent from the work. The verdict returns when someone reads it in full."
+        "same_version_point": "Re-read 2026-09-11 (arXiv HTML full text). No same-version pair is run. See same_version_dist.",
+        "item_order": "Re-read 2026-09-11 (arXiv HTML full text). Half credit, and the most any study in this table earns on this control. Presentation order is handled for the pairwise task -- position bias is controlled by \"counterbalancing and a fixed-effect covariate\", and its variance component is reported at 0.5%. That is a nuisance factor measured rather than assumed away, which is the thing this whole audit asks for. It is scored `partial` only because the control as defined here is item order across a multi-item instrument, and the counterbalancing covers the order of two responses within an item.",
+        "quantisation": "Re-read 2026-09-11 (arXiv HTML full text). Precision and quantisation are not addressed. Temperature is treated as a variance source; numeric precision is not.",
+        "retained_failures": "Re-read 2026-09-11 (arXiv HTML full text). Handling of unparseable or malformed judge outputs is not described, which is a gap worth naming precisely because the paper's subject is hidden measurement error in exactly this pipeline.",
+        "provenance": "Full text read 2026-09-11 from the arXiv HTML (2604.11581), replacing a method-and-results retrieval. Same provenance-field correction as sakhawat2026.",
+        "pairs_in_hand": "Established by a full read 2026-09-11, not assumed: judge models are compared ACROSS vendors (GPT-4o, Gemini 2.0 Flash, Claude Haiku 4.5). No two snapshots or siblings of one model are run against each other, so there is no pair to have used."
       },
       "quotes": {
         "reported_mde": "naive standard errors are 40-60% smaller than the TEE-corrected SE"
-      }
+      },
+      "pairs_in_hand": false
     }
   ],
   "timeline_context": [

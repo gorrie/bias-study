@@ -18,7 +18,12 @@ reworded once to remove one (see `rozado2024` below, and the note in `scripts/co
 2. **Quote the design, not the author.** The entries describe what a paper does and does not
    measure. They do not characterise intent, competence or motive.
 3. **Offer the remedy.** Where the data to fix the gap is already in the authors' hands, say so.
-   Six of the twelve studies below are in that position.
+   **Seven of the twelve studies below are in that position**, two demonstrably are not, and for
+   three nobody has established it either way — which `--gaps` now prints as three numbers
+   instead of one list. This said "six" until 2026-09-12, against a list that rendered seven,
+   because the list was selected on whether a study *reported* a same-version null and on
+   whether someone had happened to write a note about it, rather than on whether the pairs are
+   in its design. Two studies were missing from it for want of a note.
 4. **Be reproducible.** Every figure here recomputes: `python scripts/controls_audit.py --gaps`
    for the audit, `python scripts/ablation_analysis.py` for the weight-rung result.
 5. **State what is NOT claimed.** A study that does not run a control is not thereby wrong. It is
@@ -43,14 +48,23 @@ observed difference between two model versions has nothing to be scored against.
 
 **Tally across the twelve, on the distribution form of that control:**
 
+<!-- GEN:tally_samever -- python scripts/gen_readme.py -->
 | control | yes | partial | no | n/a | unknown |
 |---|---:|---:|---:|---:|---:|
-| `same_version_dist` — a null as a **distribution** (median + upper percentile over many pairs) | **0** | 0 | **8** | 1 | 3 |
-| `same_version_point` — any same-version pair used as a negative control, even one | 1 | 2 | 5 | 1 | 3 |
-| `reported_mde` — a minimum detectable effect or resolution limit reported | 2 | 1 | **8** | – | 1 |
+| `same_version_dist` — A same-version null as a DISTRIBUTION: median and upper percentile over many pairs, so a single observed transition can be scored against it | **0** | – | **10** | 2 | – |
+| `same_version_point` — Any same-version or non-transition pair used as a negative control, even one | 1 | 3 | **6** | 2 | – |
+| `reported_mde` — A minimum detectable effect, power analysis, or explicit resolution limit reported alongside the effects | 2 | 1 | **8** | – | 1 |
+<!-- /GEN:tally_samever -->
 
-**Not one of the twelve reports a same-version null as a distribution.** Eight report none at
-all. Eight report no detection limit of any kind.
+**Not one of the twelve reports a same-version null as a distribution.** Ten are scored `no`
+and the control does not apply to the other two. Six report no same-version pair of any kind,
+not even one used informally. Eight report no detection limit of any kind.
+
+Three of those cells read `unknown` until 2026-09-12, because three studies had been scored
+from method-and-results retrievals rather than read end to end. Reading them turned two into
+genuine absences and the third into an `n/a`. The headline got stronger, which is not the
+reason it was checked — an absence claim sourced from what a reviewer happened to read is the
+same defect this file documents in other people's work, one level up.
 
 **What this study measures for comparison:** 97 same-version pairs, median disagreement **5 of 62**
 forced-choice propositions, giving a detection limit of **11**. Presentation order alone reaches
@@ -58,7 +72,7 @@ p90 **14** and a maximum of **24** items on 2024-generation open-weight models, 
 2026 frontier models. Any claimed political shift smaller than the relevant floor is inside the
 instrument's own noise, whatever its p-value.
 
-### Six of them can fix this from data they already hold
+### Seven of them can fix this from data they already hold
 
 This is the constructive half, and it is why the file exists. In each case the pairs required are
 already inside the published design:
@@ -70,7 +84,8 @@ already inside the published design:
 | `liu2025` | The same-version snapshot pair **is the treatment**, not a control. Their only null varies the API account, which bounds nothing about model identity. Two same-date cross-tier pairs are also in hand and neither is estimated. |
 | `kamal2025` | A clean pair exists — Llama-3.2-1B-Instruct at full precision against the same model 4-bit, same version, same size, precision only — used as a generalisability check rather than a null. The difference is never computed. |
 | `cen` | Three online/offline pairs of one model each. The difference is the finding rather than a null, and the pair is not clean: online runs at temperature 0.1 against 0 offline. |
-| `rozado2024` | The same-version siblings are **excluded on purpose, and he says so** — left out in favour of variety across model families. That is a stated sampling rationale, openly given. The consequence is that the one comparison capable of bounding model-to-model difference is the one the design removes; the negative control used instead is a synthetic random-answer respondent, which bounds nothing about model-to-model comparison. |
+| `sakhawat2026` | Size siblings from one release sit side by side in Table 7 — `gpt-4.1-nano`, `gpt-4.1-mini` and `gpt-4.1`, and the `gpt-5` family likewise. They are entries in a ranking, never a null, so the normalized-drift figure has nothing to be scored against. |
+| `rozado2024` | The same-version siblings are **excluded on purpose, and he says so** — left out in favour of variety across model families. That is a stated sampling rationale, openly given. The consequence is that the comparison capable of bounding model-to-model difference is the one the analysis leaves out. Note what this does not say: his published data **does** contain same-version pairs — Grok in fun mode against Grok in regular mode among them — so they are absent from the reasoning, not from the corpus. The comparison point offered instead is what the paper calls a *reference fake model data point*, a synthetic random-answer respondent, which bounds nothing about model-to-model comparison. |
 
 > The `rozado2024` entry read differently until 2026-09-06. It said the pairs were designed out
 > "to make the sample look more varied," which imputes a motive to a rationale the author states
@@ -115,15 +130,23 @@ max 9) equals the ablation effect (median 8, max 9).
 
 **The correction:** an experiment comparing one stock model to one abliterated model measures
 *that ablator*, not abliteration. The conclusion this study draws, under its own pre-registered
-stopping rule, is that **abliteration does not measurably move political stance on any of the
-three usable bases** — and that any single-ablator result, including the one this study published
-and withdrew (`CORRECTIONS.md` #8), is a statement about the build.
+stopping rule, is **outcome 4: movement under abliteration is not separable from the choices of
+the particular ablator**. Any single-ablator result, including the one this study published and
+withdrew (`CORRECTIONS.md` #8), is a statement about the build.
+
+Said precisely, because the imprecise version was published here until 2026-09-12: on two of the
+three usable bases nothing clears the floor. On the third, qwen25-14b, **two of its three
+ablations move position by 8 to 9 items of 62 and do clear it** — and the disagreement between
+those ablations is 8 to 9 items as well. So the movement is real and unattributable, not absent.
+This section previously read "abliteration does not measurably move political stance on any of
+the three usable bases", which is a null, and a null is exactly what an unbounded measurement is
+not. Section 1 of this document is about that distinction.
 
 **The remedy:** use at least two independently-authored ablations of the same base, quant-matched
 to the stock arm, and report their disagreement alongside the effect. If the two ablators differ
 by as much as the intervention, there is no intervention to report.
 
-## 3. The scoring layer: four studies put a model in it, and none reports what that model's own lean is
+## 3. The scoring layer: five studies put a model in it, and none reports what that model's own lean is
 
 **Added 2026-09-11**, after re-reading **all twelve** in full for four controls that were
 `unknown` across the whole matrix until that day. These four columns are complete: no study is
@@ -131,12 +154,14 @@ by as much as the intervention, there is no intervention to report.
 ourselves** — which is why they are columns and not a paragraph.
 **Reproduce:** `python scripts/controls_audit.py --gaps`.
 
-| control | yes | partial | no | n/a |
-|---|---:|---:|---:|---:|
-| `judge_free_scoring` — no model anywhere in the scoring path | 7 | 2 | **3** | – |
-| `judge_lean_reported` — if a model scores, its own lean is reported as a magnitude | **0** | 1 | 4 | 7 |
-| `self_judging_disclosed` — no subject also scores, or the study says so | 1 | 3 | 1 | 7 |
-| `longitudinal` — a subject re-measured over calendar time | 1 | 1 | **10** | – |
+<!-- GEN:tally_scoring -- python scripts/gen_readme.py -->
+| control | yes | partial | no | n/a | unknown |
+|---|---:|---:|---:|---:|---:|
+| `judge_free_scoring` — No language model anywhere in the scoring path -- answers are recorded mechanically (forced choice, item id + position) rather than read and rated by a model | 7 | 2 | 3 | – | – |
+| `judge_lean_reported` — If a model DOES score the responses, the study reports that scoring layer's own lean as a magnitude -- per-judge deviation, or an equivalent -- rather than asserting agreement and stopping | **0** | 1 | 4 | 7 | – |
+| `self_judging_disclosed` — No subject of the study also sits on the panel that scores it, or if one does, the study says so | 1 | 3 | 1 | 7 | – |
+| `longitudinal` — The same subject re-measured over CALENDAR TIME under held parameters | 1 | 1 | **10** | – | – |
+<!-- /GEN:tally_scoring -->
 
 **Five studies put a language model in the scoring path.** `rozado2024` parses every response
 through gpt-3.5-turbo for stance detection; `cen` pre-processes through GPT-4o mini;
@@ -166,9 +191,17 @@ three SUTs (GPT-4o, Gemini 2.0 Flash, DeepSeek Chat v3.1)" — which is why it h
 subject is the political preference of language models. Its scorer is a language model. That
 scorer is also one of its twenty-four subjects. Its lean is never measured.
 
-**Why this is not a cheap shot.** We failed the same control. Scoring retained since May showed
-**0.29 points between our most skeptical and most deferential judge — larger than two of our
-own five published effects** — and we had never computed it. Two of our five CI-clean findings
+**We failed the same control.** Scoring retained since May showed **0.2926 points between our
+most skeptical and most deferential judge**, against five published CI-clean effects of +0.90,
++0.90, +0.4333, +0.3000 and +0.2333. The spread is larger than the smallest of them and lands
+within nine thousandths of the second smallest — and we had never computed it.
+
+That sentence read "larger than two of our own five published effects" until 2026-09-12. It was
+wrong, and it was wrong in the direction that made the self-criticism sound better: `judge_lean.py`
+printed the comparison as a typed literal rather than computing it, five documents copied the
+literal, and at two decimal places 0.29 against 0.30 is invisible. The script computes the count
+now. A file that convicts other people of trusting a typed number had its sharpest sentence
+about itself typed. Two of our five CI-clean findings
 were self-judged with nothing disclosing it until 2026-09-05. The column exists because of that,
 not because of anybody else.
 

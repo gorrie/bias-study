@@ -91,8 +91,9 @@ That is a stronger result than the one it replaces, and it was invisible at seve
 **Narrowed:** 2026-09-05.
 
 High agreement between judges was read as the absence of a judge lean. It is not. The panel's
-internal spread is **0.29 points**, larger than two of the five published effects, and it is not
-constant across the arms: gemini-2.5-flash sits at +0.044 under the balance instruction and
+internal spread is **0.2926 points** — larger than the smallest of the five published effects
+(+0.2333) and just under the second smallest (+0.3000), not larger than two of them, which is
+what this file said until 2026-09-12 — and it is not constant across the arms: gemini-2.5-flash sits at +0.044 under the balance instruction and
 +0.290 under the bare question, so it does not simply subtract out of a within-model delta.
 
 Settled by re-scoring each finding under each judge alone. **The two large effects survive every

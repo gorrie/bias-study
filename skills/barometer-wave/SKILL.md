@@ -66,9 +66,15 @@ estimator threefold and nearly supported "ablation removes instruction-responsiv
 ```bash
 python scripts/test_compass_parser.py          # 13 parser fixtures. The instrument is the parser.
 python -m pytest scripts/ -q                   # 43 tests incl. seed-sweep and permutation nulls
-python scripts/check_no_fork.py                # private/public divergence, AS COMMITTED
+python scripts/check_no_fork.py                # MAINTAINER ONLY -- see the note below
 python scripts/check_corpus.py                 # no third-party instrument text staged
 ```
+
+**`check_no_fork.py` is not in the public mirror, and cannot be.** It compares the mirror
+against the private working study, so it only runs on the side that can see both trees, and
+shipping it would name a private repository in a public artifact. On a clone of the public
+repository that line has no script to run: skip it, and read nothing into its absence. Every
+other command in this block runs on a clone.
 
 `check_no_fork.py` compares `git show HEAD:`, not the working tree — a fix that exists only as
 an uncommitted edit is the divergence it exists to catch. If it reports uncommitted edits on
@@ -202,7 +208,8 @@ python scripts/key_numbers.py --check-release  # 14 hand-typed README numbers vs
 python scripts/key_numbers.py --check-website  # every website + dispatch surface
 python scripts/gen_script_inventory.py --check # SCRIPTS.md vs scripts on disk
 python scripts/check_doc_links.py              # every relative markdown link resolves
-python scripts/check_no_fork.py                # again, after committing
+python scripts/judge_lean.py                   # per-judge spread vs the published effects
+python scripts/check_no_fork.py                # MAINTAINER ONLY -- again, after committing
 ```
 
 **Run `check_doc_links.py` in BOTH trees, because its two failure modes are on opposite sides.**

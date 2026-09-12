@@ -77,7 +77,9 @@ So the ablator spread (median 8, max 9) equals the ablation effect (median 8, ma
 pre-registered stopping rule fires on the direction statistic, on the one base that appeared to
 show something:
 
-> **Abliteration does not measurably move political stance on any of the three usable bases.**
+> **Movement under abliteration is not separable from the ablator.** On two of the three
+> usable bases nothing clears the floor. On qwen25-14b two ablations clear it at 8–9 items of
+> 62 and disagree with each other by 8–9, which is outcome 4 rather than a null.
 > The one apparent effect is attributable to a single ablator's choices — an independent
 > abliteration of the same base, by a different author, at the same quantisation, moves nothing.
 

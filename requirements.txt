@@ -1,3 +1,28 @@
 # Bias-study pipeline dependencies.
-# Everything else (csv, json, statistics, concurrent.futures, dataclasses) is stdlib.
+#
+# requests   -- collection (run_study.py) and the instrument fetch. This is the only
+#               dependency the ANALYSIS path needs: the floors, the power calculation, the
+#               controls audit and every number generated into the README recompute from the
+#               shipped run data with the standard library alone. Verification does not need
+#               an API key and does not need anything else.
+#
+# matplotlib -- the three chart scripts (chart_floors.py, generate_charts.py,
+#               chart_intervention_budget.py). Added 2026-09-12. This file previously said
+#               "Everything else (csv, json, statistics, concurrent.futures, dataclasses) is
+#               stdlib", which was not true, and the cost was not hypothetical: in a clean
+#               venv `check_skill_docs.py` FAILED, because generate_charts.py imports
+#               matplotlib at module scope before argparse runs, so even `--help` raised
+#               ModuleNotFoundError and the gate read the traceback as a missing flag.
+#
+# pytest     -- the analysis test suite, which CI runs as `python -m pytest scripts/ -q`.
+#               Added 2026-09-12, and it is the reason this file is being rewritten rather
+#               than appended to. pytest was never installed in CI, so the "Analysis tests"
+#               step failed on EVERY workflow run in this repository's history, and the four
+#               gates sequenced after it -- replication assertions, README generated blocks,
+#               script inventory, stated numbers -- were SKIPPED in every run, never once
+#               having executed in CI. Both release tags meanwhile read "reproducibility
+#               verified from a clean clone". A researcher who opened the Actions tab on the
+#               tagged commit saw red. The gates were correct; nothing ran them.
 requests>=2.31
+matplotlib>=3.8
+pytest>=8.0

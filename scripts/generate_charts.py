@@ -29,9 +29,41 @@ import sys
 import pathlib
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")  # non-interactive, headless-safe
-import matplotlib.pyplot as plt
+# matplotlib is imported lazily, in main(), on purpose. Importing it at module scope meant
+# `generate_charts.py --help` raised ModuleNotFoundError in any environment without it --
+# including the clean venv that check_skill_docs.py builds, which reads --help to verify the
+# flags the skill documentation claims. The gate then reported "BAD FLAG --all-charts ... not
+# in --help" and a reader had no way to tell a missing dependency from a documentation error.
+# A script must be able to describe itself without its heaviest dependency present.
+plt = None
+
+
+def _load_matplotlib():
+    """Import matplotlib only when a chart is actually about to be drawn."""
+    global plt
+    if plt is None:
+        import matplotlib
+        matplotlib.use("Agg")  # non-interactive, headless-safe
+        import matplotlib.pyplot
+        plt = matplotlib.pyplot
+        # Evil Robots brand chrome. Applied here rather than at module scope for the same
+        # reason the import moved: it dereferenced plt.
+        plt.rcParams.update({
+            "figure.facecolor": BG,
+            "axes.facecolor": SURFACE,
+            "axes.edgecolor": GRID,
+            "axes.labelcolor": TEXT,
+            "axes.titlecolor": TEXT,
+            "xtick.color": TEXT,
+            "ytick.color": TEXT,
+            "grid.color": GRID,
+            "text.color": TEXT,
+            "font.family": "monospace",
+            "font.size": 11,
+            "axes.titlesize": 14,
+            "axes.titleweight": "bold",
+        })
+    return plt
 
 SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR))
@@ -55,23 +87,6 @@ ACCENT = "#CC0000"
 ACCENT2 = "#88ccff"  # cool blue for secondary series
 TEXT = "#e6e6e6"
 GRID = "#2a2a2f"
-
-plt.rcParams.update({
-    "figure.facecolor": BG,
-    "axes.facecolor": SURFACE,
-    "axes.edgecolor": GRID,
-    "axes.labelcolor": TEXT,
-    "axes.titlecolor": TEXT,
-    "xtick.color": TEXT,
-    "ytick.color": TEXT,
-    "grid.color": GRID,
-    "text.color": TEXT,
-    "font.family": "monospace",
-    "font.size": 11,
-    "axes.titlesize": 14,
-    "axes.titleweight": "bold",
-})
-
 
 def load_json(path: Path) -> dict | None:
     if not path.exists():
@@ -211,8 +226,11 @@ def chart_contamination_delta(run_date: str, out_path: Path) -> bool:
 
 
 def chart_paraphrase_robustness(out_path: Path) -> bool:
-    """4 FDR-significant models × 3 paraphrases — bars per cell."""
-    # Re-uses robustness_checks.within_leg_fdr via direct script invocation
+    """6 models × 3 paraphrases, 18 BH-FDR tests — bars per cell, red = survives.
+
+    The docstring used to say "4 FDR-significant models"; the run has 6 models and 2 of them
+    survive correction (Opus 4.7 and Grok 4.3, on all three rewordings each).
+    """
     sys.path.insert(0, str(SCRIPT_DIR))
     from robustness_checks import within_leg_fdr
     result = within_leg_fdr(STUDY_DIR / RUN_DIR_NAME / "2026-05-27-paraphrase", "position", q=0.05)
@@ -253,6 +271,8 @@ def main() -> int:
     parser.add_argument("--out", type=pathlib.Path, default=None,
                         help="Override output directory (default: results/charts/)")
     args = parser.parse_args()
+
+    _load_matplotlib()  # after --help, so the script can describe itself without it
 
     chart_dir = args.out if args.out else DEFAULT_CHART_DIR
     chart_dir.mkdir(parents=True, exist_ok=True)

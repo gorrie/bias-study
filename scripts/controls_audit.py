@@ -87,6 +87,38 @@ def render(doc, markdown=False):
     return "\n".join(out)
 
 
+def tally_markdown(doc, controls=None):
+    """Per-control tally as a markdown table, externals only.
+
+    The same counts `gaps` prints, shaped for a GEN block. PRIOR-WORK-CORRECTIONS.md carried
+    these by hand: on 2026-09-12 its `same_version_dist` row still read "8 no, 1 n/a, 3
+    unknown" after the three unknowns had been resolved to "10 no, 2 n/a", and the sentence
+    under it -- "Not one of the twelve" -- was built on the stale row. That document's own
+    subject is what happens to a number nobody recomputes.
+    """
+    studies = [s for s in doc["studies"] if s["id"] != "ours"]
+    controls = controls or list(doc["controls"])
+    out = ["| control | yes | partial | no | n/a | unknown |",
+           "|---|---:|---:|---:|---:|---:|"]
+    for c in controls:
+        counts = {}
+        for s in studies:
+            counts[s["status"][c]] = counts.get(s["status"][c], 0) + 1
+        cells = []
+        for k in ("yes", "partial", "no", "n/a", "unknown"):
+            n = counts.get(k, 0)
+            # Bold the cell the row exists to show: a zero on `yes`, the bulk on `no`.
+            if n == 0:
+                cells.append("**0**" if k == "yes" else "–")
+            elif k == "no" and n == max(counts.values()):
+                cells.append("**%d**" % n)
+            else:
+                cells.append(str(n))
+        out.append("| `%s` — %s | %s |" % (c, doc["controls"][c].split(".")[0].strip(),
+                                                " | ".join(cells)))
+    return "\n".join(out)
+
+
 def gaps(doc):
     controls = list(doc["controls"])
     studies = [s for s in doc["studies"] if s["id"] != "ours"]
@@ -103,13 +135,28 @@ def gaps(doc):
 
     # The argument of the paper is not that these controls are hard. It is that the pairs
     # were already in hand. That list is the one worth printing.
+    # Selected on `pairs_in_hand`, an explicit field, because the heading is a claim about
+    # the study's DESIGN and `same_version_dist` is a claim about its REPORTING. The old
+    # filter used the latter and additionally required a note to exist, so two studies --
+    # dominguezolmedo2024 and aipolcom -- were excluded for no reason but nobody having
+    # written a note, and the prose beneath this list said "six" against a list of seven.
+    have = [s for s in studies if s.get("pairs_in_hand") is True
+            and s["status"]["same_version_dist"] in ("no", "partial")]
+    unestablished = [s for s in studies if s.get("pairs_in_hand") is None]
     lines.append("STUDIES WHOSE OWN DESIGN CONTAINS THE PAIRS FOR A SAME-VERSION NULL")
-    lines.append("but which do not report one as a distribution:")
-    for s in studies:
-        if s["status"]["same_version_dist"] in ("no", "partial"):
-            note = s["notes"].get("same_version_dist") or s["notes"].get("same_version_point")
-            if note:
-                lines.append("  %s -- %s" % (s["id"], note))
+    lines.append("but which do not report one as a distribution: %d of %d"
+                 % (len(have), len(studies)))
+    for s in have:
+        note = (s["notes"].get("same_version_dist") or s["notes"].get("same_version_point")
+                or s["notes"].get("pairs_in_hand"))
+        lines.append("  %s -- %s" % (s["id"], note))
+    if unestablished:
+        lines.append("")
+        lines.append("NOT ESTABLISHED either way (%d) -- absent from the count above, and said"
+                     % len(unestablished))
+        lines.append("so rather than dropped:")
+        for s in unestablished:
+            lines.append("  %s -- %s" % (s["id"], s["notes"].get("pairs_in_hand", "")))
     return "\n".join(lines)
 
 
@@ -139,11 +186,28 @@ def main(argv=None):
     ap.add_argument("--markdown", action="store_true")
     ap.add_argument("--gaps", action="store_true")
     ap.add_argument("--strict", action="store_true")
+    ap.add_argument("--tally-markdown", action="store_true",
+                    help="per-control tally as a markdown table, for GEN blocks in the "
+                         "corrections documents. Added 2026-09-12: those tables were typed "
+                         "copies of --gaps and went stale the moment three studies were "
+                         "re-read, in the file whose subject is numbers going stale.")
+    ap.add_argument("--controls", default=None,
+                    help="comma-separated control keys, for a section that tallies only its "
+                         "own rows")
     args = ap.parse_args(argv)
 
     doc = load()
     if args.strict:
         return strict_check(doc)
+    if args.tally_markdown:
+        want = None
+        if args.controls:
+            want = [c.strip() for c in args.controls.split(",") if c.strip()]
+            unknown = [c for c in want if c not in doc["controls"]]
+            if unknown:
+                raise SystemExit("no such control(s): %s" % ", ".join(unknown))
+        print(tally_markdown(doc, want))
+        return 0
     if args.gaps:
         print(gaps(doc))
         return 0

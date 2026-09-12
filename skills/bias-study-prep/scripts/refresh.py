@@ -237,6 +237,20 @@ def run_pre_run_gates() -> dict:
     """Every gate must already pass before new runs land."""
     out = {"gates": {}, "status": "ok"}
     for name, argv in PRE_RUN_GATES:
+        # A gate whose script is not in THIS tree is skipped, loudly, rather than failing the
+        # run. Exactly one gate is in that position and it is there by design: check_no_fork.py
+        # compares the public mirror against the private working study, so it can only run on
+        # the side that can see both, and shipping it would name a private repository in a
+        # public artifact. Before this, a clone of the public repo ran every gate, hit a
+        # missing file, and ended on "FAILED -- bias study MUST NOT proceed", which reads as
+        # "this study does not verify" when it means "you are not the maintainer".
+        script = BIAS_STUDY_DIR / argv[0]
+        if not script.exists():
+            out["gates"][name] = {"exit": 0, "skipped": True,
+                                  "last": f"{argv[0]} not present in this tree -- skipped"}
+            log("SKIP ", f"gate {name}: {argv[0]} is not in this tree. This is expected on a "
+                         f"clone of the public mirror; it is a maintainer-side check.")
+            continue
         code, stdout, stderr = run([sys.executable] + argv, cwd=BIAS_STUDY_DIR)
         tail = (stdout or stderr or "").strip().splitlines()
         out["gates"][name] = {"exit": code, "last": tail[-1][:160] if tail else ""}

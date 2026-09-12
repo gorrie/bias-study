@@ -98,6 +98,80 @@ def length_control(recs: list[dict]):
     return corr, (statistics.mean(wc_a) if wc_a else None), (statistics.mean(wc_b) if wc_b else None)
 
 
+def within_leg_fdr(run_dir, split_by: str = "position", q: float = 0.05) -> dict:
+    """BH-FDR across model x paraphrase-leg tests for a paraphrase-robustness run.
+
+    Restored 2026-09-12. `generate_charts.py:chart_paraphrase_robustness` has imported this
+    name since commit 6a49792 and it was never defined, so `generate_charts.py --all-charts`
+    -- the command WRITEUP-2026-05-26.md names in its Reproducibility section, and
+    results/charts/README.md documents -- died with an ImportError after writing three of its
+    four charts. Nothing caught it because no test imports this module's chart path and CI
+    never reached the step.
+
+    The leg is the paraphrase: this run asks the same neutral proposition three ways per
+    topic (question ids T01-Q5 / T01-Q6 / T01-Q7), so the legs are the distinct question-id
+    suffixes, named para1..paraN in sorted order. Within one leg a model's deltas are its
+    per-topic B-A scores, which is the same quantity `per_model_deltas` computes for a whole
+    run -- the difference is only that the pool is one leg rather than all of them.
+
+    Correction is applied ACROSS every model x leg test at once, not within a model. That is
+    the point of the chart: with 6 models x 3 legs there are 18 tests, and correcting within
+    a model would leave the multiplicity the figure exists to show uncorrected.
+
+    `split_by` is accepted for call compatibility and must be "position"; the legs are read
+    from the question ids either way.
+    """
+    if split_by != "position":
+        raise ValueError("within_leg_fdr only splits by position; got %r" % split_by)
+
+    run_dir = Path(run_dir)
+    run_key = run_dir.name
+    recs = load_scored(run_dir)
+    if not recs:
+        return {"per_model": {}, "n_tests": 0, "n_survive": 0, "q": q}
+
+    def leg_of(qid: str) -> str:
+        return qid.rsplit("-", 1)[-1] if "-" in qid else qid
+
+    legs = sorted({leg_of(r["question_id"]) for r in recs})
+    leg_name = {raw: "para%d" % (i + 1) for i, raw in enumerate(legs)}
+
+    seed = analysis_seed(run_key)
+    per_model: dict = {}
+    pvals: dict = {}
+    for raw_leg in legs:
+        subset = [r for r in recs if leg_of(r["question_id"]) == raw_leg]
+        for model, deltas in per_model_deltas(subset).items():
+            if len(deltas) < 2:
+                continue
+            name = leg_name[raw_leg]
+            key = "%s\x1f%s" % (model, name)
+            # One stream per model x leg. A shared stream would make each p-value depend on
+            # how many cells had been drawn before it -- the exact bug the note above main()
+            # records having already been fixed once in this file.
+            pvals[key] = bootstrap_p_two_sided(deltas, stream(seed, run_key, model, name, "p"))
+            per_model.setdefault(model, {"tests": {}})["tests"][name] = {
+                "mean_delta": statistics.fmean(deltas),
+                "n": len(deltas),
+                "p": pvals[key],
+            }
+
+    survive = benjamini_hochberg(pvals, q=q)
+    for key, ok in survive.items():
+        model, name = key.split("\x1f")
+        per_model[model]["tests"][name]["survives_fdr"] = ok
+
+    return {
+        "run": run_key,
+        "legs": [leg_name[x] for x in legs],
+        "per_model": per_model,
+        "n_tests": len(pvals),
+        "n_survive": sum(survive.values()),
+        "q": q,
+        "analysis_seed": seed,
+    }
+
+
 def main() -> int:
     failed = 0
     for rd in sys.argv[1:]:

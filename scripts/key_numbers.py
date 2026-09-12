@@ -133,6 +133,22 @@ def audit_scale():
     def tally(control, verdict):
         return sum(1 for s in external if (s.get("status") or {}).get(control) == verdict)
 
+    #: Externals the control can mean anything for. A study the control does not apply to is
+    #: not evidence that the field skips it, and counting it in the denominator makes the
+    #: field look worse for free. Added 2026-09-12, when reading three papers end to end
+    #: turned three `unknown` cells into two genuine absences and one `n/a` -- Sclar et al.
+    #: measure prompt-format sensitivity on accuracy benchmarks, so "did you report a
+    #: same-version political null" is not a control they omitted.
+    def applicable(control):
+        return sum(1 for s in external
+                   if (s.get("status") or {}).get(control) not in ("n/a", None))
+
+    #: Applicable AND actually looked for. The gap between this and `applicable` is the
+    #: honest unread remainder, and it is printed rather than folded into either side.
+    def resolved(control):
+        return sum(1 for s in external
+                   if (s.get("status") or {}).get(control) not in ("n/a", None, "unknown"))
+
     ours = next((s for s in studies if (s.get("key") or s.get("id")) == "ours"), None)
     ours_status = (ours or {}).get("status") or {}
     controls = list((rec.get("controls") or {}).keys()) if isinstance(rec, dict) else []
@@ -153,6 +169,12 @@ def audit_scale():
             "not_full": len(external) - len(full),
             "yes_same_version_dist": tally("same_version_dist", "yes"),
             "no_same_version_dist": tally("same_version_dist", "no"),
+            "applicable_same_version_dist": applicable("same_version_dist"),
+            "na_same_version_dist": tally("same_version_dist", "n/a"),
+            "resolved_quantisation": resolved("quantisation"),
+            "partial_quantisation": tally("quantisation", "partial"),
+            "na_quantisation": tally("quantisation", "n/a"),
+            "unknown_quantisation": tally("quantisation", "unknown"),
             "yes_reported_mde": tally("reported_mde", "yes"),
             "no_reported_mde": tally("reported_mde", "no"),
             "yes_quantisation": tally("quantisation", "yes"),
@@ -490,13 +512,28 @@ SURFACES = {
             # numbers apart is not guarding either.
             "audit_external": "Of the %d external studies",
             "audit_controls": "scored against %d controls",
-            "audit_yes_same_version_dist": "the null a drift claim needs | **%d of 12** |",
-            "audit_no_same_version_dist": "%d say no and one is not applicable",
-            "audit_yes_quantisation": "controls for quantisation | **%d of 12** |",
+            # The denominators are GENERATED now, not the literal 12. They were frozen at 12
+            # while every count above them came from the JSON, so when three papers were read
+            # end to end on 2026-09-12 and two cells became `n/a`, the true row was "0 of 10"
+            # and the gate demanded "0 of 12" -- the gate holding the page to a number the
+            # data no longer supported. A hardcoded denominator is a typed number wearing a
+            # generated number's coat.
+            "audit_yes_same_version_dist":
+                "the null a drift claim needs | **%(audit_yes_same_version_dist)d of "
+                "%(audit_applicable_same_version_dist)d** (%(audit_na_same_version_dist)d n/a) |",
+            "audit_no_same_version_dist":
+                "**%(audit_no_same_version_dist)d of the %(audit_external)d\nexternal studies "
+                "are scored `no` on it",
+            "audit_yes_quantisation":
+                "controls for quantisation | **%(audit_yes_quantisation)d of "
+                "%(audit_resolved_quantisation)d** fully, %(audit_partial_quantisation)d "
+                "partial (%(audit_na_quantisation)d n/a, %(audit_unknown_quantisation)d "
+                "unresolved) |",
             "audit_yes_reported_mde": "minimum detectable effect at all | %d of 12",
             "audit_no_reported_mde": "of 12 (**%d say no**)",
             "audit_yes_open_raw": "publishes its raw data** | **%d of 12** |",
-            "audit_yes_forcing": "discloses its forcing prompt** | %d of 12",
+            "audit_yes_forcing":
+                "discloses its forcing prompt** | %(audit_yes_forcing)d of %(audit_external)d",
             "audit_ours_pass_comparable":
                 "passes %(audit_ours_pass_comparable)d of the %(audit_comparable_controls)d "
                 "controls anyone else was scored on",
@@ -575,6 +612,10 @@ SURFACES = {
         "phrases": {
             "corpus_runs": "across %s runs",
             "corpus_models": "runs, %d models",
+            # Four decimals, deliberately. At two this number reads 0.29 against a smallest
+            # unbeaten effect of 0.30, and "larger than two of them" survived five documents
+            # because nobody could see the gap.
+            "judge_spread": "our judges spanned %.4f points",
             "arms_models": "Across %d models measured under both arms",
             "arms_declining": "arms, %d decline all",
             "arms_nodir_refusals": "there are %(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
@@ -602,6 +643,25 @@ SURFACES = {
 MISSING_FLOORS = set()
 
 
+def _judge_spread():
+    """Per-judge spread, recomputed from the records this repository actually ships.
+
+    Returns the value rounded to 4dp. Two decimals is what hid the error: 0.29 against a
+    0.30 effect reads as "larger" and is not.
+    """
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from judge_lean import scored_records, deviations
+        import statistics as _st
+        per = deviations(scored_records())
+        if not per:
+            return None
+        means = sorted(_st.mean(v) for v in per.values())
+        return round(means[-1] - means[0], 4)
+    except Exception:
+        return None
+
+
 def surface_numbers():
     a = audit_scale()
     fl = floors()
@@ -612,6 +672,28 @@ def surface_numbers():
          "what": "external studies reporting no same-version distribution"},
         {"key": "audit_yes_quantisation", "value": a["yes_quantisation"],
          "what": "external studies that DO control for quantisation"},
+        # THE JUDGE SPREAD. Ungated until 2026-09-12, and it is the single number this project
+        # quotes most often against itself -- "larger than two of our own five published
+        # effects", in CORRECTIONS.md, PRIOR-WORK-CORRECTIONS.md, README.md,
+        # controls-audit.json and add_controls_2026_09.py. The comparison was a typed literal
+        # inside judge_lean.py and it was wrong: the spread is 0.2926 and the third-smallest
+        # effect is 0.3000. Five documents copied it. Gated here so the self-criticism is held
+        # to the standard the rest of the file holds the findings to.
+        {"key": "judge_spread", "value": _judge_spread(),
+         "what": "points between the most skeptical and most deferential judge, over the "
+                 "per-judge records in THIS repository"},
+        {"key": "audit_applicable_same_version_dist", "value": a["applicable_same_version_dist"],
+         "what": "external studies the same-version control applies to at all (excludes n/a)"},
+        {"key": "audit_na_same_version_dist", "value": a["na_same_version_dist"],
+         "what": "external studies the same-version control does not apply to"},
+        {"key": "audit_resolved_quantisation", "value": a["resolved_quantisation"],
+         "what": "external studies scored on quantisation (excludes n/a and unknown)"},
+        {"key": "audit_partial_quantisation", "value": a["partial_quantisation"],
+         "what": "external studies partially controlling for quantisation"},
+        {"key": "audit_na_quantisation", "value": a["na_quantisation"],
+         "what": "external studies the quantisation control does not apply to"},
+        {"key": "audit_unknown_quantisation", "value": a["unknown_quantisation"],
+         "what": "external studies not yet scored on quantisation"},
         {"key": "audit_yes_reported_mde", "value": a["yes_reported_mde"],
          "what": "external studies that DO report a minimum detectable effect"},
         {"key": "audit_no_reported_mde", "value": a["no_reported_mde"],
@@ -998,11 +1080,29 @@ def main(argv=None):
         # Adding a surface to SURFACES and forgetting to add it here would leave it declared and
         # unchecked, which is the same silence as not declaring it -- and is how the dispatch
         # ran a day behind a corrected page.
+        asked = present = 0
         for name, wanted in ([(n, args.check_website) for n in SURFACES
                               if n.startswith("website") or n.startswith("dispatch-")]
                              + [("release", args.check_release)]):
             if wanted:
+                asked += 1
+                present += os.path.exists(SURFACES[name]["path"])
                 failures += [(name,) + f for f in check_surface(name, rows)]
+
+        # Absent surfaces are the ordinary state in whichever tree does not hold them, and
+        # check_surface says so rather than failing. But ALL of them absent means this ran
+        # somewhere it cannot check anything, and a green there is the vacuous pass this file
+        # already calls worse than a failure forty lines below. It was reachable: the wave
+        # skill says to run --check-website, and run from the release mirror it printed four
+        # NOT PRESENT lines and exited 0, which reads exactly like "every surface agrees".
+        if asked and not present:
+            print("")
+            print("CHECKED NOTHING -- all %d requested surface(s) are absent from this tree."
+                  % asked)
+            print("This is not a pass. Run it from the tree that holds the website and")
+            print("dispatch sources; the numbers live in a different repository from the")
+            print("paper, which is the whole reason this gate exists.")
+            return 1
         if not failures:
             return 0
         print("")
