@@ -33,7 +33,10 @@ def test_complete_sweep_reports_downstream_outputs(tmp_path: Path):
     assert set(outputs) == {"cross-method-runs-index.json", "judge-methods-run.log", "charts_dir"}
     assert outputs["cross-method-runs-index.json"] is True
     assert outputs["judge-methods-run.log"] is True
-    assert outputs["charts_dir"].endswith("results/charts")
+    # Compare path PARTS, not a POSIX suffix. `endswith("results/charts")` passes on Linux and
+    # fails on Windows, where collect() returns the native separator -- so this assertion made
+    # the suite red on the machine the study is actually collected on.
+    assert Path(outputs["charts_dir"]).parts[-2:] == ("results", "charts")
 
     rendered = io.StringIO()
     with redirect_stdout(rendered):
