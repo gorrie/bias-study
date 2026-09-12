@@ -112,9 +112,24 @@ def test_an_unscored_run_raises_instead_of_being_analysed(tmp_path, monkeypatch)
 
 
 def test_neither_directory_present_raises_and_invents_nothing(tmp_path, monkeypatch):
-    sp = _load(tmp_path / "empty", monkeypatch)
+    """An EXISTING study directory with neither data/ nor runs/ in it.
+
+    The directory is created on purpose. A STUDY_ROOT that does not exist at all is a
+    different error, raised at import with a message naming the bad path -- see the test
+    below. Conflating the two is what this test used to do, and it passed only because the
+    module tolerated a missing root long enough to reach runs_root()."""
+    study = tmp_path / "empty"
+    study.mkdir()
+    sp = _load(study, monkeypatch)
     with pytest.raises(sp.RunNotFound):
         sp.runs_root()
+
+
+def test_a_study_root_that_does_not_exist_fails_at_load(tmp_path, monkeypatch):
+    """Fail fast, naming the path. A bad STUDY_ROOT that resolves lazily surfaces later as
+    'no such run', which sends you looking for a missing run instead of a missing root."""
+    with pytest.raises(ValueError, match="STUDY_ROOT is not a directory"):
+        _load(tmp_path / "does-not-exist", monkeypatch)
 
 
 def test_the_same_run_name_in_both_layouts_is_read_from_the_right_one(public_layout,

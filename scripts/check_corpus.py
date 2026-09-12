@@ -71,15 +71,23 @@ def fold_for_hash(text):
     return " ".join(text.split()).casefold()
 
 
-def window_hashes(text, window):
-    """Hashes of every `window`-word run in `text`, folded first. Short text hashes whole."""
+def window_hashes(text, window, include_short=True):
+    """Hash window and window-1 spans, including short propositions embedded in prose.
+
+    Previously a five-word proposition hashed whole only when it was the entire input;
+    surrounding JSON/prose made it invisible to the six-word scan. Both widths are now
+    checked. The generator uses include_short=False so long propositions retain the
+    six-word specificity; only actual short propositions contribute five-word hashes.
+    This is text matching, not a semantic or ownership classifier.
+    """
     words = fold_for_hash(text).split()
     if not words:
         return set()
     if len(words) < window:
         return {hashlib.sha256(" ".join(words).encode("utf-8")).hexdigest()[:HASH_LEN]}
-    return {hashlib.sha256(" ".join(words[i:i + window]).encode("utf-8")).hexdigest()[:HASH_LEN]
-            for i in range(len(words) - window + 1)}
+    return {hashlib.sha256(" ".join(words[i:i + width]).encode("utf-8")).hexdigest()[:HASH_LEN]
+            for width in ({window, max(1, window-1)} if include_short else {window})
+            for i in range(len(words) - width + 1)}
 
 
 HASH_LEN = 16

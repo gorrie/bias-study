@@ -30,7 +30,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from studypaths import LEGACY_SEED, runs_root  # noqa: E402
+from studypaths import LEGACY_SEED, resolve_run, run_roots  # noqa: E402
 
 #: Runs from the May 2026 sweep. Frozen: they predate the declared-seed rule and
 #: reproduce against LEGACY_SEED, which is why that default exists at all.
@@ -151,12 +151,43 @@ def _split_known(reports):
     return sorted(set(KNOWN) - seen)
 
 
+def _is_manifest_layout(d) -> bool:
+    """Does this run dir use the manifest+scored layout this validator checks?"""
+    return ((d / "manifest.json").is_file() or (d / "scored").is_dir() or (d / "raw").is_dir())
+
+
 def main(argv: list[str]) -> int:
     as_json = "--json" in argv
+    skipped = []
+    not_runs = []
     names = [a for a in argv if not a.startswith("-")]
-    root = runs_root()
-    dirs = [root / n for n in names] if names else sorted(
-        d for d in root.iterdir() if d.is_dir() and not d.name.startswith("_"))
+    # EVERY corpus root, not one. This validator's job is "are all runs well-formed", and the
+    # mirror holds two populated corpora (May under data/, Aug-Sep under runs/). Asking
+    # runs_root() for a single root made it raise on the ambiguity and validate nothing.
+    roots = run_roots()
+    if names:
+        dirs = [resolve_run(n, require_scored=False) for n in names]
+    else:
+        dirs = sorted((d for r in roots for d in r.iterdir()
+                       if d.is_dir() and not d.name.startswith("_")),
+                      key=lambda d: d.name)
+        # ONLY roots that use the manifest discipline this validator checks. The
+        # August-September corpus under runs/ stores flat `model__CONDITION.jsonl` files and
+        # has no manifests at all, so scanning it answers "no manifest" for all 30 of its runs
+        # -- a layout mismatch, not 30 defects, and it would bury the six real known findings.
+        # A whole root is in or out; individual dirs are not filtered, because a MISSING
+        # manifest inside the manifest corpus is exactly the defect KNOWN enumerates.
+        covered = [r for r in roots if any(r.glob("*/manifest.json"))]
+        skipped[:] = [r for r in roots if r not in covered]
+        dirs = [d for d in dirs if d.parent in covered]
+        # A directory holding no records ANYWHERE is not a run. data/2026-05-27 and
+        # data/2026-08-28 are cross-method OUTPUT directories -- four derived JSON files and
+        # an empty raw/ -- and were reported as two runs missing their manifests. That is a
+        # misclassification, not a defect, and it is fixed here rather than waved through by
+        # adding the pair to KNOWN, which would have taught the gate to ignore a real shape.
+        # A run whose collection genuinely failed still has raw/ or scored/ jsonl and still flags.
+        not_runs[:] = [d for d in dirs if not any(d.rglob("*.jsonl"))]
+        dirs = [d for d in dirs if any(d.rglob("*.jsonl"))]
 
     reports = []
     for d in dirs:
@@ -167,6 +198,13 @@ def main(argv: list[str]) -> int:
         reports.append(inspect(d))
 
     stale = _split_known(reports)
+    if not_runs and not as_json:
+        print("not run directories (no records at all, derived output only): %s"
+              % ", ".join(sorted(d.name for d in not_runs)))
+    if skipped and not as_json:
+        print("NOT COVERED: %s/ uses the flat collector layout and carries no manifests, so "
+              "no manifest validation exists for that corpus at all."
+              % ", ".join(sorted(r.name for r in skipped)))
 
     if as_json:
         print(json.dumps(reports, indent=1))
