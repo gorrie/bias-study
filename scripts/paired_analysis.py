@@ -24,22 +24,24 @@ must not move, and gate G1 in `selftest_analysis.py` asserts they do not.
 WHAT IT ESTIMATES.
 
 A record carries `pair_id` (the template), `arm` (which agent the stem names), and
-`condition`. The estimand is a **within-pair difference under one rubric**, so any
-constant offset between the rubric's culpability axis and the study's institution axis
-cancels exactly. The cluster only needs the same rubric applied to all arms; it does not
-need the rubric calibrated in absolute terms. The corollary has to be printed with the
+`condition`. The estimand is a **within-pair difference under one rubric**, conditional
+on construct validation. A constant rubric offset would cancel, but
+actor-dependent judge bias would not. The existing noun-swap and stem-swap checks
+do not establish that changing actors preserves responsibility or scorer validity.
+The corollary has to be printed with the
 result: matched-pair scores are **not comparable in level** to the main study's 1–5
 scores. Only arm differences are the product.
 
   * cluster bootstrap, where **the cluster is the template**, resampled with replacement,
-    then per-sample scores resampled within each cell — two levels, so neither template
-    nor sampling noise is treated as the other;
-  * an exact sign test over the per-template gaps, which assumes nothing about the
-    distribution and is the honest fallback when the bootstrap and it disagree;
-  * BH-FDR across the pre-registered endpoints, not across every contrast that could be
-    computed after the fact.
+    keeping each selected template intact (one cluster-resampling level);
+  * descriptive bootstrap endpoints, with mean inference withheld pending calibration;
+  * an exact sign test of equal positive/negative probabilities among nonzero template
+    gaps, assuming independent signs with probability 1/2 under its null. This is a
+    different endpoint from the mean gap and is not a fallback mean test;
+  * BH arithmetic over the declared sign endpoints within one model, condition and run.
+    FDR interpretation additionally requires valid p-values and suitable dependence.
 
-    python paired_analysis.py <run_date> [--contrast algorithm:person] [--json]
+    python paired_analysis.py <run_date> [--condition A] [--contrast algorithm:person] [--json]
     python paired_analysis.py --selftest        # synthetic data, no run needed
 """
 from __future__ import annotations
@@ -52,6 +54,7 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from eligibility import load_scored_records  # noqa: E402
 from studypaths import RunNotFound, analysis_seed, resolve_run, stream  # noqa: E402
 
 BOOTSTRAP_N = 10000
@@ -66,19 +69,37 @@ PREREGISTERED = [
 
 
 def load(run_dir: Path) -> list[dict]:
-    recs = []
-    for f in sorted((run_dir / "scored").glob("*.jsonl")):
-        for line in f.read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                recs.append(json.loads(line))
-    return [r for r in recs if r.get("pair_id") and r.get("arm")
-            and r.get("score_classifier") is not None]
+    return [r for r in load_scored_records(run_dir / "scored")
+            if r.get("pair_id") and r.get("arm") and r.get("score_classifier") is not None]
+
+
+def condition_records(recs: list[dict], condition: str | None = None) -> list[dict]:
+    """Select one declared run_study A-E condition; never infer absent labels.
+
+    Validate labels before selecting so an ambiguous record cannot silently vanish.
+    A new collector's condition vocabulary needs a deliberate protocol extension.
+    """
+    if not recs:
+        raise ValueError("matched-pair analysis requires eligible records")
+    labels = [r.get("condition") for r in recs]
+    if any(not isinstance(c, str) or c not in ("A", "B", "C", "D", "E") for c in labels):
+        raise ValueError("missing or unknown condition label; expected run_study A-E")
+    if condition is not None:
+        if condition not in ("A", "B", "C", "D", "E"):
+            raise ValueError("unknown selected condition; expected run_study A-E")
+        selected = [r for r in recs if r["condition"] == condition]
+        if not selected:
+            raise ValueError(f"no eligible records for condition {condition}")
+        return selected
+    if len(set(labels)) != 1:
+        raise ValueError("matched-pair analysis requires one condition; use --condition to select it")
+    return recs
 
 
 def cells(recs: list[dict]) -> dict:
     """(pair_id, arm) -> list of scores. Samples stay separate; that is the inner level."""
     out = defaultdict(list)
-    for r in recs:
+    for r in condition_records(recs):
         out[(r["pair_id"], r["arm"])].append(float(r["score_classifier"]))
     return dict(out)
 
@@ -132,7 +153,9 @@ def cluster_bootstrap(cell: dict, a: str, b: str, rng, n: int = BOOTSTRAP_N,
     lo = means[int((alpha / 2) * n)]
     hi = means[int((1 - alpha / 2) * n)]
     return {"n_templates": k, "estimate": point, "lo": lo, "hi": hi,
-            "excludes_zero": not (lo <= 0 <= hi)}
+            "excludes_zero": not (lo <= 0 <= hi),
+            "inference_status": "withheld-uncalibrated",
+            "interval_role": "legacy percentile diagnostic; excludes_zero is not significance"}
 
 
 def _comb(n: int, k: int) -> int:
@@ -141,14 +164,16 @@ def _comb(n: int, k: int) -> int:
 
 
 def sign_test(gaps: dict) -> dict:
-    """Exact two-sided sign test over per-template gaps. Distribution-free, so it is the
-    check on the bootstrap rather than a restatement of it. Ties are dropped, which is
-    the conservative convention."""
+    """Test sign balance conditional on nonzero gaps, not zero mean magnitude.
+
+    Null: independent nonzero template-gap signs have positive probability 1/2.
+    Ties are omitted and disclosed. Magnitudes do not enter this endpoint.
+    """
     pos = sum(1 for v in gaps.values() if v > 0)
     neg = sum(1 for v in gaps.values() if v < 0)
     n = pos + neg
     if n == 0:
-        return {"n": 0, "pos": 0, "neg": 0, "p": 1.0}
+        return {"n": 0, "pos": 0, "neg": 0, "ties": len(gaps), "p": 1.0}
     x = min(pos, neg)
     tail = sum(_comb(n, i) for i in range(0, x + 1)) / (2 ** n)
     return {"n": n, "pos": pos, "neg": neg, "ties": len(gaps) - n,
@@ -169,10 +194,22 @@ def benjamini_hochberg(pvals: dict, q: float = 0.05) -> dict:
     return survive
 
 
-def analyse(recs: list[dict], seed: int, run_date: str, contrasts=None) -> dict:
+def analyse(recs: list[dict], seed: int, run_date: str, contrasts=None,
+            condition: str | None = None) -> dict:
+    models = {r.get("model") for r in recs}
+    if len(models) > 1:
+        raise ValueError("matched-pair analysis requires one model; use --model to select it")
+    input_records = len(recs)
+    available_conditions = sorted({r.get("condition") for r in recs}, key=str)
+    recs = condition_records(recs, condition)
+    selected_condition = recs[0]["condition"]
     cell = cells(recs)
     contrasts = contrasts or PREREGISTERED
-    out = {"run": run_date, "records": len(recs),
+    out = {"run": run_date, "model": next(iter(models), None), "records": len(recs),
+           "condition": selected_condition, "input_records": input_records,
+           "available_conditions": available_conditions,
+           "records_outside_selected_condition": input_records - len(recs),
+           "mean_inference": "withheld-uncalibrated",
            "templates": len({p for (p, _) in cell}),
            "arms": sorted({arm for (_, arm) in cell}),
            "contrasts": {}}
@@ -183,39 +220,52 @@ def analyse(recs: list[dict], seed: int, run_date: str, contrasts=None) -> dict:
         gaps = pair_gaps(cell, a, b)
         st = sign_test(gaps)
         out["contrasts"][key] = {"bootstrap": boot, "sign_test": st,
+                                 "mean_gap": statistics.fmean(gaps.values()) if gaps else None,
+                                 "n_complete_templates": len(gaps),
                                  "per_template_gaps": gaps}
         pvals[key] = st["p"]
     survive = benjamini_hochberg(pvals)
     for key, ok in survive.items():
-        out["contrasts"][key]["survives_fdr"] = ok
+        out["contrasts"][key]["sign_survives_fdr"] = ok
+    out["sign_endpoint"] = {
+        "null": "P(positive gap | nonzero gap) = 1/2",
+        "unit": "independent template sign; ties omitted",
+        "family": list(out["contrasts"]), "q": 0.05,
+        "scope": "one run, model and condition; custom contrasts are exploratory",
+        "assumptions": "independent signs under the null; BH needs independence or suitable positive dependence across endpoints",
+        "mean_test": False,
+    }
     out["note"] = ("Matched-pair scores are NOT comparable in level to the main study's "
                    "1-5 scores. The estimand is a within-pair difference under one rubric; "
-                   "only arm differences are the product.")
+                   "mean inference and stem separability are withheld pending calibration. "
+                   "The sign endpoint tests sign balance, not a zero mean.")
     return out
 
 
 def render(res: dict) -> None:
     print(f"\n=== {res['run']} — matched-pair arms ===")
-    print(f"  {res['records']} scored records, {res['templates']} templates, "
+    print(f"  model {res['model']}, condition {res['condition']}; "
+          f"{res['records']} scored records, {res['templates']} templates, "
           f"arms: {', '.join(res['arms'])}")
     for key, c in res["contrasts"].items():
         b, st = c["bootstrap"], c["sign_test"]
         print(f"\n  {key}")
         if b:
-            verdict = "CI excludes 0" if b["excludes_zero"] else "not distinguishable from 0"
-            print(f"    cluster bootstrap  {b['estimate']:+.3f} "
+            print(f"    legacy cluster interval  {b['estimate']:+.3f} "
                   f"[{b['lo']:+.3f}, {b['hi']:+.3f}]  over {b['n_templates']} templates "
-                  f"-> {verdict}")
+                  "-> mean inference withheld")
         else:
-            print("    cluster bootstrap  n<2 templates with both arms")
-        print(f"    sign test          {st['pos']}+/{st['neg']}- "
+            print(f"    mean gap {c['mean_gap']}; n<2 complete templates; inference withheld")
+        print(f"    sign-balance test  {st['pos']}+/{st['neg']}- "
               f"(ties {st.get('ties', 0)})  p={st['p']:.4f}  "
-              f"{'SURVIVES' if c['survives_fdr'] else 'drops'} BH-FDR")
+              f"{'flagged' if c['sign_survives_fdr'] else 'unflagged'} in sign-endpoint BH family")
+    print("  Sign endpoint assumes independent template signs with P(+ | nonzero)=1/2; "
+          "BH also requires suitable dependence. This does not test the mean gap.")
     sc = res.get("stem_control")
     if sc:
         print(f"\n  --- mismatched-stem control ({sc['n_rescored']} responses re-scored "
               f"under another arm's stem, over {sc['n_templates']} templates) ---")
-        print(f"    judge stem effect  {sc['estimate']:+.3f} "
+        print(f"    descriptive stem-score difference  {sc['estimate']:+.3f} "
               f"[{sc['lo']:+.3f}, {sc['hi']:+.3f}]   reach {sc['reach']:.3f}")
         for key, v in sc["contrasts"].items():
             print(f"    {key:<24} arm gap {v['arm_gap']:+.3f}  ->  {v['verdict']}")
@@ -223,45 +273,48 @@ def render(res: dict) -> None:
 
 
 def stem_control(run_dir: Path, res: dict, seed: int, run_date: str) -> dict | None:
-    """The mismatched-stem calibration, and its pre-registered abort rule.
+    """Descriptive mismatched-stem sensitivity within the selected condition.
 
     The judge is shown the question, and the question is where the agent is named. A judge
     that scores "an algorithm decided X" differently from "a caseworker decided X" would
     manufacture the arm gap the study is trying to measure. `score.py --stem-swap` re-scores
     every response with the question naming a different arm, response byte-identical, so
-    whatever moves is pure judge stem effect.
+    the score difference measures sensitivity to that edit. Actor changes can change
+    responsibility or semantic consistency; this is not scorer-validity calibration.
 
-    ABORT RULE, fixed before anyone looks: if the stem-effect interval reaches the arm-gap
-    estimate, the cut reports "not separable at this n" and makes no substantive claim. It
-    is written here rather than decided later precisely because the temptation to decide it
-    later is the whole problem.
+    The legacy interval-reach comparison is preserved as a diagnostic. Neither side
+    has calibrated coverage, so no separability verdict is authorized by this rule.
     """
     swap_dir = run_dir / "scored-stemswap"
     if not swap_dir.is_dir():
         return None
+    condition = res.get("condition")
+    if condition not in ("A", "B", "C", "D", "E"):
+        raise ValueError("stem control requires the selected condition in the analysis result")
+    original_rows = [r for r in load_scored_records(run_dir / "scored")
+                     if r.get("model") == res.get("model") and r.get("pair_id")]
+    swap_rows = [r for r in load_scored_records(swap_dir)
+                 if r.get("model") == res.get("model") and r.get("pair_id")]
+    if not original_rows or not swap_rows:
+        return None
     orig = {}
-    for f in sorted((run_dir / "scored").glob("*.jsonl")):
-        for line in f.read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                r = json.loads(line)
-                if r.get("pair_id") and r.get("score_classifier") is not None:
-                    orig[(r["model"], r["pair_id"], r["arm"], r.get("sample_idx", 0))] = r
+    for r in condition_records(original_rows, condition):
+        if (r.get("model") == res.get("model") and r.get("pair_id")
+                and r.get("score_classifier") is not None):
+            orig[(r["model"], r["condition"], r["pair_id"], r["arm"], r.get("sample_idx", 0))] = r
 
     per_template = defaultdict(list)
     n = 0
-    for f in sorted(swap_dir.glob("*.jsonl")):
-        for line in f.read_text(encoding="utf-8").splitlines():
-            if not line.strip():
-                continue
-            r = json.loads(line)
-            if r.get("score_classifier") is None or not r.get("stem_swap_from"):
-                continue
-            k = (r["model"], r["pair_id"], r["stem_swap_from"], r.get("sample_idx", 0))
-            if k not in orig:
-                continue
-            per_template[r["pair_id"]].append(
-                float(r["score_classifier"]) - float(orig[k]["score_classifier"]))
-            n += 1
+    for r in condition_records(swap_rows, condition):
+        if (r.get("model") != res.get("model") or r.get("score_classifier") is None
+                or not r.get("stem_swap_from")):
+            continue
+        k = (r["model"], r["condition"], r["pair_id"], r["stem_swap_from"], r.get("sample_idx", 0))
+        if k not in orig:
+            continue
+        per_template[r["pair_id"]].append(
+            float(r["score_classifier"]) - float(orig[k]["score_classifier"]))
+        n += 1
     if not per_template:
         return None
 
@@ -283,11 +336,12 @@ def stem_control(run_dir: Path, res: dict, seed: int, run_date: str) -> dict | N
         separable = abs(b["estimate"]) > reach
         verdicts[key] = {
             "arm_gap": b["estimate"],
-            "separable": separable,
-            "verdict": ("separable from judge stem effect" if separable
-                        else "NOT SEPARABLE AT THIS N - no substantive claim"),
+            "separable": None,
+            "legacy_gap_exceeds_reach": separable,
+            "verdict": "SEPARABILITY WITHHELD - uncalibrated intervals and construct validity",
         }
     return {"n_rescored": n, "n_templates": k, "estimate": statistics.fmean(gaps),
+            "condition": condition, "inference_status": "withheld-uncalibrated",
             "lo": lo, "hi": hi, "reach": reach, "contrasts": verdicts}
 
 
@@ -410,7 +464,8 @@ def selftest() -> int:
     shrink_templates = 1 - statistics.fmean(r_templates)
     full8 = mk(16, 8, gap=0.50, jitter=0.30, seed=3, hetero=HET)
     w8 = {"hi": width_of(full8), "lo": 0.0}
-    width = lambda b: b["hi"] - b["lo"]
+    def width(b):
+        return b["hi"] - b["lo"]
     if shrink_samples > 0.20:
         print(f"  FAIL  4x the samples on the same templates shrank the CI by "
               f"{shrink_samples:.0%} — the cluster level is not binding")
@@ -437,13 +492,13 @@ def selftest() -> int:
         print(f"  PASS  flat i.i.d. bootstrap understates by {1 - naive_w / clust_w:.0%} "
               f"({naive_w:.3f} vs {clust_w:.3f}) — that is the pseudoreplication")
 
-    # 4. the sign test agrees with the bootstrap on an obvious effect
+    # 4. the planted fixture also has a sign imbalance (a separate endpoint).
     st = res["contrasts"]["algorithm-person"]["sign_test"]
     if st["p"] > 0.01:
         print(f"  FAIL  sign test p={st['p']:.4f} on a planted 0.50 gap over 16 templates")
         ok = False
     else:
-        print(f"  PASS  sign test agrees: {st['pos']}+/{st['neg']}- p={st['p']:.4f}")
+        print(f"  PASS  planted sign imbalance: {st['pos']}+/{st['neg']}- p={st['p']:.4f}")
 
     print(f"\n{'paired_analysis self-test PASSED' if ok else 'paired_analysis self-test FAILED'}")
     return 0 if ok else 1
@@ -455,9 +510,12 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--contrast", action="append",
                     help="arm_a:arm_b; repeatable. Defaults to the pre-registered three.")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--model", help="select one model; mixed-model pooling is rejected")
+    ap.add_argument("--condition", choices=list("ABCDE"),
+                    help="select one run_study condition; mixed or missing labels are rejected")
     ap.add_argument("--stem-control", action="store_true",
-                    help="Apply the mismatched-stem calibration and its pre-registered "
-                         "abort rule. Requires scored-stemswap/ from score.py --stem-swap.")
+                    help="Report descriptive mismatched-stem sensitivity; separability "
+                         "is withheld. Requires scored-stemswap/ from score.py --stem-swap.")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args(argv)
     if a.selftest:
@@ -470,6 +528,8 @@ def main(argv: list[str]) -> int:
         print(f"[error] {a.run_date}: {e}", file=sys.stderr)
         return 1
     recs = load(run_dir)
+    if a.model:
+        recs = [r for r in recs if r.get("model") == a.model]
     if not recs:
         print(f"[error] {a.run_date}: no scored records carry pair_id and arm. "
               f"This estimator is for matched-pair runs only; the main study's "
@@ -477,9 +537,17 @@ def main(argv: list[str]) -> int:
         return 1
     contrasts = [tuple(c.split(":", 1)) for c in a.contrast] if a.contrast else None
     seed = analysis_seed(a.run_date)
-    res = analyse(recs, seed, a.run_date, contrasts)
+    try:
+        res = analyse(recs, seed, a.run_date, contrasts, condition=a.condition)
+    except ValueError as exc:
+        print(f"[error] {exc}", file=sys.stderr)
+        return 1
     if a.stem_control:
-        sc = stem_control(run_dir, res, seed, a.run_date)
+        try:
+            sc = stem_control(run_dir, res, seed, a.run_date)
+        except ValueError as exc:
+            print(f"[error] {exc}", file=sys.stderr)
+            return 1
         if sc is None:
             print("[error] no scored-stemswap/ - run `score.py <run> --stem-swap` first",
                   file=sys.stderr)

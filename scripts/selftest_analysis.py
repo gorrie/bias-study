@@ -66,6 +66,18 @@ ERRATUM = {"x-ai/grok-4.3": {"published_hi": 1.13, "current_hi": 1.17}}
 #: WRITEUP section 2.4, on the 740 four-judge items of the main run.
 PUBLISHED_AGREEMENT = {"items": 740, "exact": 0.824, "unanimous": 0.700, "mean_abs_diff": 0.239}
 
+#: The same measurement with the eligibility rule applied: 33 empty responses excluded from the
+#: May main run, 25 of which had contributed judge pairs. Provenance in CORRECTIONS-2026-09-08.md
+#: and corrections/2026-09-12-eligibility/LEDGER.md -- two passes, four days apart, same figures.
+CORRECTED_AGREEMENT = {"items": 715, "exact": 0.827, "unanimous": 0.710, "mean_abs_diff": 0.236}
+
+#: BOTH ARE ACCEPTED, and the gate says which it matched. Whether the eligibility rule becomes
+#: the default is Ian's open decision, and the two trees currently answer it differently: the
+#: private study filters at read time and measures 715; the public mirror does not and measures
+#: 740. Hard-coding either one here would make this gate fail on the other tree for a reason
+#: that has nothing to do with the property it checks -- and pinning the historical number
+#: alone would quietly re-assert a figure the correction record supersedes.
+
 #: WRITEUP section 5.6: four survive BH-FDR at q=0.05; DeepSeek is the one that drops.
 FDR_SURVIVORS = {"anthropic/claude-opus-4.7", "x-ai/grok-4.3",
                  "openai/gpt-4.1", "mistralai/mistral-large"}
@@ -173,13 +185,19 @@ def g3():
         if not mm:
             return False, f"missing {key}"
         got[key] = float(mm.group(1))
-    for key, want in PUBLISHED_AGREEMENT.items():
-        if round(got[key], 3) != round(want, 3):
-            return False, f"{key}: got {got[key]}, published {want}"
+    matched = None
+    for name, want in (("published", PUBLISHED_AGREEMENT),
+                       ("eligibility-corrected", CORRECTED_AGREEMENT)):
+        if all(round(got[k], 3) == round(v, 3) for k, v in want.items()):
+            matched = name
+            break
+    if matched is None:
+        return False, ("agreement matches neither reference: got %s; published %s; corrected %s"
+                       % (got, PUBLISHED_AGREEMENT, CORRECTED_AGREEMENT))
     if "[footnote] Krippendorff" not in p.stdout:
         return False, "alpha is not demoted to a labelled footnote"
     return True, (f"{got['items']} items, exact {got['exact']}, unanimous {got['unanimous']}, "
-                  f"mean|d| {got['mean_abs_diff']}; alpha footnoted")
+                  f"mean|d| {got['mean_abs_diff']}; alpha footnoted; matched {matched} reference")
 
 
 def g4():

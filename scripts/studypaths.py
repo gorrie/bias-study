@@ -38,21 +38,18 @@ import os
 import random
 from pathlib import Path
 
-#: Which study directory to read. Defaults to the repo this file lives in; `STUDY_ROOT`
-#: overrides it so ONE copy of these scripts can serve more than one study tree.
-#:
-#: WHY THIS EXISTS (2026-09-02). The private working study and this public mirror had
-#: DIVERGED at the statistics layer, not just in prose. `ci_analysis.py` here carries the
-#: per-cell RNG streams; the private copy still had a module-level `random.seed()`, so its
-#: bootstrap intervals depended on the order the run-dates were passed. Measured on two runs:
-#: 5 of 22 cells moved their CI bounds by up to 0.04 under reversal, and no verdict flipped --
-#: which is luck, because the study's gate is binary and a bound near zero is decidable by
-#: argument order.
-#:
-#: The repair is one implementation rather than a ported patch. That needs the private tree
-#: to be able to call these scripts, and calling them WITHOUT this override would resolve to
-#: the public (scrubbed) runs and silently analyse the wrong data -- worse than a crash.
-STUDY_DIR = Path(os.environ.get("STUDY_ROOT") or Path(__file__).resolve().parent.parent)
+# GitLab owns development; the same exported code accepts a release corpus explicitly.
+_requested = os.environ.get("STUDY_ROOT")
+if _requested is not None and not _requested.strip():
+    raise ValueError("STUDY_ROOT must name a study directory")
+STUDY_DIR = (Path(_requested).expanduser().resolve() if _requested is not None
+             else Path(__file__).resolve().parent.parent)
+if not STUDY_DIR.is_dir():
+    raise ValueError(f"STUDY_ROOT is not a directory: {STUDY_DIR}")
+
+# Compatibility contract for historical shims; expand only with entry-point tests.
+ROOT_AWARE_SCRIPTS = frozenset({"ci_analysis.py", "robustness_checks.py",
+                               "paired_analysis.py", "validate_runs.py"})
 
 #: May 2026's seed. Frozen. Used when a run's manifest declares none.
 LEGACY_SEED = 20260527
@@ -96,34 +93,73 @@ def _looks_like_runs_root(p: Path) -> bool:
 
 
 def runs_root() -> Path:
-    """The directory that holds run directories: `data/` here, `runs/` in other layouts.
+    """The directory holding run directories: `runs/` here, `data/` in the public mirror.
 
-    Resolved BY CONTENT, not by name. Name-based resolution worked only because this repo's
-    `data/` happens to hold runs -- point `STUDY_ROOT` at the private working study, whose
-    `data/` holds config JSON and whose runs live in `runs/`, and a name-based rule silently
-    returns the config directory. The failure mode is an analysis that finds no runs and, in
-    the shape this module was written to kill, reports success having computed nothing.
+    RESOLVED BY CONTENT, NOT BY NAME. Name-based resolution worked only because the mirror's
+    `data/` happens to hold runs -- point `STUDY_ROOT` at this private study, whose `data/`
+    holds config JSON and whose runs live in `runs/`, and a name-based rule silently returns
+    the config directory. The failure mode is an analysis that finds no runs and reports
+    success having computed nothing.
+
+    AN AMBIGUOUS SELECTION FAILS rather than guessing, per the September 8 direction: a held
+    layout containing BOTH a populated `data/` and a populated `runs/` cannot be resolved by
+    inspection, so `STUDY_RUN_LAYOUT` must say which. Picking one silently is how an analysis
+    ends up reading the wrong corpus and never says so.
     """
-    candidates = [STUDY_DIR / "data", STUDY_DIR / "runs"]
-    for p in candidates:
-        if _looks_like_runs_root(p):
-            return p
-    # Nothing has runs in it. Fall back to an existing directory so the caller's own error
-    # names the missing run rather than this function's, but never invent one.
-    for p in candidates:
-        if p.is_dir():
-            return p
+    layout = os.environ.get('STUDY_RUN_LAYOUT')
+    if layout is not None:
+        if layout not in ('data', 'runs') or not (STUDY_DIR / layout).is_dir():
+            raise RunNotFound('STUDY_RUN_LAYOUT must select an existing data or runs directory')
+        return STUDY_DIR / layout
+    candidates = [STUDY_DIR / name for name in ("data", "runs")
+                  if (STUDY_DIR / name).is_dir()]
+    if len(candidates) == 1:
+        return candidates[0]
+    populated = [p for p in candidates if _looks_like_runs_root(p)]
+    if len(populated) == 1:
+        return populated[0]
+    if candidates:
+        raise RunNotFound(f"ambiguous data/ and runs/ under {STUDY_DIR}; "
+                          "exactly one must contain run records")
     raise RunNotFound(f"neither data/ nor runs/ exists under {STUDY_DIR}")
 
 
+def run_roots() -> list[Path]:
+    """Every populated corpus root, in preference order -- usually one, legitimately two.
+
+    The public mirror really does hold two: 22 May runs under `data/` and 30 August/September
+    runs under `runs/`. Neither is wrong and neither is stale, so a rule that picks ONE root
+    globally has to be wrong about half the runs. Resolution is therefore per run NAME.
+    """
+    layout = os.environ.get('STUDY_RUN_LAYOUT')
+    if layout is not None:
+        if layout not in ('data', 'runs') or not (STUDY_DIR / layout).is_dir():
+            raise RunNotFound('STUDY_RUN_LAYOUT must select an existing data or runs directory')
+        return [STUDY_DIR / layout]
+    roots = [STUDY_DIR / name for name in ("data", "runs") if (STUDY_DIR / name).is_dir()]
+    populated = [p for p in roots if _looks_like_runs_root(p)]
+    return populated or roots
+
+
 def resolve_run(run_date: str, *, require_scored: bool = True) -> Path:
-    """Return the run directory, raising rather than returning None."""
-    root = runs_root()
-    d = root / run_date
-    if not d.is_dir():
-        have = sorted(p.name for p in root.iterdir() if p.is_dir())
+    """Return the run directory, raising rather than returning None.
+
+    Searched across every corpus root BY NAME. A name present in exactly one root resolves
+    with no configuration; a name present in BOTH is genuinely ambiguous and says so rather
+    than picking, because picking is how an analysis silently reads the other corpus.
+    """
+    roots = run_roots()
+    holding = [r for r in roots if (r / run_date).is_dir()]
+    if len(holding) > 1:
         raise RunNotFound(
-            f"no run directory {root.name}/{run_date}. Present: {', '.join(have) or '(none)'}")
+            f"run {run_date} exists in {' and '.join(r.name for r in holding)}; "
+            "set STUDY_RUN_LAYOUT to choose the corpus")
+    if not holding:
+        have = sorted({p.name for r in roots for p in r.iterdir() if p.is_dir()})
+        raise RunNotFound(
+            f"no run directory {run_date}. Present: {', '.join(have) or '(none)'}")
+    root = holding[0]
+    d = root / run_date
     if require_scored and not (d / "scored").is_dir():
         raise RunNotFound(
             f"{root.name}/{run_date} exists but has no scored/ — "

@@ -35,6 +35,11 @@ in. This removes only records where there was nothing to read.
 """
 from __future__ import annotations
 
+import json
+import os
+import sys
+from pathlib import Path
+
 
 def response_text(rec: dict) -> str:
     return (rec.get("response_text") or "")
@@ -119,8 +124,6 @@ def missingness(records):
 #
 # Flip the default only once the ledger is accepted, and record the flip as a dated correction.
 
-import os
-
 
 def strict_default() -> bool:
     return os.environ.get("STUDY_ELIGIBILITY", "").strip().lower() == "strict"
@@ -139,3 +142,31 @@ def apply_rule(records, strict=None, label=""):
         print("[eligibility] %s: excluded %d scored-empty record(s) of %d"
               % (label or "records", len(scored_empty), len(records)), file=sys.stderr)
     return eligible + [r for r in records if not has_score(r)]
+
+
+def load_scored_records(directory):
+    """Read every *.jsonl in `directory`, returning only records the rule admits.
+
+    Kept under the name the September 8 correction pass gave it (`record_quality.
+    load_scored_records`), because its call sites are the readers that most needed the rule
+    and renaming them would have been churn for its own sake. That module is superseded by
+    this one; this function is the compatible entry point, running the reconciled rule.
+
+    Exclusions are REPORTED, never silent. A reader that quietly shrinks its own denominator
+    is the defect this module exists to close, not a smaller version of it.
+    """
+    directory = Path(directory)
+    kept, dropped = [], 0
+    for path in sorted(directory.glob("*.jsonl")):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            rec = json.loads(line)
+            if is_eligible(rec):
+                kept.append(rec)
+            else:
+                dropped += 1
+    if dropped:
+        print("[eligibility] %s: excluded %d unusable record(s); source files unchanged"
+              % (directory, dropped), file=sys.stderr)
+    return kept
