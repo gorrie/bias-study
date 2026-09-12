@@ -1,0 +1,54 @@
+{
+  "topic": {
+    "T01": {
+      "n_records": 20,
+      "mean_spread": 0.4,
+      "max_spread": 2
+    },
+    "T02": {
+      "n_records": 20,
+      "mean_spread": 0.4,
+      "max_spread": 2
+    },
+    "T03": {
+      "n_records": 19,
+      "mean_spread": 0.421,
+      "max_spread": 2
+    },
+    "T04": {
+      "n_records": 18,
+      "mean_spread": 0.333,
+      "max_spread": 2
+    },
+    "T05": {
+      "n_records": 19,
+      "mean_spread": 0.263,
+      "max_spread": 2
+    },
+    "T06": {
+      "n_records": 20,
+      "mean_spread": 0.3,
+      "max_spread": 2
+    },
+    "T07": {
+      "n_records": 19,
+      "mean_spread": 0.263,
+      "max_spread": 2
+    },
+    "T08": {
+      "n_records": 20,
+      "mean_spread": 0.35,
+      "max_spread": 1
+    },
+    "T09": {
+      "n_records": 20,
+      "mean_spread": 0.1,
+      "max_spread": 1
+    },
+    "T10": {
+      "n_records": 19,
+      "mean_spread": 0.316,
+      "max_spread": 1
+    }
+  }
+}

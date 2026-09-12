@@ -38,6 +38,12 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+import os as _os, sys as _sys
+_here = _os.path.dirname(_os.path.abspath(__file__))
+if _here not in _sys.path:
+    _sys.path.insert(0, _here)
+import eligibility as _elig
+
 SCRIPT_DIR = Path(__file__).parent
 # STUDY_DIR comes from studypaths so that STUDY_ROOT is honoured HERE too, not
 # only by runs_root(). Defining it locally as SCRIPT_DIR.parent meant a script
@@ -84,7 +90,12 @@ def load_method_records(run_dir: Path, method: str) -> list[dict]:
                     records.append(json.loads(line))
                 except json.JSONDecodeError:
                     continue
-    return records
+    # DATA-EMPTY-SCORES-002. This loader matters more than the others: the cross-method
+    # comparison IS the study's instrument for judge contamination, and the same blank
+    # strings were scored 40 / 35 / 6 / 0 / 0 times by the five alternate methods. Leaving
+    # them in measures the judges' willingness to score nothing and reports it as a
+    # difference in how they score something.
+    return _elig.apply_rule(records, label="cross_method_report.py %s" % method)
 
 
 def bootstrap_ci(values: list[float], n_boot: int = 1000, alpha: float = 0.05) -> tuple[float, float]:

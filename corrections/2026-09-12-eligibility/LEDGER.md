@@ -77,3 +77,51 @@ weight rung and every control arm are untouched by this defect.**
 - `drift_report`, `drift_timeseries` and the chart builders, not yet migrated.
 - Flipping the default. The rule stays opt-in until the above is done and this ledger is
   read; the flip is itself a dated correction.
+
+---
+
+## Cross-method contamination, re-run under the rule (2026-09-12)
+
+`cross_method_report.py` is now wired to the same rule. This loader matters more than the
+others: the cross-method comparison **is** the study's instrument for judge contamination, and
+the same blank strings were scored 40 / 35 / 6 / 0 / 0 times by the five alternate methods. Left
+in, it measures the judges' *willingness to score nothing* and reports it as a difference in how
+they score something.
+
+Regenerated into `cross-method-strict/` and diffed against the published artifacts, which were
+restored untouched. Six of fourteen runs' `contamination-delta.json` change. Most changes are
+bootstrap-boundary shifts of a hundredth. **One is not.**
+
+| run | model | \|Δ\| was | now | CI was | CI now | n pairs |
+|---|---|---:|---:|---|---|---|
+| `2026-05-25-full` | `z-ai/glm-4.7` | **0.129** | **0.038** | [0.032, 0.258] | [0.0, 0.115] | 31 → 26 |
+| `2026-05-27-ood` | `z-ai/glm-4.7` | 0.333 | 0.0 | [0.0, 1.0] | [0.0, 0.0] | 6 → 5 |
+
+### What this means, stated carefully because it favours us
+
+The pre-registered robustness criterion is **median |Δ vs ULTRAPLINIAN-4| ≤ 0.10**: clear it and
+the original consensus is robust to judge-alignment contamination. In the main run,
+`z-ai/glm-4.7` was the model **failing** that bound at 0.129, with a confidence interval
+**excluding zero** — a positive contamination signal, the single strongest piece of evidence
+against the study's own robustness claim.
+
+Under the eligibility rule it falls to 0.038, comfortably under the bound, with a CI that
+includes zero. The contamination signal was **judges scoring blank strings and disagreeing
+about what score a blank string deserves** — which is exactly what the audit predicted when it
+found the same 50 blanks scored 40 times by one method and 0 by two others.
+
+**This correction makes the study's central claim stronger, which is precisely why it should be
+treated with more suspicion than a correction that hurt us, not less.** Three guards on it:
+
+1. The rule was written and tested against the primary corpus *before* the cross-method report
+   was re-run, and it reproduces the independently-recorded -001 agreement figures exactly
+   (715 / 0.827 / 0.710 / 0.236). It was not tuned to this result.
+2. It is one model in two runs. Every other model's delta is unchanged or moves by ≤ 0.02.
+3. The direction is mechanically forced: removing records on which judges disagreed *about
+   nothing* can only reduce measured disagreement. The honest framing is not "contamination is
+   lower than we thought" but **"one model's contamination figure was never a measurement"** —
+   the same sentence as the vanished `openai/gpt-5` rows, arriving in a different table.
+
+Whoever writes this up should state the before-and-after, not just the after. A robustness
+criterion that is only cleared after a correction is a weaker claim than one cleared outright,
+and the reader is entitled to see which one this is.
