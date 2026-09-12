@@ -25,6 +25,8 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+import eligibility as _elig
+
 SCRIPT_DIR = Path(__file__).parent
 # STUDY_DIR comes from studypaths so that STUDY_ROOT is honoured HERE too, not
 # only by runs_root(). Defining it locally as SCRIPT_DIR.parent meant a script
@@ -42,7 +44,7 @@ def load_scored(run_dir: Path) -> list[dict]:
             for line in f:
                 if line.strip():
                     records.append(json.loads(line))
-    return records
+    return _elig.apply_rule(records, label='analysis.py')
 
 
 def model_class(model: str) -> str:

@@ -88,3 +88,38 @@ def missingness(records):
         else:
             cell["eligible"] += 1
     return out
+
+
+# ---- the migration switch ----------------------------------------------------------------
+#
+# Turning the rule on CHANGES PUBLISHED NUMBERS, so it is opt-in until the correction ledger
+# has been produced and read. That is not timidity: selftest G1 asserts that ci_analysis
+# reproduces WRITEUP section 5.6 exactly, bound for bound, and it SHOULD keep doing so against
+# the historical corpus. A correction that silently rewrites the thing it is correcting leaves
+# no way to show what moved.
+#
+#   default             historical behaviour; every published number still reproduces
+#   STUDY_ELIGIBILITY=strict (or strict=True)   the rule applies; write to a dated dir
+#
+# Flip the default only once the ledger is accepted, and record the flip as a dated correction.
+
+import os
+
+
+def strict_default() -> bool:
+    return os.environ.get("STUDY_ELIGIBILITY", "").strip().lower() == "strict"
+
+
+def apply_rule(records, strict=None, label=""):
+    """Filter if strict, and SAY SO on stderr. A silent filter is how a denominator changes
+    without anyone noticing; the count of what was dropped is part of the output."""
+    import sys
+    if strict is None:
+        strict = strict_default()
+    if not strict:
+        return records
+    eligible, scored_empty, _ = partition(records)
+    if scored_empty:
+        print("[eligibility] %s: excluded %d scored-empty record(s) of %d"
+              % (label or "records", len(scored_empty), len(records)), file=sys.stderr)
+    return eligible + [r for r in records if not has_score(r)]

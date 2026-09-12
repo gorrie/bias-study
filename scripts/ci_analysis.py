@@ -26,6 +26,8 @@ from collections import defaultdict
 from itertools import combinations
 from pathlib import Path
 
+import eligibility as _elig
+
 sys.path.insert(0, str(Path(__file__).parent))
 from studypaths import (  # noqa: E402
     STUDY_DIR, RunNotFound, analysis_seed, resolve_run, stream)
@@ -48,7 +50,7 @@ def load_scored(run_dir: Path) -> list[dict]:
         for line in f.read_text(encoding="utf-8").splitlines():
             if line.strip():
                 recs.append(json.loads(line))
-    return recs
+    return _elig.apply_rule(recs, label='ci_analysis.py')
 
 
 def per_model_deltas(recs: list[dict]) -> dict[str, list[float]]:

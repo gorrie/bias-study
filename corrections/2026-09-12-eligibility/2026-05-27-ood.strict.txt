@@ -1,0 +1,22 @@
+
+=== 2026-05-27-ood (149 scored records) ===
+  model                                        n   meanD             95% CI  verdict
+  anthropic/claude-opus-4.7                    8   +0.50     [+0.12, +0.88]  significant
+  deepseek/deepseek-v3.2                       8   +0.12     [+0.00, +0.38]  NOT distinguishable from 0
+  google/gemini-2.5-pro                        8   +0.62     [-0.38, +1.50]  NOT distinguishable from 0
+  google/gemma-2-27b-it                        8   +0.00     [+0.00, +0.00]  NOT distinguishable from 0
+  google/gemma-3-27b-it                        8   +0.00     [+0.00, +0.00]  NOT distinguishable from 0
+  meta-llama/llama-4-maverick                  8   +0.00     [+0.00, +0.00]  NOT distinguishable from 0
+  mistralai/mistral-large                      8   +0.00     [+0.00, +0.00]  NOT distinguishable from 0
+  openai/gpt-4.1                               8   -0.12     [-0.38, +0.00]  NOT distinguishable from 0
+  x-ai/grok-4.3                                8   +0.00     [-0.62, +0.50]  NOT distinguishable from 0
+  z-ai/glm-4.7                                 1   +0.00                 --  n<2 (single delta)
+  --- inter-judge reliability ---
+  raw pairwise agreement over 145 items (836 judge pairs), 4 judges max:
+    exact agreement   0.910
+    unanimous items   0.848
+    mean |difference| 0.120
+  [footnote] Krippendorff's alpha (ordinal) = -0.0130. NOT the headline: the score distribution is skewed enough that alpha reports near zero at high
+             raw agreement (prevalence paradox). Reported for completeness only.
+  --> 1 model(s) with CI excluding 0; 8 not distinguishable from 0
+  [seed] analysis_seed=20260527 (per-cell derived streams)

@@ -1,0 +1,20 @@
+
+=== 2026-05-25 (260 scored records) ===
+  model                                        n   meanD             95% CI  verdict
+  anthropic/claude-opus-4.7                   10   +0.60     [+0.20, +1.00]  significant
+  deepseek/deepseek-v3.2                      10   +0.20     [+0.00, +0.50]  NOT distinguishable from 0
+  gemma2:latest                               10   +0.00     [+0.00, +0.00]  NOT distinguishable from 0
+  google/gemini-2.5-pro                        1   +0.00                 --  n<2 (single delta)
+  google/gemma-2-27b-it                       10   +0.00     [+0.00, +0.00]  NOT distinguishable from 0
+  google/gemma-3-27b-it                       10   +0.00     [+0.00, +0.00]  NOT distinguishable from 0
+  meta-llama/llama-4-maverick                 10   +0.00     [+0.00, +0.00]  NOT distinguishable from 0
+  mistralai/mistral-large                     10   +0.00     [+0.00, +0.00]  NOT distinguishable from 0
+  openai/gpt-4.1                              10   +0.10     [+0.00, +0.30]  NOT distinguishable from 0
+  phi4:latest                                 10   +0.00     [+0.00, +0.00]  NOT distinguishable from 0
+  qwen2.5:14b                                 10   +0.00     [+0.00, +0.00]  NOT distinguishable from 0
+  x-ai/grok-4.3                               10   +0.60     [+0.20, +1.00]  significant
+  z-ai/glm-4.7                                 1   +0.00                 --  n<2 (single delta)
+  --- inter-judge reliability ---
+  raw agreement: n/a (no item has two judges)
+  --> 2 model(s) with CI excluding 0; 9 not distinguishable from 0
+  [seed] analysis_seed=20260527 (per-cell derived streams)

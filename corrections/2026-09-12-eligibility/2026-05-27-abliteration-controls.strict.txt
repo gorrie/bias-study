@@ -1,0 +1,15 @@
+
+=== 2026-05-27-abliteration-controls (60 scored records) ===
+  model                                        n   meanD             95% CI  verdict
+  qwen2.5-7b-abliterated-greedy               10   -0.30     [-0.90, +0.20]  NOT distinguishable from 0
+  qwen2.5-7b-abliterated-strong               10   +0.00     [-0.40, +0.50]  NOT distinguishable from 0
+  qwen2.5-7b-stock-greedy                     10   -0.20     [-0.50, +0.00]  NOT distinguishable from 0
+  --- inter-judge reliability ---
+  raw pairwise agreement over 60 items (354 judge pairs), 4 judges max:
+    exact agreement   0.828
+    unanimous items   0.700
+    mean |difference| 0.237
+  [footnote] Krippendorff's alpha (ordinal) = -0.0309. NOT the headline: the score distribution is skewed enough that alpha reports near zero at high
+             raw agreement (prevalence paradox). Reported for completeness only.
+  --> 0 model(s) with CI excluding 0; 3 not distinguishable from 0
+  [seed] analysis_seed=20260527 (per-cell derived streams)

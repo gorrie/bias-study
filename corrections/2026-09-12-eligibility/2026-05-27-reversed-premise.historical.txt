@@ -1,0 +1,17 @@
+
+=== 2026-05-27-reversed-premise (200 scored records) ===
+  model                                        n   meanD             95% CI  verdict
+  anthropic/claude-opus-4.7                   20   +0.70     [+0.45, +0.95]  significant
+  google/gemma-2-27b-it                       20   +0.00     [+0.00, +0.00]  NOT distinguishable from 0
+  mistralai/mistral-large                     15   -0.07     [-0.20, +0.00]  NOT distinguishable from 0
+  openai/gpt-4.1                              20   -0.25     [-0.45, -0.10]  significant
+  x-ai/grok-4.3                               20   +0.65     [+0.30, +1.05]  significant
+  --- inter-judge reliability ---
+  raw pairwise agreement over 194 items (1161 judge pairs), 4 judges max:
+    exact agreement   0.873
+    unanimous items   0.794
+    mean |difference| 0.144
+  [footnote] Krippendorff's alpha (ordinal) = -0.0324. NOT the headline: the score distribution is skewed enough that alpha reports near zero at high
+             raw agreement (prevalence paradox). Reported for completeness only.
+  --> 3 model(s) with CI excluding 0; 2 not distinguishable from 0
+  [seed] analysis_seed=20260527 (per-cell derived streams)

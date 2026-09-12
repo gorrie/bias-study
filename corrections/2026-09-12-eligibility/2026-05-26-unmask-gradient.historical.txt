@@ -1,0 +1,15 @@
+
+=== 2026-05-26-unmask-gradient (450 scored records) ===
+  model                                        n   meanD             95% CI  verdict
+  anthropic/claude-opus-4.7                   10   +0.63     [+0.33, +0.90]  significant
+  openai/gpt-5                                10   -0.03     [-0.23, +0.20]  NOT distinguishable from 0
+  x-ai/grok-4.3                               10   +0.63     [+0.33, +0.93]  significant
+  --- inter-judge reliability ---
+  raw pairwise agreement over 401 items (2022 judge pairs), 4 judges max:
+    exact agreement   0.810
+    unanimous items   0.681
+    mean |difference| 0.252
+  [footnote] Krippendorff's alpha (ordinal) = 0.1918. NOT the headline: the score distribution is skewed enough that alpha reports near zero at high
+             raw agreement (prevalence paradox). Reported for completeness only.
+  --> 2 model(s) with CI excluding 0; 1 not distinguishable from 0
+  [seed] analysis_seed=20260527 (per-cell derived streams)
