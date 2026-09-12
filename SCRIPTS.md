@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-64 script(s). 0 carry no module docstring and are listed at the end.
+65 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -35,6 +35,7 @@
 - **`judge_methods.py`** — Multi-method judge framework for the bias study.
 - **`score.py`** — Score raw bias study responses against the rubric.
 - **`score_inproc_gemma.py`** — In-process Method 2 scorer — abliterated Gemma-2-9B via mlx_lm.
+- **`three_axis_score.py`** — Scoring function and constraint checker for the three-axis instrument.
 
 ## Gates and generated prose
 
