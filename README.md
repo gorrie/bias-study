@@ -534,9 +534,25 @@ review and the objection→fix map are in **`ADVERSARIAL-REVIEW.md`**.
 
 ## Repository layout
 
+**If you arrived with a question, start here.**
+
+| Question | Where |
+|---|---|
+| Which numbers has this study withdrawn or narrowed? | [`CORRECTIONS.md`](CORRECTIONS.md) — 14 entries, dated |
+| What does it say about other people's work, and on what evidence? | [`PRIOR-WORK-CORRECTIONS.md`](PRIOR-WORK-CORRECTIONS.md) |
+| What was fixed *before* the data was collected? | [`prereg/`](prereg/) — six plans, one with its stopping rule enforced in code |
+| Which controls does each audited study run? | [`data/controls-audit.json`](data/controls-audit.json) → `python scripts/controls_audit.py` |
+| Where are the raw forced-choice records? | `runs/` (Aug–Sep 2026) |
+| Where are the May judge-scored records? | `data/` (see [`data/README.md`](data/README.md) for the licence and redactions) |
+| Which gates run, and where do they fail in public? | [`.github/workflows/verify.yml`](.github/workflows/verify.yml) |
+| How do I re-derive a number without an API key? | **Reproduce it**, below |
+| Why is a release dated rather than numbered? | [`VERSIONING.md`](VERSIONING.md) |
+| What is coming next and what does it need? | [`ROADMAP.md`](ROADMAP.md) |
+
 ```
 protocol/   Study spec — question set, scoring rubric, record schema,
             run protocol, aggregation rules.
+runs/       The forced-choice barometer corpus (Aug–Sep 2026).
 scripts/    Pipeline: run → score → aggregate → analyze, bootstrap CIs + FDR,
             and the weight-rung / pipeline-rung drivers.
 data/       Every run in full: raw model responses, 4-judge scored records,
