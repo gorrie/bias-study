@@ -60,6 +60,18 @@ NOT_A_PROCEDURE = {
                                "study is scored `unknown` rather than `no` -- controls_audit.py "
                                "cites it by name",
     "studypaths.py": "shared path/RNG resolution, imported never invoked",
+    "lineage_exchangeability.py": "one-shot 2026-09-12 analysis behind "
+                                  "RESULTS-2026-09-12-lineage-exchangeability.md. It asks "
+                                  "whether the pooled same-version reference is exchangeable "
+                                  "with the snapshot-only subset a drift claim needs, and "
+                                  "finds it is not: 82 of 97 pairs are size or tier siblings. "
+                                  "A finding, not a procedure -- rerun it to re-derive that "
+                                  "document, not as a step in collecting anything",
+    "ablation_equivalence.py": "one-shot 2026-09-12 analysis behind the ablation-wave "
+                               "correction. Tests whether the n=5 arm supports an equivalence "
+                               "claim rather than merely failing to reject. Same character as "
+                               "lineage_exchangeability.py: it produced a dated result and is "
+                               "kept so that result can be reproduced",
     "eligibility.py": "shared read-time record filter (DATA-EMPTY-SCORES-002), imported by "
                       "aggregate / ci_analysis / analysis / cross_method_report, never invoked",
     "audit_response_quality.py": "inventory of scored-empty records; --check is expected to "

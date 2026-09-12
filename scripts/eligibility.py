@@ -41,6 +41,14 @@ import sys
 from pathlib import Path
 
 
+#: Stamped into every correction artifact so a regenerated report says which rule produced it.
+#: Dated to September 8, when the rule was first written, NOT to this reconciliation: the rule
+#: itself did not change on September 12: the two independent implementations were shown
+#: equivalent on the corpus and merged. Bumping the date would imply a policy change that did
+#: not happen, and would invalidate comparisons against artifacts already written under it.
+POLICY_VERSION = "response-eligibility/2026-09-08"
+
+
 def response_text(rec: dict) -> str:
     return (rec.get("response_text") or "")
 
@@ -68,6 +76,20 @@ def is_failed_call(rec: dict) -> bool:
     excluded all 77. Records where the rules disagree: zero. The guard is kept anyway --
     equivalence on today's corpus is not equivalence on tomorrow's collection."""
     return rec.get("ok") is False
+
+
+def exclusion_reason(rec: dict):
+    """Why this record is ineligible, or None if it is eligible.
+
+    The REASON, not just the verdict, because AGENTS.md requires transport failures and empty
+    responses stay distinguishable downstream -- a caller that only learns "excluded" cannot
+    report which kind, and the two have different causes and different remedies.
+    """
+    if is_failed_call(rec):
+        return "failed-call"
+    if is_empty_response(rec):
+        return "empty-or-missing-response"
+    return None
 
 
 def is_eligible(rec: dict) -> bool:
@@ -144,6 +166,33 @@ def apply_rule(records, strict=None, label=""):
     return eligible + [r for r in records if not has_score(r)]
 
 
+def inspect_scored_records(directory):
+    """(eligible records, a quality report). The REPORT is the point.
+
+    A reader that gets only the surviving records cannot say what it dropped, and the whole
+    defect class here is denominators that shrink without anyone noticing. The report carries
+    the policy version, what was attempted, what survived, and the count per exclusion reason,
+    so every derived table can disclose its own selection rather than assert a clean n.
+    """
+    from collections import Counter
+    directory = Path(directory)
+    records, reasons, total = [], Counter(), 0
+    for path in sorted(directory.glob("*.jsonl")):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            record = json.loads(line)
+            total += 1
+            reason = exclusion_reason(record)
+            if reason:
+                reasons[reason] += 1
+            else:
+                records.append(record)
+    return records, {"policy": POLICY_VERSION, "attempted": total, "eligible": len(records),
+                     "excluded": sum(reasons.values()),
+                     "reasons": dict(sorted(reasons.items()))}
+
+
 def load_scored_records(directory):
     """Read every *.jsonl in `directory`, returning only records the rule admits.
 
@@ -155,18 +204,10 @@ def load_scored_records(directory):
     Exclusions are REPORTED, never silent. A reader that quietly shrinks its own denominator
     is the defect this module exists to close, not a smaller version of it.
     """
-    directory = Path(directory)
-    kept, dropped = [], 0
-    for path in sorted(directory.glob("*.jsonl")):
-        for line in path.read_text(encoding="utf-8").splitlines():
-            if not line.strip():
-                continue
-            rec = json.loads(line)
-            if is_eligible(rec):
-                kept.append(rec)
-            else:
-                dropped += 1
-    if dropped:
-        print("[eligibility] %s: excluded %d unusable record(s); source files unchanged"
-              % (directory, dropped), file=sys.stderr)
+    kept, quality = inspect_scored_records(directory)
+    if quality["excluded"]:
+        print("[eligibility] %s: excluded %d unusable record(s) (%s); source files unchanged"
+              % (directory, quality["excluded"],
+                 ", ".join("%s=%d" % kv for kv in quality["reasons"].items())),
+              file=sys.stderr)
     return kept

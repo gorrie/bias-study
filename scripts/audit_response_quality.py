@@ -118,3 +118,59 @@ def main(argv=None):
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+def audit(root, include_alternates=False):
+    """Source-hashed inventory of unusable scored records. Reads only; never mutates.
+
+    Kept to the contract the September 8 pass defined, because quality_correction_report.py
+    builds its before/after provenance from these exact keys and re-verifies every source
+    hash after the fact to prove nothing changed underneath it. That machinery is worth more
+    than the convenience of a different return shape, so the shape is preserved and the rule
+    underneath it is the reconciled one in eligibility.py.
+    """
+    import hashlib
+    from collections import Counter
+    from pathlib import Path
+    from eligibility import exclusion_reason
+
+    root = Path(root)
+    total, unusable, findings, cells, sources = 0, 0, [], {}, []
+    paths = set(root.glob("*/scored/*.jsonl"))
+    if include_alternates:
+        paths.update(root.glob("*/scored-*/*.jsonl"))
+    for path in sorted(paths):
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        rel = path.relative_to(root).as_posix()
+        sources.append({"file": rel, "sha256": digest})
+        for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if not line.strip():
+                continue
+            record = json.loads(line)
+            total += 1
+            reason = exclusion_reason(record)
+            key = (path.parent.parent.name, path.parent.name,
+                   record.get("model"), record.get("condition"))
+            cell = cells.setdefault(key, Counter())
+            cell["attempted"] += 1
+            cell["excluded" if reason else "eligible"] += 1
+            if reason:
+                cell[reason] += 1
+            else:
+                continue
+            unusable += 1
+            if record.get("score_classifier") is not None:
+                cell["unusable_with_scores"] += 1
+                findings.append(dict(file=rel, line=line_number, file_sha256=digest,
+                                     model=record.get("model"),
+                                     question_id=record.get("question_id"),
+                                     condition=record.get("condition"), reason=reason))
+    return dict(schema="bias-response-quality/2",
+                scope=("primary and alternate scored methods" if include_alternates
+                       else "primary scored/ only"),
+                total_records=total, unusable_records=unusable,
+                unusable_with_scores=len(findings),
+                by_run=dict(sorted(Counter(f["file"].split("/")[0] for f in findings).items())),
+                cells=[dict(run=k[0], method=k[1], model=k[2], condition=k[3], **v)
+                       for k, v in sorted(cells.items(), key=lambda item: str(item[0]))],
+                sources=sources, records=findings)
