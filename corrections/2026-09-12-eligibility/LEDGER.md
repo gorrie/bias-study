@@ -235,8 +235,22 @@ Traced across every run it appears in:
 | `2026-05-26-variance` | delta +0.2, n=10 | n=0 |
 
 The **−0.17 the book prints is the augmentation row**, and that row is built entirely on scored
-blanks. There is no run in which GPT-5 survives the eligibility rule with a single eligible
-paired observation.
+blanks.
+
+Pinned precisely, because "no measurement" is a strong claim and the aggregates alone could be
+read as a rounding artifact. Paired A/B observations per run:
+
+| run | published pairs | eligible pairs | eligible records |
+|---|---:|---:|---:|
+| `augmentation` | 30 | **0** | 0 |
+| `unmask-gradient` | 10 | **0** | 18 |
+| `variance` | 10 | **0** | 4 |
+
+The model *did* produce text sometimes — 18 eligible records in one run, 4 in another. It never
+produced text for **both conditions of the same question**, which is what a delta requires. So
+GPT-5 has zero eligible paired observations in every run it appears in, and no delta can be
+computed from real responses anywhere in the corpus. The 22 records that carry text are real and
+unpaired; the 30 pairs that carry a delta are pairs of blanks.
 
 ### This makes the book's argument stronger, not weaker
 
