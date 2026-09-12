@@ -75,6 +75,7 @@ NOT_A_PROCEDURE = {
     "references.py": "bibliography helper",
     "gen_readme.py": "named by barometer-wave step 4 via its --check form",
     "check_skill_docs.py": "this checker",
+    "check_no_key_repro.py": "release-gate step, named by release_check.py item 10",
     "fetch_items.py": "reader-side instrument retrieval, documented in README not a skill",
     "selftest_analysis.py": "self-test, runs under pytest",
     "monitor_experiment.py": "operator convenience over a running collection",
