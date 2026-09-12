@@ -1,0 +1,22 @@
+Collected 99 per-model rows across runs
+Wrote <scratch>/drift_timeseries.csv
+Wrote <scratch>/vendor_arcs.md
+
+Family coverage (versions per family):
+  claude-opus: 16 versions
+  google-gemma: 11 versions
+  deepseek: 8 versions
+  openai-gpt: 8 versions
+  xai-grok: 8 versions
+  qwen: 7 versions
+  google-gemini: 6 versions
+  zhipuai-glm: 6 versions
+  mistral: 5 versions
+  meta-llama: 3 versions
+  moonshot-kimi: 3 versions
+  microsoft-phi: 2 versions
+  claude-sonnet: 1 versions
+  baidu-ernie: 1 versions
+  bytedance-seed: 1 versions
+
+Unmatched models (need pattern): ['deepseek-r1-distill-7b-abliterated', 'deepseek-r1-distill-7b-stock', 'llama-3.1-8b-abliterated', 'llama-3.1-8b-stock', 'mistral-7b-abliterated', 'mistral-7b-stock', 'qwen2.5-7b-abliterated', 'qwen2.5-7b-stock', 'qwen2.5-7b-abliterated-greedy', 'qwen2.5-7b-abliterated-strong', 'qwen2.5-7b-stock-greedy', 'gemma-2-9b-abliterated', 'gemma-2-9b-stock']

@@ -323,3 +323,70 @@ zero within ±5 side-flips, and the general mechanism claim was withdrawn.
 The ≤0.1 figure is a **different instrument** — May, judge-scored, 1–5 — and it stands on its own
 evidence, which is the interval above. It is not strengthened by the wave; it is **independently
 supported**, which is a better thing to be and should be said that way.
+
+---
+
+## The vendor-arc statistic compares two rows, not two versions
+
+Found while regenerating the drift series under the eligibility rule. It is **not an eligibility
+finding** — it is a defect in `drift_timeseries.py` that the regeneration exposed, and it affects
+every one of the thirteen vendor arcs in the published `vendor_arcs.md`.
+
+```python
+deltas = [v["mean_delta_AB"] for v in versions if ...]
+arc_dir = deltas[-1] - deltas[0]        # last ROW minus first ROW
+```
+
+`versions` is every **(version, run)** pair, not every version. So the "arc direction" is the
+difference between two arbitrary rows, and every vendor has versions measured in several runs:
+
+```
+claude-opus   4:2  4.1:2  4.5:2  4.6:2  4.7:8       openai-gpt   4.1:6  5:3
+xai-grok      4.3:8                                  mistral      large:5
+google-gemma  2-27b:5  3-27b:3  2-9b-local:2         zhipuai-glm  4.7:4
+```
+
+Six of OpenAI's nine rows are the *same version*. Eight of Claude's are Opus 4.7. The statistic
+is dominated by which run happens to sort first and last, and it is labelled *"delta from oldest
+to newest"*.
+
+**Visible here because the eligibility rule changed which row sorts last.** OpenAI's published
+arc reads **"stable across versions (+0.10)"**; under the rule it reads **"unmasking decreasing
+over versions (−0.35)"**. Neither number is about versions. The published one ends on a GPT-5 row
+built from blank strings; the corrected one ends on a `gpt-4.1` row from a different run than it
+starts on. A conclusion that flips because one row left the table was never measuring what its
+label says.
+
+### What this means for ch22's Opus arc — the direction survives, the number does not
+
+ch22 prints: *"Opus 4.0 unmasked by +0.27. Opus 4.1 by +0.40. Opus 4.5 by +0.23. Opus 4.6 by
++0.40. Opus 4.7 by +0.90."*
+
+The first four are the `2026-05-26-timeseries` run. **The fifth is a different run**
+(`2026-05-25-full`), and it is the **maximum** of Opus 4.7's seven measurements, which run
++0.50 to +0.90 with a mean of **+0.657**. The run supplying the other four points does not
+contain 4.7 at all.
+
+So *"+0.90 … holds down nearly a full point"* is the top of a range presented as the value.
+
+**But the arc's conclusion is robust, and by a strong test:**
+
+```
+opus 4.7     n=7   min +0.50   mean +0.657   max +0.90
+opus 4.0–4.6 n=8   min +0.10   mean +0.263   max +0.40
+```
+
+**Opus 4.7's minimum exceeds every one of the eight earlier measurements.** There is no way to
+choose runs that reverses the finding. The newest version unmasks more than every predecessor on
+every run either was measured in.
+
+### Disposition
+
+1. **`drift_timeseries.py` should aggregate per version before differencing**, and report a
+   spread. Not done here: it changes a published artifact and belongs with the eligibility
+   decision, not ahead of it.
+2. **ch22 should quote +0.66 (range +0.50–0.90, n=7) rather than +0.90**, or state that +0.90 is
+   one run. The sentence that survives unconditionally is the stronger one anyway: *every*
+   measurement of 4.7 exceeds *every* measurement of every earlier Opus.
+3. **`vendor_arcs.md`'s "Arc direction" line should not ship as written** in any release that
+   claims its numbers are checkable.
