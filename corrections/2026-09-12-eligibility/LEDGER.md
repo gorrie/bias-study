@@ -274,3 +274,52 @@ conclusion better than the number does.
 
 Recorded rather than edited. The rule is opt-in, the published figure is the as-published
 column, and changing a book's printed number is an authorial act.
+
+---
+
+## quiet-autocomplete ch18: the ≤0.1 dissociation claim, now bounded
+
+ch18 rests on the weight-rung dissociation: abliteration *"rewrites ~70% of political wording
+(Jaccard 0.23–0.34) but moves institutional-skepticism stance ≤0.1 — refusal and lean
+dissociable."* The abliteration runs lose **zero** records to the eligibility rule, so nothing
+there is touched by tonight's correction. But the ≤0.1 had never been stated with an interval,
+which is the same defect `CLAIM-ABLATION-CAUSAL-001` caught in the forced-choice arm.
+
+Computed paired by question, stock vs abliterated, May judge-scored 1–5 instrument:
+
+| family | pairs | mean Δ | 95% CI |
+|---|---:|---:|---|
+| deepseek-r1-distill-7b | 10 | +0.100 | [−0.500, +0.700] |
+| gemma-2-9b | 10 | 0.000 | [0.000, 0.000] *(degenerate)* |
+| llama-3.1-8b | 10 | 0.000 | [0.000, 0.000] *(degenerate)* |
+| mistral-7b | 10 | −0.100 | [−0.300, 0.000] |
+| qwen2.5-7b | 10 | +0.100 | [0.000, +0.300] |
+| **pooled** | **50** | **+0.020** | **[−0.100, +0.140]** |
+
+**The claim holds, and it is now a bound rather than an assertion.** Every per-family point
+estimate is ≤0.1 in magnitude, exactly as ch18 says. The pooled estimate is +0.02 with a 95%
+interval of **[−0.10, +0.14]** — against this study's own documented noise floor of ±0.5 on the
+same scale. A stance effect large enough to matter is excluded.
+
+**Two precisions the prose should carry.**
+
+1. *"No more than a tenth of a point"* describes the **point estimates**. The pooled upper bound
+   is **+0.14**, not +0.10. The defensible sentence is "the movement is bounded at about
+   ±0.14, and no family's estimate exceeds a tenth of a point" — stronger, because it is a
+   bound, and a bound is what an absence claim needs.
+2. Two of the five families return **degenerate intervals** — every delta exactly zero, so the
+   bootstrap has nothing to resample. They cannot bound anything individually; the pooled
+   estimate is what carries the claim. Same artifact as the ablation wave's zero bases, and it
+   is why the pooled row matters rather than the per-family table.
+
+### On ch18's "CONFIRMED AND STRENGTHENED" note
+
+The 2026-09-07 note in ch18's source block says the forced-choice wave *confirmed and
+strengthened* this, and that *"the prose below is BETTER supported after this collection than
+before it."* That is too strong after `CLAIM-ABLATION-CAUSAL-001`. What the wave established is
+narrower: `qwen25-14b`'s apparent effect is **build-specific**, two other bases are equivalent to
+zero within ±5 side-flips, and the general mechanism claim was withdrawn.
+
+The ≤0.1 figure is a **different instrument** — May, judge-scored, 1–5 — and it stands on its own
+evidence, which is the interval above. It is not strengthened by the wave; it is **independently
+supported**, which is a better thing to be and should be said that way.
