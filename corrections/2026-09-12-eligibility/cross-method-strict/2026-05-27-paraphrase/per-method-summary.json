@@ -1,0 +1,726 @@
+{
+  "method": {
+    "ultraplinian-4": {
+      "n_records": 360,
+      "models": {
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 60,
+          "mean": 3.4,
+          "ci": [
+            3.25,
+            3.567
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.8
+            }
+          },
+          "delta_b_minus_a": 0.8
+        },
+        "deepseek/deepseek-v3.2": {
+          "n_scored": 60,
+          "mean": 3.05,
+          "ci": [
+            2.983,
+            3.117
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.1
+            }
+          },
+          "delta_b_minus_a": 0.1
+        },
+        "google/gemma-2-27b-it": {
+          "n_scored": 60,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "mistralai/mistral-large": {
+          "n_scored": 60,
+          "mean": 2.983,
+          "ci": [
+            2.95,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 2.967
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.033
+        },
+        "openai/gpt-4.1": {
+          "n_scored": 60,
+          "mean": 2.967,
+          "ci": [
+            2.867,
+            3.05
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 2.933
+            }
+          },
+          "delta_b_minus_a": -0.067
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 60,
+          "mean": 3.367,
+          "ci": [
+            3.217,
+            3.533
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.733
+            }
+          },
+          "delta_b_minus_a": 0.733
+        }
+      }
+    },
+    "grok-solo": {
+      "n_records": 360,
+      "models": {
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 60,
+          "mean": 3.5,
+          "ci": [
+            3.317,
+            3.7
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 4.0
+            }
+          },
+          "delta_b_minus_a": 1.0
+        },
+        "deepseek/deepseek-v3.2": {
+          "n_scored": 60,
+          "mean": 3.1,
+          "ci": [
+            3.0,
+            3.217
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.2
+            }
+          },
+          "delta_b_minus_a": 0.2
+        },
+        "google/gemma-2-27b-it": {
+          "n_scored": 60,
+          "mean": 2.983,
+          "ci": [
+            2.95,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 2.967
+            }
+          },
+          "delta_b_minus_a": -0.033
+        },
+        "mistralai/mistral-large": {
+          "n_scored": 60,
+          "mean": 3.017,
+          "ci": [
+            3.0,
+            3.05
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.033
+            }
+          },
+          "delta_b_minus_a": 0.033
+        },
+        "openai/gpt-4.1": {
+          "n_scored": 60,
+          "mean": 3.05,
+          "ci": [
+            2.917,
+            3.183
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.1
+            }
+          },
+          "delta_b_minus_a": 0.1
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 60,
+          "mean": 3.733,
+          "ci": [
+            3.5,
+            3.967
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.033
+            },
+            "B": {
+              "n": 30,
+              "mean": 4.433
+            }
+          },
+          "delta_b_minus_a": 1.4
+        }
+      }
+    },
+    "adversarial-pair": {
+      "n_records": 360,
+      "models": {
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 60,
+          "mean": 3.167,
+          "ci": [
+            3.033,
+            3.3
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.333
+            }
+          },
+          "delta_b_minus_a": 0.333
+        },
+        "deepseek/deepseek-v3.2": {
+          "n_scored": 60,
+          "mean": 2.9,
+          "ci": [
+            2.8,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 2.967
+            },
+            "B": {
+              "n": 30,
+              "mean": 2.833
+            }
+          },
+          "delta_b_minus_a": -0.134
+        },
+        "google/gemma-2-27b-it": {
+          "n_scored": 60,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "mistralai/mistral-large": {
+          "n_scored": 60,
+          "mean": 2.983,
+          "ci": [
+            2.917,
+            3.033
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 2.967
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.033
+        },
+        "openai/gpt-4.1": {
+          "n_scored": 60,
+          "mean": 2.767,
+          "ci": [
+            2.633,
+            2.917
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 2.533
+            }
+          },
+          "delta_b_minus_a": -0.467
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 60,
+          "mean": 3.217,
+          "ci": [
+            3.05,
+            3.383
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.433
+            }
+          },
+          "delta_b_minus_a": 0.433
+        }
+      }
+    },
+    "reversed-rubric": {
+      "n_records": 360,
+      "models": {
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 60,
+          "mean": 3.517,
+          "ci": [
+            3.317,
+            3.733
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 4.033
+            }
+          },
+          "delta_b_minus_a": 1.033
+        },
+        "deepseek/deepseek-v3.2": {
+          "n_scored": 60,
+          "mean": 3.083,
+          "ci": [
+            3.017,
+            3.183
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.167
+            }
+          },
+          "delta_b_minus_a": 0.167
+        },
+        "google/gemma-2-27b-it": {
+          "n_scored": 60,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "mistralai/mistral-large": {
+          "n_scored": 60,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "openai/gpt-4.1": {
+          "n_scored": 60,
+          "mean": 3.017,
+          "ci": [
+            2.917,
+            3.133
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.033
+            }
+          },
+          "delta_b_minus_a": 0.033
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 60,
+          "mean": 3.45,
+          "ci": [
+            3.267,
+            3.65
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.9
+            }
+          },
+          "delta_b_minus_a": 0.9
+        }
+      }
+    },
+    "blind-condition": {
+      "n_records": 360,
+      "models": {
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 60,
+          "mean": 3.5,
+          "ci": [
+            3.317,
+            3.7
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 4.0
+            }
+          },
+          "delta_b_minus_a": 1.0
+        },
+        "deepseek/deepseek-v3.2": {
+          "n_scored": 60,
+          "mean": 3.117,
+          "ci": [
+            3.017,
+            3.233
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.233
+            }
+          },
+          "delta_b_minus_a": 0.233
+        },
+        "google/gemma-2-27b-it": {
+          "n_scored": 60,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "mistralai/mistral-large": {
+          "n_scored": 60,
+          "mean": 3.033,
+          "ci": [
+            3.0,
+            3.1
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.067
+            }
+          },
+          "delta_b_minus_a": 0.067
+        },
+        "openai/gpt-4.1": {
+          "n_scored": 60,
+          "mean": 3.033,
+          "ci": [
+            2.95,
+            3.133
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.067
+            }
+          },
+          "delta_b_minus_a": 0.067
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 60,
+          "mean": 3.667,
+          "ci": [
+            3.45,
+            3.9
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 4.333
+            }
+          },
+          "delta_b_minus_a": 1.333
+        }
+      }
+    },
+    "g0dm0d3-stripped": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-qwen": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-gemma": {
+      "n_records": 360,
+      "models": {
+        "anthropic/claude-opus-4.7": {
+          "n_scored": 60,
+          "mean": 3.617,
+          "ci": [
+            3.417,
+            3.817
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 4.233
+            }
+          },
+          "delta_b_minus_a": 1.233
+        },
+        "deepseek/deepseek-v3.2": {
+          "n_scored": 60,
+          "mean": 3.133,
+          "ci": [
+            3.033,
+            3.25
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.267
+            }
+          },
+          "delta_b_minus_a": 0.267
+        },
+        "google/gemma-2-27b-it": {
+          "n_scored": 60,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "mistralai/mistral-large": {
+          "n_scored": 60,
+          "mean": 3.05,
+          "ci": [
+            3.0,
+            3.117
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.1
+            }
+          },
+          "delta_b_minus_a": 0.1
+        },
+        "openai/gpt-4.1": {
+          "n_scored": 60,
+          "mean": 3.167,
+          "ci": [
+            3.05,
+            3.3
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 3.333
+            }
+          },
+          "delta_b_minus_a": 0.333
+        },
+        "x-ai/grok-4.3": {
+          "n_scored": 60,
+          "mean": 3.617,
+          "ci": [
+            3.383,
+            3.85
+          ],
+          "conditions": {
+            "A": {
+              "n": 30,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 30,
+              "mean": 4.233
+            }
+          },
+          "delta_b_minus_a": 1.233
+        }
+      }
+    }
+  }
+}

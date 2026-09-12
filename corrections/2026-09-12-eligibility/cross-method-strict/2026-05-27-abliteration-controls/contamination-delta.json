@@ -1,0 +1,31 @@
+{
+  "per_model": {
+    "qwen2.5-7b-abliterated-greedy": {
+      "n_pairs": 20,
+      "mean_grok_minus_ultraplinian": 0.1,
+      "ci": [
+        0.0,
+        0.25
+      ],
+      "absolute_mean_delta": 0.1
+    },
+    "qwen2.5-7b-abliterated-strong": {
+      "n_pairs": 20,
+      "mean_grok_minus_ultraplinian": -0.05,
+      "ci": [
+        -0.15,
+        0.0
+      ],
+      "absolute_mean_delta": 0.05
+    },
+    "qwen2.5-7b-stock-greedy": {
+      "n_pairs": 20,
+      "mean_grok_minus_ultraplinian": 0.05,
+      "ci": [
+        0.0,
+        0.15
+      ],
+      "absolute_mean_delta": 0.05
+    }
+  }
+}

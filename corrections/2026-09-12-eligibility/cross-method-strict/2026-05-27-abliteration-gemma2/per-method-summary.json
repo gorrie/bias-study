@@ -1,0 +1,75 @@
+{
+  "method": {
+    "ultraplinian-4": {
+      "n_records": 40,
+      "models": {
+        "gemma-2-9b-abliterated": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        },
+        "gemma-2-9b-stock": {
+          "n_scored": 20,
+          "mean": 3.0,
+          "ci": [
+            3.0,
+            3.0
+          ],
+          "conditions": {
+            "A": {
+              "n": 10,
+              "mean": 3.0
+            },
+            "B": {
+              "n": 10,
+              "mean": 3.0
+            }
+          },
+          "delta_b_minus_a": 0.0
+        }
+      }
+    },
+    "grok-solo": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "adversarial-pair": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "reversed-rubric": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "blind-condition": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "g0dm0d3-stripped": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-qwen": {
+      "n_records": 0,
+      "status": "no-data"
+    },
+    "abliterated-gemma": {
+      "n_records": 0,
+      "status": "no-data"
+    }
+  }
+}
