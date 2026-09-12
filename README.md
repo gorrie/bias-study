@@ -59,6 +59,12 @@ the alignment-training layer. The mask comes off in proportion to the force appl
 it, *except where it is bolted in at the weights, where force does nothing.* The study's
 spine is that **force-escalation ladder**:
 
+| Rung | Force | Tooling | Result |
+|------|-------|---------|--------|
+| **1. Prompt** | remove the fairness instruction; A→E unmask gradient | OpenRouter / Ollama | the lean unmasks, dose-responsively |
+| **2. Pipeline** | hedge-strip + obfuscation, layered | G0DM0D3 server | only the layered stack adds force, to a ceiling |
+| **3. Weights** | ablate the refusal direction | OBLITERATUS (fp16) | text rewrites ~70%, stance does **not** move |
+
 The result is also robust to the obvious reviewer attack on LLM-as-judge studies. The same
 data was re-scored under five materially different judging procedures, including one with
 the **refusal direction surgically removed from the judge's weights** (abliterated
@@ -71,12 +77,6 @@ terms — the abliteration dose-response (and its coherence cliff), and two find
 remediation after adversarial review (a refusal/flinch decoupling and a single-template
 "documented-exposure" flinch observation) — in
 [`results/THE-WASH-2026-06-10.md`](results/THE-WASH-2026-06-10.md) (see its §F review status).
-
-| Rung | Force | Tooling | Result |
-|------|-------|---------|--------|
-| **1. Prompt** | remove the fairness instruction; A→E unmask gradient | OpenRouter / Ollama | the lean unmasks, dose-responsively |
-| **2. Pipeline** | hedge-strip + obfuscation, layered | G0DM0D3 server | only the layered stack adds force, to a ceiling |
-| **3. Weights** | ablate the refusal direction | OBLITERATUS (fp16) | text rewrites ~70%, stance does **not** move |
 
 ## A standing instrument, not a snapshot
 
@@ -577,12 +577,28 @@ Clone these from upstream at the pinned commits to reproduce the pipeline and we
 
 ## License
 
-Code: MIT (see [`LICENSE`](LICENSE)). Data and writeup are released for open reproduction and review.
+- **Code:** MIT — see [`LICENSE`](LICENSE).
+- **Run records** in `data/` and `runs/`: **CC BY 4.0**, with the two carve-outs stated in
+  [`data/README.md`](data/README.md) — the instrument text is licensed third-party work and is
+  not here, and model outputs are model outputs under each vendor's terms.
+- **Documents** (`results/`, `CORRECTIONS.md`, `PRIOR-WORK-CORRECTIONS.md`, this README):
+  **CC BY 4.0**, same as the data. Quote them; attribute them to the release tag you read.
 
 ## Citation
 
 > Gorrie, I. (2026). *The Hedge Is the Bias: A Multi-Vendor, Multi-Generation Audit of
-> Institutional-Skepticism Framing in Large Language Models.*
+> Institutional-Skepticism Framing in Large Language Models* (release-2026-09-12)
+> [software and data]. https://github.com/gorrie/bias-study
+
+**Cite the release tag, not the repository.** This study's own finding is that numbers move;
+several here have been withdrawn or narrowed since May, and the tag is what tells a reader
+which set you read. [`CORRECTIONS.md`](CORRECTIONS.md) records what each release superseded,
+and [`VERSIONING.md`](VERSIONING.md) explains why releases are dated rather than numbered.
+Machine-readable metadata is in [`CITATION.cff`](CITATION.cff).
+
+*No DOI yet.* Archiving a tagged release to Zenodo would mint one (concept DOI for the study,
+a version DOI per release); until that happens a citation here resolves to a moving URL, which
+is exactly the failure mode this section warns about.
 
 ---
 

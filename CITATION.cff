@@ -23,9 +23,12 @@ abstract: >
   study pooling across models averages over its own biggest source of variance.
   Several published null results are underpowered against their own floors and
   are recorded as undecided rather than refuted; one is not resolvable at all.
-  This abstract asserted five findings in the form "the study finds" until
-  2026-09-07, two of which had been withdrawn or narrowed in CORRECTIONS.md
-  before that text was written.
+# The abstract above asserted five findings in the form "the study finds" until 2026-09-07,
+# two of which had already been withdrawn or narrowed in CORRECTIONS.md. That note lived
+# INSIDE the abstract field until 2026-09-12, and this field is copied verbatim into GitHub's
+# "Cite this repository", Zenodo and Scholar records — so a note about a previous abstract
+# would have been indexed as part of the abstract permanently. It is a comment now;
+# CORRECTIONS.md is where the record belongs.
 authors:
   - family-names: Gorrie
     given-names: Ian

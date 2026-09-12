@@ -55,6 +55,10 @@ PRIOR_WORK_BLOCKS = {
     "tally_scoring": [sys.executable, os.path.join(HERE, "controls_audit.py"),
                       "--tally-markdown", "--controls",
                       "judge_free_scoring,judge_lean_reported,self_judging_disclosed,longitudinal"],
+    # The file's own standard #1 is "name the artifact and its version". It named twelve
+    # studies by slug (`rottger2024`, `cen`) with no reference list, so an author arriving via
+    # the right-of-reply section could not tell which of their papers was meant.
+    "references": [sys.executable, os.path.join(HERE, "references.py")],
 }
 BLOCKS.update(PRIOR_WORK_BLOCKS)
 
