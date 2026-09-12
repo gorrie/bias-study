@@ -7,7 +7,7 @@ the data is the ground truth, not the doc.
 
 Designed to run from either:
   - The bias-study-release mirror (github.com/gorrie/bias-study)
-  - The upstream evil-robots-series/research/bias-study/ directory
+  - The upstream internal working directory
 
 Auto-locates the data directory by walking up from the script's location and
 looking for the first `runs/` containing `*/raw/` files. If that fails it tries
@@ -54,7 +54,7 @@ PRE_REGISTERED_RUNS = [
 
 # Two directory conventions exist in this project:
 #   - bias-study-release (github.com/gorrie/bias-study) uses `data/`
-#   - the internal evil-robots-series working copy uses `runs/`
+#   - the internal working copy uses `runs/`
 # Probe in publication-first order: release convention before working-copy convention.
 RUN_DIR_CANDIDATES = ("data", "runs")
 

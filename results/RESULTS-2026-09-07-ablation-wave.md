@@ -13,7 +13,7 @@ n=5 at temperature 0.7 with a swept seed. 45 cells planned, **28 reached n=5**. 
 The weight rung is the strongest intervention this study can apply, and until today it rested
 on **one run per arm**. That is how a 12-item "inversion" reached the paper, `power.py` and the
 README off a sample that cannot support the word — withdrawn as
-[CORRECTIONS](../../../bias-study-release/CORRECTIONS.md) #8 the same morning this ran.
+[CORRECTIONS](../CORRECTIONS.md) #8 the same morning this ran.
 
 ## What the collection actually yielded
 

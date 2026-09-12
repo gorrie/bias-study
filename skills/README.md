@@ -63,7 +63,7 @@ a script in `../scripts/` or a documented command.
 
 - **All paths are repo-relative.** Run from the repo root. Runs live under `data/<date>/`.
 - **The OpenRouter key resolves from the environment, then a repo-root `.env`, then
-  `~/.claude/agents/.env`** — set it whichever way you like (`cp .env.example .env`).
+  a repo-root `.env`** — set it whichever way you like (`cp .env.example .env`).
 - **Models and abliteration outputs live wherever you point two env vars** — `$MODELS_DIR` and
   `$ABLIT_OUT` (weight rung only).
 - **Cite, don't vendor.** OBLITERATUS and G0DM0D3 are external; clone them from upstream at the

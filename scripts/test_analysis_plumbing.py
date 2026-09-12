@@ -372,6 +372,97 @@ def test_floors_survive_a_reordered_corpus():
         F._DROPPED_SEEN.clear()
 
 
+def test_sweep_records_will_not_match_an_unlabelled_batch():
+    """A record with no `batch` field must never be read as belonging to a batch size.
+
+    This is the fourth time in three days that a factor was added to the study and something
+    downstream failed OPEN on it -- `_order_key` pooled across template, then temperature, then
+    decoding, and now batch size. The first three were caught by a floor coming out wrong, which
+    is the expensive way to find out.
+
+    The specific hazard here is real and on disk: `runs/2026-09-07-constrained-replicate/`
+    contains three chunked runs collected before the writer emitted `batch`. They were produced
+    at batch=8, but only a shell history says so. If `load_sweep_records` matched on anything
+    looser than an exact `batch` equality -- a truthiness test, a `.get("batch", 8)` default --
+    those three sheets would silently join the batch=8 pool and a fabricated provenance would
+    become a number in a table.
+    """
+    import constrained_probe as C                     # noqa: PLC0415
+    import io as _io                                  # noqa: PLC0415
+    import json as _json                              # noqa: PLC0415
+    import os as _os                                  # noqa: PLC0415
+    import shutil as _sh                              # noqa: PLC0415
+    import tempfile as _tf                            # noqa: PLC0415
+
+    def rec(**kw):
+        base = {"schema": "compass-run/1", "model": "m", "condition": "D",
+                "valid": True, "seed": 1,
+                "answers": [{"q": "q%d" % i, "position": 1} for i in range(62)]}
+        base.update(kw)
+        return _json.dumps(base)
+
+    tmp = _tf.mkdtemp()
+    try:
+        with _io.open(_os.path.join(tmp, "a.jsonl"), "w", encoding="utf-8") as fh:
+            fh.write(rec(seed=10, batch=8) + "\n")
+            fh.write(rec(seed=11) + "\n")               # NO batch field -- the hazard
+            fh.write(rec(seed=12, batch=16) + "\n")
+            fh.write(rec(seed=13, batch=8, valid=False) + "\n")
+        got = C.load_sweep_records(tmp, "m", "D", 8)
+        assert sorted(got) == [10], sorted(got)
+
+        # And an unlabelled record is not reachable by asking for any batch size at all.
+        for b in (1, 8, 16, 62, None):
+            assert 11 not in C.load_sweep_records(tmp, "m", "D", b), b
+    finally:
+        _sh.rmtree(tmp, ignore_errors=True)
+
+
+def test_doc_link_gate_bites():
+    """The link gate must FAIL on a dead link, not merely pass on a clean tree.
+
+    A gate is only worth its run time if a defect makes it red, and this one is a walk over a
+    tree that is usually clean -- the exact shape that passes forever while blind. Two things
+    are asserted: that a real dead link is reported, and that the classes deliberately NOT
+    checked stay unchecked, so a later "improvement" that starts resolving external URLs or
+    heading anchors fails here rather than turning the gate into a network call.
+    """
+    import check_doc_links as L                       # noqa: PLC0415
+    import io as _io                                  # noqa: PLC0415
+    import os as _os                                  # noqa: PLC0415
+    import tempfile as _tf                            # noqa: PLC0415
+
+    tmp = _tf.mkdtemp()
+    try:
+        real = _os.path.join(tmp, "real.md")
+        _io.open(real, "w", encoding="utf-8").write("x\n")
+        doc = _os.path.join(tmp, "doc.md")
+        _io.open(doc, "w", encoding="utf-8").write(
+            "[live](real.md)\n"
+            "[dead](gone.md)\n"
+            "[anchored-live](real.md#some-heading)\n"
+            "[external](https://example.com/missing.md)\n"
+            "[fragment](#section)\n"
+            "![image-dead](charts/nope.png)\n")
+        n_links, dead = L.check(tmp)
+
+        found = sorted(t for _d, _l, t in dead)
+        assert found == ["charts/nope.png", "gone.md"], found
+        # The live link, the anchored live link, the dead link and the dead image are paths;
+        # the external URL and the bare fragment are not counted at all.
+        assert n_links == 4, n_links
+    finally:
+        import shutil as _sh                          # noqa: PLC0415
+        _sh.rmtree(tmp, ignore_errors=True)
+
+
+def test_doc_links_clean_in_this_tree():
+    """And the tree itself is clean, which is the gate's actual job."""
+    import check_doc_links as L                       # noqa: PLC0415
+    _n, dead = L.check(L.ROOT)
+    assert not dead, "dead markdown link(s): %s" % (dead,)
+
+
 if __name__ == "__main__":
     import traceback
     failures = 0

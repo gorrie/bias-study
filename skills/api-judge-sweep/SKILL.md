@@ -36,11 +36,11 @@ All four reuse the same raw records as Method 2 — only the JUDGE changes. Outp
    as COMPLETE, do NOT re-run them — the work is already done. The state-check reads
    ground truth from the data, not from prose; trust it.
 1. **Working directory is this repository (publication-canonical: `data/<run>/`).** The
-   internal working copy at `evil-robots-series/research/bias-study/` uses `runs/<run>/`
+   an internal working copy uses `runs/<run>/`
    instead and exists only for in-flight development. `sweep_status.py` auto-detects
    either directory convention.
 2. `OPENROUTER_API_KEY` resolvable from environment, repo-root `.env`, or
-   `~/.claude/agents/.env` (in that order). Without it, every record errors out.
+   a repo-root `.env` (in that order). Without it, every record errors out.
 3. `scripts/judge_methods.py` and `scripts/run_all_judge_methods.sh` present (since
    commit 9935d0a). Update via `git pull` if you don't see them.
 4. The raw records exist (`runs/<date>/raw/*.jsonl`). Re-running `run_study.py` is
@@ -54,7 +54,7 @@ All four reuse the same raw records as Method 2 — only the JUDGE changes. Outp
 ### 0. State check (do this first, every time)
 
 ```bash
-cd "$(scripts/sweep_status.py --json 2>/dev/null | python -c 'import json,sys; print(json.load(sys.stdin)["data_dir"])')" || cd <workspace>/evil-robots-series/research/bias-study
+cd "$(scripts/sweep_status.py --json 2>/dev/null | python -c 'import json,sys; print(json.load(sys.stdin)["data_dir"])')" || cd "$STUDY_DIR"
 /c/Python314/python.exe scripts/sweep_status.py
 ```
 
@@ -70,7 +70,7 @@ import os, pathlib
 def resolve():
     k = os.environ.get('OPENROUTER_API_KEY')
     if k: return ('env', k)
-    for path in (pathlib.Path('.env'), pathlib.Path.home() / '.claude/agents/.env'):
+    for path in (pathlib.Path('.env'),):
         if path.exists():
             for line in path.read_text().splitlines():
                 if line.startswith('OPENROUTER_API_KEY='):

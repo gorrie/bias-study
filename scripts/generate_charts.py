@@ -6,7 +6,7 @@ Reads:
                               contamination-delta, per-topic-disagreement}.json
 
 Writes:
-    evil-robots-series/website/static/images/bias-study/
+    the site's bias-study image directory
         forest-plot-per-model.png      # Variant A + D hero
         agreement-heatmap.png          # Variant B hero
         escalation-ladder.png          # Variant C hero (3-panel)
@@ -41,7 +41,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from studypaths import runs_root  # noqa: E402
 # Two directory conventions in the project:
 #   - publication-canonical (github.com/gorrie/bias-study) uses `data/<run>/`
-#   - internal working copy at evil-robots-series/research/bias-study/ uses `runs/<run>/`
+#   - an internal working copy uses `runs/<run>/`
 # Auto-detect which one this checkout uses.
 RUN_DIR_NAME = runs_root().name
 # Default chart output: release-local `results/charts/` (works for any clone).

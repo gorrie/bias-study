@@ -37,11 +37,11 @@ REPOS = {
 def _resolve_study_dir():
     """The study tree this skill should operate on.
 
-    THIS SHIPPED IN THE PUBLIC MIRROR POINTING AT A PRIVATE DIRECTORY. `WORKSPACE` defaults to
-    the home directory, so this resolved to `~/evil-robots-series/research/bias-study` -- a path
-    that exists on exactly one machine. Anyone who cloned github.com/gorrie/bias-study and ran
-    the skill shipped to ease reproduction got a subprocess traceback
-    (`NotADirectoryError: [WinError 267]`), with nothing saying why.
+    THIS SHIPPED IN THE PUBLIC MIRROR POINTING AT A PRIVATE DIRECTORY. `WORKSPACE` defaulted to
+    the home directory, so this resolved to an internal working-copy path that exists on exactly
+    one machine. Anyone who cloned github.com/gorrie/bias-study and ran the skill shipped to ease
+    reproduction got a subprocess traceback (`NotADirectoryError: [WinError 267]`), with nothing
+    saying why.
 
     The mirror is itself a complete study tree: it has `scripts/`, `runs/` and `data/`. So the
     author's tree is used when it is there, and the repository this file lives in otherwise --

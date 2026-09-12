@@ -883,7 +883,13 @@ def floor_elicitation_format():
                 "measurements differ as much as it differs from the other arm is measuring "
                 "noise, so the across-arm number is not an elicitation-format effect. "
                 "Misalignment ruled out: rotating the sheet by +/-1 or +/-2 items does not "
-                "reduce the distance. Cells: %s"
+                "reduce the distance. THE CAUSE IS ITEMS PER CALL, NOT THE GRAMMAR: every run "
+                "behind this row asks for all 62 answers in one array, and the arm replicates "
+                "once the sheet is asked in chunks -- see "
+                "RESULTS-2026-09-07-constrained-decoding-batch-size.md and "
+                "`constrained_probe.py --batch-sweep`. So this row disqualifies the "
+                "WHOLE-SHEET arm, not constrained decoding, and it stays disqualified until a "
+                "batched arm is collected at the wave protocol. Cells: %s"
                 % (len(seen), gm, pm, am, ", ".join(sorted(seen)[:6])))
         # THE COLUMNS MEAN WHAT THE HEADER SAYS THEY MEAN.
         #

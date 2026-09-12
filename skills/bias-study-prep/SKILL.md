@@ -25,7 +25,7 @@ that speak to the current instrument. If you only have time for part of this, it
 - A clone of this repository, on a clean branch.
 - Python 3.11+ and the deps in `requirements.txt` (`pip install -r requirements.txt`).
 - An OpenRouter API key. The pipeline reads `OPENROUTER_API_KEY` from the environment first,
-  then a repo-root `.env`, then `~/.claude/agents/.env`. Set it whichever way you prefer:
+  then a repo-root `.env`. Set it whichever way you prefer:
   ```bash
   export OPENROUTER_API_KEY=sk-or-...
   # or

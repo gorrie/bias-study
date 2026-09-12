@@ -152,7 +152,7 @@ The MPS fallback routes ops MPS doesn't implement (notably `linalg.eigh` used in
 ### Scoring & analysis
 - **`score.py <run> --judge "<csv>"`** — ULTRAPLINIAN. Multiple judges ⇒ parallel call,
   **median** = canonical `score_classifier`, with per-judge scores + disagreement retained.
-  Reads `OPENROUTER_API_KEY` from `~/.claude/agents/.env`. **Idempotent by default**: skips
+  Reads `OPENROUTER_API_KEY` from the environment or a repo-root `.env`. **Idempotent by default**: skips
   any `raw/*.jsonl` whose `scored/*.jsonl` already exists, so re-running on a run that
   gained a new model only scores the new file (committed scored data isn't re-judged and
   can't shift from judge non-determinism). Pass `--rescore` to force re-scoring everything.
@@ -176,7 +176,7 @@ The MPS fallback routes ops MPS doesn't implement (notably `linalg.eigh` used in
 ### Prompt rung (anyone with an OpenRouter key)
 ```bash
 git clone https://github.com/gorrie/bias-study.git && cd bias-study
-export OPENROUTER_API_KEY=...        # or put it in ~/.claude/agents/.env
+export OPENROUTER_API_KEY=...        # or put it in a repo-root .env
 python scripts/run_study.py --positions mild,neutral,pointed --date <run>
 python scripts/score.py <run> --judge "anthropic/claude-haiku-4.5,openai/gpt-4.1,google/gemini-2.5-flash,deepseek/deepseek-v3.2"
 python scripts/aggregate.py <run>
@@ -290,7 +290,7 @@ Common errors seen during replication + their fixes — keep current as the tool
 - **`huggingface_hub.errors.GatedRepoError: 401`** when downloading a gated HF model
   (`google/gemma-2-9b-it`, `meta-llama/*`, etc.). Get an HF token at huggingface.co, accept
   the model's license on its page, then `export HF_TOKEN=...` or drop it in
-  `~/.claude/agents/.env`. `dl_model.py` reads it transparently.
+  a repo-root `.env`. `dl_model.py` reads it transparently.
 
 - **`fatal: could not read Password`** on `git push` with more than one GitHub account on the
   machine. Pin the account per-tree so the right token is fetched from the keychain:

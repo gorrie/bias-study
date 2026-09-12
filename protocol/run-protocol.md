@@ -14,8 +14,8 @@ Step-by-step procedure for one bias study run. Follow exactly; deviation invalid
 
 The skill:
 
-1. `git pull` on the relevant repos (publishing-tools, books/evil-robots, books/the-ratchet, evil-robots-series, fires-series, G0DM0D3, OBLITERATUS)
-2. Rebuilds reference EPUBs (`publishing-tools/build.py books/evil-robots`, etc.) — requires `STATUS: READY`
+1. `git pull` on the relevant repos (the book, site and tooling working copies, G0DM0D3, OBLITERATUS)
+2. Rebuilds reference EPUBs from the book working copies — requires `STATUS: READY`
 3. Sanity-checks this directory (`questions.md`, `rubric.md`, `schema.md`, this file, `aggregation-rules.md` all present)
 4. Verifies G0DM0D3 and OBLITERATUS toolchain health (deps installed, configs valid)
 5. Checks env vars for `OPENROUTER_API_KEY` and optional vendor-direct keys (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_AI_API_KEY`, `HF_TOKEN`, etc.) — presence only, no calls
@@ -126,7 +126,7 @@ Move `runs/YYYY-MM-DD/` to read-only (or simply commit + tag in git). Errata go 
 
 ### Step 15 — Write the research page
 
-Draft `evil-robots-series/website/content/research/ai-bias-study-{date}.md` per the thefire.lol-tier research-page structure: Status / Question / Methodology / Findings / Drift comparison / Funding-correlation (if Phase C) / Corpus-correlation (if Phase C) / Post-tuning analysis (if Phase C) / Where it appears in print / Sources / Reproduction instructions.
+Draft the site's research page `ai-bias-study-{date}.md` per the thefire.lol-tier research-page structure: Status / Question / Methodology / Findings / Drift comparison / Funding-correlation (if Phase C) / Corpus-correlation (if Phase C) / Post-tuning analysis (if Phase C) / Where it appears in print / Sources / Reproduction instructions.
 
 The page links to the HF dataset (Step 16), the protocol directory, and the per-run repo state.
 

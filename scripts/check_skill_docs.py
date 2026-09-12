@@ -104,10 +104,14 @@ NOT_A_PROCEDURE = {
     # fails. Naming it in barometer-wave would put a rejected instrument in the procedure a
     # future run follows.
     "logit_probe.py": "v3 feasibility prototype; failed its agreement check, kept as evidence",
-    # Same status as logit_probe: a prototype for a v3 instrument that does NOT agree with the
-    # parser arm (17 side-flips against a replicate floor of 5), kept because the disagreement
-    # is itself the finding. Not in the procedure a future run follows.
-    "constrained_probe.py": "v3 prototype; grammar-constrained decoding, 17 side-flips from the parser",
+    # `constrained_probe.py` WAS DECLARED HERE and no longer is. It sat next to logit_probe as
+    # a rejected v3 prototype on the strength of one batch size -- the whole 62-item sheet in a
+    # single array, which does not agree with itself. Sweeping items-per-call showed the arm
+    # replicating once the array is broken up, so it is a real arm with a real gate and belongs
+    # in barometer-wave's Files list, which now documents it. Removed rather than left as a
+    # second, staler copy of its status: this dict and the skill would have disagreed, and the
+    # reason string here still said "17 side-flips from the parser", a number from a superseded
+    # reading of a mode nobody should now run.
 }
 
 

@@ -8,7 +8,7 @@ description: Run an OBLITERATUS refusal-direction abliteration end-to-end agains
 The weight rung of the bias-study force-escalation ladder: ablate the refusal
 direction from an open-weight model and measure whether the institutional-skepticism
 *stance* moves (it doesn't — that's the dissociation finding). Full toolchain reference:
-`evil-robots-series/research/bias-study/DEVELOPER.md` §3–§4.
+`DEVELOPER.md` §3–§4 in this repo.
 
 ## TRIGGER when
 - Adding an open-weight vendor family to the abliteration leg (`run_abliteration_sweep.sh`).

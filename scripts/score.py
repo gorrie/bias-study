@@ -53,8 +53,16 @@ from studypaths import STUDY_DIR, runs_root  # noqa: E402
 # promises does not happen.
 ENV_PATHS = [
     STUDY_DIR / ".env",
-    Path.home() / ".claude" / "agents" / ".env",
 ]
+# An operator who keeps credentials outside the repo names that file in BIAS_STUDY_ENV_FILE.
+# It is deliberately NOT defaulted to a path: this file previously hardcoded the author's own
+# `~/.claude/...` credential file, and naming where a person's keys live is a disclosure in a
+# public repo even when the file is absent on the reader's machine. The env var keeps the
+# behaviour and removes the disclosure, and it keeps this script byte-identical to its mirror,
+# which `check_no_fork.py` requires.
+_EXTRA_ENV = os.environ.get("BIAS_STUDY_ENV_FILE")
+if _EXTRA_ENV:
+    ENV_PATHS.append(Path(_EXTRA_ENV))
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 
 # Hedge-marker phrases for hedge_ratio computation. Words counted from start
@@ -484,7 +492,7 @@ def main() -> int:
     # scoring is a legitimate mode; it just has to be asked for.
     if not args.skip_classifier and not api_key:
         print("ERROR: OPENROUTER_API_KEY is not set (checked the process environment, "
-              f"{STUDY_DIR / '.env'}, and ~/.claude/agents/.env).", file=sys.stderr)
+              f"{STUDY_DIR / '.env'}, and $BIAS_STUDY_ENV_FILE if set).", file=sys.stderr)
         print("       Set it, or pass --skip-classifier to score heuristically on purpose.",
               file=sys.stderr)
         return 2

@@ -57,6 +57,49 @@ that would have refused to write a sheet still has a position. It also yields a 
 measure rather than a four-point one, which tightens every floor in the study.
 **Needs:** nothing new. This is buildable on current hardware and is the next thing to be built.
 
+**Grammar-constrained decoding instead of parsing prose — PROTOTYPED 2026-09-07, AND IT WORKS,
+at the third attempt.** Full measurement in
+[`results/RESULTS-2026-09-07-constrained-decoding-batch-size.md`](results/RESULTS-2026-09-07-constrained-decoding-batch-size.md);
+the prototype is `scripts/constrained_probe.py`.
+
+This is the other route to removing the parser, and unlike logit scoring it keeps the
+instrument's **original wording** — a JSON schema pinning the four labels, so the model emits one
+of the study's own options and nothing else is generable. Ollama's `format` takes the schema
+directly: 50 runs across five models, 62 of 62 answers every time, zero parse problems. Every
+failure class listed in the entry above becomes ungenerable rather than produced-and-rejected.
+The framing is [Ovando 2026](https://osf.io/s9gu6/overview) on constitutive versus corrective
+enforcement, one domain over.
+
+**Three findings, in the order they were made, because the order is the point:**
+
+- **As first built it does not agree with itself.** All 62 answers in one JSON array: two runs of
+  the same cell, same prompt, same temperature, differ by a median of **26 items of 62**, while
+  two prose runs differ by 3 — on every one of ten cells. The first write-up reported the
+  prose-versus-grammar distance as the largest nuisance factor in the study before checking this.
+  **Gate an arm's agreement with itself before reporting its distance from anything else.**
+- **Two obvious mechanisms are both wrong.** Restoring a free-text field before each pinned
+  answer (median 21 against the bare sheet's 22) does not help, and neither does removing
+  sampling entirely — at temperature 0 the arm still sits 15 side-flips from the prose modal, so
+  it is not a sampling artifact. Misalignment is separately ruled out: rotating the sheet by ±1
+  or ±2 items does not reduce the distance.
+- **The cause is how many answers are asked for per call, and it replicates once that is
+  small.** Batch size is a continuous parameter, and both earlier arms fixed it at an extreme —
+  62 answers in one array, or one per call. Sweeping it
+  (`constrained_probe.py --batch-sweep`) shows the instability falling away with the chunk size,
+  inside the study's own replicate floor well before the per-item end. **"Format X is broken",
+  measured at one point of a continuous parameter, is a finding about that point.**
+
+**What it cannot do, and this is not fixable.** A model that cannot emit prose cannot refuse —
+and *"refusal is elicited, not intrinsic"* is measured **from** the invalid runs this arm makes
+ungenerable. So it is a position instrument that runs alongside the parser arm, never instead of
+it. It is also a second instruction — a chunk of eight propositions cannot use a template that
+opens *"Answer every one of the 62 propositions below"* — so it earns its own floors rather than
+inheriting these. The `elicitation format` row in the floors table stays disqualified until a
+batched arm is collected at the wave protocol, since every run behind that row today is a
+whole-sheet run.
+**Needs:** nothing new. Buildable on current hardware, and cheaper than the per-item design by
+the number of calls it saves.
+
 **The quantisation ladder.** The requantisation floor rests on 13 pairs of Q4 against Q8, while
 every other local measurement here is Q4 — and quantisation mismatch is already the declared
 reason two ablation pairs were excluded. One base model run at bf16 / Q8 / Q6 / Q4 / Q3 would

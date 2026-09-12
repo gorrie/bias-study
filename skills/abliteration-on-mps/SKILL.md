@@ -272,4 +272,4 @@ flinch calibration.
 - [`abliteration-run`](../abliteration-run/SKILL.md) — the Docker/CUDA path for non-Gemma-2 families on a CUDA box.
 - [`mlx-weight-prep`](../mlx-weight-prep/SKILL.md) — converts each healthy dose's HF dir to MLX for serving.
 - [`abliterated-judge-sweep`](../abliterated-judge-sweep/SKILL.md) — consumes the MLX-converted dose to measure flinch.
-- The Wash docs in the working copy at `evil-robots-series/research/the-wash/`: `TIER-B-DESIGN.md` (why we run a dose-series at all), `PROTOCOL.md` (the analysis rules), `HANDOFF-M5.md` (the M5 run sequence).
+- The Wash docs in the internal working copy: `TIER-B-DESIGN.md` (why we run a dose-series at all), `PROTOCOL.md` (the analysis rules), `HANDOFF-M5.md` (the M5 run sequence).

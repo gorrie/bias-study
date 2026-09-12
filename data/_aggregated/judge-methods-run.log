@@ -386,10 +386,10 @@ Method 2 abliterated-gemma sweep on M5 (catch-up entry, written 2026-05-30 from 
     2026-05-27-abliteration-controls 3/3 files
   Total: 53/53 files, 1,780 records, 1,726 classified (97.0%)
   Output: runs/<run>/scored-abliterated-gemma/<model>.jsonl
-  Data committed in evil-robots-series master at 06a9ceb (2026-05-30)
+  Data committed in the internal working copy at 06a9ceb (2026-05-30)
   Reproducer: skills/abliterated-judge-sweep + scripts/score_inproc_gemma.py
 [2026-05-30T18:52] Cross-method analysis ran (cross_method_report.py --all-runs + generate_charts.py --all-charts)
   Per-run cross-method/ dirs landed for all 7 pre-registered runs
-  Charts regenerated at evil-robots-series/website/static/images/bias-study/
+  Charts regenerated into the site's bias-study image directory
   Headline: median contamination delta 0.062 across 47 model-runs, inside pre-registered 0.10 robust band
 ===========================================

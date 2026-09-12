@@ -76,7 +76,7 @@
   two-gate metadata + generation smoke check. New skill: `abliteration-on-mps` (sibling
   to `abliteration-run` — Linux/CUDA path stays unchanged). Pre-registered for The Wash
   Experiment 1 (dose-response, n_directions ∈ {1,2,4,8} for Gemma-2-9B-IT). Reference
-  n_dir=4 spine is reused as-is. See `evil-robots-series/research/the-wash/HANDOFF-M5.md`.
+  n_dir=4 spine is reused as-is. See the Wash handoff notes in the internal working copy.
 - **The Wash Tier-B findings landed (2026-06-10)**: all three experiments complete —
   Exp 1 (dose-response: coherence cliff at n_dir<2, usable band 2–8), Exp 2 (refusal/flinch
   decoupling), Exp 3 (per-move not per-target; documented-exposure flinch replicates across
@@ -134,7 +134,7 @@ The contamination-delta JSON and charts have NOT yet been produced. Invoke the
 **Canonical location**: this repository (`github.com/gorrie/bias-study`) is the
 publication surface — data lives under `data/<run>/`, scripts under `scripts/`,
 writeup at `results/WRITEUP-2026-05-26.md`, charts at `results/charts/`. The
-internal working copy at `evil-robots-series/research/bias-study/` uses `runs/<run>/`
+an internal working copy uses `runs/<run>/`
 instead of `data/<run>/` and exists only for in-flight development; nothing is
 published from there. `sweep_status.py` auto-detects either convention.
 

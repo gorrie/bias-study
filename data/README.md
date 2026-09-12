@@ -3,7 +3,7 @@
 This directory is the immutable record of every scored sweep this study has
 ever run. One subdirectory per run; runs are named by the date they began
 (`YYYY-MM-DD` or `YYYY-MM-DD-<slug>`). The internal working copy at
-`evil-robots-series/research/bias-study/` uses the directory name `runs/`
+an internal working copy uses the directory name `runs/`
 instead of `data/` — content is identical; scripts auto-detect either.
 
 ## Per-run layout

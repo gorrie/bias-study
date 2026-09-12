@@ -144,7 +144,7 @@ permanent change, add the family and update the skill's preconditions section.
 ## Cross-references
 - Upstream: `abliteration-run` produces the HF source weights this skill consumes.
 - Downstream: `abliterated-judge-sweep` consumes the MLX output.
-- Hard-lesson context: `evil-robots-series` WRITEUP-2026-05-26 §4.2 (the dissociation
+- Hard-lesson context: `results/WRITEUP-2026-05-26.md` §4.2 (the dissociation
   table where Gemma-2 became the fifth family) and `ADVERSARIAL-REVIEW.md` item 5.
 - Orchestrator: `bias-barometer` agent invokes this implicitly via `abliteration-run` on
   the macOS path.

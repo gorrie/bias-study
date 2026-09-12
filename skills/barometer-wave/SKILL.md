@@ -96,6 +96,35 @@ Local arms need Ollama and the builds pulled (`ollama list`). Hosted arms need
 `OPENROUTER_API_KEY`. Local collection costs GPU time and no money; do not stack two GPU arms
 concurrently.
 
+**BUDGET A LOCAL ARM IN CALLS, NOT IN TOKENS.** Measured 2026-09-07 on this machine, across
+five consecutive requests, with and without a grammar, with `keep_alive` set every way the API
+offers: `load_duration` **17–21s** against `eval_duration` **0.0–0.1s**. Ollama 0.33.1 is
+reloading the model on every single request. An explicit preload with `keep_alive: 15m` took
+15.4s and left `ollama ps` **empty**; `keep_alive: -1` behaves the same. No `OLLAMA_*` variable
+is set at process, user or machine scope and no stale process holds VRAM — the 10.8 GB reading
+that first looked like a leak was the model mid-load, settling to 2.6 GB.
+
+So on this machine **a local call costs about 21 seconds almost regardless of what is in it**,
+and the only thing that predicts an arm's wall-clock is how many requests it makes:
+
+| arm | calls per run | wall-clock per run |
+|---|---:|---:|
+| prose sheet, whole battery in one call | 1 | ~21s |
+| grammar, batched at 8 | 8 | ~3 min |
+| grammar, one call per proposition | 62 | **~23 min** |
+
+That is why the per-item arm looked unaffordable — 108 minutes for a five-seed replicate test,
+of which **under two seconds is inference**. It is not that per-item inference is expensive; it
+is that per-item pays the residency bug 62 times. The same measurement is about two minutes
+once model residency works.
+
+**This taxes every local arm, not just the grammar one.** The ablation wave, the local-2026
+order arm and the grammar arm each paid a full load per run, which is why 27B cells clocked
+near 100s each. Fixing it needs a host-side restart with `OLLAMA_KEEP_ALIVE` set — not
+reachable from the API, so it is the operator's call, not this skill's. Until then, prefer
+designs that **ask for more per call**, and treat "one call per item" as a last resort rather
+than the obvious clean design it looks like.
+
 ### Step 2 — verify the collection landed
 
 ```bash
@@ -172,8 +201,17 @@ python scripts/gen_readme.py --check           # generated blocks vs run data
 python scripts/key_numbers.py --check-release  # 14 hand-typed README numbers vs run data
 python scripts/key_numbers.py --check-website  # every website + dispatch surface
 python scripts/gen_script_inventory.py --check # SCRIPTS.md vs scripts on disk
+python scripts/check_doc_links.py              # every relative markdown link resolves
 python scripts/check_no_fork.py                # again, after committing
 ```
+
+**Run `check_doc_links.py` in BOTH trees, because its two failure modes are on opposite sides.**
+The mirror is where a dead link is read by somebody who cannot see the private tree — it shipped
+`../../../bias-study-release/CORRECTIONS.md`, a path only correct from the private side, until
+2026-09-07. The private tree is where the renames happen: this study renames a results document
+when its conclusion is superseded, and every reference to the old name then points a reader at a
+retracted finding. It does not resolve external URLs (a gate that needs the network gets switched
+off) or heading anchors (heading text drifts and the false positives would bury the signal).
 
 If a number moved, regenerate rather than retype: `gen_readme.py`, and
 `key_numbers.py --sync-ours` for the audit's self-description.
@@ -193,6 +231,19 @@ If a number moved, regenerate rather than retype: `gen_readme.py`, and
 - **A `no` on a model card means "not resolvable at this n", not "no effect".** The
   permutation null on a five-run modal is coarse: perfect separation at n=4 gives p = 0.486,
   because a 3-1 reshuffle still flips the modal. See `test_floor_resolution.py`.
+- **Items per call is a protocol parameter, and it is the strongest one found so far.** The
+  grammar arm was written off as "constrained decoding does not replicate" on the basis of one
+  batch size — the whole 62-item sheet in a single array, self-spread median 26 against the
+  prose arm's 3. Sweeping the dial (`constrained_probe.py --batch-sweep`) shows the arm
+  replicating comfortably once the array is broken up. **The pathology was the array, not the
+  grammar.** Two lessons that generalise past this arm:
+  - Any "format X is broken" finding taken at one point of a continuous parameter is a finding
+    about that point. Sweep before generalising.
+  - **Gate self-agreement before reporting any cross-arm distance.** The first write-up of this
+    arm reported a prose-vs-grammar distance of median 23 as the largest effect in the study,
+    and was one commit from publication, when the grammar arm's own self-spread was 26. A
+    distance measured on an arm that does not agree with itself is one arm against noise.
+    Self-spread is the left column of the sweep table for exactly this reason.
 - **Exclude an arm only for a stated reason, never to make a number come out.** The ablation
   wave is excluded from the refusal table because abliterated builds are *engineered not to
   refuse*, which would deflate the corpus rate by construction. That is a reason. "It moved
@@ -226,6 +277,13 @@ python scripts/gen_readme.py && python scripts/key_numbers.py --check-release
   the pre-registration was decoration. The rule is evaluated PER BASE and like-for-like — a
   first version compared one base's worst disagreement against a median effect pooled across
   other bases, and fired on it.
+- `scripts/constrained_probe.py` — the grammar-constrained arm, and the one place the
+  **elicitation format** is a variable rather than an assumption. `--replicate` tests one cell
+  against itself and is the gate to run *first*; `--batch-sweep 62,31,16,8,4,2` sweeps items
+  per call, which is what actually separates a working constrained arm from a broken one.
+  **It cannot measure refusal** — a model that cannot emit prose cannot decline — so it is a
+  position instrument only, and §1's refusal finding is measured *from* the invalid prose runs
+  this arm makes ungenerable.
 - `scripts/refusal_table.py` — refusal rate by vendor and condition. **Its `DEFAULT_EXCLUDE`
   matters**: the ablation wave is excluded because abliterated builds are engineered not to
   refuse, so pooling them would deflate the corpus rate by construction, and the deflation
