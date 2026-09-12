@@ -128,13 +128,52 @@ def read(path):
     return io.open(path, encoding="utf-8", errors="replace").read()
 
 
+#: Paths a procedure may name that are DELIBERATELY not in the repository, with the reason.
+#: Added 2026-09-11, when cloning this repo into a temp directory and running its own gates as a
+#: reader would showed this check failing on a fresh clone while passing in the working copy.
+#: The message said "fix the document, or add the flag to the script" -- but that hatch exists
+#: only for flags, so a path that must never ship had nowhere to be declared and the only way to
+#: green was to delete a true sentence from a procedure.
+#: This is a declaration, not a loosening: every other dead path still fails, and a declared path
+#: that STARTS existing fails too (see below), so the list cannot quietly rot.
+NOT_IN_REPO = {
+    "data/compass-propositions.json":
+        "third-party instrument text -- the 62 politicalcompass.org propositions, fetched at the "
+        "reader's end by scripts/fetch_items.py so this repository never republishes them. "
+        "Ignored in .gitignore and refused by a pre-commit hook; both must stay.",
+}
+
+
 def check_paths(text):
-    """Backticked repo paths that do not resolve."""
+    """Backticked repo paths that do not resolve, excluding those declared NOT_IN_REPO."""
     out = []
     for p in sorted(set(re.findall(r"`((?:scripts|data)/[A-Za-z0-9_.\-]+)`", text))):
+        if p in NOT_IN_REPO:
+            continue
         if not os.path.exists(os.path.join(ROOT, p)):
             out.append(p)
     return out
+
+
+def check_not_in_repo_still_absent():
+    """A declared-absent path that is now TRACKED is a declaration that has rotted.
+
+    Without this, NOT_IN_REPO would silently suppress a real dead-path check the day someone
+    commits the file it excuses -- which, for this particular entry, would also mean the
+    repository had just republished third-party instrument text.
+
+    The condition is TRACKED, not "exists on disk". These paths are fetched at the reader's
+    end, so the file being present locally is the normal state and the whole point -- the
+    first draft of this check asserted absence on disk and fired immediately on a working
+    copy that had simply run fetch_items.py.
+    """
+    try:
+        r = subprocess.run(["git", "ls-files", "--"] + sorted(NOT_IN_REPO),
+                           capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=60, cwd=ROOT)
+    except Exception:                                   # noqa: BLE001
+        return []                                       # no git: cannot judge, do not block
+    return sorted(p for p in r.stdout.splitlines() if p.strip())
 
 
 _HELP: dict[str, str] = {}
@@ -195,6 +234,13 @@ def main(argv=None):
 
     docs = skill_docs()
     if not args.coverage:
+        rotted = check_not_in_repo_still_absent()
+        if rotted:
+            print("DECLARATION ROTTED -- these are declared NOT_IN_REPO and now exist:")
+            for p in rotted:
+                print("    %s" % p)
+            print("Either the file should not be committed, or the declaration should go.")
+            return 1
         bad_paths, bad_flags = [], []
         for d in docs:
             rel = os.path.relpath(d, ROOT).replace("\\", "/")
