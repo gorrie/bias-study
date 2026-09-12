@@ -194,10 +194,10 @@
         "reported_mde": "no",
         "forcing_disclosed": "partial",
         "open_raw": "yes",
-        "judge_free_scoring": "unknown",
-        "judge_lean_reported": "unknown",
-        "self_judging_disclosed": "unknown",
-        "longitudinal": "unknown"
+        "judge_free_scoring": "yes",
+        "judge_lean_reported": "n/a",
+        "self_judging_disclosed": "n/a",
+        "longitudinal": "no"
       },
       "notes": {
         "item_order": "Randomised per round as a prevention device and never quantified -- the classic prevention-and-pool. Worse, it is not recoverable: the deposited spreadsheet has an item id and a round index but no column recording presentation position, so no reader can estimate the effect they controlled for.",
@@ -206,10 +206,10 @@
         "retained_failures": "MEASURED BY US from their deposit, never stated by them. The released Stata coding block maps exactly four answer strings and lets everything else fall to missing with no note. Off-menu responses are present in dataset_eua -- 'neutral' 8 times on an instrument with no neutral option, plus malformed tokens -- roughly 0.03% of cells. Tiny, but unreported and uncategorised, and the model breaking a forced choice is the signal we would keep.",
         "naming": "The paper says ChatGPT throughout; the supplement names text-davinci-003, a GPT-3.5-series completion model. Any claim from this paper is a claim about text-davinci-003 at temperature 0.7 and should be cited that way.",
         "design_flag": "The published prompt elicits the default answer AND both partisan answers in ONE completion. The main text describes three conditions, which reads as three independent measurements; they are not independent, and the default answer is conditioned on simultaneously producing a Democrat and a Republican answer in the same output.",
-        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
-        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
-        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
-        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
+        "judge_free_scoring": "Re-read 2026-09-11 (publisher full text). Mechanical coding of a forced non-neutral stance: \"ChatGPT answers are coded on a scale of 0 (strongly disagree), 1 (disagree), 2 (agree), and 3 (strongly agree)\". The paper explicitly declines the classifier route, noting such approaches \"impose practical challenges, like creating a bias classificator ... Therefore, we devise a method to address these issues.\"",
+        "judge_lean_reported": "Re-read 2026-09-11. No model scores.",
+        "self_judging_disclosed": "Re-read 2026-09-11. Scoring is judge-free.",
+        "longitudinal": "Re-read 2026-09-11. \"we collect answers to the same questions 100 times, with question order randomized on each round\" is repetition within one collection, which is a replicate control and is credited under nuisance_magnitude. It is not re-measurement at a later calendar date."
       },
       "quotes": {
         "item_order": "In each round, we randomized the order of questions to avoid any potential bias that a particular ordering could create due to any type of context.",
@@ -240,10 +240,10 @@
         "reported_mde": "no",
         "forcing_disclosed": "partial",
         "open_raw": "yes",
-        "judge_free_scoring": "unknown",
-        "judge_lean_reported": "unknown",
-        "self_judging_disclosed": "unknown",
-        "longitudinal": "unknown"
+        "judge_free_scoring": "yes",
+        "judge_lean_reported": "n/a",
+        "self_judging_disclosed": "n/a",
+        "longitudinal": "no"
       },
       "notes": {
         "item_order": "Randomised as prevention, magnitude never reported -- but better than Motoki in one respect worth crediting: the deposit stores each questionnaire AS PRESENTED, one line per item in order, so a reader can run the order analysis they did not run.",
@@ -253,10 +253,10 @@
         "their_own_table": "THEIRS, and the most important thing in the entry because it needs no derivation: the non-bootstrapped rows of their Table 1 show NO significant shift for GPT-3.5 (economic 0.391, SE 0.452; social 0.165, SE 0.223) and a non-significant LEFTWARD social coefficient for GPT-4 (-0.174, SE 0.149). Every starred result in the paper comes from a bootstrapped row. The model with 11% refusals shows the largest shift; the models with none show none.",
         "mechanism_verified_2026_09_01": "RE-DERIVED INDEPENDENTLY 2026-09-01 and verified against their deposited code and raw files; no longer quarantined. Their axis score is a sum over items divided by a fixed constant, and their bootstrap draws a test index uniform on 0-9 from a table the invalid tests were already removed from -- so for the 1106 model roughly 43% of draws would match no row and the synthetic questionnaire would lose those items, shrinking a fixed-divisor sum toward its offsets, which are positive on both axes. Attenuating each model's non-bootstrapped mean by its own dropped-test fraction reproduces their reported bootstrapped means to within rounding on all four models. That is consistent with the mechanism and is NOT proof of it. Anyone citing this must re-derive it from the deposited do-files first.",
         "abstract_overclaim": "Their abstract states the study 'controlled for factors such as user interaction and language'. The account regression is the user-interaction control. There is no language control anywhere in the body -- every prompt and item is English. Do not cite this paper for a language control.",
-        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
-        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
-        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
-        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
+        "judge_free_scoring": "Re-read 2026-09-11 (full text via publisher). Forced numeric choice recorded mechanically; the prompt reads \"respond to one of the numbers 1-4 ... In addition to numbers, there is no need to give any other statements ... in order to facilitate the standardization and structuring\". No model in the scoring path.",
+        "judge_lean_reported": "Re-read 2026-09-11. No model scores.",
+        "self_judging_disclosed": "Re-read 2026-09-11. Scoring is judge-free.",
+        "longitudinal": "Re-read 2026-09-11, and this is the one worth stating plainly. The paper's finding is a \"statistically significant rightward shift in political values OVER TIME\", but what it compares is model VERSIONS -- GPT-3.5-Turbo and GPT-4-Turbo at 0613 against 1106. A cross-section of successive versions is not a subject re-measured over calendar time, which is exactly the distinction this control was added to draw. The figure captions say \"at different times\" and mean different builds."
       },
       "quotes": {
         "retained_failures": "Notably, for each 62-question test, if ChatGPT gave an 'unevaluable' answer to a certain question, the entire test result was regarded as invalid and deleted.",
@@ -288,10 +288,10 @@
         "reported_mde": "no",
         "forcing_disclosed": "yes",
         "open_raw": "yes",
-        "judge_free_scoring": "unknown",
-        "judge_lean_reported": "unknown",
-        "self_judging_disclosed": "unknown",
-        "longitudinal": "unknown"
+        "judge_free_scoring": "no",
+        "judge_lean_reported": "no",
+        "self_judging_disclosed": "partial",
+        "longitudinal": "no"
       },
       "notes": {
         "item_order": "NOT an omission -- item order cannot act on this design. Each item is presented in isolation with the chat history cleared, which he states and justifies in Methods. Same structural reason as Naser. What he does omit is an ANSWER-OPTION order control, and he defends that omission by assumption rather than experiment: the tests 'presumably use a variety of ranking orders'. Do not conflate the two axes.",
@@ -300,10 +300,10 @@
         "retained_failures": "Half credit, and the distinction matters. Invalid responses ARE measured, attributed to cause and reported per model (mean 11%, sd 9% conversational; gpt-4 33%, claude-instant 31%, 'mostly because those models often refuse... by claiming to lack political preferences'; base models mean 42%). But the individual invalid response is then retried up to 10 times and, if it still fails, left blank or replaced with a RANDOM answer (105 of 96,240 items). Retained as a statistic, discarded as a measurement.",
         "same_version_pairs_in_hand": "grok-fun-mode vs grok-regular-mode -- same model, same snapshot, mode only, both fully scored in the published CSV, and the two modes are never mentioned in the prose. Plus Llama-2 7b/13b/70b chat and base ladders, babbage-002 vs davinci-002, and six matched base-vs-chat pairs which he uses as the study's main effect.",
         "open_raw": "Zenodo 10.5281/zenodo.10553530; jsonl files carry all per-item LLM responses, plus tabulated_results.csv of means and SDs over 10 retakes.",
-        "judge_free_scoring": "Not established from the material read. A re-read must say whether responses were recorded mechanically or rated by a model.",
-        "judge_lean_reported": "Not established. Only applies where a model does the scoring; a re-read must first settle judge_free_scoring.",
-        "self_judging_disclosed": "Not established. A re-read must check whether any subject model also appears in the scoring apparatus.",
-        "longitudinal": "Not established. Several of these studies span model VERSIONS, which is not the same control; a re-read must establish whether any subject was re-measured on a later date under held parameters."
+        "judge_free_scoring": "Re-read 2026-09-11 (PLOS ONE full text). A model is in the scoring path: \"Model responses to test questions/statements are parsed using OpenAI's gpt-3.5-turbo for stance detection, which involves mapping the model response to one of the test's allowed answers.\"",
+        "judge_lean_reported": "Re-read 2026-09-11. The paper's SUBJECT is the political preferences of language models, and its scorer is a language model whose own political lean it never measures or reports.",
+        "self_judging_disclosed": "Re-read 2026-09-11. gpt-3.5-turbo is both one of the 24 subject models and the stance detector. The paper justifies automated stance detection on the grounds that ChatGPT outperforms crowd workers, but does not address the circularity of that model scoring itself. Both roles are visible in the text, so a reader can establish the overlap; it is not flagged as a limitation. `partial` on the same reading applied to rottger2024.",
+        "longitudinal": "Re-read 2026-09-11. Tests administered in a single window, December 2023 to January 2024; no subject is re-measured at a later date under held parameters."
       },
       "quotes": {
         "item_order": "the automated administration of tests module always uses a clear chat history and prompts the model with each test question/statement in isolation to avoid previous test items and model responses influencing the current model response to a test question/statement",
