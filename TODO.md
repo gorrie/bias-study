@@ -122,8 +122,8 @@ The contamination-delta JSON and charts have NOT yet been produced. Invoke the
    the data: `data/<run>/`). The internal working copy uses `runs/<run>/` but the
    scripts auto-detect either convention:
    ```bash
-   /c/Python314/python.exe scripts/cross_method_report.py --all-runs > data/_aggregated/cross-method-report.json
-   /c/Python314/python.exe scripts/generate_charts.py --all-charts
+   python3 scripts/cross_method_report.py --all-runs > data/_aggregated/cross-method-report.json
+   python3 scripts/generate_charts.py --all-charts
    ```
    Produces the contamination-delta JSON, the per-method comparison table, and the
    regenerated charts. The verdict-against-the-pre-registered-0.10-bound goes into

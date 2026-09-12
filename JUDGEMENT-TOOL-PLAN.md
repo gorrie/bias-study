@@ -174,7 +174,7 @@ Method 2 (`--judge-method abliterated-qwen`) calls an OpenAI-compatible HTTP end
 ```
 export ABLITERATED_ENDPOINT="http://<m5-host>:8000/v1"
 export ABLITERATED_MODEL="qwen2.5-7b-abliterated"   # or gemma-2-9b-abliterated
-/c/Python314/python.exe scripts/score.py 2026-05-25-full --judge-method abliterated-qwen
+python3 scripts/score.py 2026-05-25-full --judge-method abliterated-qwen
 ```
 
 Both the Qwen2.5-7B-abliterated weights (4090 PC at `obliteratus-output/`) and the Gemma-2-9B-abliterated weights (M5, per the 5-family weight-rung writeup) are candidates. Run Method 2 against both for cross-family abliteration sensitivity. Whichever survives the rubric weighting becomes the canonical anchor for the abliterated-judge result; the other reports as a supplementary row.

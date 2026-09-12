@@ -55,7 +55,7 @@ All four reuse the same raw records as Method 2 — only the JUDGE changes. Outp
 
 ```bash
 cd "$(scripts/sweep_status.py --json 2>/dev/null | python -c 'import json,sys; print(json.load(sys.stdin)["data_dir"])')" || cd "$STUDY_DIR"
-/c/Python314/python.exe scripts/sweep_status.py
+python3 scripts/sweep_status.py
 ```
 
 If the state-check reports any API method as COMPLETE across all 7 pre-registered runs,
@@ -65,7 +65,7 @@ single source of truth for what needs to run.
 ### 1. Confirm key is loadable
 
 ```bash
-/c/Python314/python.exe -c "
+python3 -c "
 import os, pathlib
 def resolve():
     k = os.environ.get('OPENROUTER_API_KEY')

@@ -313,7 +313,10 @@ def build_epub(book_path: str) -> dict:
         log("ERROR", f"book missing: {book_path}")
         return result
 
-    python_exe = shutil.which("python") or "/c/Python314/python.exe"
+    # sys.executable first: the interpreter already running this IS a valid interpreter, and
+    # falling back to a PATH lookup can pick a different one than the caller intended. The old
+    # fallback was one machine's MSYS path, which on any other host is simply a missing file.
+    python_exe = sys.executable or shutil.which("python3") or shutil.which("python")
     build_py = WORKSPACE / "publishing-tools" / "build.py"
     if not build_py.exists():
         result["status"] = "build-script-missing"
