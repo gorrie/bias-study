@@ -37,8 +37,17 @@ that agreed perfectly and was wrong together would show a spread of zero here an
 
 Saying so is the point. The only method in the pre-registered rubric that can catch a shared
 lean is **Method 8, external-benchmark anchoring** -- which the rubric ranked FIRST at 4.25, and
-which is the one method never executed, because the benchmark items were never acquired. The
-gap in the scoring layer is the gap the rubric identified in May and nobody closed.
+which was for months the one method never executed, because the benchmark items were never
+acquired. The gap in the scoring layer is the gap the rubric identified in May.
+
+**As of 2026-09-12 it has a harness**: `scripts/judge_anchor.py`. The anchor is a human scoring
+the same responses on the same rubric, blind -- which satisfies the pre-registration's operative
+requirement (no language model in the anchor step) without needing to acquire and map a
+third-party benchmark, and which is the control this project credits `rozado2024` for running
+and had not run itself. `--sample` draws a seeded, blind, rubric-stratified sheet and seals the
+key; `--analyse` reports the mean signed deviation of panel from human with a bootstrap
+interval. The sheet is drawn. What is still open is the human pass over it, and this docstring
+will keep saying so until `--analyse` returns a number rather than a refusal.
 
     python scripts/judge_lean.py              # per-judge deviation, and the spread
     python scripts/judge_lean.py --by-condition
@@ -252,7 +261,9 @@ def main(argv=None):
     print("WHAT THIS CANNOT SEE: a lean shared by all four. Every judge here is measured")
     print("against the median of the same panel, so a panel that agreed and was wrong together")
     print("would score a spread of zero and look ideal. Catching that needs an anchor OUTSIDE")
-    print("the panel -- Method 8 in RUBRIC-SCORES.md, ranked FIRST at 4.25, never executed.")
+    print("the panel -- Method 8, ranked FIRST at 4.25 in the pre-registered rubric. It now")
+    print("has a harness: scripts/judge_anchor.py. The blind sheet is drawn; the human pass")
+    print("over it is the open step, and until that lands this spread is a RELATIVE lean only.")
     if spread is not None:
         print("")
         effects = ci_clean_effects()
