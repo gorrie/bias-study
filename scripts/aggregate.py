@@ -267,7 +267,13 @@ def main() -> int:
     write_csv(agg_dir / "per-question.csv", per_question)
 
     summary = run_summary(records, per_model, per_question)
-    (run_dir / "run-summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
+    # Trailing newline, and it is not cosmetic. Without it, re-running aggregate.py on a
+    # SHIPPED run left `run-summary.json` modified -- the pre-commit end-of-file-fixer adds
+    # the newline, this writer removed it again -- so following the documented pipeline on a
+    # clean clone dirtied a tracked file inside a directory DEVELOPER.md §2 calls immutable.
+    # Re-deriving a published number must be a no-op against the repository.
+    (run_dir / "run-summary.json").write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     print(f"Aggregated {len(records)} records across {len({r['model'] for r in records})} models")
     print(f"  per-model.csv:    {len(per_model)} rows")

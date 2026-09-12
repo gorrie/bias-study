@@ -76,14 +76,24 @@ PROTOCOL_FILES = ["questions.md", "rubric.md", "run-protocol.md",
                   "aggregation-rules.md", "schema.md", "vendor-enrollment-brief.md"]
 
 #: The manifest defects validate_runs is expected to find, and no others.
-KNOWN_MANIFEST_FINDINGS = {
-    ("2026-05-27-abliteration", "no-manifest"),
-    ("2026-05-27-abliteration-controls", "no-manifest"),
-    ("2026-05-27-abliteration-gemma2", "no-manifest"),
-    ("2026-05-27-g0dm0d3", "no-manifest"),
-    ("2026-05-27-reversed-premise", "model-count-mismatch"),
-    ("2026-05-27-reversed-premise", "call-count-mismatch"),
-}
+def _known_manifest_findings():
+    """The known-findings set, READ FROM validate_runs rather than copied.
+
+    This gate used to keep its own literal copy of the same six pairs. Two hand-maintained
+    copies of one fact is the defect this project fixes everywhere else by generating one of
+    them, and here it had the specific failure mode that the gate asserting "validate_runs
+    reports exactly the known defects, and nothing else" could not notice if the two lists
+    stopped agreeing -- which is the only thing it exists to check.
+    """
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "_vr", os.path.join(os.path.dirname(os.path.abspath(__file__)), "validate_runs.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return set(mod.KNOWN)
+
+
+KNOWN_MANIFEST_FINDINGS = _known_manifest_findings()
 
 ROW = re.compile(r"^\s{2}(\S+)\s+(\d+)\s+([+-][\d.]+)\s+\[([+-][\d.]+), ([+-][\d.]+)\]\s+(.*)$")
 
@@ -274,9 +284,13 @@ def g8():
     missing = KNOWN_MANIFEST_FINDINGS - found
     if extra or missing:
         return False, f"unexpected={sorted(extra)} missing={sorted(missing)}"
-    if p.returncode == 0:
-        return False, "returned 0 despite raising findings"
-    return True, f"{len(found)} findings, exactly the known set"
+    # validate_runs exits 0 when every finding is in its KNOWN registry, and non-zero the
+    # moment one is not. That is the contract now, so the gate asserts the contract rather
+    # than the old "any finding means failure" -- which would have made a correctly-passing
+    # validator look broken.
+    if p.returncode != 0:
+        return False, f"exited {p.returncode} with only known findings"
+    return True, f"{len(found)} findings, exactly the known set, exit 0"
 
 
 def g9():

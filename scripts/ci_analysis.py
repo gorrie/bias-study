@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
 ci_analysis.py — Bootstrap confidence intervals + inter-judge agreement over
-already-scored bias-study runs. No API calls; reads runs/<date>/scored/*.jsonl.
+already-scored bias-study runs. No API calls; reads <run-root>/<date>/scored/*.jsonl, where
+the run root is `data/` in this repository and `runs/` in the working study — `studypaths`
+auto-detects. The docstring said `runs/` unconditionally, which is the directory that does
+NOT hold the May data here, and SCRIPTS.md is generated from this line.
 
 Addresses the audit's two statistical killshots:
   1. Report every per-model B-A delta as mean +/- 95% CI (bootstrap over the

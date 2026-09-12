@@ -35,3 +35,12 @@ data/_aggregated/cross-method-report.json
 # failure mode was 525 untracked run files sitting one `git add -A` away from publication.
 # Ignoring it means the accident cannot start.
 data/compass-propositions.json
+
+# Derived analysis outputs that land beside the run records. DEVELOPER.md §2 calls
+# `data/<run>/` immutable, and the RECORDS are — raw/, scored/, aggregated/ and the manifest
+# never change. These three are regenerated on demand by analysis.py and drift_timeseries.py
+# and were arriving untracked in every clone that followed the documented pipeline, so a
+# cloner's first act of reproducing a number made their tree dirty.
+data/*/ANALYSIS.md
+data/_aggregated/drift_timeseries.csv
+data/_aggregated/vendor_arcs.md

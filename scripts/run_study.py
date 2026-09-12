@@ -537,7 +537,12 @@ def main() -> int:
     run_date = args.date or datetime.date.today().isoformat()
     run_dir = STUDY_DIR / "data" / run_date
     raw_dir = run_dir / "raw"
-    raw_dir.mkdir(parents=True, exist_ok=True)
+    # NOT created yet -- see the dry-run return below. A dry run documented as "prints plan,
+    # no API calls" was creating `data/<today>/raw/` and leaving it behind empty. That is a
+    # side effect a dry run must not have, and it is not cosmetic: an empty run directory is
+    # a run with no manifest, so `validate_runs.py` flagged it and selftest gate G8 --
+    # "validate_runs reports exactly the known manifest defects, and nothing else" -- failed.
+    # A command for looking without touching created the thing that broke the gate.
 
     conditions_to_run = [c.strip() for c in args.conditions.split(",") if c.strip()]
     n_samples = max(1, args.samples)
@@ -551,7 +556,11 @@ def main() -> int:
     if args.dry_run:
         for ch, m in models:
             print(f"  {ch:10} {m}")
+        print()
+        print(f"DRY RUN -- nothing called, and {run_dir} was not created.")
         return 0
+
+    raw_dir.mkdir(parents=True, exist_ok=True)
 
     manifest = {
         "run_date": run_date,
