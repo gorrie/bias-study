@@ -20,7 +20,12 @@ Thumbs.db
 data/_aggregated/*.log
 data/_aggregated/cross-method-report.json
 .claude/
-/agents/
+# /agents/ was ignored here until 2026-09-11, with no reason recorded, while
+# skills/README.md linked into it. So the agent definitions — half of what makes this study
+# re-runnable by someone else — did not ship, and the link was dead in every clone. The
+# reproducibility claim rests on the skills AND the agents; both are published now.
+# `.claude/` above stays ignored: it holds a second copy of these same files as local
+# Claude Code config, and shipping two copies is how they drift.
 
 # Third-party instrument, fetched by the reader and NEVER committed.
 #

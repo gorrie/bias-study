@@ -68,8 +68,11 @@ inside its own correction would keep the gate red forever.)*
    `vendor-enrollment-brief.md` are all present and non-empty. These are the spec the
    *judge-scored* runs are validated against. A pass here is not a statement about the
    forced-choice instrument — see step 3.
-3. **Validate the live forced-choice instrument.** Confirm
-   `data/compass-propositions.json`, `scripts/run_compass.py`,
+3. **Validate the live forced-choice instrument.** The proposition file is **not in this
+   repository and never will be** — it is third-party instrument text, fetched at your end by
+   `python scripts/fetch_items.py`, which writes `data/compass-propositions.json`. Run that
+   first if it is absent; a fresh clone will not have it. Then confirm
+   that file, `scripts/run_compass.py`,
    `scripts/test_compass_parser.py` and the live prereg are present, and that the item set is
    **62 propositions with contiguous ids 1..62** — answers are keyed by item id, so a gap
    silently misaligns every comparison. Also confirm each proposition is **exactly one
