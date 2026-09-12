@@ -165,3 +165,47 @@ runs that re-running now leaves `git status` clean.
 | `2026-05-26-variance` | `google/gemini-3.1-pro-preview` | 50 → 50 | 7 → 3 | 0.429 → 0.333 |
 | `2026-05-26-variance` | `openai/gpt-5` | 50 → 2 | 10 → 0 | 0.2 →  |
 | `2026-05-27-ood` | `z-ai/glm-4.7` | 8 → 2 | 8 → 1 | 0.125 → 0 |
+
+---
+
+## The book citations, checked (CLAIM-PUBLIC-SCOPE-001, first pass)
+
+A correction that stops at the repository is half a correction. `the-ratchet` ch00 prints the
+judge-independence result in prose, so it was recomputed from the data both ways.
+
+**As published — every figure verifies exactly:**
+
+| the book says | measured |
+|---|---|
+| "re-scored roughly seventeen hundred records each" | 1,652 – 1,743 ✓ |
+| "agreed … in eighty-four to ninety-one percent of cases" | 84.3% – 90.6% ✓ |
+| "the label-inversion test cleared at ninety-one" | reversed-rubric **90.6%** ✓ |
+| "the abliterated open-weight judge … cleared at eighty-seven" | abliterated-gemma **86.8%** ✓ |
+
+**Under the eligibility rule, agreement rises — and only rises:**
+
+| method | as published | under the rule | n |
+|---|---:|---:|---|
+| adversarial-pair | 84.3% | 84.3% | 1652 → 1652 |
+| abliterated-gemma | 86.8% | **87.4%** | 1717 → 1688 |
+| grok-solo | 87.7% | 87.9% | 1690 → 1684 |
+| blind-condition | 88.5% | 88.5% | 1713 → 1713 |
+| reversed-rubric | 90.6% | **91.7%** | 1743 → 1703 |
+
+The two unchanged methods are exactly the two that scored **zero** empty responses. The three
+that move are the three that scored some. The direction is not a coincidence and it is not a
+finding about judges: **a disagreement about a blank string is not a disagreement about
+content**, so removing them raises measured agreement mechanically. Same mechanism as the
+cross-method contamination result, in a different statistic.
+
+### Disposition for the book
+
+ch00's prose survives as written, with one edge: the range's **upper bound rounds to
+ninety-two, not ninety-one**. "Eighty-four to ninety-one percent" becomes "eighty-four to
+ninety-two" if the rule becomes the default. The two named figures — ninety-one for the
+label inversion, eighty-seven for the abliterated judge — still round correctly at 91.7% and
+87.4%.
+
+**No rewrite is needed now**, because the rule is opt-in and the published numbers are the
+as-published column. If the default flips, one word in ch00 changes. Recorded here so that
+decision carries its consequence with it rather than being discovered later by a reader.
