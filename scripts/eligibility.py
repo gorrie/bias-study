@@ -148,7 +148,22 @@ def missingness(records):
 
 
 def strict_default() -> bool:
-    return os.environ.get("STUDY_ELIGIBILITY", "").strip().lower() == "strict"
+    """EXCLUSION IS THE DEFAULT as of 2026-09-12. Set STUDY_ELIGIBILITY=historical to reproduce
+    the pre-correction numbers.
+
+    It was opt-in, which meant every default read still counted 466 scores derived from empty
+    responses -- the correction existed and nothing used it. Two independent correction passes
+    reached the same conclusion about those records four days apart, and a score computed from
+    a blank string is not a measurement whose inclusion is a matter of taste.
+
+    The historical path is KEPT, and deliberately: published artifacts were computed under it,
+    selftest_analysis accepts either agreement reference and names which it matched, and a
+    correction you cannot reverse is a correction nobody can check.
+    """
+    mode = os.environ.get("STUDY_ELIGIBILITY", "").strip().lower()
+    if mode in ("historical", "legacy", "off"):
+        return False
+    return True
 
 
 def apply_rule(records, strict=None, label=""):
