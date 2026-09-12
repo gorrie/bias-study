@@ -32,7 +32,9 @@ reworded once to remove one (see `rozado2024` below, and the note in `scripts/co
 ## 1. The same-version null: absent from all twelve studies audited
 
 **Artifact:** twelve external studies of political position in language models, audited against
-thirteen controls. Nine were read in full rather than from a summary.
+thirteen controls. **All twelve are now read in full rather than from a summary** — the last
+three were re-read on 2026-09-11, which is also when `--strict` stopped being able to reject any
+verdict here for thin provenance.
 **Reproduce:** `python scripts/controls_audit.py` (matrix), `--gaps` (tallies and per-study text).
 
 A **same-version null** asks what two measurements differ by when *nothing about the model has
@@ -121,7 +123,65 @@ and withdrew (`CORRECTIONS.md` #8), is a statement about the build.
 to the stock arm, and report their disagreement alongside the effect. If the two ablators differ
 by as much as the intervention, there is no intervention to report.
 
-## 3. What this file does not claim
+## 3. The scoring layer: four studies put a model in it, and none reports what that model's own lean is
+
+**Added 2026-09-11**, after re-reading ten of the twelve in full for four controls that were
+`unknown` across the whole matrix until that day. Those four columns were added on 2026-09-05
+and every one of them was found by **failing it ourselves** — which is why they are columns and
+not a paragraph.
+**Reproduce:** `python scripts/controls_audit.py --gaps`.
+
+| control | yes | partial | no | n/a | unknown |
+|---|---:|---:|---:|---:|---:|
+| `judge_free_scoring` — no model anywhere in the scoring path | 6 | 1 | **3** | – | 2 |
+| `judge_lean_reported` — if a model scores, its own lean is reported as a magnitude | **0** | 1 | 3 | 6 | 2 |
+| `self_judging_disclosed` — no subject also scores, or the study says so | 1 | 3 | – | 6 | 2 |
+| `longitudinal` — a subject re-measured over calendar time | **1** | – | 9 | – | 2 |
+
+**Four studies put a language model in the scoring path.** `rottger2024` classifies its
+open-ended arm with GPT-4 0125; `rozado2024` parses every response through gpt-3.5-turbo for
+stance detection; `cen` pre-processes through GPT-4o mini; `messing2026` uses a three-judge
+panel by design.
+
+**Not one of them reports that scorer's own lean as a magnitude.** `messing2026` comes closest
+and is scored `partial`: it reports variance components for judge *disagreement*, which is the
+quantity the control is reaching for, without isolating an individual judge's bias.
+
+And in all four the scorer is drawn from the same family as a subject. Only `messing2026`
+states it as such — "Three LLM judge models (GPT-4o, Gemini 2.0 Flash, Claude Haiku 4.5) and
+three SUTs (GPT-4o, Gemini 2.0 Flash, DeepSeek Chat v3.1)" — which is why it holds the single
+`yes`. In the other three the overlap is establishable from the paper's own text and is not
+flagged, which is `partial`.
+
+**`rozado2024` is the sharpest case, and it is worth stating without ornament.** The paper's
+subject is the political preference of language models. Its scorer is a language model. That
+scorer is also one of its twenty-four subjects. Its lean is never measured.
+
+**Why this is not a cheap shot.** We failed the same control. Scoring retained since May showed
+**0.29 points between our most skeptical and most deferential judge — larger than two of our
+own five published effects** — and we had never computed it. Two of our five CI-clean findings
+were self-judged with nothing disclosing it until 2026-09-05. The column exists because of that,
+not because of anybody else.
+
+**The remedy, and it is cheap for anyone already holding the data:** score a fixed set of
+responses under each judge separately and report the spread between them. It requires no new
+model calls if the per-judge records were kept, and it converts "the judges agreed" into a
+number a reader can compare against the effect.
+
+### The one control where we are behind
+
+`longitudinal` — the same subject re-measured over calendar time, as opposed to a cross-section
+of versions taken on one date. **Nine of the twelve do not do it. One does: `cen`, querying 12
+models near-daily from July to November 2024.** Our own row is `partial`: the forced-choice
+corpus spans six days, which is not a time series.
+
+`liu2025` is the instructive near-miss. Its finding is a *"statistically significant rightward
+shift in political values over time"*, and what it compares is builds 0613 against 1106 — its
+figure captions read "at different times" and mean different versions. A version cross-section
+is a legitimate design; it is just not a measurement over time, and the distinction is the whole
+reason this is a separate column.
+
+## 4. What this file does not claim
 
 - **It does not claim any of these studies reached a false conclusion.** A study without a
   negative control is *unbounded*, not wrong. Several of the effects audited here may well be
@@ -134,7 +194,7 @@ by as much as the intervention, there is no intervention to report.
   `scripts/controls_audit.py`. An author who adds a null has fixed it, and this file should then
   be corrected — which is a correction *to this file*, and belongs in `CORRECTIONS.md`.
 
-## 4. If you are one of the authors cited here
+## 5. If you are one of the authors cited here
 
 The audit's per-study text is in `scripts/controls_audit.py`, in the record for your study, and
 it is the single source for the table above — there is no second copy to fall out of sync.

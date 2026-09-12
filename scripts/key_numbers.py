@@ -406,7 +406,15 @@ def build():
         {"key": "audit_full_text",
          "value": audit["full_text"],
          "what": "of those, read in full rather than retrieved as a summary",
-         "phrase": "%d of the twelve read in full"},
+         # "12 of the twelve read in full" is what the plain template produced once the last
+         # three were re-read on 2026-09-11, and it is clumsy enough that a writer would
+         # quietly reword it -- which is how a gated sentence stops being gated.
+         # "all %d read in full" is the prose a person would actually write AND still carries
+         # the digit. A first attempt dropped the number entirely ("all twelve read in full"),
+         # which reads better and silently stops the gate checking the count -- the phrase is
+         # matched literally, so a phrase without the value verifies nothing.
+         "phrase": ("all %d read in full" if audit["full_text"] == audit["external"]
+                    else "%d of the twelve read in full")},
     ]
 
 

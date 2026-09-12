@@ -22,6 +22,11 @@
 > Abliteration does not measurably move political stance on any usable base. The intensity
 > belonged to the ablator.
 
+> **Four of the audited studies put a language model in the scoring path. Not one reports that
+> model's own lean.** In every case the scorer comes from the same family as a subject; one
+> paper says so. We failed this control too — our judges spanned 0.29 points, larger than two
+> of our own five published effects, and we had not computed it either.
+
 *Every number above recomputes: `python scripts/key_numbers.py`,
 `python scripts/controls_audit.py --gaps`, `python scripts/ablation_analysis.py`. Read
 [CORRECTIONS.md](CORRECTIONS.md) before quoting any of them — this study has withdrawn,
