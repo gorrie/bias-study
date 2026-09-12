@@ -470,6 +470,17 @@ than removed.
 
 Full analysis with tables and caveats: [`results/WRITEUP-2026-05-26.md`](results/WRITEUP-2026-05-26.md).
 
+## Six checks any study can run
+
+Every defect we found in our own data, as reusable checks with the numbers they produced here:
+**[CHECKS-ANY-STUDY-CAN-RUN.md](CHECKS-ANY-STUDY-CAN-RUN.md)**. Scored blank responses, drift
+arcs that compare two runs rather than two versions, the missing same-version baseline, serving
+stack effects, judge lean against judge agreement, and gates that cannot fail.
+
+They are arithmetic on records already on disk. All six found something here, and one of them —
+reading same-version pairs as drift transitions — is a mistake we made in exactly the form the
+literature makes it. Take them; we would rather be corrected than cited.
+
 ## Limitations — what this does not establish
 
 Stated in one place because they were stated in six, none of them labelled as a limitation.
