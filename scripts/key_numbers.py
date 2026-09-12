@@ -497,6 +497,13 @@ SURFACES = {
             "replicate_med": "A median of %d answers move",
             "replicate_max": "and up to %d.**",
             "order_max_all": "Reorder the questions and up to %d move",
+            # The floors table on the research page, cell by cell.
+            "order_max_pooled":
+                "| presentation order of the questions | %(order_med_pooled)d | "
+                "%(order_p90_pooled)d | **%(order_max_pooled)d** |",
+            "null_max_sideflips":
+                "| two same-version models (different size, mode or snapshot) | "
+                "%(null_median)d | %(null_p90_sideflips)d | **%(null_max_sideflips)d** |",
             "same_version_max": "two variants of one release and up to %d move",
             "manipulation_p90": "moves %d at its 90th percentile",
             # The audit block, added 2026-09-04. These were prose ("two columns come back
@@ -719,6 +726,20 @@ def surface_numbers():
         # missed it because it was backticked rather than written as a markdown link. A
         # redaction count is exactly the number a reader checks when deciding whether a
         # published corpus is complete, so it is counted rather than remembered.
+        # THE PUBLIC PAGE'S FLOORS TABLE. Ungated until 2026-09-12, and it drifted exactly
+        # where an ungated table does: it printed presentation-order max as 22 against the
+        # generated 24, and CORRECTIONS #14 already recorded that defect as FIXED on the
+        # research page. It had not been. Gate the cells, not the prose about them.
+        {"key": "order_med_pooled", "value": fl["presentation order"]["side"][0],
+         "what": "pooled presentation-order floor, median side-flips"},
+        {"key": "order_p90_pooled", "value": fl["presentation order"]["side"][1],
+         "what": "pooled presentation-order floor, p90 side-flips"},
+        {"key": "order_max_pooled", "value": fl["presentation order"]["side"][2],
+         "what": "pooled presentation-order floor, max side-flips"},
+        {"key": "null_p90_sideflips", "value": fl["same-version variants"]["side"][1],
+         "what": "same-version null, p90 side-flips -- the detection limit's own input"},
+        {"key": "null_max_sideflips", "value": fl["same-version variants"]["side"][2],
+         "what": "same-version null, max side-flips"},
         {"key": "corrections_entries", "value": _corrections_entries(),
          "what": "claims this study published and then withdrew or narrowed"},
         {"key": "withheld_records", "value": _withheld_records(),

@@ -13,7 +13,7 @@
 > the question.
 
 > **Of twelve published studies audited against thirteen controls, none reports a same-version
-> null as a distribution, and eight report no detection limit at all.** Six of them hold the
+> null as a distribution, and eight report no detection limit at all.** Seven of them hold the
 > pairs to compute one inside their own published design — see
 > [PRIOR-WORK-CORRECTIONS.md](PRIOR-WORK-CORRECTIONS.md).
 
@@ -40,7 +40,7 @@ narrowed or corrected **14** claims of its own, and says which, when, and what r
 > [VERSIONING.md](VERSIONING.md), and read [CORRECTIONS.md](CORRECTIONS.md) first if a number
 > you have seen quoted disagrees with one here.
 >
-> Analysis plans fixed before their data was collected: [prereg/](prereg/) — five of them,
+> Analysis plans fixed before their data was collected: [prereg/](prereg/) — six of them,
 > published 2026-09-07, and one has its stopping rule enforced in code.
 > What is coming next, and what it needs: [ROADMAP.md](ROADMAP.md).
 > [TODO.md](TODO.md) is the **historical** May-2026 handoff, kept as a record and superseded.
@@ -397,7 +397,7 @@ discarded as collection errors. The decline survives reordering: three Google mo
 
 ### And the corrections to us
 
-Ten claims of ours withdrawn or narrowed, the founding thesis among them. Then the correction to the
+Fourteen claims of ours withdrawn or narrowed, the founding thesis among them. Then the correction to the
 correction: every control we ran was aimed at claims asserting an effect and none at claims
 asserting absence, so four of five of our own nulls turned out to sit below what the instrument
 can detect. Undecided is not refuted, and it is not a restoration either.
@@ -408,7 +408,7 @@ Three gates now exist because of that: `gen_paper.py --check` (tables regenerate
 --strict` (no claim about another study from a note).
 
 **New — a same-version null.** 97 pairs of models differing in size, mode, snapshot or tier
-but not version. Median 5 side-flips, p90 12. Any version-over-version comparison is a
+but not version. Median 5 side-flips, p90 11. Any version-over-version comparison is a
 single draw from that distribution, and no study in this literature reports such a control.
 
 **Also withdrawn — the drift claim.** Against that null, 3 of 108 version transitions clear
@@ -417,7 +417,7 @@ direction. An earlier three-lineage version of this result held only against a t
 null.
 
 Detail, data and the pre-publication gate that enforces these controls are in the
-companion research directory. Ten claims were withdrawn or narrowed during this pass,
+companion research directory. Fourteen claims were withdrawn or narrowed during this pass,
 including the study's own founding thesis; the corrections are recorded in place rather
 than removed.
 
@@ -431,7 +431,7 @@ than removed.
   replicates under N=5 averaging.
 - **Anthropic Opus arc.** Claude Opus trends upward across five versions, every version's
   unmask CI-significant, **+0.27 → +0.90** from 4.0 to 4.7 (~3× the baseline; an upward
-  trend, not strict monotonicity — 4.5 wobbles within noise). *(2026-08-31: a same-version null of 97 pairs, median 5 side-flips and p90 12, was not available when this was measured. Version-arc claims on this instrument should be read against it -- see the update above.)*
+  trend, not strict monotonicity — 4.5 wobbles within noise). *(2026-08-31: a same-version null of 97 pairs, median 5 side-flips and p90 11, was not available when this was measured. Version-arc claims on this instrument should be read against it -- see the update above.)*
 - **Grok dose-response.** Under the five-step gradient Grok 4.3 reaches the full v1
   magnitude (3.00 → **5.00** across the ten neutral questions) at the opinionated-persona
   condition; the simple "what do you think?" unmask already moves it to 3.63, and the
@@ -550,7 +550,7 @@ prereg/     Analysis plans fixed before their data was collected.
 [`CORRECTIONS.md`](CORRECTIONS.md) is what this study got wrong — 14 claims withdrawn, narrowed
 or corrected, each with the date it went out, the date it came back, and what replaced it.
 [`PRIOR-WORK-CORRECTIONS.md`](PRIOR-WORK-CORRECTIONS.md) is what this study finds wrong
-elsewhere: the twelve-study controls audit, the six studies holding the pairs to fix their own
+elsewhere: the twelve-study controls audit, the seven studies holding the pairs to fix their own
 gap, and the abliterated-weights confound. The second file is written to a stricter standard
 than the first, and the first exists so the second is not a double standard.
 
