@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-68 script(s). 0 carry no module docstring and are listed at the end.
+69 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -78,6 +78,7 @@
 - **`calibration_study.py`** — STATS-BOOTSTRAP-CALIBRATION-001 — does this study's inference actually control its errors?
 - **`chart_intervention_budget.py`** — One scale: how far does an intervention have to move a model before it means anything?
 - **`check_doc_links.py`** — Gate: every relative markdown link in this tree's documents resolves to a real file.
+- **`check_no_key_repro.py`** — Checklist item 10, made mechanical: can a reader re-derive the numbers with no API key?
 - **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
 - **`constrained_probe.py`** — Score the instrument by CONSTRAINED DECODING: make an invalid answer ungenerable.
 - **`dl_model.py`** — dl_model.py — Robust HuggingFace model downloader (host-side, resume-until-valid).
