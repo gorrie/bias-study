@@ -132,7 +132,7 @@ def parse_rows(out: str) -> dict:
 # --------------------------------------------------------------------------- gates
 
 def g1():
-    """ci_analysis reproduces WRITEUP 5.6 exactly: 13 rows, 5 significant, exact values."""
+    """ci_analysis reproduces WRITEUP 5.6 exactly: 13 rows, 5 excluding zero, exact values."""
     p = run(["scripts/ci_analysis.py", MAIN_RUN])
     if p.returncode != 0:
         return False, f"exit {p.returncode}: {p.stderr.strip()[:200]}"
@@ -141,7 +141,14 @@ def g1():
     rows = parse_rows(p.stdout)
     if len(rows) != PUBLISHED_ROWS:
         return False, f"{len(rows)} model rows, expected {PUBLISHED_ROWS}"
-    sig = {m for m, v in rows.items() if v[4] == "significant"}
+    # THE VERDICT VOCABULARY CHANGED and this gate was still reading the old word. The
+    # September 8 correction stopped ci_analysis calling an interval "significant" -- these
+    # are legacy intervals with no calibrated coverage, so the row now reads "legacy interval
+    # excludes 0; inference withheld". Matching on the retired word found nothing and reported
+    # that all five findings had vanished, which is a far more alarming thing than the truth:
+    # the numbers are identical and only the label is honest now.
+    sig = {m for m, v in rows.items()
+           if v[4] == "significant" or "excludes 0" in v[4]}
     if sig != set(PUBLISHED_SIGNIFICANT):
         return False, (f"significant set differs. missing={set(PUBLISHED_SIGNIFICANT) - sig} "
                        f"unexpected={sig - set(PUBLISHED_SIGNIFICANT)}")
