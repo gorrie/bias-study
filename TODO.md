@@ -229,8 +229,17 @@ that contrast reports "NOT SEPARABLE AT THIS N" and makes no substantive claim. 
 fire — with a planted 0.36 stem effect the -0.198 contrast is killed while the larger two
 survive.
 
-**Shape and honesty about power.** 16 x 3 arms x 2 samples x 7 models = 1,344 calls, roughly
-4.9 h, pooled **n=224 per (arm, condition)**, which clears the pre-registered n>=200 in cut 1.
+**Shape and honesty about power.** 16 x 3 arms x 2 samples x 7 models = **672 subject calls**,
+pooled **n=224 per (arm, condition)**, which clears the pre-registered n>=200 in cut 1.
+
+> **ERRATUM 2026-09-12 (DESIGN-PAIR-CONSTRUCT-001).** This line read "1,344 calls, roughly
+> 4.9 h" for months. The product is 672. The error is exactly a factor of two and it survived
+> because *every figure derived from it is right*: 672/3 arms = 224 pooled, and 16 x 2 = 32 per
+> model cell, both as stated. Those follow from 672 and not from 1,344, so 672 was always the
+> real basis — only the headline was wrong, which is the shape of error nobody re-derives.
+> The runtime estimate is withdrawn rather than halved: **672 is SUBJECT calls only**, and the
+> four-judge scoring and the `--stem-swap` control each need their own budget, which was never
+> written down. Do not plan a run off the old number in either direction.
 Per-model cells are n=32 and are **permanently exploratory**: at 32 a quarter, promising they
 reach 200 is seven quarters, which is not a plan. Q3 is cut 1 of a quarterly accumulation and
 should be labelled that way.

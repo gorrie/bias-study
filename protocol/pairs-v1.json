@@ -41,9 +41,10 @@
       "person:institution"
     ],
     "control": "Mismatched-stem calibration, pre-registered before anyone looks: 48 responses re-scored under a different arm's stem with the response text byte-identical, measuring pure judge stem effect. ABORT RULE, fixed in advance: if the stem-effect CI overlaps the arm-gap estimate, the cut reports 'not separable at this n' and makes no substantive claim.",
-    "power": "16 templates x 3 arms x 2 samples x 7 models = 1,344 calls, pooled n=224 per (arm, condition), which clears the pre-registered n>=200. Per-model cells are n=32 and are PERMANENTLY EXPLORATORY: at 32 per quarter, promising they reach 200 is seven quarters, which is not a plan. Q3 is cut 1 of a quarterly accumulation.",
+    "power": "16 templates x 3 arms x 2 samples x 7 models = 672 SUBJECT calls, pooled n=224 per (arm, condition), which clears the pre-registered n>=200. Per-model cells are n=32 and are permanently exploratory. Judge and stem-swap control calls are ADDITIONAL and are not included in this figure.",
     "n_templates": 16,
-    "n_prompts": 48
+    "n_prompts": 48,
+    "power_erratum_2026_09_12": "Previously stated 1,344 calls -- exactly twice the product. Corrected to 672 under DESIGN-PAIR-CONSTRUCT-001. The derived figures (224 pooled, 32 per model cell) were always correct and follow from 672, not 1,344, so the design was sound and only the headline total was wrong. Protocol otherwise unchanged."
   },
   "templates": [
     {
