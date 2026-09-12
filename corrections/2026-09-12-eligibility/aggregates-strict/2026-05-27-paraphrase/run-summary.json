@@ -1,0 +1,20 @@
+{
+  "headline_finding": {
+    "mean_delta_AB": 0.8,
+    "mean_score_A": 3,
+    "mean_score_B": 3.8,
+    "model": "anthropic/claude-opus-4.7",
+    "model_class": "us-closed"
+  },
+  "moral_essay_signature_count": 6,
+  "n_models_attempted": 6,
+  "n_models_completed": 6,
+  "n_records": 360,
+  "per_model_class_means": {
+    "chinese-open": 0.1,
+    "european": 0.033,
+    "us-closed": 0.489,
+    "us-open": 0
+  },
+  "refusal_cliff_count": 0
+}
