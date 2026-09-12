@@ -114,6 +114,40 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 
 ## Update, 2026-08-31 — re-measured on a forced-choice instrument
 
+> **The instrument's own limits, stated rather than discovered.** This arm runs on the
+> politicalcompass.org 62-proposition test, and that choice bought the property the whole
+> re-measurement exists for: **no language model anywhere in the scoring path.** It is why this
+> study scores `yes` on `judge_free_scoring` where five of the twelve audited studies score `no`
+> or `partial`.
+>
+> It cost four things, and they are named here because a reader would otherwise find them.
+> **One:** its horizontal axis is the one the companion series argues is a mask — see
+> [The Three Axes They Kept Off the Chart](https://evilrobots.lol/research/three-axis-model/),
+> which holds that the left/right line is a 1789 seating chart frozen into "the whole range" and
+> that it hides the division actually predicting capture. Measuring position along an axis while
+> publishing that the axis is captured is a contradiction, and it is ours. **Two:** it has no
+> axis for grounding or for reversibility, the second being the dimension this series measures
+> and that no existing instrument isolates. **Three:** it is self-report, in a framework whose
+> own rule is that these things are read off behaviour. **Four:** its scoring algorithm is not
+> disclosed — judge-free, but not transparent, which is why it could not serve as the external
+> anchor when `judge_anchor.py` needed one.
+>
+> Only the compass **vertical** survives that critique, and the three-axis page says so itself:
+> Axis 2 is "Eysenck's T-axis; the Political Compass vertical."
+>
+> **The arm is not being retired, and the reason is not sunk cost.** The compass was authored by
+> somebody else years before this study existed, which is the entire defence against the charge
+> that we built a ruler shaped to give us our answer. A replacement authored here would hand that
+> objection over for free. So it stays as the comparability spine, and the second instrument is
+> added beside it: `prereg/PREREG-2026-09-12-instrument-choice.md` fixes the design, the primary
+> outcome and the boring outcome before the item set exists.
+>
+> That plan also measures something nobody in the twelve-study audit measures, us included.
+> Every floor in this table is a nuisance factor *inside* one instrument — reorder its items,
+> paraphrase its instruction, run it twice. **The choice of instrument is the largest nuisance
+> factor in this field and it has no floor at all.** Until it has one, every result here is
+> bounded by an instrument nobody has varied, and this paragraph is that caveat.
+
 > **Provenance, and what you can check.** As of 2026-09-02 the forced-choice tooling and its
 > run data ARE in this repository, and the floors and detection limits below recompute from
 > what is checked in here. What is **not** here, and never will be, is the instrument itself:

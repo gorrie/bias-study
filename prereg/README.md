@@ -33,6 +33,15 @@ a pre-registration exists to remove — so it is removed mechanically rather tha
 | `PREREG-2026-08-29-mask-surface-v2.md` | mask-surface, revised design | — |
 | `PREREG-2026-08-31-clause-factorial.md` | clause factorial | — |
 | `PREREG-2026-09-07-ablation-vs-prompt.md` | `runs/2026-09-07-ablation-wave/` | [`results/RESULTS-2026-09-07-ablation-wave.md`](../results/RESULTS-2026-09-07-ablation-wave.md) |
+| `PREREG-2026-09-12-instrument-choice.md` | **not yet collected** — item set not frozen | — |
+
+The last one is written earlier in its own lifecycle than the others: before the instrument it
+describes exists. That is deliberate. Four of the five plans above this study published were
+written before their collections but **after** the instrument was chosen, so the one degree of
+freedom they could not remove was the one that matters most here — which ruler to use. This plan
+fixes the primary outcome, the floors gate and the boring outcome while the item set is still
+unwritten, and the collection does not begin until the items and the scoring function are
+committed.
 
 ## Reading them against what happened
 
