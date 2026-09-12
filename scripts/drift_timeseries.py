@@ -211,9 +211,17 @@ def write_vendor_arcs_md(families: dict, path: Path) -> None:
 
     # Sort families by number of versions descending (most data first)
     for family, versions in sorted(families.items(), key=lambda x: -len(x[1])):
+        # DISTINCT VERSIONS, not rows. `versions` is a list of measurement ROWS, and several
+        # rows routinely share one version label -- the same model measured in several runs.
+        # The heading counted rows and called them versions: xai-grok read "8 versions" and is
+        # one version measured eight times.
+        distinct = []
+        for v in versions:
+            if v["version_label"] not in distinct:
+                distinct.append(v["version_label"])
         if len(versions) < 2:
-            continue  # need at least 2 versions for an arc
-        lines.append(f"## {family} ({len(versions)} versions)")
+            continue  # nothing to show at all
+        lines.append(f"## {family} ({len(distinct)} version(s), {len(versions)} measurements)")
         lines.append("")
         lines.append("| version | model | mean A | mean B | Delta(B-A) | n questions | run |")
         lines.append("|---------|-------|-------:|-------:|----------:|------------:|-----|")
@@ -230,17 +238,58 @@ def write_vendor_arcs_md(families: dict, path: Path) -> None:
                 f"{v['n_questions']} | {v['run_date']} |"
             )
 
-        # Arc summary
-        deltas = [v["mean_delta_AB"] for v in versions if v["mean_delta_AB"] is not None]
-        if len(deltas) >= 2:
-            arc_dir = deltas[-1] - deltas[0]
+        # Arc summary.
+        #
+        # THIS WAS `deltas[-1] - deltas[0]`: the last ROW minus the first ROW, described in the
+        # output as "delta from oldest to newest". Rows are (version, run) pairs, so on a family
+        # with one version measured eight times it subtracted one arbitrary run from another
+        # arbitrary run of the SAME MODEL and printed it as version drift. Four of twelve
+        # families -- xai-grok, mistral, meta-llama, microsoft-phi -- have exactly one distinct
+        # version, and every one of them was publishing an arc direction.
+        #
+        # Now: aggregate WITHIN a version first, then compare newest version to oldest, and
+        # refuse to report an arc at all when there is only one version to compare.
+        per_version = {}
+        for v in versions:
+            if v["mean_delta_AB"] is not None:
+                per_version.setdefault(v["version_label"], []).append(v["mean_delta_AB"])
+        ordered = [lbl for lbl in distinct if lbl in per_version]
+        lines.append("")
+        if len(ordered) < 2:
+            only = ordered[0] if ordered else "none"
+            spread = per_version.get(only, [])
+            note = ""
+            if len(spread) >= 2:
+                note = (f" Its {len(spread)} measurements of `{only}` span "
+                        f"{min(spread):+.2f} to {max(spread):+.2f}; that is run-to-run "
+                        f"variation, not drift.")
+            lines.append(
+                f"Arc direction: **NO ARC** -- this family has only {len(ordered)} distinct "
+                f"version in the corpus, so there is nothing to compare across versions.{note}")
+        else:
+            newest = sum(per_version[ordered[-1]]) / len(per_version[ordered[-1]])
+            oldest = sum(per_version[ordered[0]]) / len(per_version[ordered[0]])
+            arc_dir = newest - oldest
             arc_label = (
                 "**unmasking increasing over versions**" if arc_dir > 0.2
                 else "**unmasking decreasing over versions**" if arc_dir < -0.2
                 else "**stable across versions**"
             )
-            lines.append("")
-            lines.append(f"Arc direction: {arc_label} (delta from oldest to newest = {arc_dir:+.2f})")
+            # The within-version spread is the noise this arc has to clear to mean anything.
+            widest = max((max(d) - min(d)) for d in per_version.values() if len(d) >= 2) \
+                if any(len(d) >= 2 for d in per_version.values()) else None
+            lines.append(
+                f"Arc direction: {arc_label} "
+                f"(mean Delta of `{ordered[-1]}` minus mean Delta of `{ordered[0]}` "
+                f"= {arc_dir:+.2f}, across {len(ordered)} versions)")
+            if widest is not None:
+                lines.append("")
+                lines.append(
+                    f"Within-version spread, the noise this arc must clear: the widest single "
+                    f"version in this family spans {widest:.2f} across its repeat measurements"
+                    + (f" -- **wider than the arc itself**, so the direction above is not "
+                       f"distinguishable from run-to-run variation." if widest >= abs(arc_dir)
+                       else "."))
         lines.append("")
 
     if any(len(versions) < 2 for versions in families.values()):
@@ -257,6 +306,10 @@ def write_vendor_arcs_md(families: dict, path: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Cross-run aggregator for drift analysis.")
     parser.add_argument("--runs", help="Comma-separated run names (default: all runs with aggregated/)")
+    # Same reason aggregate.py has one: regenerating in place overwrites the published artifact
+    # you are trying to compare against.
+    parser.add_argument("--out", metavar="DIR",
+                        help="write here instead of <runs>/_aggregated/ (for dated corrections)")
     args = parser.parse_args()
 
     runs = [r.strip() for r in args.runs.split(",")] if args.runs else None
@@ -267,7 +320,7 @@ def main() -> int:
 
     print(f"Collected {len(rows)} per-model rows across runs")
 
-    out_dir = RUNS_DIR / "_aggregated"
+    out_dir = Path(args.out) if getattr(args, "out", None) else RUNS_DIR / "_aggregated"
     write_csv(rows, out_dir / "drift_timeseries.csv")
 
     series = build_drift_timeseries(rows)
