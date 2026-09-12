@@ -129,11 +129,13 @@ def parse_model(model_id: str) -> tuple[str, float, str] | None:
 
 
 def load_run_per_model(run_dir: Path) -> list[dict]:
-    csv_path = run_dir / "aggregated" / "per-model.csv"
-    if not csv_path.exists():
+    from aggregate import corrected_tables
+    if not (run_dir / 'scored').is_dir():
         return []
-    with csv_path.open(encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+    rows, summary = corrected_tables(run_dir)
+    for row in rows:
+        row['response_quality'] = summary['response_quality']
+    return rows
 
 
 def collect_all_runs(runs: list[str] | None) -> list[dict]:
@@ -164,7 +166,7 @@ def build_drift_timeseries(rows: list[dict]) -> dict:
             continue
         family, sort_key, label = parsed
         try:
-            delta = float(r["mean_delta_AB"]) if r.get("mean_delta_AB") else None
+            delta = float(r["mean_delta_AB"]) if r.get("mean_delta_AB") not in (None, '') else None
         except ValueError:
             delta = None
         by_family[family].append({
@@ -190,11 +192,10 @@ def write_csv(rows: list[dict], path: Path) -> None:
     if not rows:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
-    # lineterminator="\n" for the same reason aggregate.py carries it: csv.DictWriter defaults
-    # to \r\n, so with newline="" this wrote CRLF into a tree whose .gitattributes normalises
-    # everything else to LF. On a mixed-platform team that is a diff that fires on every
-    # regeneration and hides the one that matters.
     with path.open("w", encoding="utf-8", newline="") as f:
+        # lineterminator="\n" explicitly: csv defaults to \r\n, which wrote CRLF data files
+        # on every platform. Three abliteration-gemma2 CSVs are committed with CRLF from
+        # before this fix. Data files are LF here; only .md content is CRLF in this repo.
         writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)

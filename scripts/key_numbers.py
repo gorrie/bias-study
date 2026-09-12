@@ -596,8 +596,14 @@ SURFACES = {
         "path": _find_surface("website", "content", "tech", "barometer.md"),
         "phrases": {
             "wave_panel_size": "A frozen panel of %d models answers",
-            "null_mde": "the same-version floor, which resolves %d items",
-            "order_mde": "the presentation-order floor, which resolves %d.",
+            # THE PAGE NO LONGER CLAIMS THE FLOOR "RESOLVES" ANYTHING. "Resolves N items"
+            # states an achieved detection limit; the quantity is a hypothetical shift under
+            # a clipped model, so the page now says "hypothetical variant shift is N items"
+            # and the gate follows it. Leaving the old phrase here would have failed the gate
+            # against the corrected page and invited someone to restore the wrong sentence to
+            # make it green.
+            "null_mde": "hypothetical variant shift is %d items",
+            "order_mde": "hypothetical order shift is %d.",
         },
     },
     # VERSIONING.md was never gated, and it drifted exactly where you would expect a file

@@ -24,8 +24,6 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-import eligibility as _elig
-
 SCRIPT_DIR = Path(__file__).parent
 # STUDY_DIR comes from studypaths so that STUDY_ROOT is honoured HERE too, not
 # only by runs_root(). Defining it locally as SCRIPT_DIR.parent meant a script
@@ -33,6 +31,7 @@ SCRIPT_DIR = Path(__file__).parent
 # wrote into THIS repo's runs -- silent wrong-data, worse than a crash.
 sys.path.insert(0, str(SCRIPT_DIR))
 from studypaths import STUDY_DIR, runs_root  # noqa: E402
+from eligibility import load_scored_records, inspect_scored_records
 
 MODEL_CLASS_HINTS = {
     "anthropic/": "us-closed",
@@ -62,14 +61,7 @@ def model_class(model: str) -> str:
 
 
 def load_scored(run_dir: Path) -> list[dict]:
-    scored_dir = run_dir / "scored"
-    records = []
-    for path in scored_dir.glob("*.jsonl"):
-        with path.open("r", encoding="utf-8") as f:
-            for line in f:
-                if line.strip():
-                    records.append(json.loads(line))
-    return _elig.apply_rule(records, label='aggregate.py')
+    return load_scored_records(run_dir / "scored")
 
 
 def pair_records(records: list[dict]) -> dict[tuple, dict]:
@@ -238,26 +230,35 @@ def write_csv(path: Path, rows: list[dict]) -> None:
         path.write_text("", encoding="utf-8")
         return
     path.parent.mkdir(parents=True, exist_ok=True)
-    # lineterminator="\n" is load-bearing, not style. csv.DictWriter defaults to \r\n, so with
-    # newline="" this wrote CRLF while every committed aggregate is LF -- meaning running the
-    # documented pipeline on UNCHANGED data produced a modified working tree, and the README's
-    # "every committed run reproduces its aggregated CSVs via scripts/aggregate.py" was false
-    # byte-for-byte. Worse than untidy: it buries a real data change in line-ending noise, so
-    # the one signal that says "your correction moved something" is lost in a diff that always
-    # fires. Verified 2026-09-12: with this, re-running a zero-exclusion run leaves git clean.
     with path.open("w", encoding="utf-8", newline="") as f:
+        # lineterminator="\n" explicitly: csv defaults to \r\n, which wrote CRLF data files
+        # on every platform. Three abliteration-gemma2 CSVs are committed with CRLF from
+        # before this fix. Data files are LF here; only .md content is CRLF in this repo.
         writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
 
+def corrected_tables(run_dir: Path):
+    """Build from eligible source records, never from historical derived CSVs."""
+    records, quality = inspect_scored_records(run_dir / 'scored')
+    if not records:
+        raise ValueError(f'no eligible scored responses in {run_dir}')
+    pairs = pair_records(records)
+    per_model = aggregate_per_model(records, pairs)
+    per_question = aggregate_per_question(records, pairs)
+    summary = run_summary(records, per_model, per_question)
+    summary['response_quality'] = quality
+    return per_model, summary
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Aggregate scored bias study records.")
     parser.add_argument("run_date", help="Run date YYYY-MM-DD")
-    # A CORRECTION MUST NOT BE WRITTEN ON TOP OF ITS OWN EVIDENCE. Regenerating under a changed
-    # rule used to mean overwriting the published artifacts in place, so the only way to compare
-    # before and after was to run it, copy the output somewhere, and `git checkout` the
-    # originals back -- which works exactly until the day someone forgets the third step.
+    # WRITE SOMEWHERE ELSE. Regenerating in place overwrites the published artifact you are
+    # trying to compare against, and the only way to see before and after was to run it, copy
+    # the output, and git checkout the originals back -- which works exactly until someone
+    # forgets the third step. It has been forgotten.
     parser.add_argument("--out", metavar="DIR",
                         help="write the aggregates here instead of <run>/aggregated/ "
                              "(use for dated correction directories; leaves originals alone)")
@@ -272,6 +273,9 @@ def main() -> int:
     agg_dir.mkdir(parents=True, exist_ok=True)
 
     records = load_scored(run_dir)
+    if not records:
+        print('ERROR: no eligible responses; historical files unchanged', file=sys.stderr)
+        return 2
     pairs = pair_records(records)
 
     per_model = aggregate_per_model(records, pairs)
@@ -283,13 +287,8 @@ def main() -> int:
     write_csv(agg_dir / "per-question.csv", per_question)
 
     summary = run_summary(records, per_model, per_question)
-    # Trailing newline, and it is not cosmetic. Without it, re-running aggregate.py on a
-    # SHIPPED run left `run-summary.json` modified -- the pre-commit end-of-file-fixer adds
-    # the newline, this writer removed it again -- so following the documented pipeline on a
-    # clean clone dirtied a tracked file inside a directory DEVELOPER.md §2 calls immutable.
-    # Re-deriving a published number must be a no-op against the repository.
-    (agg_dir.parent / "run-summary.json" if not args.out else agg_dir / "run-summary.json").write_text(
-        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    summary['response_quality'] = inspect_scored_records(run_dir / 'scored')[1]
+    (run_dir / "run-summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
 
     print(f"Aggregated {len(records)} records across {len({r['model'] for r in records})} models")
     print(f"  per-model.csv:    {len(per_model)} rows")

@@ -78,6 +78,9 @@ BROKEN_BUILDS = ("wash-",)
 #: collected for and they distort any rate computed over the whole corpus, because they change
 #: one condition's denominator without changing the others'.
 DEFAULT_EXCLUDE = {
+    # Two-call residency smoke check, selected D-only on one model. It is backend
+    # health evidence, never an extra observation in the historical refusal panel.
+    "2026-09-08-residency-smoke-06",
     # Three Google models re-collected specifically because they refuse most. A refusal rate
     # that includes a sweep selected FOR refusing is not a refusal rate.
     "2026-08-31-google-orderfloor",

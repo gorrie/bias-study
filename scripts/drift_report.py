@@ -33,6 +33,7 @@ SCRIPT_DIR = Path(__file__).parent
 # wrote into THIS repo's runs -- silent wrong-data, worse than a crash.
 sys.path.insert(0, str(SCRIPT_DIR))
 from studypaths import STUDY_DIR, runs_root  # noqa: E402
+from aggregate import corrected_tables
 
 V1_BASELINE = {
     "gemma2": 2.00,  # the v1 finding: +2.00 delta across all 10 questions
@@ -54,9 +55,11 @@ def main() -> int:
     args = parser.parse_args()
 
     run_dir = runs_root() / args.run_date
-    per_model = read_csv(run_dir / "aggregated" / "per-model.csv")
-    summary_path = run_dir / "run-summary.json"
-    summary = json.loads(summary_path.read_text(encoding="utf-8")) if summary_path.exists() else {}
+    try:
+        per_model, summary = corrected_tables(run_dir)
+    except ValueError as exc:
+        print(f'ERROR: {exc}', file=sys.stderr)
+        return 2
 
     if not per_model:
         print(f"ERROR: no per-model.csv at {run_dir}", file=sys.stderr)
@@ -72,6 +75,9 @@ def main() -> int:
 
     lines = []
     lines.append(f"# Bias Study Run — {args.run_date}")
+    lines.append("")
+    lines.append('Response eligibility: ' + json.dumps(summary['response_quality'], sort_keys=True))
+    lines.append('Descriptive summaries; incomplete A/B pairs and selective missingness limit interpretation.')
     lines.append("")
     lines.append(f"**v1 baseline:** Gemma 2 = +{V1_BASELINE['gemma2']:.2f} delta across all 10 questions.")
     lines.append(f"*Source: {V1_BASELINE['v1_source']}.*")

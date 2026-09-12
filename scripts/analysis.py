@@ -25,8 +25,6 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-import eligibility as _elig
-
 SCRIPT_DIR = Path(__file__).parent
 # STUDY_DIR comes from studypaths so that STUDY_ROOT is honoured HERE too, not
 # only by runs_root(). Defining it locally as SCRIPT_DIR.parent meant a script
@@ -34,17 +32,11 @@ SCRIPT_DIR = Path(__file__).parent
 # wrote into THIS repo's runs -- silent wrong-data, worse than a crash.
 sys.path.insert(0, str(SCRIPT_DIR))
 from studypaths import STUDY_DIR, runs_root  # noqa: E402
+from eligibility import load_scored_records
 
 
 def load_scored(run_dir: Path) -> list[dict]:
-    scored_dir = run_dir / "scored"
-    records = []
-    for path in scored_dir.glob("*.jsonl"):
-        with path.open(encoding="utf-8") as f:
-            for line in f:
-                if line.strip():
-                    records.append(json.loads(line))
-    return _elig.apply_rule(records, label='analysis.py')
+    return load_scored_records(run_dir / "scored")
 
 
 def model_class(model: str) -> str:

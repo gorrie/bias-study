@@ -7,7 +7,7 @@ the data is the ground truth, not the doc.
 
 Designed to run from either:
   - The bias-study-release mirror (github.com/gorrie/bias-study)
-  - The upstream internal working directory
+  - The upstream evil-robots-series/research/bias-study/ directory
 
 Auto-locates the data directory by walking up from the script's location and
 looking for the first `runs/` containing `*/raw/` files. If that fails it tries
@@ -54,7 +54,7 @@ PRE_REGISTERED_RUNS = [
 
 # Two directory conventions exist in this project:
 #   - bias-study-release (github.com/gorrie/bias-study) uses `data/`
-#   - the internal working copy uses `runs/`
+#   - the internal evil-robots-series working copy uses `runs/`
 # Probe in publication-first order: release convention before working-copy convention.
 RUN_DIR_CANDIDATES = ("data", "runs")
 
@@ -186,6 +186,7 @@ def collect(data_dir: Path, run_dir_name: str, all_runs: bool = False) -> dict:
     ]
     out["summary"]["cross_method_outputs"] = {
         "cross-method-runs-index.json": (aggregated / "cross-method-runs-index.json").exists(),
+        "cross-method-report.json": (aggregated / "cross-method-report.json").exists(),
         "judge-methods-run.log": (aggregated / "judge-methods-run.log").exists(),
         "charts_dir": next((str(p) for p in charts_candidates if p.is_dir()), "MISSING"),
     }
@@ -233,16 +234,13 @@ def print_table(state: dict, gaps_only: bool = False) -> None:
     print("## Downstream-analysis outputs")
     print()
     for name, present in state["summary"]["cross_method_outputs"].items():
-        # `charts_dir` holds a PATH or the literal string "MISSING", not a bool -- and
-        # "MISSING" is truthy, so this printed `OK  charts_dir` when the directory was
-        # absent. A status tool that reports OK for a missing artifact is worse than one
-        # that says nothing.
-        if isinstance(present, str):
-            ok = present != "MISSING"
-            print(f"  {'OK' if ok else 'MISSING':>8s}  {name}"
-                  + (f"  ({present})" if ok else ""))
-            continue
-        print(f"  {'OK' if present else 'MISSING':>8s}  {name}")
+        # charts_dir carries a PATH STRING or the literal "MISSING", not a bool, so a plain
+        # truthiness test called a missing charts directory "OK" -- the sentinel is a
+        # non-empty string and every non-empty string is true. The one row whose value is not
+        # a boolean is the one row that read as present when it was absent.
+        missing = (present is False) or (isinstance(present, str) and present == "MISSING")
+        mark = "MISSING" if missing else "OK"
+        print(f"  {mark:>8s}  {name}")
     print()
 
     # Next-step recommendation
@@ -250,13 +248,7 @@ def print_table(state: dict, gaps_only: bool = False) -> None:
         info["complete_all_runs"]
         for info in state["summary"]["methods"].values()
     )
-    # The builder above emits "cross-method-runs-index.json"; this line asked for
-    # "cross_method_report.json", a key it has never produced, so `sweep_status.py` --
-    # the tool whose whole job is "state check from the data, not the prose", and the
-    # first command in WRITEUP's reproducibility pipeline -- died with a KeyError on a
-    # clean clone. Read the key that exists, and tolerate its absence rather than crash.
-    cross_method_done = state["summary"]["cross_method_outputs"].get(
-        "cross-method-runs-index.json", False)
+    cross_method_done = state["summary"]["cross_method_outputs"]["cross-method-report.json"]
     if not methods_complete:
         incomplete = [
             (info["method_number"], info["label"])
@@ -268,7 +260,7 @@ def print_table(state: dict, gaps_only: bool = False) -> None:
         print("  Skills: api-judge-sweep (Methods 4-7) / abliterated-judge-sweep (Method 2)")
     elif not cross_method_done:
         print("## NEXT STEP")
-        print("  All five methods complete. Run cross-method-analysis:")
+        print("  All six configured methods complete. Run cross-method-analysis:")
         print("    python scripts/cross_method_report.py --all-runs > runs/_aggregated/cross-method-report.json")
         print("    python scripts/generate_charts.py --all-charts --out results/charts/")
     else:

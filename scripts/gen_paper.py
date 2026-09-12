@@ -60,8 +60,15 @@ def run(script, args):
     proc = subprocess.run([PY, os.path.join(HERE, script)] + args,
                           capture_output=True, text=True, encoding="utf-8", env=env,
                           cwd=STUDY)
-    if proc.returncode not in (0, 1):      # 1 is a legitimate gate failure, not a crash
-        raise SystemExit("%s failed (%d):\n%s" % (script, proc.returncode, proc.stderr))
+    # ANY nonzero exit, INCLUDING 1. This allowed exit 1 through as "a legitimate gate
+    # failure, not a crash" and then used the failing script's partial stdout as a paper
+    # block. A report that exits 1 is a report saying do not trust this output, and splicing
+    # it into the paper is how a generated block ends up quoting a computation that failed
+    # halfway. It matters concretely now: power.py exits 1 when a published null's reference
+    # has gone missing, and that is exactly when its table must not be pasted into the paper.
+    if proc.returncode != 0:
+        raise SystemExit("%s failed (%d):\n%s" % (script, proc.returncode,
+                                                  proc.stderr or proc.stdout))
     return proc.stdout.rstrip()
 
 

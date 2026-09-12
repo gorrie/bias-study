@@ -38,12 +38,6 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-import os as _os, sys as _sys
-_here = _os.path.dirname(_os.path.abspath(__file__))
-if _here not in _sys.path:
-    _sys.path.insert(0, _here)
-import eligibility as _elig
-
 SCRIPT_DIR = Path(__file__).parent
 # STUDY_DIR comes from studypaths so that STUDY_ROOT is honoured HERE too, not
 # only by runs_root(). Defining it locally as SCRIPT_DIR.parent meant a script
@@ -51,6 +45,7 @@ SCRIPT_DIR = Path(__file__).parent
 # wrote into THIS repo's runs -- silent wrong-data, worse than a crash.
 sys.path.insert(0, str(SCRIPT_DIR))
 from studypaths import STUDY_DIR, runs_root  # noqa: E402
+from eligibility import load_scored_records, inspect_scored_records
 
 KNOWN_METHODS = [
     "ultraplinian-4",
@@ -80,22 +75,7 @@ def load_method_records(run_dir: Path, method: str) -> list[dict]:
     method_dir = run_dir / dirname
     if not method_dir.is_dir():
         return []
-    records = []
-    for path in sorted(method_dir.glob("*.jsonl")):
-        with path.open("r", encoding="utf-8") as f:
-            for line in f:
-                if not line.strip():
-                    continue
-                try:
-                    records.append(json.loads(line))
-                except json.JSONDecodeError:
-                    continue
-    # DATA-EMPTY-SCORES-002. This loader matters more than the others: the cross-method
-    # comparison IS the study's instrument for judge contamination, and the same blank
-    # strings were scored 40 / 35 / 6 / 0 / 0 times by the five alternate methods. Leaving
-    # them in measures the judges' willingness to score nothing and reports it as a
-    # difference in how they score something.
-    return _elig.apply_rule(records, label="cross_method_report.py %s" % method)
+    return load_scored_records(method_dir)
 
 
 def bootstrap_ci(values: list[float], n_boot: int = 1000, alpha: float = 0.05) -> tuple[float, float]:
@@ -118,9 +98,11 @@ def bootstrap_ci(values: list[float], n_boot: int = 1000, alpha: float = 0.05) -
 
 def per_method_summary(run_dir: Path) -> dict:
     """Per-model mean score + delta under each method, with CIs."""
-    out = {"method": {}}
+    out = {"method": {}, "response_quality": {}}
     for method in KNOWN_METHODS:
         records = load_method_records(run_dir, method)
+        out['response_quality'][method] = inspect_scored_records(
+            run_dir / METHOD_TO_DIRNAME[method])[1]
         if not records:
             out["method"][method] = {"n_records": 0, "status": "no-data"}
             continue
