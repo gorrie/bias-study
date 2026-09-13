@@ -79,6 +79,10 @@ NOT_A_PROCEDURE = {
                                 "alternate-method score against the primary panel and averages "
                                 "by topic, showing the single agreement figure hides a "
                                 "nineteen-fold spread",
+    "refusal_structure.py": "one-shot 2026-09-12 analysis behind "
+                            "RESULTS-2026-09-12-refusal-structure.md. Shows wave-0 refusal is "
+                            "whole-instrument (92% of failures return zero items) and bimodal "
+                            "across models, so the per-condition rate is a mixing proportion",
     "judge_lean.py": "one-shot 2026-09-12 analysis behind RESULTS-2026-09-12-judge-lean.md. "
                      "Measures our own panel's per-judge lean and the self-judging effect for "
                      "the two judges that are also subjects. Reruns to re-derive that document",
