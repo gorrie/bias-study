@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-77 script(s). 0 carry no module docstring and are listed at the end.
+78 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -96,6 +96,7 @@
 - **`model_cards.py`** — One card per model: can this model carry a claim at all, and on what evidence?
 - **`monitor_experiment.py`** — monitor_experiment.py — the durable, cross-platform half of the experiment-monitor agent.
 - **`paired_analysis.py`** — paired_analysis.py — the estimator for a matched-pair arm study. No API calls.
+- **`pipeline_rung.py`** — Rung 2 of the escalation ladder, estimated. The arm the analysis pipeline could not see.
 - **`refusal_structure.py`** — Is whole-instrument refusal all-or-nothing, and which models do it?
 - **`refusal_suite_summary.py`** — Both model pairs of the XSTest-style refusal suite, with clustered intervals.
 - **`robustness_checks.py`** — robustness_checks.py — Two reviewer-requested robustness analyses over already- scored runs. No API calls.

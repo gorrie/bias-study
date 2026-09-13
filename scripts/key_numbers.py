@@ -655,6 +655,7 @@ SURFACES = {
             # unbeaten effect of 0.30, and "larger than two of them" survived five documents
             # because nobody could see the gap.
             "judge_spread": "our judges spanned %.4f points",
+            "pipeline_contrasts": "all %d intervals span zero",
             "withheld_records": "%d run records had their",
             "arms_models": "Across %d models measured under both arms",
             "arms_declining": "arms, %d decline all",
@@ -860,6 +861,25 @@ def _scored_empty(scope):
         return None
 
 
+def _pipeline_rung():
+    """(n_contrasts, n_excluding_zero) for the elicitation rung, from pipeline_rung.py.
+
+    The README published a DIRECTION for this rung with nothing computing it, for four months,
+    because analysis.py keys on conditions A/B and the arm runs B-STM / B-Parseltongue /
+    B-Layered -- so its records matched no branch and its ANALYSIS.md is empty headings. Gating
+    the corrected sentence means the row cannot drift back to a claim the corpus contradicts.
+    """
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from pipeline_rung import estimate
+        res = estimate()
+        if not res:
+            return None, None
+        return res["n_contrasts"], sum(1 for c in res["contrasts"] if c["excludes_zero"])
+    except Exception:
+        return None, None
+
+
 def surface_numbers():
     a = audit_scale()
     fl = floors()
@@ -900,6 +920,10 @@ def surface_numbers():
          "what": "claims this study published and then withdrew or narrowed"},
         {"key": "withheld_records", "value": _withheld_records(),
          "what": "records whose response_text is withheld, counted across both run roots"},
+        {"key": "pipeline_contrasts", "value": _pipeline_rung()[0],
+         "what": "contrasts estimated for escalation-ladder rung 2"},
+        {"key": "pipeline_clean", "value": _pipeline_rung()[1],
+         "what": "of those, intervals excluding zero -- the README row depends on this being 0"},
         {"key": "judge_spread", "value": _judge_spread(),
          "what": "points between the most skeptical and most deferential judge, over the "
                  "per-judge records in THIS repository"},
