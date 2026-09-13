@@ -588,6 +588,32 @@ SURFACES = {
             "same_version_max": "a median of five and up to %d",
         },
     },
+    # THE CORRECTED DISPATCH AND THE DISCOVERY PAGE, added 2026-09-12, for the reason stated
+    # above dispatch-gemma and proved again since: deception-delta.md was publishing three
+    # per-model deltas that its own sibling had withdrawn four days earlier, because the sibling
+    # was gated and it was not. One page gated and its twin ungated is not half-protected.
+    #
+    # These two carry the JUDGE-LAYER numbers, which had no gate at all until now -- the panel
+    # spread, its denominator and the empty-response counts were typed on every surface that
+    # used them, and the denominator had already gone stale once.
+    "dispatch-delta": {
+        "path": _find_surface("website", "content", "dispatches", "deception-delta.md"),
+        "phrases": {
+            "judge_records": "Over %s scored records",
+            "judge_lean_top": "from +%.3f (Gemini 2.5 Flash",
+            "judge_lean_bottom": "to %s (DeepSeek v3.2",
+        },
+    },
+    "website-discovery": {
+        "path": _find_surface("website", "content", "research", "how-the-audit-broke.md"),
+        "phrases": {
+            "judge_records": "Over %s scored records",
+            "judge_lean_top": "| **+%.3f** |",
+            "judge_lean_bottom": "| **%s** |",
+            "scored_empty_main": "**%d scored records in the main corpus",
+            "scored_empty_all": "the count is %d of 14,028",
+        },
+    },
     #: The barometer's own demo page (2026-09-07). Every figure in its layout is rendered from
     #: static/tech/barometer/barometer.json, which tools/gen-barometer.py reads through build()
     #: and floors() -- so the layout cannot drift. The PROSE above the layout types three numbers
@@ -710,6 +736,117 @@ def _judge_spread():
         return None
 
 
+def _mirror_judge_records():
+    """Every scored record in the PUBLIC MIRROR carrying a per-judge breakdown.
+
+    THE MIRROR, DELIBERATELY, and this is the one place in this file where that distinction
+    bites. The private tree holds 4,744 such records and the mirror holds 4,668 -- the mirror is
+    the scrubbed, published corpus and it is what a reader actually re-runs. A public page must
+    state a number the public artifact reproduces. Gating these against the private tree would
+    fail a correct page, and "fixing" the page to make the gate green would publish a figure
+    nobody outside this machine can get.
+
+    Every other website number in this file happens to be identical in both trees, so the
+    distinction never came up until the judge layer was published.
+    """
+    return _mirror_judge_stats()[0]
+
+
+def _mirror_judge_lean_extremes():
+    """(most institution-skeptical, most deferential) mean deviation in the mirror, 3dp."""
+    st = _mirror_judge_stats()
+    return st[1], st[2]
+
+
+_MIRROR_JUDGE_CACHE = []
+
+
+def _mirror_judge_stats():
+    """(n_records, top_lean, bottom_lean) over the mirror, computed once."""
+    if _MIRROR_JUDGE_CACHE:
+        return _MIRROR_JUDGE_CACHE[0]
+    out = (None, None, None)
+    try:
+        import glob as _glob
+        import json as _json
+        import statistics as _st
+        import collections as _c
+        # WHICH TREE IS THE MIRROR depends on which tree this is running in. From the private
+        # study the mirror is the `bias-study-release` symlink; run FROM the mirror there is no
+        # such path above it and the mirror is simply here. Resolving that wrong returned
+        # (None, None, None), which made every judge-layer phrase uncomputable in exactly the
+        # tree that owns the numbers.
+        mirror = _find_surface("bias-study-release")
+        if not os.path.isdir(mirror):
+            mirror = STUDY
+        paths = []
+        for layout in ("data", "runs"):
+            paths += _glob.glob(os.path.join(mirror, layout, "*", "scored", "**", "*.jsonl"),
+                                recursive=True)
+        per = _c.defaultdict(list)
+        n = 0
+        for path in sorted(paths):
+            for line in io.open(path, encoding="utf-8", errors="replace"):
+                if not line.strip():
+                    continue
+                try:
+                    r = _json.loads(line)
+                except ValueError:
+                    continue
+                if r.get("score_classifier") is None or not r.get("score_classifier_judges"):
+                    continue
+                n += 1
+                med = r["score_classifier"]
+                for j in r["score_classifier_judges"]:
+                    if isinstance(j.get("score"), (int, float)):
+                        per[j["judge"]].append(j["score"] - med)
+        if n and per:
+            means = sorted(_st.mean(v) for v in per.values())
+            out = (n, round(means[-1], 3), round(means[0], 3))
+    except Exception:
+        out = (None, None, None)
+    _MIRROR_JUDGE_CACHE.append(out)
+    return out
+
+
+def _scored_empty(scope):
+    """Records carrying a score derived from an EMPTY response.
+
+    scope "main" is the primary scored/ corpus; scope "all" is every judge method. This is the
+    defect DATA-EMPTY-SCORES-002 exists for -- an empty string scores a 3, three is the balanced
+    answer, so every blank became a data point saying the model was perfectly even-handed.
+    """
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import eligibility as E
+        import glob as _glob
+        import json as _json
+        from studypaths import run_roots
+        n = 0
+        for root in run_roots():
+            for path in _glob.glob(os.path.join(str(root), "*", "scored*", "**", "*.jsonl"),
+                                   recursive=True):
+                if scope == "main" and os.path.basename(os.path.dirname(
+                        os.path.dirname(path))) not in ("", None):
+                    pass
+                leaf = path.split(os.sep)
+                method = next((x for x in leaf if x.startswith("scored")), "")
+                if scope == "main" and method != "scored":
+                    continue
+                for line in io.open(path, encoding="utf-8", errors="replace"):
+                    if not line.strip():
+                        continue
+                    try:
+                        r = _json.loads(line)
+                    except ValueError:
+                        continue
+                    if E.is_scored_empty(r):
+                        n += 1
+        return n or None
+    except Exception:
+        return None
+
+
 def surface_numbers():
     a = audit_scale()
     fl = floors()
@@ -753,6 +890,26 @@ def surface_numbers():
         {"key": "judge_spread", "value": _judge_spread(),
          "what": "points between the most skeptical and most deferential judge, over the "
                  "per-judge records in THIS repository"},
+        {"key": "judge_records",
+         "value": (None if _mirror_judge_records() is None
+                   else "{:,}".format(_mirror_judge_records())),
+         "what": "scored records in the PUBLIC MIRROR carrying a per-judge breakdown -- the "
+                 "corpus a reader of the website can actually re-run"},
+        {"key": "judge_lean_top", "value": _mirror_judge_lean_extremes()[0],
+         "what": "mean deviation of the most institution-skeptical judge, in the mirror"},
+        # RENDERED WITH THE PAGE'S OWN TYPOGRAPHY. Both surfaces print a real MINUS SIGN
+        # (U+2212), not a hyphen-minus, because that is what the site's prose uses everywhere.
+        # A gate that compares against "-0.117" fails a correct page, and the tempting fix is
+        # to edit the page -- so the gate reads the typography instead.
+        {"key": "judge_lean_bottom",
+         "value": (None if _mirror_judge_lean_extremes()[1] is None
+                   else "%.3f" % _mirror_judge_lean_extremes()[1]).replace("-", "\u2212")
+                  if _mirror_judge_lean_extremes()[1] is not None else None,
+         "what": "mean deviation of the most deferential judge, in the mirror"},
+        {"key": "scored_empty_main", "value": _scored_empty("main"),
+         "what": "records in the primary scored corpus whose score came from an empty response"},
+        {"key": "scored_empty_all", "value": _scored_empty("all"),
+         "what": "the same, across every judge method"},
         {"key": "audit_applicable_same_version_dist", "value": a["applicable_same_version_dist"],
          "what": "external studies the same-version control applies to at all (excludes n/a)"},
         {"key": "audit_na_same_version_dist", "value": a["na_same_version_dist"],
@@ -1108,10 +1265,22 @@ def check_surface(name, rows):
         #
         # `%(key)s` resolves from the computed rows, so a paired phrase now names both numbers
         # and neither is typed. `%s`/`%d` still take this row's own value.
-        if "%(" in phrase:
-            expected = phrase % {k: v["value"] for k, v in by_key.items()}
-        else:
-            expected = phrase % row["value"]
+        # A PHRASE WHOSE NUMBER CANNOT BE COMPUTED IS A FAILURE, NOT A TRACEBACK. Registering a
+        # surface phrase against a key that is absent from surface_numbers(), or one whose
+        # value came back None in this tree, used to raise TypeError out of main() and take
+        # --check-website down with it -- so the three surfaces that had already passed printed
+        # their PASS lines and the command still exited on a stack trace. A gate must be able
+        # to say which key it could not resolve.
+        try:
+            if "%(" in phrase:
+                expected = phrase % {k: v["value"] for k, v in by_key.items()}
+            else:
+                expected = phrase % row["value"]
+        except (TypeError, ValueError, KeyError) as exc:
+            bad.append((key, "<uncomputable: %s>" % exc,
+                        "phrase %r could not be filled -- the key is missing from "
+                        "surface_numbers() or is None in this tree" % phrase))
+            continue
         if expected not in text:
             # Show the surface's own version of the sentence, so the drift is visible.
             stem = phrase.split("%")[0].strip()
