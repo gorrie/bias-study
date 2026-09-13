@@ -34,6 +34,7 @@ a pre-registration exists to remove — so it is removed mechanically rather tha
 | `PREREG-2026-08-31-clause-factorial.md` | clause factorial | — |
 | `PREREG-2026-09-07-ablation-vs-prompt.md` | `runs/2026-09-07-ablation-wave/` | [`results/RESULTS-2026-09-07-ablation-wave.md`](../results/RESULTS-2026-09-07-ablation-wave.md) |
 | `PREREG-2026-09-12-instrument-choice.md` | **not yet collected** — item set not frozen | — |
+| `PREREG-2026-09-12-same-items-both-paths.md` | **UNSIGNED, not collected** — needs Ian's signature before any run | — |
 
 The last one is written earlier in its own lifecycle than the others: before the instrument it
 describes exists. That is deliberate. Four of the five plans above this study published were
