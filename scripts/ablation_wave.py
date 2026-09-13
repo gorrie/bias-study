@@ -298,9 +298,16 @@ def main(argv=None):
     d = outdir()
     if prior:
         h, t = _scan(prior[-1])
-        if todo(h, t, tuple(args.redo)):
+        # Continue an unfinished prior wave. And when the prior wave is FINISHED, still report
+        # on it rather than on today's empty directory: falling through to a new date told the
+        # reader "0 of 63 collected, 315 local runs to collect" about an arm that was complete,
+        # which is an instruction to re-run 315 jobs that already exist.
+        if todo(h, t, tuple(args.redo)) or not args.run:
             d = prior[-1]
-    os.makedirs(d, exist_ok=True)
+    # --report and --plan READ. They used to makedirs() unconditionally, so asking for the
+    # status on a day with no wave CREATED an empty dated run directory as a side effect.
+    if args.run:
+        os.makedirs(d, exist_ok=True)
     have, tried = _scan(d)
     redo = tuple(args.redo)
     left = todo(have, tried, redo)
