@@ -37,7 +37,7 @@ def rows():
 def test_the_website_surfaces_are_registered():
     """The corrected dispatch and the discovery page carry judge-layer numbers and are gated."""
     paths = {os.path.basename(s["path"]) for s in K.SURFACES.values()}
-    for expected in ("deception-delta.md", "how-the-audit-broke.md", "alignment-mask.md"):
+    for expected in ("deception-delta.md", "alignment-mask.md", "gemma-delta.md"):
         assert expected in paths, "%s states study numbers and is not gated" % expected
 
 
@@ -96,7 +96,7 @@ def test_the_judge_layer_numbers_come_from_the_public_mirror():
     comparison return zero. The mirror path here is resolved independently of STUDY_ROOT, which
     is the property being tested.
     """
-    n, top, bottom = K._mirror_judge_stats()
+    n, top, bottom, spread = K._mirror_judge_stats()
     if n is None:
         return  # mirror not on disk; the release gate covers that separately
     assert n > 0 and top is not None and bottom is not None
