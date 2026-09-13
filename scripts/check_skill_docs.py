@@ -60,6 +60,10 @@ NOT_A_PROCEDURE = {
                                "study is scored `unknown` rather than `no` -- controls_audit.py "
                                "cites it by name",
     "studypaths.py": "shared path/RNG resolution, imported never invoked",
+    "export_analysis_ready.py": "a one-shot convenience for THIRD PARTIES -- it reads the "
+                                "corpus and writes a CSV somewhere else, touching nothing this "
+                                "study depends on. Documented where its audience will look, "
+                                "which is data/README.md, not in an internal procedure",
     "judge_anchor.py": "Method 8's anchor harness. A _shim.forward to the one implementation "
                        "in the public mirror, because the blind sheet and the sealed key are "
                        "PUBLIC artifacts -- a reader has to see what a human was asked and that "
@@ -81,11 +85,6 @@ NOT_A_PROCEDURE = {
                               "shift measured by the judged scale against the same shift "
                               "measured by the model-free forced-choice instrument, across the "
                               "24 models that appear in both",
-    "disagreement_by_topic.py": "one-shot 2026-09-12 analysis behind "
-                                "RESULTS-2026-09-12-disagreement-by-topic.md. Pairs every "
-                                "alternate-method score against the primary panel and averages "
-                                "by topic, showing the single agreement figure hides a "
-                                "nineteen-fold spread",
     "refusal_structure.py": "one-shot 2026-09-12 analysis behind "
                             "RESULTS-2026-09-12-refusal-structure.md. Shows wave-0 refusal is "
                             "whole-instrument (92% of failures return zero items) and bimodal "
@@ -94,9 +93,12 @@ NOT_A_PROCEDURE = {
                         "--check by release_check as a gate: a collection with records, no "
                         "schema and no mention is surfaced rather than left for the next audit "
                         "to rediscover by hand",
-    "judge_lean.py": "one-shot 2026-09-12 analysis behind RESULTS-2026-09-12-judge-lean.md. "
-                     "Measures our own panel's per-judge lean and the self-judging effect for "
-                     "the two judges that are also subjects. Reruns to re-derive that document",
+    "judge_lean.py": "the scoring layer's own audit, behind RESULTS-2026-09-05-judge-lean.md. "
+                     "Measures the panel's per-judge lean, whether that lean cancels in a B-A "
+                     "delta (it does not -- it is an interaction), the self-judging effect for "
+                     "the two judges that are also subjects, and --per-finding, which re-scores "
+                     "every CI-clean finding under each judge alone. Rerun to re-derive that "
+                     "document, not as a step in collecting anything",
     "check_release_table.py": "release gate, run by release_check.py as checklist item 2. Not a "
                               "procedure anyone follows by hand: it re-derives RELEASE-v2's arm "
                               "inventory from runs/ and fails when the document has drifted",

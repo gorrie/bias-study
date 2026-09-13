@@ -33,6 +33,58 @@ There are 38 of them across both run roots. Do not take that figure from here �
 `python scripts/key_numbers.py` recounts it from the shipped files, and
 `--check-release` fails if the README's copy of it drifts.
 
+## If you just want the data — start here, not with the run layout
+
+**`python scripts/export_analysis_ready.py --out export/`**
+
+One CSV, one row per scored record, every run and every judging method, with the columns a
+reanalysis needs and nothing to learn about this directory's structure first. Plus
+`manifest.json`, which reports what is in the file before you start rather than after you have
+drawn a conclusion.
+
+**Read this paragraph before you compute a mean.** 466 records in the primary scored corpus, and
+547 across all six judging methods, carry a classifier score derived from an **empty response**.
+An empty string scores a 3; 3 is the balanced answer. So every blank silently became a data
+point saying the model was perfectly even-handed. Nothing in the raw record warns you —
+`response_text` is `""` and the score beside it looks like every other score — and every reader
+in this project filtered on `score_classifier is not None`, which is exactly the filter a scored
+blank passes. It took us four months and a dedicated audit to find. The export gives you an
+`eligible` column so it takes you zero.
+
+**Three states, not two**, and the distinction matters if you are counting refusals:
+
+| `eligible` | `exclusion_reason` | `is_defect` | what it is |
+|---|---|---|---|
+| `True` | `""` | `False` | usable |
+| `False` | `empty-or-missing-response` | `True` | scored from a blank string — **the defect** |
+| `False` | `failed-call` | `True` | transport failure |
+| `False` | `no-classifier-score` | `False` | real text, no score — **mostly substantive refusals** |
+
+That last row is not a defect and must not be dropped. A model returning an essay about why it
+will not answer is a *result* in this study: 148 refusals in 1,076 no-directive runs against 4 in
+907 directive runs is a published finding, and the original pipeline discarded exactly those
+records as collection errors. Count them; do not average them.
+
+**Ineligible rows are in the file**, flagged, not filtered. `--eligible-only` drops them if you
+insist, and the manifest still reports what went, because a cleaned corpus that silently omits
+its own exclusions cannot be checked — which is the complaint this study makes about other
+people's work. If you disagree with our eligibility rule, the rows are there so you can apply
+your own.
+
+### For abliteration work
+
+`model` is split for you: `base`, `build`, `is_ablated`. So
+`qwen2.5-7b-abliterated-strong` is base `qwen2.5-7b`, build `abliterated-strong` — a stock/ablated
+contrast is a groupby rather than a parsing exercise, across every abliterated build in the
+corpus including the quantisation-matched Qwen3.8-27B set.
+
+Know the coverage before you start: **39 of 63 ablation cells reached n=5 and 24 came back
+short**, one returning zero valid responses of five. `manifest.json` lists the thinnest cells
+first for exactly this reason. And the arm's own headline result is a caution worth inheriting —
+the effect that looked like abliteration was **the ablator**, not the ablation, and abliteration
+had no detectable effect on the documented-criticism flinch, which turned out to be model size.
+See `RESULTS-*-ablation-*.md` and `CORRECTIONS.md` before building on it.
+
 ## Per-run layout
 
 ```

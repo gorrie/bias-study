@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-76 script(s). 0 carry no module docstring and are listed at the end.
+77 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -88,6 +88,7 @@
 - **`dl_model.py`** — dl_model.py — Robust HuggingFace model downloader (host-side, resume-until-valid).
 - **`dose_smoke_gate.py`** — Post-abliteration quality gate.
 - **`eligibility.py`** — One rule for whether a scored record may enter an aggregate — DATA-EMPTY-SCORES-002.
+- **`export_analysis_ready.py`** — One flat, eligibility-flagged table of every scored record, for people who are not us.
 - **`floor_resolution.py`** — What a modal-vs-modal floor can actually resolve, and which factor is bigger ON THE SAME MODELS.
 - **`frontier_extend.py`** — Extend the one-sitting arms onto the CURRENT frontier, which the frozen panel excludes.
 - **`gen_readme.py`** — Fill the README's generated blocks from the run data. Nothing in them is hand-written.
