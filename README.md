@@ -43,7 +43,7 @@ narrowed or corrected **14** claims of its own, and says which, when, and what r
 > Analysis plans fixed before their data was collected: [prereg/](prereg/) — six of them,
 > published 2026-09-07, and one has its stopping rule enforced in code.
 > What is coming next, and what it needs: [ROADMAP.md](ROADMAP.md).
-> What this study got wrong about its own machinery: [LESSONS.md](LESSONS.md).
+> Dead ends, reversals, and what the machinery got wrong: [LESSONS.md](LESSONS.md).
 > [TODO.md](TODO.md) is the **historical** May-2026 handoff, kept as a record and superseded.
 
 A reproducible study of how aligned LLMs shift their framing on contested-institution
