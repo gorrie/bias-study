@@ -13,7 +13,7 @@ found by failing it ourselves:
                           to be a column rather than a sentence.
   judge_lean_reported     Does the study report the scoring layer's OWN lean? We could compute
                           ours from data retained since May and never had: 0.29 points between
-                          the most skeptical and most deferential judge, larger than two of our
+                          the most skeptical and most deferential judge, larger than one of our
                           five published effects.
   self_judging_disclosed  Is any subject also a judge, and is it said out loud? Two of our five
                           CI-clean findings are self-judged and nothing disclosed it until
@@ -67,12 +67,7 @@ NEW_CONTROLS = {
 OURS = {
     "judge_free_scoring": ("yes", None),
     "judge_lean_reported": ("yes",
-                            "Added 2026-09-05 and it was absent before: scripts/judge_lean.py "
-                            "over 4,744 scored records gives a per-judge spread of 0.29 points "
-                            "(gemini-2.5-flash +0.173 to deepseek-v3.2 -0.119), larger than two "
-                            "of the five effects this project published. Rank order is "
-                            "identical under both conditions, so the lean is a main effect and "
-                            "cancels in the within-model deltas; absolute scores it does not."),
+                            'Added 2026-09-05: scripts/judge_lean.py over 4,668 scored records gives a per-judge spread of 0.29 points (gemini-2.5-flash +0.175 to deepseek-v3.2 -0.117), larger than one of the five effects this project published -- the typed version of this note said TWO, which judge_lean.ci_clean_effects() disproves by recomputing them. It does NOT cancel: the same judge sits at +0.045 under the balance instruction and +0.294 under the bare question, so the panel fans out and the lean rides into the within-model delta. Settled by re-scoring each finding under each judge alone (judge_lean.py --per-finding): the two large effects survive every judge; deepseek-v3.2 ranges +0.03 to +0.60 and openai/gpt-4.1 ranges +0.21 to +0.73, and both are reported as suggestive with their ranges. An earlier version of this note claimed the lean cancels; that claim was withdrawn on 2026-09-05 (CORRECTIONS.md #5) and survived here until 2026-09-06.'),
     "self_judging_disclosed": ("yes",
                                "Disclosed 2026-09-05, having gone unsaid since May. Two of five "
                                "CI-clean findings are self-judged: openai/gpt-4.1 (+0.433) and "
@@ -107,6 +102,7 @@ def main(argv=None):
 
     rec = json.load(io.open(AUDIT, encoding="utf-8"))
     added = [k for k in NEW_CONTROLS if k not in rec["controls"]]
+    resynced = []
     rec["controls"].update(NEW_CONTROLS)
 
     for study in rec["studies"]:
@@ -114,19 +110,29 @@ def main(argv=None):
         study.setdefault("status", {})
         study.setdefault("notes", {})
         for control in NEW_CONTROLS:
-            if control in study["status"]:
-                continue
             if sid == "ours":
+                # ALWAYS resync our own row. This loop used to `continue` when the control was
+                # already present, which made the generator additive-only -- so OURS could be
+                # corrected here and data/controls-audit.json would keep serving the superseded
+                # text forever. It did: the note claimed the judge lean "cancels in the
+                # within-model deltas" and cited a spread "larger than two of the five effects",
+                # both withdrawn, and both survived every subsequent run of this script. A
+                # generator that cannot correct its own output is a second hand-maintained file
+                # wearing a generator's name.
                 verdict, note = OURS[control]
+                if study["status"].get(control) != verdict or \
+                   (note and study["notes"].get(control) != note):
+                    resynced.append(control)
                 study["status"][control] = verdict
                 if note:
                     study["notes"][control] = note
-            else:
+            elif control not in study["status"]:
                 study["status"][control] = "unknown"
                 study["notes"][control] = UNKNOWN_NOTE[control]
 
     print("controls added: %s" % (", ".join(added) or "(none new)"))
     print("studies updated: %d" % len(rec["studies"]))
+    print("our row resynced: %s" % (", ".join(sorted(set(resynced))) or "(already current)"))
     if not args.apply:
         print("DRY RUN -- pass --apply to write")
         return 0
