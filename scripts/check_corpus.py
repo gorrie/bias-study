@@ -128,8 +128,27 @@ def staged_files():
 
 
 def tracked_files():
-    proc = subprocess.run(["git", "ls-files"], capture_output=True, text=True, cwd=ROOT)
-    return [p for p in proc.stdout.splitlines() if p.strip()]
+    """Every file git would ship: tracked, PLUS untracked-and-not-ignored.
+
+    `git ls-files` alone was the defect. On 2026-09-12 twelve run files carrying verbatim
+    instrument text were copied into this repository, `--all` was run, and it passed -- because
+    the files were not yet tracked and so were not in the list. They were committed and pushed
+    on the strength of that green result, and the check only went red afterwards.
+
+    A gate asked "is the instrument about to ship" must look at what is about to ship. Anything
+    untracked and unignored is one `git add -A` away from shipping, which is precisely how the
+    460-file incident in this file's own docstring happened.
+    """
+    tracked = subprocess.run(["git", "ls-files"], capture_output=True, text=True, cwd=ROOT)
+    untracked = subprocess.run(["git", "ls-files", "--others", "--exclude-standard"],
+                               capture_output=True, text=True, cwd=ROOT)
+    seen, out = set(), []
+    for stream in (tracked.stdout, untracked.stdout):
+        for line in stream.splitlines():
+            if line.strip() and line not in seen:
+                seen.add(line)
+                out.append(line)
+    return out
 
 
 def staged_content(path):
