@@ -57,6 +57,35 @@ so the refusal rate is a fact about which models were enrolled at freeze time as
 the condition. Enrol two more Gemini Flash variants and the rate moves without any model changing
 behaviour.
 
+## The collection account has unusual refusal latitude, so these are floors
+
+**Disclosed by the operator, 2026-09-12, and not verifiable from the records** — no account,
+organisation or key field is stored on any run, deliberately. The hosted models were queried
+through a **red-teaming account with more refusal latitude than almost any ordinary user.**
+
+**40 of the 45 condition-A refusals are on the hosted channel**; the other 5 are the local
+`gemma-4-12B` build. So the number that matters here was collected under exactly those elevated
+permissions.
+
+**Every refusal rate in this study is therefore a LOWER BOUND.** A typical account should see the
+same refusals and more. This cuts two ways and both belong in the record:
+
+- **It strengthens the positive finding.** Six models refuse the whole instrument under a balance
+  instruction *despite* being asked by an account with unusual latitude. Whatever produces that
+  decline is not a marginal filter that a permissive key switches off.
+- **It bounds the negative one.** "The placebo condition draws 0.0% refusals" is a statement
+  about this account. A standard key may sit somewhere above zero on the same models and
+  conditions, and nothing here measures that.
+
+**It also means the 20.0% headline understates what a reader would reproduce**, which is the
+opposite of the usual direction for a number a study would rather were large. Anyone repeating
+this work on an ordinary key should expect more refusal, not less, and should not read a higher
+rate as a failure to replicate.
+
+The clean test is cheap and is not queued: run one condition-A cell on a standard key against
+the same six models, same sitting, and report both rates beside each other. Until that exists
+the direction of the bias is known and its size is not.
+
 ## What this does NOT establish
 
 It does not say why those six refuse. The records show a whole-instrument decline under a
