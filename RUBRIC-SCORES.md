@@ -188,3 +188,62 @@ mean signed deviation of panel from human with a bootstrap interval.
 note will keep saying so until it returns a number. Reporting Method 8 as executed because the
 tooling exists would be the same move as scoring an unread paper's control as absent — which is
 a thing this project has done once already and corrected in `PRIOR-WORK-CORRECTIONS.md`.
+
+---
+
+## Amendment, 2026-09-12b — why Method 8's pre-registered FORM is declined, and why its fallback is contested
+
+The status note above records where the eight methods stand. Two things it does not say have
+since been settled, and both change what "the anchor" means rather than when it will run.
+
+### The anchor's stated obstacle was the wrong obstacle
+
+D5 = 2 reads *"Acquiring + curating the benchmark mapping data is real effort."* That is a
+logistical excuse, and it is not why Method 8 went unexecuted for four months.
+
+The reason, stated by Ian on 2026-09-12: *"the political compass stuff is not great and doesn't
+align with my values, so I excluded it because the politics are goofy. I had hoped that we could
+learn something from it, but apparently not."*
+
+That is a **principled exclusion and should be published as one.** D1's rationale names "Pew
+typology / Political Compass items" as the external ground truth. This study administers the 62
+Political Compass propositions as **stimuli** while explicitly rejecting the instrument's own
+axes — `README.md` argues the horizontal axis is captured, self-report and undisclosed in
+scoring. Anchoring our scale to those axes would import, at the single most authoritative point
+in the design, the framework the study exists to criticise. An anchor that inherits the
+instrument's politics is not an external anchor; it is the circularity moved one level out.
+
+D5 = 2 stands as pre-registered. The rationale behind it was wrong, and saying so is cheaper
+than pretending this file anticipated it. The human blind pass described above is not a
+second-best substitute forced by cost — it is the form of Method 8 that survives the objection.
+
+### The designated fallback is contested by this project's own result
+
+Pre-result observation 2 names Method 2, the abliterated open-weight judge at 4.10, as the
+fallback *"if acquisition of suitable benchmark items proves infeasible."* Acquisition is not
+the blocker, so the clause has not fired — but it should be marked contested before it ever
+does.
+
+Method 2 scores **D1 = 5**, "the direct answer to *judges share RLHF lean*". §4.2 of the study,
+across five open-weight families, is that abliteration rewrites ~70% of political wording and
+moves stance by **≤0.2**: the refusal direction and the institutional lean are *dissociable*. If
+cutting that direction does not move a subject's stance, it does not move a judge's either.
+**The fallback removes a reflex the study itself proved is not the lean.**
+
+Not a reason to discard Method 2 — it remains a real control on the refusal reflex. A reason to
+stop citing it as the lean control, which D1 = 5 claims it is.
+
+### What this bounds, until the sheet is scored
+
+`judge_lean.py` measures a **relative** lean: 0.29 spread over 4,668 records, and an interaction
+rather than a main effect, so it does **not** subtract out of the B−A deltas the way the first
+version of that analysis claimed. Nothing in this study bounds a lean shared by all four judges.
+The ranked anchor's pre-registered form is declined on principle, its designated fallback is
+contested by our own weight-rung result, and the scoring layer is therefore bounded by a
+relative measure. Every scoring-layer claim in the paper carries that limit, including the ones
+we make about other people's work.
+
+The part that matters most is bounded by re-scoring rather than by anchoring
+(`judge_lean.py --per-finding`): the two large effects hold under every judge alone;
+`deepseek/deepseek-v3.2` (+0.03 to +0.60) and `openai/gpt-4.1` (+0.21 to +0.73) do not, and are
+reported with their ranges.
