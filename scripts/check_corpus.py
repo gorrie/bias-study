@@ -156,11 +156,38 @@ def staged_content(path):
     return proc.stdout.decode("utf-8", errors="replace")
 
 
+def _is_public_mirror():
+    """True in the release mirror, False in the nested private study.
+
+    The private study IS where the instrument lives -- 952 tracked files carry it, correctly.
+    Run there, this gate printed "COMMIT REFUSED -- third-party instrument text in 952 file(s)"
+    and "this repository is public", both wrong, and the obvious way to make it green is to
+    delete the corpus. A gate whose failure invites destroying the data is worse than no gate.
+
+    Discriminated by git prefix, the same way check_no_fork finds private HEAD: the private
+    study sits at research/bias-study inside the book repository and reports a non-empty
+    prefix; the mirror is its own repository root and reports none.
+    """
+    out = subprocess.run(["git", "rev-parse", "--show-prefix"],
+                         capture_output=True, text=True, cwd=ROOT)
+    return not out.stdout.strip()
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--all", action="store_true",
                     help="scan every tracked file instead of the staged set")
     args = ap.parse_args(argv)
+
+    if not _is_public_mirror():
+        print("NOT THE PUBLIC MIRROR: this is the private study, at the git prefix "
+              "research/bias-study.")
+        print("The instrument belongs here. This gate guards the PUBLIC export and is run "
+              "against it by")
+        print("release_check.py as checklist item 8. Exit 2 -- not applicable, not a failure, "
+              "and NOT a")
+        print("reason to delete anything.")
+        return 2
 
     prints = load_fingerprints()
     if not prints:
