@@ -297,13 +297,15 @@ def coverage():
 def results_doc_dead_paths():
     """Dead script references in RESULTS/VERIFICATION documents, not just skill documents.
 
-    On 2026-09-12 judge_lean.py's docstring and report both claimed `scripts/judge_anchor.py`
-    existed, described its flags, and said its blind sheet was drawn. The file had never been
-    committed. That claim closed the highest-ranked open validation method in the reader's mind
-    -- Method 8, 4.25, the only control that can catch a lean shared by all four judges.
+    A module docstring or a results file can assert that a script exists, describe its flags
+    and report what it produced, and nothing downstream will notice if it does not. That claim
+    can close the highest-ranked open validation method in a reader's mind without anything
+    having been run.
 
     check_skill_docs already refused dead paths in SKILL documents. Nothing checked results
-    prose or module docstrings, which is where the claim actually lived.
+    prose or module docstrings, which is where such a claim actually lives.
+
+    See `check_false_denials` for the other direction, which is the harder one.
     """
     import glob as _glob
     import re as _re
@@ -334,6 +336,69 @@ def results_doc_dead_paths():
     return sorted(set(dead))
 
 
+
+#: Assertions strong enough that, if the named path exists, the sentence is simply false.
+#: Deliberately narrow. Soft words like "missing" or "absent" appear in honest prose about
+#: missing DATA all the time and are not included.
+DENIAL_PHRASES = (
+    "never been committed", "never committed", "was never written", "never written",
+    "does not exist", "doesn't exist", "no harness", "has no harness",
+    "not started", "never begun", "no sheet exists", "was never built", "never built",
+)
+
+#: A document that QUOTES a withdrawn denial in order to correct it is the fix, not the
+#: defect. These mark that framing on the same line.
+QUOTE_MARKERS = (
+    "used to say", "originally said", "originally claimed", "this file said",
+    "withdrawn", "superseded", "corrected", "the claim was", "it said",
+    "earlier version", "first version", "no longer",
+)
+
+
+def check_false_denials(root=None):
+    """A denial that names a path which EXISTS. The inverse of the dead-path check.
+
+    The dead-path check catches a document that credits work nobody did. This catches the
+    opposite and rarer failure, which is worse because it reads as rigour: a document that
+    DENIES work somebody did. A false denial is self-authenticating -- it looks like exactly
+    the kind of unflattering admission a careful project makes -- so no reader challenges it,
+    and it retires a finished control back into the backlog.
+
+    The trigger is narrow on purpose: one of DENIAL_PHRASES within one line of a backticked
+    or bare `scripts/*.py` reference that resolves on disk, with no QUOTE_MARKER on the line
+    to show the denial is being quoted rather than asserted. Honest prose about missing data,
+    unrun experiments and unacquired instruments uses softer words and does not trip it.
+    """
+    import glob as _glob
+    import re as _re
+    root = root or ROOT
+    hits = []
+    pats = ["RESULTS-*.md", "VERIFICATION-*.md", "STATUS.md", "RUBRIC-SCORES.md",
+            "PAPER-*.md", "scripts/*.py", "results/RESULTS-*.md"]
+    for pat in pats:
+        for path in _glob.glob(os.path.join(root, pat)):
+            base = os.path.basename(path)
+            if base.startswith("test_"):
+                continue
+            try:
+                lines = io.open(path, encoding="utf-8", errors="replace").read().split("\n")
+            except OSError:
+                continue
+            for i, line in enumerate(lines):
+                refs = set(_re.findall(r"scripts/[a-z0-9_]+\.py", line))
+                refs = [r for r in refs if os.path.exists(os.path.join(root, r))]
+                if not refs:
+                    continue
+                window = " ".join(lines[max(0, i - 1):i + 2]).lower()
+                if any(q in window for q in QUOTE_MARKERS):
+                    continue
+                for d in DENIAL_PHRASES:
+                    if d in window:
+                        hits.append((os.path.relpath(path, root), refs[0], d))
+                        break
+    return sorted(set(hits))
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--strict", action="store_true",
@@ -343,6 +408,14 @@ def main(argv=None):
 
     docs = skill_docs()
     if not args.coverage:
+        lied = check_false_denials()
+        if lied:
+            print("FALSE DENIAL -- these sentences deny a path that exists:")
+            for rel, ref, phrase in lied:
+                print("    %s says %r about %s" % (rel, phrase, ref))
+            print("A denial reads as rigour, so nobody checks it. Say what is true instead,")
+            print("or mark the sentence as quoting a withdrawn claim.")
+            return 1
         rotted = check_not_in_repo_still_absent()
         if rotted:
             print("DECLARATION ROTTED -- these are declared NOT_IN_REPO and now exist:")
