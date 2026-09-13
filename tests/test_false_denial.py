@@ -29,10 +29,10 @@ def tree(tmp_path, filename, body, script="widget.py"):
 def test_denial_of_an_existing_script_fails(tmp_path):
     hits = tree(tmp_path, "RESULTS-2026-01-01-x.md",
                 "The control is open.\n"
-                "`scripts/widget.py` has never been committed to either tree.\n")
+                "`scripts/widget.py` was never written and does not exist.\n")
     assert hits, "a denial naming a path that exists must be caught"
     assert hits[0][1] == "scripts/widget.py"
-    assert "never been committed" in hits[0][2]
+    assert "was never written" in hits[0][2]
 
 
 def test_denial_in_a_module_docstring_fails(tmp_path):
