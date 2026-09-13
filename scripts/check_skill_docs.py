@@ -60,6 +60,14 @@ NOT_A_PROCEDURE = {
                                "study is scored `unknown` rather than `no` -- controls_audit.py "
                                "cites it by name",
     "studypaths.py": "shared path/RNG resolution, imported never invoked",
+    "ablation_termination.py": "one-shot 2026-09-12 analysis behind "
+                               "RESULTS-2026-09-12-ablation-termination.md. Asks why 24 of 63 "
+                               "ablation-wave cells came back short; the answer is that one "
+                               "base's ablated build runs to the token cap on every run. A "
+                               "finding, not a procedure",
+    "judge_lean.py": "one-shot 2026-09-12 analysis behind RESULTS-2026-09-12-judge-lean.md. "
+                     "Measures our own panel's per-judge lean and the self-judging effect for "
+                     "the two judges that are also subjects. Reruns to re-derive that document",
     "check_release_table.py": "release gate, run by release_check.py as checklist item 2. Not a "
                               "procedure anyone follows by hand: it re-derives RELEASE-v2's arm "
                               "inventory from runs/ and fails when the document has drifted",
