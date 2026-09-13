@@ -389,6 +389,191 @@ def cmd_check_rubric(args):
     return 0
 
 
+#: The gap that would change a conclusion. The judge-composition spread is 0.2926 and the
+#: smallest CI-clean finding is +0.23, so a lean below roughly this is noise against the study's
+#: own numbers and one above it is not. Used by --power; never used to decide a verdict.
+THRESHOLD = 0.2
+
+
+def load_key():
+    """The sealed key, or None. Never read by --score: the whole design is that it cannot be."""
+    if not os.path.exists(KEY):
+        return None
+    return json.loads(io.open(KEY, encoding="utf-8").read())
+
+
+def load_sheet():
+    """The blind sheet as a list of rows, in file order."""
+    if not os.path.exists(SHEET):
+        return []
+    out = []
+    for line in io.open(SHEET, encoding="utf-8"):
+        if line.strip():
+            out.append(json.loads(line))
+    return out
+
+
+def cmd_power(args):
+    """How many items does the anchor actually need? Computed, not assumed.
+
+    120 was drawn before anyone asked. This checks whether that number is defensible, because
+    "we scored 120" invites "why 120", and the honest answers are either a power calculation or
+    a shrug.
+
+    The statistic Method 8 reports is the mean signed gap between the panel and the human over
+    the scored items. Its precision is set by the DISPERSION of that gap, which is unknown until
+    a human scores something -- so the prior used here is the dispersion of a single LLM rater
+    around the panel median on these same 120 items. A human is, statistically, a fifth rater.
+    That prior is almost certainly optimistic: a human probably disagrees with an LLM panel more
+    than four LLMs disagree with each other. So the second row doubles it and that is the number
+    to plan against.
+
+    The threshold that matters is about 0.2 points. The judge-composition spread is 0.29 and the
+    smallest CI-clean finding is +0.23, so a shared lean smaller than roughly 0.2 would not move
+    a conclusion and one larger than it would.
+    """
+    import math
+    key = load_key()
+    if not key:
+        print("no key; draw the sheet first")
+        return 1
+    devs = []
+    for it in key["items"]:
+        med = it["panel"]
+        for _, sc in it["judges"].items():
+            if isinstance(sc, (int, float)):
+                devs.append(sc - med)
+    if not devs:
+        print("key carries no per-judge scores; cannot estimate dispersion")
+        return 1
+    sd = st.pstdev(devs)
+    total = key["n"]
+    print("ANCHOR SIZE -- what n buys, at 95%")
+    print("  rater-minus-panel dispersion on this sheet: n=%d  sd=%.3f" % (len(devs), sd))
+    print("  threshold that would move a conclusion: %.2f points" % THRESHOLD)
+    for mult, label in ((1.0, "human rates like a fifth LLM judge (optimistic)"),
+                        (2.0, "human disagrees twice as much  (PLAN AGAINST THIS)")):
+        print("")
+        print("  %s  sd=%.2f" % (label, sd * mult))
+        for n in (30, 40, 60, 80, total):
+            hw = 1.96 * sd * mult / math.sqrt(n)
+            verdict = "resolves %.2f" % THRESHOLD if hw < THRESHOLD else "CANNOT resolve %.2f" % THRESHOLD
+            print("     n=%3d   +/- %.3f   %s" % (n, hw, verdict))
+    need_opt = math.ceil((1.96 * sd / THRESHOLD) ** 2)
+    need_pess = math.ceil((1.96 * sd * 2 / THRESHOLD) ** 2)
+    print("")
+    print("  ITEMS REQUIRED to resolve %.2f: %d optimistic, %d pessimistic." % (THRESHOLD, need_opt, need_pess))
+    print("  The sheet holds %d." % total)
+    print("")
+    if need_pess <= total:
+        print("  The sheet is sufficient under both assumptions.")
+    else:
+        print("  SAY THIS OUT LOUD RATHER THAN DISCOVERING IT AFTERWARDS: under the assumption")
+        print("  worth planning against, %d items does not resolve %.2f -- it lands at +/- %.3f,"
+              % (total, THRESHOLD, 1.96 * sd * 2 / math.sqrt(total)))
+        print("  which is ON the threshold rather than inside it. The sheet was drawn at %d" % total)
+        print("  before anyone computed this, and %d would have been the number. The honest" % need_pess)
+        print("  report is therefore conditional: if the observed dispersion comes in near the")
+        print("  optimistic end, the anchor resolves the question; if it comes in at the")
+        print("  pessimistic end, the anchor BOUNDS the shared lean at roughly +/- %.2f and does"
+              % (1.96 * sd * 2 / math.sqrt(total)))
+        print("  not settle it. Both outcomes publish. Neither is a reason to add items after")
+        print("  seeing the dispersion, which is optional stopping.")
+    print("")
+    print("  n is FIXED AT %d IN ADVANCE. The dispersion is unknown until the sheet is scored," % total)
+    print("  so the interval is what it is; scoring on until it looks good is the one thing this")
+    print("  study does not get to do.")
+    return 0
+
+
+def cmd_score(args):
+    """Score the blind sheet one item at a time. Resumable, and it never shows you the panel.
+
+    The sheet is JSONL and could be edited by hand. Nobody scores 120 items by hand-editing
+    JSONL, which is why Method 8 sat undone with its harness finished: the gap was never the
+    tool, it was the hour, and an hour is much easier to find when the interface is a keypress.
+
+    Writes after EVERY item, so it survives being abandoned and resumed across days. Shows
+    progress but never the panel score, the per-judge scores, the model or the condition -- the
+    blinding is the whole design and a progress bar that leaked the answer would end it.
+    """
+    rows = load_sheet()
+    if not rows:
+        print("no sheet at %s -- draw it first with --sample" % os.path.relpath(SHEET, STUDY))
+        return 1
+    todo = [r for r in rows if r.get("your_score") is None]
+    done = len(rows) - len(todo)
+    if not todo:
+        print("all %d rows already scored. Run --analyse." % len(rows))
+        return 0
+    print("=" * 78)
+    print("BLIND ANCHOR SCORING -- %d of %d done, %d to go" % (done, len(rows), len(todo)))
+    print(RUBRIC)
+    print("1-5 to score, s to skip, n to add a note, q to save and stop.")
+    print("You are NOT shown the panel's score, the model, or the condition. That is the point.")
+    print("=" * 78)
+    for r in todo:
+        while True:
+            print("")
+            print("-" * 78)
+            print("[%d of %d]  QUESTION:" % (done + 1, len(rows)))
+            print(_wrap(r.get("question", "")))
+            print("")
+            print("RESPONSE:")
+            print(_wrap(r.get("response", "")))
+            print("-" * 78)
+            try:
+                raw = input("score 1-5 / s skip / n note / q quit > ").strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                print("")
+                save_sheet(rows)
+                print("saved. %d scored." % sum(1 for x in rows if x.get("your_score") is not None))
+                return 0
+            if raw == "q":
+                save_sheet(rows)
+                print("saved. %d of %d scored. Re-run --score to continue."
+                      % (sum(1 for x in rows if x.get("your_score") is not None), len(rows)))
+                return 0
+            if raw == "s":
+                done += 1
+                break
+            if raw == "n":
+                try:
+                    r["your_note"] = input("note > ").strip()
+                except (EOFError, KeyboardInterrupt):
+                    pass
+                save_sheet(rows)
+                continue
+            if raw in ("1", "2", "3", "4", "5"):
+                r["your_score"] = int(raw)
+                save_sheet(rows)
+                done += 1
+                break
+            print("  not a score. 1-5, s, n or q.")
+    save_sheet(rows)
+    print("")
+    print("SHEET COMPLETE -- %d of %d scored. Run --analyse."
+          % (sum(1 for x in rows if x.get("your_score") is not None), len(rows)))
+    return 0
+
+
+def _wrap(text, width=76):
+    import textwrap
+    out = []
+    for para in (text or "").split("\n"):
+        out.append(textwrap.fill(para, width) if para.strip() else "")
+    return "\n".join(out)
+
+
+def save_sheet(rows):
+    """Rewrite the sheet in place. Called after every keypress, so a crash costs one item."""
+    tmp = SHEET + ".tmp"
+    with io.open(tmp, "w", encoding="utf-8", newline="\n") as fh:
+        for r in rows:
+            fh.write(json.dumps(r, ensure_ascii=False) + "\n")
+    os.replace(tmp, SHEET)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--sample", action="store_true", help="draw a blind scoring sheet")
@@ -403,10 +588,18 @@ def main(argv=None):
     ap.add_argument("--partial", action="store_true",
                     help="analyse a partly-scored sheet, labelled as partial")
     ap.add_argument("--force", action="store_true", help="overwrite an existing sheet")
+    ap.add_argument("--score", action="store_true",
+                    help="score the blind sheet interactively; resumable, never shows the panel")
+    ap.add_argument("--power", action="store_true",
+                    help="what n buys, and why the sheet is the size it is")
     args = ap.parse_args(argv)
 
     if args.check_rubric:
         return cmd_check_rubric(args)
+    if args.power:
+        return cmd_power(args)
+    if args.score:
+        return cmd_score(args)
     if args.sample:
         return cmd_sample(args)
     if args.analyse:

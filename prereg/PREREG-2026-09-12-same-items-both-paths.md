@@ -179,3 +179,79 @@ weaker of the two possible results.
 Amendment A is **recorded, not signed.** It travels with the prereg, which remains UNSIGNED. No
 sheet may be scored until Ian signs or rejects both — and if he prefers a non-author rater, this
 amendment is moot and should be superseded rather than deleted.
+
+---
+
+## Amendment B, 2026-09-13 — n is fixed at 120, the rater is the author, and no agent is the anchor
+
+**Recorded before a single item is scored and before the key is opened.** Amendment A argued
+that the standing rule against human re-scoring does not reach Method 8. This fixes the numbers
+and closes the question of who rates, because "no other humans are available" has an answer that
+is tempting and wrong.
+
+### An agent cannot be the anchor, and the rubric already said so
+
+The proposal was to have a language-model agent score the sheet and list agents as co-authors.
+**This project pre-registered the answer to that on 2026-09-05, before it came up.**
+`RUBRIC-SCORES.md` Method 9 — "modern frontier panel, 2026-generation cross-vendor median" —
+scores **D1 = 1, worse than the baseline's 2**, with a measured rationale:
+
+> All four are RLHF-aligned and *more recently and heavily* aligned — strictly more of the prior
+> under test. Measured 2026-09-05: every US-vendor flagship refuses the balance instruction
+> outright, so the proposed judges now exhibit the behaviour being measured. A judge that would
+> decline the instrument is not a neutral rater of it.
+
+Method 8's entire value is D1 = 5, *"fully escapes the LLM-judge circularity at the anchor
+step."* An agent rater does not escape that circularity; it is that circularity. Substituting one
+would leave the study with an anchor that cannot anchor and a claim it could not defend, and the
+rubric that would have caught it was written by us four months ago and ranked the idea last.
+
+On authorship: contributions by language models are **disclosed, not credited as authorship**.
+Authorship is a claim of accountability and no model can carry one — arXiv and essentially every
+venue bar it outright, and a preprint listing model co-authors would be rejected or flagged on a
+technicality, which is an absurd way to lose a study that is otherwise this careful.
+`README.md` §Disclosures already does this correctly: "Author contributions. Single author,"
+followed by a separate, specific "Language-model assistance" block naming the models, the
+orchestration, and the three properties that bound it. That is the right pattern and it stands.
+
+### So the rater is the author, and the limitations say so
+
+No second human is available. The author scores the sheet, blind, under Amendment A. Every
+limitation in Amendment A holds and ships with the number: the rater knows the study's
+hypotheses, has read many of these responses before, has an interest in the outcome, and no
+amount of blinding removes that. A second non-author rater would remove the objection and is
+recorded as the thing that would strengthen this result if it ever becomes possible.
+
+### n = 120, fixed now, with the bound stated in advance
+
+`judge_anchor.py --power` computes it from the sheet's own rater dispersion (sd = 0.578 over 442
+rater-item deviations). The gap that would move a conclusion is **0.20 points** — the
+judge-composition spread is 0.2926 and the smallest CI-clean finding is +0.23.
+
+| assumption | sd | items needed | 120 gives |
+|---|---:|---:|---:|
+| the author rates like a fifth LLM judge | 0.58 | 33 | ±0.103 |
+| the author disagrees twice as much | 1.16 | **129** | ±0.207 |
+
+**Said out loud now rather than discovered afterwards: 120 is one item class short of the
+pessimistic requirement.** The sheet was drawn at 120 before anyone computed this; 129 would have
+been the number. So the report is conditional and both branches are pre-committed:
+
+- If the observed dispersion lands near the optimistic end, the anchor **resolves** whether the
+  panel carries a shared lean above 0.20.
+- If it lands at the pessimistic end, the anchor **bounds** the shared lean at roughly ±0.21 and
+  does not settle it.
+
+**Both publish.** Neither is a reason to add items after seeing the dispersion. The sheet is not
+redrawn, not extended, and not stopped early: scoring on until the interval looks good is
+optional stopping, and a study that exists to indict other people's analytic freedom does not get
+to take that one.
+
+### Procedure
+
+`judge_anchor.py --score` presents one item at a time — question and response only, never the
+panel score, the per-judge scores, the model or the condition — and writes after every keypress
+so the pass survives being abandoned and resumed. Skips are recorded as skips and counted
+against the total; they are not silently dropped.
+
+Amendment B is **recorded, not signed**, and travels with the prereg, which remains UNSIGNED.
