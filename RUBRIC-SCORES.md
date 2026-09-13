@@ -165,38 +165,26 @@ This file's git commit is the timestamp proof.
 **Where the nine methods stand.** Methods 2 and 4–7 executed; they are the cross-method table in
 the writeup, five judging procedures agreeing with the panel 84–91% of the time on the exact 1–5
 score. Method 9 was added 2026-09-05 and scored against these locked weights before it ran.
-Methods 3 and 8 have not been executed.
+Method 3 was not executed.
 
-**Method 8's harness exists and no human has scored it.** `scripts/judge_anchor.py` draws a
-blind sheet — 120 items, question and response only, stratified 24 per panel score across 1–5
-over 38 models — against a sealed key holding the panel score, the per-judge scores and the
-rubric. `--check-rubric` is a release-gate item, so the human and the panel cannot drift onto
-different rubrics. `--analyse` exits 1 until the sheet is filled. The gap is an afternoon, not a
-tool.
+**Method 8 is EXCLUDED.** Its pre-registered form anchors to the Political Compass's own axes,
+and this study administers those 62 propositions as *stimuli* while rejecting the framework's
+axes — `README.md` argues its horizontal axis is captured, self-report and undisclosed in
+scoring. Anchoring to them would import, at the most authoritative point in the design, the
+framework the study exists to criticise. Ian, 2026-09-12: *"the political compass stuff is not
+great and doesn't align with my values, so I excluded it because the politics are goofy. I had
+hoped that we could learn something from it, but apparently not."*
 
-**The anchor's pre-registered form is declined on principle, not on cost.** D5 = 2 blames
-acquisition of the benchmark mapping. The real reason, Ian, 2026-09-12: *"the political compass
-stuff is not great and doesn't align with my values, so I excluded it because the politics are
-goofy."* D1's rationale names the Political Compass axes as the external ground truth. This study
-administers those 62 propositions as **stimuli** while rejecting the instrument's own axes —
-`README.md` argues its horizontal axis is captured, self-report and undisclosed in scoring — so
-anchoring to them would import, at the most authoritative point in the design, the framework the
-study exists to criticise. That is the circularity moved one level out, not escaped. The human
-blind pass is the form of Method 8 that survives the objection.
+That is a principled exclusion and it is published as one. It is not an open gap, not pending,
+and not a limitation awaiting resources. D5 = 2 blamed acquisition cost; the rubric was scored
+before that reasoning was available and the scores are not edited.
 
-**The designated fallback is contested by this project's own result.** Pre-result observation 2
-names Method 2, the abliterated judge at 4.10, as the fallback if Method 8 proves infeasible.
-Method 2 scores D1 = 5, *"the direct answer to judges share RLHF lean"* — but §4.2, across five
-open-weight families, is that abliteration rewrites ~70% of political wording and moves stance by
-**≤0.2**. Refusal direction and institutional lean are dissociable, so cutting that direction
-does not move a judge's lean any more than it moves a subject's. The fallback removes a reflex
-the study proved is not the lean. That is not a reason to discard Method 2, which remains a real
-control on the refusal reflex; it is a reason to stop citing it as the lean control.
+**The consequence, stated plainly.** The scoring layer is validated for relative lean, rank
+behaviour and the refusal reflex, and not for a lean shared by all four judges. Nothing in this
+study bounds that, and nothing is planned to. Every scoring-layer claim carries the limit.
 
-**So the scoring layer is bounded by a relative measure.** `judge_lean.py` reports a 0.2926
-spread over 4,668 records, and that lean is an interaction rather than a main effect — it does
-not subtract out of the B−A deltas. Nothing in this study bounds a lean shared by all four
-judges. What is bounded is per-finding, by re-scoring rather than anchoring
-(`judge_lean.py --per-finding`): the two large effects hold under every judge alone;
-`deepseek/deepseek-v3.2` (+0.03 to +0.60) and `openai/gpt-4.1` (+0.21 to +0.73) do not and are
-reported with their ranges.
+What IS bounded is per-finding, by re-scoring rather than anchoring (`judge_lean.py
+--per-finding`): the two large effects hold under every judge alone; `deepseek/deepseek-v3.2`
+(+0.03 to +0.60) and `openai/gpt-4.1` (+0.21 to +0.73) do not, and are reported with their
+ranges. `judge_lean.py` reports a 0.2926 spread over 4,668 records, and that lean is an
+interaction rather than a main effect, so it does not subtract out of the B−A deltas.
