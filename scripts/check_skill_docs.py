@@ -60,6 +60,9 @@ NOT_A_PROCEDURE = {
                                "study is scored `unknown` rather than `no` -- controls_audit.py "
                                "cites it by name",
     "studypaths.py": "shared path/RNG resolution, imported never invoked",
+    "check_release_table.py": "release gate, run by release_check.py as checklist item 2. Not a "
+                              "procedure anyone follows by hand: it re-derives RELEASE-v2's arm "
+                              "inventory from runs/ and fails when the document has drifted",
     "lineage_exchangeability.py": "one-shot 2026-09-12 analysis behind "
                                   "RESULTS-2026-09-12-lineage-exchangeability.md. It asks "
                                   "whether the pooled same-version reference is exchangeable "
