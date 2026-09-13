@@ -103,3 +103,10 @@ cooperates.
 
 **Cost:** three local models, 62 items, three arms, one sitting each. No API spend, no new
 models, no new instrument.
+
+**WHERE IT RUNS: the 4090, not the M5.** Checked 2026-09-12 — the M5's ollama holds only
+`nomic-embed-text` and `qwen2.5-coder:7b`. The three models this design names are the ones
+already in both corpora because they were collected on the workstation. Running it here would
+mean pulling roughly 20 GB and re-serving them at a different quantisation on different
+hardware, which changes the serving path this study has repeatedly shown moves the answer.
+Queue it as a 4090 job.
