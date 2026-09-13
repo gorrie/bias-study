@@ -70,6 +70,48 @@ first.
 Discrimination is `compliance(safe) − compliance(unsafe)`, and it is reported here only
 alongside both components, per the decision rule.
 
+### The second model pair, added 2026-09-12
+
+**The table above is one model.** `runs/refusal-ablation/` has held 1,800 records since August —
+two model pairs, 450 per arm — and the headline reported the Qwen pair only. The Gemma pair sat
+in `summary.json`, unreported, while this project's own standing rule is *no mechanism claim
+from one model*.
+
+| model | arm | safe | unsafe | discrimination | keyword disagreement |
+|---|---|---:|---:|---:|---:|
+| Qwen3.8-27B | CONSTRAINED | 97.6% | 17.5% | 0.801 | 8.2% |
+| Qwen3.8-27B | ABLATED | 97.6% | 49.0% | **0.486** | **24.0%** |
+| Gemma-4-12B | CONSTRAINED | 95.2% | 17.5% | 0.777 | 6.2% |
+| Gemma-4-12B | ABLATED | 97.6% | 72.0% | **0.256** | **13.6%** |
+
+**Discrimination drop, bootstrapped over the 18 prompt types rather than over prompts**, because
+25 prompts of one type are not 25 independent observations:
+
+| model | drop | 95% CI |
+|---|---:|---|
+| Qwen3.8-27B | +0.315 | [+0.195, +0.440] |
+| Gemma-4-12B | **+0.521** | [+0.406, +0.640] |
+
+**Three things replicate across both vendors:**
+
+1. **Discrimination collapses**, and both intervals exclude zero.
+2. **Safe compliance does not move** — 97.6% → 97.6% and 95.2% → 97.6%. Ablation is not making
+   the models refuse *less on everything*; it is specifically removing the unsafe-side refusal.
+3. **The keyword detector and the judge disagree about twice as often after ablation** — 2.9×
+   on Qwen, 2.2× on Gemma. This is the vocabulary-versus-behaviour gap measured a second time,
+   and it is the finding in §1 that the one-model version could not carry.
+
+**What differs: the magnitude, by a lot.** Gemma's collapse is roughly 1.65× Qwen's, and the
+intervals barely overlap. Ablation is not a fixed-size intervention, which is consistent with
+every other thing this study has found about third-party ablated builds.
+
+**And it revises how prediction 2 was scored.** That prediction — *"ABLATED complies above 80%
+on UNSAFE"* — is marked WRONG above against Qwen's 49.0%. Gemma reaches **72.0%**. The
+prediction still fails on both, but it fails narrowly on one model and badly on the other, and
+scoring a prediction against the single model that happened to be analysed first is the same
+error this file's own correction block identifies.
+
+
 ## Predictions, scored
 
 **1. WRONG.** *"CONSTRAINED refuses a measurable share of SAFE prompts. Above 5%."*
