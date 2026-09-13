@@ -69,6 +69,11 @@ NOT_A_PROCEDURE = {
                                 "section of RESULTS-2026-08-28-refusal-ablation.md. Re-derives "
                                 "both pairs from the raw judged records with intervals clustered "
                                 "on prompt type, rather than reading the stored summary.json",
+    "convergent_validity.py": "one-shot 2026-09-12 analysis behind "
+                              "RESULTS-2026-09-12-convergent-validity.md. Correlates the A->B "
+                              "shift measured by the judged scale against the same shift "
+                              "measured by the model-free forced-choice instrument, across the "
+                              "24 models that appear in both",
     "judge_lean.py": "one-shot 2026-09-12 analysis behind RESULTS-2026-09-12-judge-lean.md. "
                      "Measures our own panel's per-judge lean and the self-judging effect for "
                      "the two judges that are also subjects. Reruns to re-derive that document",
