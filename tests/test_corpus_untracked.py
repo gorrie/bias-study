@@ -56,6 +56,11 @@ def test_hashed_only_is_opt_in(tmp_path, monkeypatch, capsys):
     """Hashes cover all 62 propositions and reproduce none, so a tree can deliberately not ship
     the ten plaintext fragments -- but only by saying so. The plaintext list is what catches a
     wrongly-regenerated hash file, and dropping it silently would be a quiet weakening."""
+    # _is_public_mirror is patched True because this asserts the FINGERPRINT logic, which only
+    # runs in the mirror -- in the private study main() returns 2 (not applicable) before
+    # reaching it. Without this the test passes in one tree and fails in the other, which is
+    # how a shared test teaches people that red is normal.
+    monkeypatch.setattr(C, "_is_public_mirror", lambda: True)
     monkeypatch.setattr(C, "FINGERPRINTS", str(tmp_path / "absent"))
     assert C.main(["--all"]) == 1
     assert "refusing to pass" in capsys.readouterr().out
