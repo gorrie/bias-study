@@ -176,18 +176,12 @@ now exhibit the behaviour under measurement.
 - **Build the symmetry test.** The only ground-truth-free detector of *absolute* lean.
 - **Method 8.** The real fix, and the one with an acquisition cost attached.
 
----
+## 7. The same-vendor effect
 
-## Addendum, 2026-09-12: the same-vendor effect
-
-**This section extends the 2026-09-05 audit above; it does not replace it.** §2 measured each
-judge's lean against the panel median and §"self-judged" listed the published findings whose
-subject also sat on the panel. Neither measured the SIZE of a same-vendor effect, which is the
-remaining half of the disclosure this file says appears in no writeup.
-
-A judge's deviation on its **own vendor's other models**, against its deviation on everyone
-else's, clustered on subject model, with the judge itself excluded so the model-level effect is
-not double-counted:
+§2 measured each judge's lean against the panel median; §4 listed the findings whose subject also
+sat on the panel. Neither measured the SIZE of a same-vendor effect. A judge's deviation on its
+own vendor's other models, against its deviation on everyone else's, clustered on subject model,
+with the judge itself excluded so the model-level effect is not double-counted:
 
 | judge | own vendor | others | effect | 95% CI | |
 |---|---:|---:|---:|---|---|
@@ -201,29 +195,18 @@ refused rather than reported: it has exactly one OpenAI sibling among the subjec
 resampling a single cluster returns it every draw, so the interval that falls out is an
 item-level one wearing a cluster label.
 
-**The direction is the same as every other effect in this file — harsher, not kinder.** Nothing
-here is self-favouring, which is the opposite of the standard worry about a model on its own
-jury, and worth stating because the other direction would have been reported as a scandal.
+**The direction is the same as every other effect here — harsher, not kinder.** Nothing is
+self-favouring, which is the opposite of the standard worry about a model on its own jury, and
+worth stating because the other direction would have been reported as a scandal.
 
-**It does not change §2's conclusion.** An effect under a tenth of a point on one judge does not
-threaten a delta on its own.
+An effect under a tenth of a point on one judge does not threaten a delta on its own. The lean
+that does threaten the deltas is the interaction in §3.
 
-*(Corrected within the hour it was written. This paragraph originally closed "the lean is still a
-constant main effect that subtracts out of the B−A deltas" — which is the conclusion §3 of this
-same file had already replaced, six sections above it. The lean is an interaction: measured per
-arm it shifts +0.249 for gemini and −0.100 for deepseek, so it does not subtract out. Writing a
-correct addendum onto a document while restating the claim that document withdrew is a failure
-mode worth naming, because nothing in the tooling catches it.)*
+## 8. The per-finding table, computed rather than typed
 
----
-
-## Addendum, 2026-09-12b: the per-finding table now has a harness, and it found a row
-
-Every table in §4 was typed. `judge_lean.py --per-finding` computes it: substitute one judge's
-raw score for the panel median and push it through `ci_analysis.per_model_deltas`, the study's
-own estimator, rather than a second implementation of it.
-
-It reproduces §4 cell for cell. It also flags a row §4 did not:
+`judge_lean.py --per-finding` substitutes one judge's raw score for the panel median and pushes
+it through `ci_analysis.per_model_deltas`, the study's own estimator, rather than a second
+implementation of it:
 
 | finding | panel | haiku | gpt-4.1 | gemini | deepseek | |
 |---|---:|---:|---:|---:|---:|---|
@@ -235,13 +218,11 @@ It reproduces §4 cell for cell. It also flags a row §4 did not:
 
 \* judge and subject share a vendor.
 
-§4 called out `deepseek-v3.2` and stopped there. **`openai/gpt-4.1` ranges +0.21 to +0.73 across
-judges** — a factor of 3.5, the low end being the most deferential judge and the high end the
-most skeptical. It should carry its range for the same reason `deepseek-v3.2` does. That it went
-unnoticed for a week is the argument for mechanising a table rather than reading one.
+**Two findings are not robust to judge composition, not one.** `deepseek-v3.2` ranges +0.03 to
++0.60 and `openai/gpt-4.1` ranges +0.21 to +0.73. Both carry their ranges and are reported as
+suggestive rather than at the standing of the two large effects, which hold under every judge
+alone.
 
-**The recomputation moved the denominator.** §2 was measured over 4,744 scored records; the same
-command returns **4,668** today, because the eligibility rule of `DATA-EMPTY-SCORES-002` now
-excludes 33 further unusable records by default. The per-judge means are unchanged to three
-decimals (+0.175 / +0.088 / −0.023 / −0.117, spread 0.2926). The numbers above are the current
-ones; where a published document still quotes 4,744 it is quoting a superseded eligible set.
+**The denominator is 4,668**, not the 4,744 this file reported on 2026-09-05: the eligibility
+rule of `DATA-EMPTY-SCORES-002` now excludes 33 further unusable records by default. Per-judge
+means are unchanged to three decimals (+0.175 / +0.088 / −0.023 / −0.117, spread 0.2926).

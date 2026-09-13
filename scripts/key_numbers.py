@@ -604,16 +604,6 @@ SURFACES = {
             "judge_lean_bottom": "to %s (DeepSeek v3.2",
         },
     },
-    "website-discovery": {
-        "path": _find_surface("website", "content", "research", "how-the-audit-broke.md"),
-        "phrases": {
-            "judge_records": "Over %s scored records",
-            "judge_lean_top": "| **+%.3f** |",
-            "judge_lean_bottom": "| **%s** |",
-            "scored_empty_main": "**%d scored records in the main corpus",
-            "scored_empty_all": "the count is %d of 14,028",
-        },
-    },
     #: The barometer's own demo page (2026-09-07). Every figure in its layout is rendered from
     #: static/tech/barometer/barometer.json, which tools/gen-barometer.py reads through build()
     #: and floors() -- so the layout cannot drift. The PROSE above the layout types three numbers
@@ -702,12 +692,35 @@ def _corrections_entries():
     return sum(1 for line in text.splitlines() if line.startswith("### "))
 
 
+def _mirror_root():
+    """The PUBLIC tree, wherever this is run from.
+
+    From the private study that is the `bias-study-release` symlink; run from the mirror there
+    is no such path above it and the mirror is simply here. Getting this wrong is not a crash,
+    it is a wrong number, which is worse.
+    """
+    m = _find_surface("bias-study-release")
+    return m if os.path.isdir(m) else STUDY
+
+
 def _withheld_records():
-    """Records carrying a `[withheld: ...]` marker, across data/ and runs/."""
+    """Records carrying a `[withheld: ...]` marker in the PUBLIC MIRROR.
+
+    THE MIRROR, DELIBERATELY. Withholding is a property of the published corpus: the private
+    tree holds the full response text and withholds nothing, so counting here returns 0 while
+    the README correctly says 38. The `release` surface gates the PUBLIC README, so its numbers
+    have to come from the tree that README describes.
+
+    Run from the private study this gate used to compare the mirror's prose against the private
+    tree's numbers and fail; run from the mirror, `_find_surface` could not resolve the README
+    and the gate skipped entirely and printed a pass. Two verdicts for one question, and the
+    reassuring one was the one that checked nothing.
+    """
     import glob as _glob
     n = 0
+    root_dir = _mirror_root()
     for root in ("data", "runs"):
-        for p in sorted(_glob.glob(os.path.join(STUDY, root, "**", "*.jsonl"), recursive=True)):
+        for p in sorted(_glob.glob(os.path.join(root_dir, root, "**", "*.jsonl"), recursive=True)):
             try:
                 for line in io.open(p, encoding="utf-8", errors="replace"):
                     if "[withheld" in line:
@@ -725,13 +738,10 @@ def _judge_spread():
     """
     try:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        from judge_lean import scored_records, deviations
-        import statistics as _st
-        per = deviations(scored_records())
-        if not per:
-            return None
-        means = sorted(_st.mean(v) for v in per.values())
-        return round(means[-1] - means[0], 4)
+        # THE MIRROR, for the same reason _withheld_records uses it: this number is quoted in
+        # the PUBLIC README, so it must be the one a reader of that README can reproduce. The
+        # private tree returns 0.2915 over 4,744 records and the mirror 0.2926 over 4,668.
+        return _mirror_judge_stats()[3]
     except Exception:
         return None
 
@@ -765,7 +775,7 @@ def _mirror_judge_stats():
     """(n_records, top_lean, bottom_lean) over the mirror, computed once."""
     if _MIRROR_JUDGE_CACHE:
         return _MIRROR_JUDGE_CACHE[0]
-    out = (None, None, None)
+    out = (None, None, None, None)
     try:
         import glob as _glob
         import json as _json
@@ -802,9 +812,12 @@ def _mirror_judge_stats():
                         per[j["judge"]].append(j["score"] - med)
         if n and per:
             means = sorted(_st.mean(v) for v in per.values())
-            out = (n, round(means[-1], 3), round(means[0], 3))
+            # Fourth element is the UNROUNDED spread. Subtracting 3dp-rounded endpoints gives
+            # 0.2920 where the spread is 0.2926, and a margin hidden in a rounding is the exact
+            # error ci_clean_effects() exists to document.
+            out = (n, round(means[-1], 3), round(means[0], 3), round(means[-1] - means[0], 4))
     except Exception:
-        out = (None, None, None)
+        out = (None, None, None, None)
     _MIRROR_JUDGE_CACHE.append(out)
     return out
 

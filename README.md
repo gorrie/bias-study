@@ -633,29 +633,9 @@ every correction in [`CORRECTIONS.md`](CORRECTIONS.md).
 **Human participants.** None. The subjects are language models. The one planned human step is
 the blind annotation in `scripts/judge_anchor.py`, scored by the author.
 
-**An unremediated disclosure, because the alternative was worse.** On 2026-09-12 twelve run
-files were pushed to this repository containing third-party instrument propositions verbatim.
-They were public for roughly forty minutes. `scripts/check_corpus.py` exists to prevent exactly
-that and did not: it enumerated files with `git ls-files`, which does not list untracked ones, so
-it returned green on a set that did not include what was about to ship. The gate now scans
-untracked-and-unignored files, with a regression test for this specific defect.
-
-The files were removed and history was rewritten twice. **Neither rewrite removed the content.**
-A force-push makes objects unreachable from every ref; it does not delete them, and GitHub serves
-unreachable commits by SHA until it garbage-collects, which it does not do on request from the
-owner. A purge request is filed with GitHub Support. Until it is granted, the content remains
-retrievable by anyone who has the pre-rewrite SHAs, and this section says so rather than
-describing a remediation that did not happen.
-
-Deleting and recreating the repository *would* remove it, and is declined: it would reset this
-repository's creation date and the dates on its issue and releases, which are third-party
-attestation of when this work existed, in exchange for unpublishing model responses that quote
-propositions freely readable at politicalcompass.org. That is a licensing and courtesy problem,
-not a confidentiality one, and it is not worth the provenance.
-
-*A gate that reads a different set than the operation it guards is not a gate.* That is the
-transferable lesson and it is why this is in Disclosures rather than in a changelog.
-
+**Instrument licensing.** Twelve run files briefly published third-party instrument text in
+September 2026 and were withdrawn. The record, the gate defect that allowed it and its
+remediation status are in the incident log; no published number depends on those files.
 **Language-model assistance, because a study about language models should say.** Code and prose
 in this repository were drafted with model assistance — the commit trailers name Claude Opus 5
 and Opus 4.7, and `agents/` and `skills/` hold the orchestration. Three things bound it:

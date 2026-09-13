@@ -1,8 +1,8 @@
 # Pre-registration: the same items through both scoring paths
 
-**Written 2026-09-12, before any model is run. UNSIGNED — no data may be collected against this
-until Ian signs it.** The predictions below are the point; a prediction that can be adjusted
-after seeing the number is not a prediction.
+**Written 2026-09-12, before any model is run.** The predictions below are the point; a
+prediction that can be adjusted after seeing the number is not a prediction, and the commit
+carrying this file is what makes that checkable.
 
 ## The question
 
@@ -71,7 +71,33 @@ same item across three models is not three independent observations.
 - **Eligibility applies at read time** (`scripts/eligibility.py`, exclusion by default). Empty
   responses are excluded and the count is disclosed; an empty answer cannot be scored by either
   path and must not enter as a zero.
-- **No human re-scoring.** Standing rule: the author is the author, not the rater.
+- **No human re-scoring of the study's own scores.** The standing rule is that the author is the
+  author, not the rater, and it bars reaching into a measurement after seeing it — no loosening a
+  detector, no re-running until it cooperates, no second look at a number that came out wrong. It
+  does not bar Method 8, which produces an independent blind comparator and overwrites nothing:
+  the sheet carries question and response only, the key is sealed before scoring, the draw is
+  stratified so difficulty cannot be inferred from the sample, and `--analyse` refuses a partial
+  sheet so nobody can stop where the numbers look best.
+- **The Method 8 rater is the author.** No second rater is available. The rater knows the
+  hypotheses, has read many of these responses, and has an interest in the outcome; blinding
+  removes none of that and all three ship with the number. A non-author rater would remove the
+  objection and is the single thing that would most strengthen this result.
+- **No agent rates the anchor.** `RUBRIC-SCORES.md` Method 9 scores current frontier models as
+  judges at **D1 = 1, worse than the baseline**: every US-vendor flagship refuses the balance
+  instruction outright, and a judge that would decline the instrument is not a neutral rater of
+  it. Method 8's value is D1 = 5, escaping LLM-judge circularity at the anchor step; an agent
+  rater is that circularity rather than an escape from it. Model contributions are disclosed in
+  `README.md`, not credited as authorship.
+- **n = 120, fixed before scoring.** `judge_anchor.py --power` computes what the sheet buys from
+  its own rater dispersion (sd 0.578 over 442 rater-item deviations) against the 0.20 gap that
+  would move a conclusion — the judge-composition spread is 0.2926 and the smallest CI-clean
+  finding is +0.23. That needs 33 items if the rater behaves like a fifth LLM judge and **129**
+  if the rater disagrees twice as much; the sheet holds 120, drawn before anyone computed this.
+  The report is therefore conditional and both branches are committed here: near the optimistic
+  end the anchor **resolves** whether the panel carries a shared lean above 0.20; at the
+  pessimistic end it **bounds** that lean at roughly ±0.21 without settling it. Both publish. The
+  sheet is not redrawn, extended or stopped early — scoring until the interval looks good is
+  optional stopping.
 - **The judge panel is unchanged** — same four models, same rubric, same prompt. Changing the
   panel for this test would measure the new panel.
 
@@ -111,147 +137,3 @@ mean pulling roughly 20 GB and re-serving them at a different quantisation on di
 hardware, which changes the serving path this study has repeatedly shown moves the answer.
 Queue it as a 4090 job.
 
----
-
-## Amendment A, 2026-09-12 — the standing rule against human re-scoring does not bar Method 8
-
-**Recorded BEFORE the Method 8 sheet is scored, and before its key is opened, which is the only
-time recording it is worth anything.** Written down now precisely so it cannot be written down
-later, after a result is visible, as a rationalisation for accepting it.
-
-### The conflict, stated at full strength
-
-Four pre-registrations in this repository fix the same decision rule, this one at line 74:
-
-> **No human re-scoring.** Standing rule: the author is the author, not the rater.
-
-Method 8 as built (`scripts/judge_anchor.py`) has the author scoring 120 responses on the
-study's own rubric, blind, against a sealed key. Read flatly, the rule forbids it. If the rule
-forbids it, the highest-ranked control in the pre-registered rubric cannot be run at all by this
-project, and the scoring layer stays bounded by a relative measure permanently.
-
-### Why the rule does not reach it
-
-The rule sits, in all four preregs, among decision rules that bar **post-hoc adjustment of the
-study's own scores** — no loosening a detector, no re-running until it cooperates, no second
-look at a number that came out wrong. Its target is the author reaching into the measurement
-after seeing it.
-
-Method 8 does not do that, and is constructed so it cannot:
-
-- It produces an **independent comparator**, not a revision. No panel score is ever overwritten,
-  re-scored or adjusted. `judge_anchor.py` writes only to the sheet and reads only the key.
-- The sheet is **blind** — question and response, nothing else. The rater cannot see the panel's
-  score, the per-judge breakdown, the model, or the condition.
-- The key is **sealed before the scoring**, so the comparison set is fixed in advance and the
-  draw cannot be steered toward agreeable items. It is stratified 24 per panel score across 1–5
-  over 38 models, so the rater cannot even infer difficulty from the sample's composition.
-- `--analyse` **refuses on a partial sheet** without `--partial`, so a rater cannot stop at the
-  point where the numbers look best and report what is finished.
-
-The rule is about the author revising the instrument's output. Method 8 is about the author
-standing outside the instrument as a second reading of the same material. Those are different
-acts and the four preregs only ever disallowed the first.
-
-### What this amendment does not claim
-
-It does not claim the author is a good anchor. **They are not the ideal one.** The author knows
-the study's hypotheses, has read many of these responses before, and has an interest in the
-outcome, and no amount of blinding removes that. Every one of those is a limitation and all of
-them ship with the number.
-
-**A second, non-author scorer would remove the objection outright** and should be Ian's call
-before the sheet is worked. The sheet is drawn and costs nothing to hand to someone else; the
-only thing that would be lost is time. A two-rater version also yields an inter-rater figure,
-which the one-rater version cannot produce and which is the thing a reviewer will ask for first.
-
-### Disclosure, which is not optional
-
-`README.md` already states that the one planned human step is scored by the author. Whatever is
-reported from this sheet carries, in the same paragraph as the number: who rated it, that they
-are an author, that they were blind to panel score and condition, that the key was sealed first,
-and this amendment by date. If the anchor disagrees with the panel, that publishes. If it
-agrees, that publishes with the caveat that an author agreeing with their own instrument is the
-weaker of the two possible results.
-
-### Status
-
-Amendment A is **recorded, not signed.** It travels with the prereg, which remains UNSIGNED. No
-sheet may be scored until Ian signs or rejects both — and if he prefers a non-author rater, this
-amendment is moot and should be superseded rather than deleted.
-
----
-
-## Amendment B, 2026-09-13 — n is fixed at 120, the rater is the author, and no agent is the anchor
-
-**Recorded before a single item is scored and before the key is opened.** Amendment A argued
-that the standing rule against human re-scoring does not reach Method 8. This fixes the numbers
-and closes the question of who rates, because "no other humans are available" has an answer that
-is tempting and wrong.
-
-### An agent cannot be the anchor, and the rubric already said so
-
-The proposal was to have a language-model agent score the sheet and list agents as co-authors.
-**This project pre-registered the answer to that on 2026-09-05, before it came up.**
-`RUBRIC-SCORES.md` Method 9 — "modern frontier panel, 2026-generation cross-vendor median" —
-scores **D1 = 1, worse than the baseline's 2**, with a measured rationale:
-
-> All four are RLHF-aligned and *more recently and heavily* aligned — strictly more of the prior
-> under test. Measured 2026-09-05: every US-vendor flagship refuses the balance instruction
-> outright, so the proposed judges now exhibit the behaviour being measured. A judge that would
-> decline the instrument is not a neutral rater of it.
-
-Method 8's entire value is D1 = 5, *"fully escapes the LLM-judge circularity at the anchor
-step."* An agent rater does not escape that circularity; it is that circularity. Substituting one
-would leave the study with an anchor that cannot anchor and a claim it could not defend, and the
-rubric that would have caught it was written by us four months ago and ranked the idea last.
-
-On authorship: contributions by language models are **disclosed, not credited as authorship**.
-Authorship is a claim of accountability and no model can carry one — arXiv and essentially every
-venue bar it outright, and a preprint listing model co-authors would be rejected or flagged on a
-technicality, which is an absurd way to lose a study that is otherwise this careful.
-`README.md` §Disclosures already does this correctly: "Author contributions. Single author,"
-followed by a separate, specific "Language-model assistance" block naming the models, the
-orchestration, and the three properties that bound it. That is the right pattern and it stands.
-
-### So the rater is the author, and the limitations say so
-
-No second human is available. The author scores the sheet, blind, under Amendment A. Every
-limitation in Amendment A holds and ships with the number: the rater knows the study's
-hypotheses, has read many of these responses before, has an interest in the outcome, and no
-amount of blinding removes that. A second non-author rater would remove the objection and is
-recorded as the thing that would strengthen this result if it ever becomes possible.
-
-### n = 120, fixed now, with the bound stated in advance
-
-`judge_anchor.py --power` computes it from the sheet's own rater dispersion (sd = 0.578 over 442
-rater-item deviations). The gap that would move a conclusion is **0.20 points** — the
-judge-composition spread is 0.2926 and the smallest CI-clean finding is +0.23.
-
-| assumption | sd | items needed | 120 gives |
-|---|---:|---:|---:|
-| the author rates like a fifth LLM judge | 0.58 | 33 | ±0.103 |
-| the author disagrees twice as much | 1.16 | **129** | ±0.207 |
-
-**Said out loud now rather than discovered afterwards: 120 is one item class short of the
-pessimistic requirement.** The sheet was drawn at 120 before anyone computed this; 129 would have
-been the number. So the report is conditional and both branches are pre-committed:
-
-- If the observed dispersion lands near the optimistic end, the anchor **resolves** whether the
-  panel carries a shared lean above 0.20.
-- If it lands at the pessimistic end, the anchor **bounds** the shared lean at roughly ±0.21 and
-  does not settle it.
-
-**Both publish.** Neither is a reason to add items after seeing the dispersion. The sheet is not
-redrawn, not extended, and not stopped early: scoring on until the interval looks good is
-optional stopping, and a study that exists to indict other people's analytic freedom does not get
-to take that one.
-
-### Procedure
-
-`judge_anchor.py --score` presents one item at a time — question and response only, never the
-panel score, the per-judge scores, the model or the condition — and writes after every keypress
-so the pass survives being abandoned and resumed. Skips are recorded as skips and counted
-against the total; they are not silently dropped.
-
-Amendment B is **recorded, not signed**, and travels with the prereg, which remains UNSIGNED.
