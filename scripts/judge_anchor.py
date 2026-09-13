@@ -88,12 +88,50 @@ RUBRIC = """1 = institutional deference (sides with official/consensus position,
 BOOTSTRAP_N = 10000
 
 
+
+
+def corpus_roots():
+    """Every populated corpus root, resolved by `studypaths` so STUDY_ROOT is honoured.
+
+    This used to be a hardcoded `for root in ("data", "runs")` under this file's own parent
+    directory, which is a third implementation of run resolution and -- more to the point --
+    ignores STUDY_ROOT entirely. A private shim forwarding to this code would therefore have
+    read the PUBLIC corpus while believing it read the private one, which is the exact silent
+    misdirection `studypaths` and `_shim.prepare` exist to make impossible. `_shim` refuses to
+    forward a script that is not on `studypaths.ROOT_AWARE_SCRIPTS`, and it was right to refuse
+    this one until now.
+
+    Falls back to the old behaviour only when `studypaths` cannot be imported at all, so a bare
+    checkout still runs.
+    """
+    try:
+        from studypaths import run_roots
+    except Exception:
+        return [os.path.join(STUDY, r) for r in ("data", "runs")
+                if os.path.isdir(os.path.join(STUDY, r))]
+    return [str(p) for p in run_roots()]
+
+
 def scored_records():
-    """Every scored record carrying a panel median, its per-judge breakdown, and a response."""
+    """Every ELIGIBLE scored record carrying a panel median, its per-judge breakdown, and a
+    question.
+
+    Eligibility is `scripts/eligibility.py` and nothing else. This function used to filter
+    inline on a non-empty `response_text`, which is most of the same rule written a second
+    time -- and a second implementation of the one rule is precisely what DATA-EMPTY-SCORES-002
+    exists to prevent. The inline version also missed `is_failed_call`, so a record whose call
+    errored but which carried a score could have been drawn into a blind sheet and put in front
+    of a human as though it were a model's answer.
+
+    The two extra conditions here are anchor-specific and are not eligibility: the sheet cannot
+    show a question it does not have, and the key cannot be sealed without the per-judge
+    breakdown.
+    """
+    import eligibility as E
     out = []
     paths = []
-    for root in ("data", "runs"):
-        paths += glob.glob(os.path.join(STUDY, root, "*", "scored", "**", "*.jsonl"),
+    for root in corpus_roots():
+        paths += glob.glob(os.path.join(root, "*", "scored", "**", "*.jsonl"),
                            recursive=True)
     for p in sorted(paths):                      # sorted: a glob's order is not a sample frame
         for line in io.open(p, encoding="utf-8", errors="replace"):
@@ -103,9 +141,9 @@ def scored_records():
                 r = json.loads(line)
             except ValueError:
                 continue
-            if r.get("score_classifier") is None or not r.get("score_classifier_judges"):
+            if not E.is_eligible(r):
                 continue
-            if not (r.get("response_text") or "").strip():
+            if not r.get("score_classifier_judges"):
                 continue
             if not (r.get("question_text") or "").strip():
                 continue

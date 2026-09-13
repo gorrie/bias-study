@@ -50,7 +50,13 @@ if not STUDY_DIR.is_dir():
 
 # Compatibility contract for historical shims; expand only with entry-point tests.
 ROOT_AWARE_SCRIPTS = frozenset({"ci_analysis.py", "robustness_checks.py",
-                               "paired_analysis.py", "validate_runs.py"})
+                               "paired_analysis.py", "validate_runs.py",
+                               # Added 2026-09-12. Both resolved their corpus with a hardcoded
+                               # ("data", "runs") under their own parent directory, which is a
+                               # third implementation of run resolution and ignores STUDY_ROOT.
+                               # They now call run_roots(). A shim may forward to them safely;
+                               # it could not before, and _shim was right to refuse.
+                               "judge_anchor.py", "judge_lean.py"})
 
 #: May 2026's seed. Frozen. Used when a run's manifest declares none.
 LEGACY_SEED = 20260527

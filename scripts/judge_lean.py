@@ -130,6 +130,30 @@ def ci_clean_effects():
     return sorted(out, key=abs, reverse=True)
 
 
+
+
+def corpus_roots():
+    """Every populated corpus root, resolved by `studypaths` so STUDY_ROOT is honoured.
+
+    This used to be a hardcoded `for root in ("data", "runs")` under this file's own parent
+    directory, which is a third implementation of run resolution and -- more to the point --
+    ignores STUDY_ROOT entirely. A private shim forwarding to this code would therefore have
+    read the PUBLIC corpus while believing it read the private one, which is the exact silent
+    misdirection `studypaths` and `_shim.prepare` exist to make impossible. `_shim` refuses to
+    forward a script that is not on `studypaths.ROOT_AWARE_SCRIPTS`, and it was right to refuse
+    this one until now.
+
+    Falls back to the old behaviour only when `studypaths` cannot be imported at all, so a bare
+    checkout still runs.
+    """
+    try:
+        from studypaths import run_roots
+    except Exception:
+        return [os.path.join(STUDY, r) for r in ("data", "runs")
+                if os.path.isdir(os.path.join(STUDY, r))]
+    return [str(p) for p in run_roots()]
+
+
 def scored_records():
     """Every scored record that carries both a panel median and its per-judge breakdown."""
     out = []
@@ -140,8 +164,8 @@ def scored_records():
     # cites that spread. A number a reader is told to recompute has to recompute where the
     # reader is standing.
     paths = []
-    for root in ("data", "runs"):
-        paths += glob.glob(os.path.join(STUDY, root, "*", "scored", "**", "*.jsonl"),
+    for root in corpus_roots():
+        paths += glob.glob(os.path.join(root, "*", "scored", "**", "*.jsonl"),
                            recursive=True)
     for p in sorted(paths):
         for line in io.open(p, encoding="utf-8", errors="replace"):
