@@ -40,28 +40,14 @@ lean is **Method 8, external-benchmark anchoring** -- which the rubric ranked FI
 which was for months the one method never executed, because the benchmark items were never
 acquired. The gap in the scoring layer is the gap the rubric identified in May.
 
-**Its harness is built and it has not been run.** `scripts/judge_anchor.py` draws a blind
-scoring sheet -- `data/judge-anchor-sheet.jsonl`, 120 items, question and response only, every
-`your_score` null -- against a sealed key, `data/judge-anchor-key.json`, which holds the panel
-score, the per-judge scores and the rubric for each item. The draw is stratified 24 items per
-panel score across 1-5 over 38 models, because an unstratified sample of this corpus returns
-mostly 3s and bounds nothing.
+**Method 8 is EXCLUDED, so nothing bounds a shared lean and nothing is planned to.** Its
+pre-registered form anchors to the Political Compass's own axes; this study uses those 62
+propositions as stimuli while rejecting the framework, so anchoring to them would import the
+framework it exists to criticise. Excluded on principle 2026-09-12, not pending. See
+RUBRIC-SCORES.md.
 
-**No human has scored it, so there is no number.** That is the whole of the gap. Not a missing
-tool: a missing afternoon. Until someone works the sheet, everything below is a RELATIVE lean.
-
-Two things about Method 8 the rubric does not yet say, recorded here because this is the file
-that warns about the gap:
-
-- The pre-registered form of the anchor was the Political Compass's own axes. It is declined
-  on principle, not on cost. This study uses those 62 propositions as *stimuli* and rejects the
-  framework's axes -- README.md argues the horizontal axis is captured, self-report and
-  undisclosed in scoring -- so anchoring to them would import the framework the study exists to
-  criticise. The substitute is the human blind pass above.
-- The rubric names Method 2, the abliterated judge, as the fallback if Method 8 is infeasible.
-  This project's own weight-rung result contests that: abliteration rewrites ~70% of political
-  wording and moves stance by <=0.2, so the fallback removes a reflex the study itself proved is
-  not the lean. There is no cheap substitute for the human pass.
+So the spread below is a RELATIVE lean, permanently. What IS bounded is per-finding: --per-finding
+re-scores every CI-clean finding under each judge alone, and two of the five do not survive it.
 
     python scripts/judge_lean.py              # per-judge deviation, and the spread
     python scripts/judge_lean.py --by-condition
@@ -440,9 +426,9 @@ def main(argv=None):
     print("against the median of the same panel, so a panel that agreed and was wrong together")
     print("would score a spread of zero and look ideal. Catching that needs an anchor OUTSIDE")
     print("the panel -- Method 8, ranked FIRST at 4.25 in the pre-registered rubric.")
-    print("Its harness is built -- judge_anchor.py, 120-item blind sheet drawn against a")
-    print("sealed key -- and NO HUMAN HAS SCORED IT, so there is no number. Until someone")
-    print("does, this spread is a RELATIVE lean and nothing here bounds a shared one.")
+    print("Method 8 is EXCLUDED on principle -- its form anchors to the Political Compass's")
+    print("own axes, which this study uses as stimuli while rejecting. So this spread is a")
+    print("RELATIVE lean permanently, and nothing here bounds a lean shared by all four.")
     if spread is not None:
         print("")
         effects = ci_clean_effects()

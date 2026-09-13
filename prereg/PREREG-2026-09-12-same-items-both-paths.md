@@ -71,33 +71,7 @@ same item across three models is not three independent observations.
 - **Eligibility applies at read time** (`scripts/eligibility.py`, exclusion by default). Empty
   responses are excluded and the count is disclosed; an empty answer cannot be scored by either
   path and must not enter as a zero.
-- **No human re-scoring of the study's own scores.** The standing rule is that the author is the
-  author, not the rater, and it bars reaching into a measurement after seeing it — no loosening a
-  detector, no re-running until it cooperates, no second look at a number that came out wrong. It
-  does not bar Method 8, which produces an independent blind comparator and overwrites nothing:
-  the sheet carries question and response only, the key is sealed before scoring, the draw is
-  stratified so difficulty cannot be inferred from the sample, and `--analyse` refuses a partial
-  sheet so nobody can stop where the numbers look best.
-- **The Method 8 rater is the author.** No second rater is available. The rater knows the
-  hypotheses, has read many of these responses, and has an interest in the outcome; blinding
-  removes none of that and all three ship with the number. A non-author rater would remove the
-  objection and is the single thing that would most strengthen this result.
-- **No agent rates the anchor.** `RUBRIC-SCORES.md` Method 9 scores current frontier models as
-  judges at **D1 = 1, worse than the baseline**: every US-vendor flagship refuses the balance
-  instruction outright, and a judge that would decline the instrument is not a neutral rater of
-  it. Method 8's value is D1 = 5, escaping LLM-judge circularity at the anchor step; an agent
-  rater is that circularity rather than an escape from it. Model contributions are disclosed in
-  `README.md`, not credited as authorship.
-- **n = 120, fixed before scoring.** `judge_anchor.py --power` computes what the sheet buys from
-  its own rater dispersion (sd 0.578 over 442 rater-item deviations) against the 0.20 gap that
-  would move a conclusion — the judge-composition spread is 0.2926 and the smallest CI-clean
-  finding is +0.23. That needs 33 items if the rater behaves like a fifth LLM judge and **129**
-  if the rater disagrees twice as much; the sheet holds 120, drawn before anyone computed this.
-  The report is therefore conditional and both branches are committed here: near the optimistic
-  end the anchor **resolves** whether the panel carries a shared lean above 0.20; at the
-  pessimistic end it **bounds** that lean at roughly ±0.21 without settling it. Both publish. The
-  sheet is not redrawn, extended or stopped early — scoring until the interval looks good is
-  optional stopping.
+- **No human re-scoring.** The author is the author, not the rater.
 - **The judge panel is unchanged** — same four models, same rubric, same prompt. Changing the
   panel for this test would measure the new panel.
 

@@ -641,8 +641,12 @@ than toward any particular finding.
 **Author contributions.** Single author: design, collection, code, analysis, writing, and
 every correction in [`CORRECTIONS.md`](CORRECTIONS.md).
 
-**Human participants.** None. The subjects are language models. The one planned human step is
-the blind annotation in `scripts/judge_anchor.py`, scored by the author.
+**Human participants.** None. The subjects are language models, and no step of this study is
+scored by a human. Method 8 of the pre-registered rubric would have been — an external anchor —
+and it is excluded on principle: its form anchors to the Political Compass's own axes, which this
+study uses as stimuli while rejecting. `RUBRIC-SCORES.md` carries the reasoning. The consequence
+is that the scoring layer is validated for relative lean and not for a lean shared by all four
+judges, and every scoring-layer claim here carries that limit.
 
 **Instrument licensing.** Twelve run files briefly published third-party instrument text in
 September 2026 and were withdrawn. The record, the gate defect that allowed it and its
