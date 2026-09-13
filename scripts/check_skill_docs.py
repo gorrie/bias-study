@@ -294,6 +294,46 @@ def coverage():
     return missing
 
 
+def results_doc_dead_paths():
+    """Dead script references in RESULTS/VERIFICATION documents, not just skill documents.
+
+    On 2026-09-12 judge_lean.py's docstring and report both claimed `scripts/judge_anchor.py`
+    existed, described its flags, and said its blind sheet was drawn. The file had never been
+    committed. That claim closed the highest-ranked open validation method in the reader's mind
+    -- Method 8, 4.25, the only control that can catch a lean shared by all four judges.
+
+    check_skill_docs already refused dead paths in SKILL documents. Nothing checked results
+    prose or module docstrings, which is where the claim actually lived.
+    """
+    import glob as _glob
+    import re as _re
+    dead = []
+    # Test files name fake scripts on purpose (scripts/x.py, scripts/absent.py) and a
+    # CORRECTION naming the missing file is the fix, not the defect -- both are skipped.
+    denials = ("never been committed", "not started", "does not exist", "no harness",
+               "missing", "never committed")
+    pats = ["RESULTS-*.md", "VERIFICATION-*.md", "scripts/*.py"]
+    for pat in pats:
+        for path in _glob.glob(os.path.join(ROOT, pat)):
+            try:
+                text = io.open(path, encoding="utf-8", errors="replace").read()
+            except OSError:
+                continue
+            base = os.path.basename(path)
+            if base.startswith("test_") or base == "_shim.py":
+                continue
+            low = text.lower()
+            for ref in set(_re.findall(r"scripts/[a-z0-9_]+\.py", text)):
+                if os.path.exists(os.path.join(ROOT, ref)):
+                    continue
+                near = [ln.lower() for ln in text.split("\n") if ref in ln]
+                ctx = " ".join(near) + " " + low[:4000]
+                if any(d in ctx for d in denials):
+                    continue
+                dead.append((os.path.relpath(path, ROOT), ref))
+    return sorted(set(dead))
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--strict", action="store_true",
@@ -342,6 +382,19 @@ def main(argv=None):
             return 1
     else:
         print("every entry point is either named by a skill or declared a non-procedure.")
+
+    # A results document or module docstring naming a script that does not exist is the same
+    # defect class, in the place readers actually look. It is fatal regardless of --strict:
+    # a claim that a harness exists closes an open question in the reader's mind.
+    ghosts = results_doc_dead_paths()
+    if ghosts:
+        print("")
+        print("%d dead script reference(s) in results prose or docstrings:" % len(ghosts))
+        for where, ref in ghosts:
+            print("   %-40s names %s" % (where, ref))
+        print("Write the script, or correct the claim. Do not leave prose asserting a tool")
+        print("that was never committed.")
+        return 1
     return 0
 
 
