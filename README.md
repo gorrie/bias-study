@@ -43,10 +43,8 @@ narrowed or corrected **14** claims of its own, and says which, when, and what r
 > Analysis plans fixed before their data was collected: [prereg/](prereg/) — six of them,
 > published 2026-09-07, and one has its stopping rule enforced in code.
 > What is coming next, and what it needs: [ROADMAP.md](ROADMAP.md).
+> What this study got wrong about its own machinery: [LESSONS.md](LESSONS.md).
 > [TODO.md](TODO.md) is the **historical** May-2026 handoff, kept as a record and superseded.
-> *(Neither was linked from here until 2026-09-07, which is how a file titled "TODO / Roadmap"
-> and instructing the reader to keep it current went three months and a whole second
-> instrument without an update.)*
 
 A reproducible study of how aligned LLMs shift their framing on contested-institution
 topics when the "be fair to both sides" instruction is removed — and a test of *where*
@@ -65,16 +63,13 @@ spine is that **force-escalation ladder**:
 | **2. Pipeline** | hedge-strip + obfuscation, layered | G0DM0D3 server | **no effect established** — all 8 intervals span zero at n=1 per cell |
 | **3. Weights** | ablate the refusal direction | OBLITERATUS (fp16) | text rewrites ~70%, stance does **not** move |
 
-**Rung 2 is the weak rung and this table used to overstate it.** It read "only the layered
-stack adds force, to a ceiling" until 2026-09-13. Nothing had computed that: `analysis.py` keys on
-conditions A and B, this arm runs `B-STM` / `B-Parseltongue` / `B-Layered`, so every table in its
-own ANALYSIS.md is an empty heading. `scripts/pipeline_rung.py` estimates it properly — paired per
-question against plain condition B — and **not one of the eight intervals excludes zero.** The
-strongest is Grok 4.3's layered stack at +0.60, whose lower bound is exactly zero; Claude Opus
-4.7's two single-technique arms measure +0.00. A ceiling was never located at all, which three
-points on one axis cannot do at any sample size. Re-collection with five samples per cell and a
-same-sitting baseline is pre-registered and queued. Rungs 1 and 3 are unaffected and are where
-this study's weight sits.
+**Rung 2 establishes nothing, and the table says so.** `scripts/pipeline_rung.py` estimates the
+arm paired per question against plain condition B: **not one of its eight intervals excludes
+zero.** The strongest is Grok 4.3's layered stack at +0.60, whose lower bound is exactly zero;
+Claude Opus 4.7's two single-technique arms measure +0.00. No ceiling was located, which three
+points on one axis cannot do at any sample size. Re-collection at five samples per cell with a
+same-sitting baseline is pre-registered and queued. Rungs 1 and 3 carry this study's weight;
+[LESSONS.md](LESSONS.md) §3 records how the original claim survived four months.
 
 The result is also robust to the obvious reviewer attack on LLM-as-judge studies. The same
 data was re-scored under five materially different judging procedures, including one with
@@ -175,18 +170,14 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 > `c49d38f9…`, so you can establish you hold the same 62 propositions. The **canonical**
 > byte-exact hash does **not**: that source now serves different typography than the
 > collection used, so `--verify-run` cannot rebuild prompts byte-for-byte and will tell you
-> so rather than pass. Until 2026-09-12 this paragraph said `--verify-run` would "prove you
-> hold the same instrument we did", which promised the stronger check and delivered the
-> weaker one. You can confirm the item set. You cannot, from that source today, confirm the
+> so rather than pass. You can confirm the item set. You cannot, from that source today, confirm the
 > bytes.
 >
 > Two honest caveats. `PAPER-below-the-floor.md`, the academic writeup, is not here — that is
 > an authorial decision, and none of the floors depend on it. And 38 run records had their
 > `response_text` withheld because the MODEL echoed propositions back; their answers are
 > intact, so no number changes. Root `MANIFEST.json` describes the export, and
-> `python scripts/key_numbers.py` recounts the redactions from the shipped files. That
-> sentence said 19 and cited `runs/COMPASS-EXPORT-MANIFEST.json`, a file this repository does
-> not contain, until 2026-09-12; the count is generated now.
+> `python scripts/key_numbers.py` recounts the redactions from the shipped files. The count is generated, never typed.
 
 ### Replicating the barometer
 
@@ -304,7 +295,7 @@ own sampling error, so that row is not measuring item order at all. On the 2024-
 builds this literature was largely built on, item order is the larger effect. A pooled p90
 answers neither question.
 
-**What that split is NOT, because this section said otherwise until 2026-09-07.** The test is
+**What that split is NOT.** The test is
 `"/" in model` — hosted against local. It is **not** open-weight against closed: 12 of the 20
 hosted models are open weights served by someone else (DeepSeek V4, Qwen3.8-Max, GLM-5.x, Kimi
 K2.5/K2.6/K3, Mistral Medium), all 2025–26 releases. The table was published with the sides
@@ -360,10 +351,6 @@ the nuisance factor that matters on a current model is not how the sheet was shu
 p90 3 there. It is *which variant of the model was measured*, and that one is the size of the
 manipulation or larger.
 
-*(This paragraph read "order p90 4, two models of one version p90 12, deliberate manipulation
-p90 14" until 2026-09-07. All three were stale hand-typed figures — the same-version p90 is 11,
-and the two order figures conflated the pooled and one-sitting arms. They now come from the
-generated table above, and `key_numbers.py --check-release` gates them.)*
 
 **Confirmed — the weight-rung dissociation.** It holds and strengthens. At temperature 0,
 where a greedy model reproduces itself exactly, stock and abliterated builds share ~30% of
@@ -384,10 +371,6 @@ second being the one that governs a modern study. **3 of 5** published nulls fal
 own detection limit, version drift among them. The claims are undecided rather than refuted,
 which is a different verdict and not a restoration.
 
-*(Two numbers in that paragraph were wrong until 2026-09-07 and both flattered it: the
-detection limit was given as 16 where `power.py` computes 13, and "four of five" nulls where 3
-of 5 fall below. A paragraph whose whole point is that this instrument is underpowered should
-not overstate by how much.)*
 
 **Withdrawn — that one null "inverted".** This section previously reported that qwen2.5-14B
 moves 12 items under ablation against a detection limit of 9, and read that as real stance
@@ -562,9 +545,8 @@ python scripts/ci_analysis.py $(date +%F)
 python scripts/robustness_checks.py $(date +%F)
 ```
 
-> Step 4 took no argument here until 2026-09-12, exactly as printed, and neither command
-> worked that way: `ci_analysis.py` exits on its usage line, and `robustness_checks.py`
-> printed nothing at all and returned success — the silent-pass mode `.pre-commit-config.yaml`
+> Both commands take the run date. `robustness_checks.py` had a silent-pass mode that
+> `.pre-commit-config.yaml`
 > records having fixed once already. Both take one or more run dates.
 
 To re-derive the published numbers without spending any API budget, the full scored data
