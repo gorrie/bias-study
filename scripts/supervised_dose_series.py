@@ -86,6 +86,26 @@ MAX_WALL_CLOCK_S = 3600.0  # 60 minutes per attempt; 4x the observed clean run
 MIN_FREE_GB = 25.0
 
 
+def _new_process_group():
+    """Popen kwargs that put the child in its own group, on either platform."""
+    if os.name == "nt":
+        return {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    return {"start_new_session": True}
+
+
+def _kill_tree(proc):
+    """Kill the child AND its descendants. OBLITERATUS spawns its own children, so killing
+    only `proc` leaves the GPU held by an orphan and the next dose fails to allocate."""
+    if os.name == "nt":
+        subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                       capture_output=True, check=False)
+        return
+    try:
+        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+    except (ProcessLookupError, PermissionError):
+        proc.kill()
+
+
 def utcnow_iso() -> str:
     return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
 
@@ -193,16 +213,25 @@ def run_one_dose_supervised(
     ]
     if strong_layers:
         cmd.extend(["--strong-layers", strong_layers])
-    log_fp = log_path.open("a")
+    # encoding and newline are explicit because this script runs on the WINDOWS collection box
+    # and the default there is cp1252 with CRLF translation: a model name or response fragment
+    # containing a non-latin1 character raises UnicodeEncodeError mid-run and kills a supervised
+    # dose series hours in, and the log it was keeping is the record of what already ran.
+    log_fp = log_path.open("a", encoding="utf-8", newline="\n")
     log_fp.write(f"\n=== supervisor run: dose={dose} started at {utcnow_iso()} ===\n")
     log_fp.write(f"cmd: {' '.join(cmd)}\n")
     log_fp.flush()
     started = time.time()
     proc = subprocess.Popen(
         cmd, stdout=log_fp, stderr=subprocess.STDOUT,
-        # New process group so we can SIGKILL the whole subtree on hang
-        preexec_fn=os.setsid,
-    )
+        # New process group so the whole subtree can be killed on hang.
+        #
+        # THIS WAS `preexec_fn=os.setsid`, WHICH CANNOT RUN ON WINDOWS. preexec_fn raises
+        # ValueError there, os.setsid and os.killpg do not exist, and signal.SIGKILL is not
+        # defined -- so this script died at the first Popen on the box it was written for. The
+        # abliteration work it supervises is a queued 4090 job and that box is Windows.
+        # `start_new_session` is the portable spelling of the same thing.
+        **_new_process_group())
     # CPU-activity-aware stall detection. OBLITERATUS goes silent on stdout
     # during long compute phases; relying on log-mtime alone produces
     # false-positive hangs. We track total user-CPU consumed by the subprocess
@@ -274,7 +303,7 @@ def run_one_dose_supervised(
                     f"killing ===\n"
                 )
                 log_fp.flush()
-                os.killpg(proc.pid, signal.SIGKILL)
+                _kill_tree(proc)
                 proc.wait(timeout=10)
                 return ("hang", f"log+cpu idle {log_age:.0f}s")
             if wall_age > MAX_WALL_CLOCK_S:
@@ -285,7 +314,7 @@ def run_one_dose_supervised(
                     f"-- killing; almost certainly swap thrash ===\n"
                 )
                 log_fp.flush()
-                os.killpg(proc.pid, signal.SIGKILL)
+                _kill_tree(proc)
                 proc.wait(timeout=10)
                 return ("hang",
                         f"wall {wall_age:.0f}s > {MAX_WALL_CLOCK_S:.0f}s "
@@ -295,7 +324,7 @@ def run_one_dose_supervised(
         log_fp.close()
         if proc.poll() is None:
             try:
-                os.killpg(proc.pid, signal.SIGKILL)
+                _kill_tree(proc)
             except ProcessLookupError:
                 pass
 
