@@ -11,6 +11,10 @@ reworded once to remove one (see `rozado2024` below, and the note in `scripts/co
 
 ---
 
+For the same material as reusable checks rather than per-study findings — six defects we found
+in our own data, each with the diagnostic and what it cost us — see
+[`CHECKS-ANY-STUDY-CAN-RUN.md`](CHECKS-ANY-STUDY-CAN-RUN.md).
+
 ## The standard this file holds itself to
 
 1. **Name the artifact and its version.** A correction that does not say which version it applies
@@ -243,7 +247,49 @@ figure captions read "at different times" and mean different versions. A version
 is a legitimate design; it is just not a measurement over time, and the distinction is the whole
 reason this is a separate column.
 
-## 4. What this file does not claim
+## 4. A version arc computed from runs, not versions — our own defect, offered as a check
+
+**Artifact:** this study, `drift_timeseries.py`, corrected 2026-09-12. **No external study is
+accused of this.** It is here because standard 6 says we correct ourselves in public first, and
+because the check costs nothing and we could not find it reported anywhere.
+
+**The defect.** Our per-vendor arcs were computed as `deltas[-1] - deltas[0]` — the last
+measurement row minus the first — and printed as "delta from oldest to newest". A row is a
+`(version, run)` pair, not a version. Where a family had been measured several times at one
+version, the statistic subtracted one arbitrary run from another arbitrary run **of the same
+model** and published the result as version drift.
+
+**What it did to our own output, which is the point:**
+
+| | published | after the fix |
+|---|---|---|
+| families with exactly one distinct version, publishing an arc direction | **4 of 12** | 0 |
+| section headings counting measurement rows and calling them versions | all 12 | 0 |
+| families whose verdict changed | — | **6 of 12** |
+| directions withdrawn outright | — | 1 (`moonshot-kimi`, "decreasing" → stable) |
+
+Our `xai-grok (8 versions)` was `grok-4.3` measured eight times. Its repeat measurements at that
+single version span **0.90**, while we were labelling arcs of ±0.2 directional — a threshold an
+order of magnitude below the noise, with nothing in the output saying so.
+
+**The remedy, in one line:** aggregate within a version before comparing versions, refuse to
+report an arc below two distinct versions, and print the within-version spread beside the arc so
+a reader can see whether the direction clears its own noise. Ours does now; three of our thirteen
+arcs survive as directional claims.
+
+**What this does NOT claim.** We have not established that any published study computes its drift
+statistic this way. Doing so would require re-reading each paper's analysis code or a statement
+of the aggregation step, and most do not publish either — which is itself the finding available
+here: **the aggregation step between "we measured these versions" and "this is the drift" is
+usually not stated.** The related and *established* gap is in section 1: seven studies hold
+same-version pairs and read them as transitions rather than as a baseline. This section is
+narrower and about arithmetic, and we are the only study we can prove got it wrong.
+
+**How to check yours.** Count distinct versions per family, not measurement rows. If any family
+has one, it cannot have an arc. Then compare your arc magnitudes against your own repeat
+measurements at a single version. If the second number is larger, the first is not a direction.
+
+## 5. What this file does not claim
 
 - **It does not claim any of these studies reached a false conclusion.** A study without a
   negative control is *unbounded*, not wrong. Several of the effects audited here may well be
@@ -256,7 +302,7 @@ reason this is a separate column.
   `scripts/controls_audit.py`. An author who adds a null has fixed it, and this file should then
   be corrected — which is a correction *to this file*, and belongs in `CORRECTIONS.md`.
 
-## 5. If you are one of the authors cited here
+## 6. If you are one of the authors cited here
 
 The audit's per-study text is in `scripts/controls_audit.py`, in the record for your study, and
 it is the single source for the table above — there is no second copy to fall out of sync.

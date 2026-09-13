@@ -143,5 +143,9 @@ machinery that cannot report a problem.
 
 All of the data, scripts and correction ledgers behind these numbers are in this repository.
 `CORRECTIONS.md` records what we published and then withdrew, with dates.
+[`PRIOR-WORK-CORRECTIONS.md`](PRIOR-WORK-CORRECTIONS.md) is the companion to this file and the
+harder one: what we find missing in twelve published studies, per study, with the remedy where
+the data is already in the authors' hands — seven of the twelve are in that position. It holds
+itself to a written standard, including that no entry imputes motive.
 
 Take the checks. We would rather be corrected than cited.
