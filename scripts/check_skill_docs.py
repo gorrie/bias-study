@@ -65,6 +65,10 @@ NOT_A_PROCEDURE = {
                                "ablation-wave cells came back short; the answer is that one "
                                "base's ablated build runs to the token cap on every run. A "
                                "finding, not a procedure",
+    "refusal_suite_summary.py": "one-shot 2026-09-12 analysis behind the second-model-pair "
+                                "section of RESULTS-2026-08-28-refusal-ablation.md. Re-derives "
+                                "both pairs from the raw judged records with intervals clustered "
+                                "on prompt type, rather than reading the stored summary.json",
     "judge_lean.py": "one-shot 2026-09-12 analysis behind RESULTS-2026-09-12-judge-lean.md. "
                      "Measures our own panel's per-judge lean and the self-judging effect for "
                      "the two judges that are also subjects. Reruns to re-derive that document",
