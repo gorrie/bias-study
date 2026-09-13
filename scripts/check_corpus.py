@@ -112,6 +112,17 @@ def load_hashed():
 
 
 def load_fingerprints():
+    """The plaintext fragment list, or an empty list if it is not on disk.
+
+    IT USED TO CRASH. A missing .corpus-fingerprint raised FileNotFoundError out of this
+    function, so the gate did not run at all -- and a gate that crashes is a gate that gets
+    commented out of CI by whoever hits it. Absence is now reported by the caller, loudly,
+    and the hashed check still runs. The one thing that must never happen is a quiet pass:
+    if BOTH fingerprint files are missing, main() exits non-zero, because a corpus check with
+    no corpus to check against has verified nothing.
+    """
+    if not os.path.exists(FINGERPRINTS):
+        return []
     out = []
     with io.open(FINGERPRINTS, encoding="utf-8") as fh:
         for line in fh:
@@ -175,6 +186,9 @@ def _is_public_mirror():
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--hashed-only", action="store_true",
+                    help="run without .corpus-fingerprint, for a tree that deliberately does "
+                         "not ship the ten plaintext fragments; hashes cover all 62")
     ap.add_argument("--all", action="store_true",
                     help="scan every tracked file instead of the staged set")
     args = ap.parse_args(argv)
@@ -190,9 +204,18 @@ def main(argv=None):
         return 2
 
     prints = load_fingerprints()
-    if not prints:
-        print("check_corpus: .corpus-fingerprint is empty -- refusing to pass vacuously")
+    if not prints and not args.hashed_only:
+        print("check_corpus: .corpus-fingerprint is missing or empty -- refusing to pass")
+        print("vacuously. The hashed list covers all 62 propositions and reproduces none, so a")
+        print("tree that deliberately does not ship the ten plaintext fragments can pass")
+        print("--hashed-only. That is a decision, not a default: the plaintext list is what")
+        print("catches a wrongly-regenerated hash file, and a fingerprint that is only a hash")
+        print("is one bad regeneration away from guarding nothing.")
         return 1
+    if not prints:
+        print("check_corpus: --hashed-only. Running without the plaintext fragment list.")
+        print("  All 62 propositions are covered by hashes. NOT covered: a corrupted or")
+        print("  wrongly-regenerated hash file, which the plaintext list exists to catch.")
 
     window, hashed = load_hashed()
     if hashed and not window:

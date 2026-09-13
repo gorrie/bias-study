@@ -43,3 +43,19 @@ def test_ignored_files_are_not_scanned(tmp_path, monkeypatch):
 
     monkeypatch.setattr(C, "ROOT", str(repo))
     assert "secret/x.jsonl" not in C.tracked_files()
+
+
+def test_missing_plaintext_fingerprints_fails_closed_rather_than_crashing(tmp_path, monkeypatch):
+    """It raised FileNotFoundError out of load_fingerprints, so the gate did not run at all.
+    A gate that crashes is a gate somebody comments out of CI."""
+    monkeypatch.setattr(C, "FINGERPRINTS", str(tmp_path / "absent"))
+    assert C.load_fingerprints() == []
+
+
+def test_hashed_only_is_opt_in(tmp_path, monkeypatch, capsys):
+    """Hashes cover all 62 propositions and reproduce none, so a tree can deliberately not ship
+    the ten plaintext fragments -- but only by saying so. The plaintext list is what catches a
+    wrongly-regenerated hash file, and dropping it silently would be a quiet weakening."""
+    monkeypatch.setattr(C, "FINGERPRINTS", str(tmp_path / "absent"))
+    assert C.main(["--all"]) == 1
+    assert "refusing to pass" in capsys.readouterr().out
