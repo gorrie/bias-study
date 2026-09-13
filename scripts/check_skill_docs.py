@@ -60,6 +60,10 @@ NOT_A_PROCEDURE = {
                                "study is scored `unknown` rather than `no` -- controls_audit.py "
                                "cites it by name",
     "studypaths.py": "shared path/RNG resolution, imported never invoked",
+    "pipeline_rung.py": "the estimator for escalation-ladder rung 2, which analysis.py cannot "
+                        "see because it keys on conditions A/B and that arm runs B-STM / "
+                        "B-Parseltongue / B-Layered. Rerun it to re-derive the README row and "
+                        "after W13 lands; not a step in collecting anything",
     "export_analysis_ready.py": "a one-shot convenience for THIRD PARTIES -- it reads the "
                                 "corpus and writes a CSV somewhere else, touching nothing this "
                                 "study depends on. Documented where its audience will look, "

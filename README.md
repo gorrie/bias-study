@@ -62,8 +62,19 @@ spine is that **force-escalation ladder**:
 | Rung | Force | Tooling | Result |
 |------|-------|---------|--------|
 | **1. Prompt** | remove the fairness instruction; A→E unmask gradient | OpenRouter / Ollama | the lean unmasks, dose-responsively |
-| **2. Pipeline** | hedge-strip + obfuscation, layered | G0DM0D3 server | only the layered stack adds force, to a ceiling |
+| **2. Pipeline** | hedge-strip + obfuscation, layered | G0DM0D3 server | **no effect established** — all 8 intervals span zero at n=1 per cell |
 | **3. Weights** | ablate the refusal direction | OBLITERATUS (fp16) | text rewrites ~70%, stance does **not** move |
+
+**Rung 2 is the weak rung and this table used to overstate it.** It read "only the layered
+stack adds force, to a ceiling" until 2026-09-13. Nothing had computed that: `analysis.py` keys on
+conditions A and B, this arm runs `B-STM` / `B-Parseltongue` / `B-Layered`, so every table in its
+own ANALYSIS.md is an empty heading. `scripts/pipeline_rung.py` estimates it properly — paired per
+question against plain condition B — and **not one of the eight intervals excludes zero.** The
+strongest is Grok 4.3's layered stack at +0.60, whose lower bound is exactly zero; Claude Opus
+4.7's two single-technique arms measure +0.00. A ceiling was never located at all, which three
+points on one axis cannot do at any sample size. Re-collection with five samples per cell and a
+same-sitting baseline is pre-registered and queued. Rungs 1 and 3 are unaffected and are where
+this study's weight sits.
 
 The result is also robust to the obvious reviewer attack on LLM-as-judge studies. The same
 data was re-scored under five materially different judging procedures, including one with
