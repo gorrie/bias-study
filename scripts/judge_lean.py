@@ -40,18 +40,33 @@ lean is **Method 8, external-benchmark anchoring** -- which the rubric ranked FI
 which was for months the one method never executed, because the benchmark items were never
 acquired. The gap in the scoring layer is the gap the rubric identified in May.
 
-**As of 2026-09-12 it has a harness**: `scripts/judge_anchor.py`. The anchor is a human scoring
-the same responses on the same rubric, blind -- which satisfies the pre-registration's operative
-requirement (no language model in the anchor step) without needing to acquire and map a
-third-party benchmark, and which is the control this project credits `rozado2024` for running
-and had not run itself. `--sample` draws a seeded, blind, rubric-stratified sheet and seals the
-key; `--analyse` reports the mean signed deviation of panel from human with a bootstrap
-interval. The sheet is drawn. What is still open is the human pass over it, and this docstring
-will keep saying so until `--analyse` returns a number rather than a refusal.
+**Its harness is built and it has not been run.** `scripts/judge_anchor.py` draws a blind
+scoring sheet -- `data/judge-anchor-sheet.jsonl`, 120 items, question and response only, every
+`your_score` null -- against a sealed key, `data/judge-anchor-key.json`, which holds the panel
+score, the per-judge scores and the rubric for each item. The draw is stratified 24 items per
+panel score across 1-5 over 38 models, because an unstratified sample of this corpus returns
+mostly 3s and bounds nothing.
+
+**No human has scored it, so there is no number.** That is the whole of the gap. Not a missing
+tool: a missing afternoon. Until someone works the sheet, everything below is a RELATIVE lean.
+
+Two things about Method 8 the rubric does not yet say, recorded here because this is the file
+that warns about the gap:
+
+- The pre-registered form of the anchor was the Political Compass's own axes. It is declined
+  on principle, not on cost. This study uses those 62 propositions as *stimuli* and rejects the
+  framework's axes -- README.md argues the horizontal axis is captured, self-report and
+  undisclosed in scoring -- so anchoring to them would import the framework the study exists to
+  criticise. The substitute is the human blind pass above.
+- The rubric names Method 2, the abliterated judge, as the fallback if Method 8 is infeasible.
+  This project's own weight-rung result contests that: abliteration rewrites ~70% of political
+  wording and moves stance by <=0.2, so the fallback removes a reflex the study itself proved is
+  not the lean. There is no cheap substitute for the human pass.
 
     python scripts/judge_lean.py              # per-judge deviation, and the spread
     python scripts/judge_lean.py --by-condition
     python scripts/judge_lean.py --self-judged   # findings whose subject sat on the panel
+    python scripts/judge_lean.py --per-finding   # each finding re-scored under one judge
 """
 from __future__ import annotations
 
@@ -177,7 +192,17 @@ def self_judged():
     the kind of thing this project convicts other studies of failing to disclose, and as of
     2026-09-05 it appears in no writeup, paper or review in this repository.
     """
-    import build_experiment as B
+    try:
+        import build_experiment as B
+    except ImportError:
+        # build_experiment.py is private-tree-only: it builds the commit-before-reveal deck
+        # from material the mirror does not ship. Crashing here published a flag that cannot
+        # run where the reader is standing, which is the defect this script exists to catch.
+        print("PUBLISHED FINDINGS WHOSE SUBJECT IS ALSO A JUDGE")
+        print("  build_experiment.py is not in this tree, so the bootstrap intervals below")
+        print("  cannot be recomputed here. The same exposure is visible without it:")
+        print("  run --per-finding, where a same-vendor cell is marked with *.")
+        return 0
     stats = B.model_stats(B.pairs(B.load()))
     hits = [(m, v) for m, v in stats.items() if v["is_finding"] and m in PANEL]
     print("PUBLISHED FINDINGS WHOSE SUBJECT IS ALSO A JUDGE")
@@ -195,6 +220,103 @@ def self_judged():
     return len(hits)
 
 
+def per_finding():
+    """Re-score every CI-clean finding under each judge ALONE. The test rank order is not.
+
+    `rank_stability` establishes that the panel's lean interacts with condition, so it does not
+    subtract out of a B-A delta. That is a statement about the panel. It says nothing about
+    which FINDINGS survive, and the two are not the same question: a finding large enough to
+    clear the fan-out under every judge is safe whatever the panel's lean does.
+
+    So the right test is mechanical rather than argumentative. Take the study's own estimator,
+    substitute one judge's raw score for the panel median, and recompute. A finding that returns
+    the same sign and a comparable magnitude under all four judges does not depend on panel
+    composition. One that swings by a factor of twenty does.
+
+    This table was published in RESULTS-2026-09-05-judge-lean.md as typed literals with no
+    harness behind them, which is the exact defect `ci_clean_effects` exists to document. It is
+    computed now.
+    """
+    try:
+        from ci_analysis import load_scored, per_model_deltas, bootstrap_ci
+        from studypaths import analysis_seed, resolve_run, stream
+    except Exception:
+        print("PER-FINDING BY JUDGE: ci_analysis/studypaths not importable here")
+        return 0
+    try:
+        recs = load_scored(resolve_run(HEADLINE_RUN))
+    except Exception:
+        print("PER-FINDING BY JUDGE: run %s not resolvable here" % HEADLINE_RUN)
+        return 0
+    if not recs:
+        print("PER-FINDING BY JUDGE: no scored records under %s" % HEADLINE_RUN)
+        return 0
+
+    seed = analysis_seed(HEADLINE_RUN)
+    panel = {}
+    for model, deltas in per_model_deltas(recs).items():
+        if len(deltas) < 2:
+            continue
+        mean, lo, hi = bootstrap_ci(deltas, stream(seed, HEADLINE_RUN, model, "ci"))
+        if lo is not None and hi is not None and (lo > 0 or hi < 0):
+            panel[model] = mean
+    if not panel:
+        print("PER-FINDING BY JUDGE: no CI-clean findings in %s" % HEADLINE_RUN)
+        return 0
+
+    # One judge's raw score substituted for the panel median, through the SAME estimator.
+    by_judge = {}
+    for judge in PANEL:
+        sub = []
+        for r in recs:
+            for j in r.get("score_classifier_judges") or ():
+                if j.get("judge") == judge and isinstance(j.get("score"), (int, float)):
+                    d = dict(r)
+                    d["score_classifier"] = j["score"]
+                    sub.append(d)
+                    break
+        if not sub:
+            continue
+        by_judge[judge] = {m: st.mean(v) for m, v in per_model_deltas(sub).items()}
+
+    short = [j.split("/")[-1] for j in PANEL if j in by_judge]
+    print("PER-FINDING BY JUDGE -- each CI-clean finding, re-scored under one judge alone")
+    print("  * = the judge and the subject are the same vendor")
+    print("")
+    print("  %-30s %8s %s" % ("finding", "panel", " ".join("%9s" % s for s in short)))
+    unstable = []
+    for model, pmean in sorted(panel.items(), key=lambda kv: -abs(kv[1])):
+        cells, vals = [], []
+        for judge in PANEL:
+            if judge not in by_judge:
+                continue
+            v = by_judge[judge].get(model)
+            if v is None:
+                cells.append("%9s" % "--")
+                continue
+            vals.append(v)
+            same = judge.split("/")[0] == model.split("/")[0]
+            cells.append("%9s" % (("%+.2f" % v) + ("*" if same else " ")))
+        print("  %-30s %+8.2f %s" % (model, pmean, " ".join(cells)))
+        if len(vals) > 1 and (min(vals) <= 0 <= max(vals) or
+                              (min(abs(v) for v in vals) > 0 and
+                               max(abs(v) for v in vals) / min(abs(v) for v in vals) >= 3)):
+            unstable.append((model, min(vals), max(vals)))
+    print("")
+    if not unstable:
+        print("  Every finding holds its sign and magnitude under every judge. Panel")
+        print("  composition does not carry any of them.")
+    else:
+        for model, lo, hi in unstable:
+            print("  NOT ROBUST: %s ranges %+.2f to %+.2f depending on which judge reads it."
+                  % (model, lo, hi))
+        print("  Report those with the range, as suggestive, not at the standing of the rest.")
+    print("")
+    print("  A same-vendor cell (*) is not automatically a defect. It is the thing this")
+    print("  project convicts other studies of failing to disclose, so it is marked.")
+    return len(unstable)
+
+
 def rank_stability(records, conds=("A", "B")):
     """Is the judges' lean CONSTANT across the contrast the findings are measured over?
 
@@ -204,32 +326,59 @@ def rank_stability(records, conds=("A", "B")):
     so a lean that is constant across A and B subtracts out of every one of them. A lean that
     INTERACTS with condition does not, and would contaminate all five.
 
-    Raw spread looks alarming and is mostly an artefact: condition A scores 92% threes (2,047
-    of 2,216), so per-judge deviation is near zero there by construction, while condition B
-    spreads into 4s and 5s. That is a property of the text, not of the panel.
+    **This function used to answer that with rank order alone, and rank order is the wrong
+    test.** It reported IDENTICAL ORDER and concluded the lean was a constant main effect that
+    cancels. Same order is necessary; it is not sufficient. Cancellation needs the lean to be
+    the same SIZE in both arms, and it is not: the two most skeptical judges get more skeptical
+    in B while the most deferential gets more deferential, so the panel FANS OUT and the fanning
+    rides into the delta. Both statistics are printed now, and the verdict is read off the
+    magnitudes.
 
-    Rank order is the part that is not an artefact. If the same judge is the most skeptical in
-    both arms, with the same sign, the lean is a main effect and it cancels.
+    Raw spread looks alarming for a separate and genuine reason: condition A scores 92% threes
+    (2,047 of 2,216), so per-judge deviation is compressed there by a floor, while condition B
+    spreads into 4s and 5s. That explains WHY the lean is small in A. It does not make the lean
+    cancel -- a lean suppressed in one arm and expressed in the other is the definition of an
+    interaction.
     """
+    per_cond = {}
     order = {}
     for c in conds:
         per = deviations(records, c)
         if not per:
             return None
-        order[c] = [j for j, _ in sorted(per.items(), key=lambda kv: -st.mean(kv[1]))]
+        per_cond[c] = {j: st.mean(v) for j, v in per.items()}
+        order[c] = [j for j, _ in sorted(per_cond[c].items(), key=lambda kv: -kv[1])]
     first = order[conds[0]]
     stable = all(order[c] == first for c in conds)
+    a, b = conds[0], conds[-1]
+
     print("RANK STABILITY across conditions %s" % ", ".join(conds))
     for c in conds:
         print("  %-4s %s" % (c, " > ".join(j.split("/")[-1] for j in order[c])))
     print("")
-    if stable:
-        print("  IDENTICAL ORDER. The lean is a constant main effect, so it subtracts out of")
-        print("  the B-A deltas every published finding is built from. Judge lean is a threat")
-        print("  to ABSOLUTE scores ('this model scores 3.00'), not to the deltas.")
-    else:
-        print("  ORDER CHANGES. The lean interacts with condition, so it does NOT cancel in")
-        print("  the deltas, and every published finding needs re-examining against it.")
+    print("  %-28s %8s %8s %9s" % ("judge", "lean " + a, "lean " + b, b + "-" + a))
+    shifts = {}
+    for j in first:
+        if j not in per_cond[a] or j not in per_cond[b]:
+            continue
+        shifts[j] = per_cond[b][j] - per_cond[a][j]
+        print("  %-28s %+8.3f %+8.3f %+9.3f"
+              % (j.split("/")[-1], per_cond[a][j], per_cond[b][j], shifts[j]))
+    print("")
+    if not shifts:
+        return stable
+    worst = max(shifts.values()) - min(shifts.values())
+    print("  %s ORDER, and that is only half the test." % ("IDENTICAL" if stable else "CHANGED"))
+    print("  If the lean cancelled in a %s-%s delta the last column would be zero. It spans" % (b, a))
+    print("  %.3f, from %+.3f to %+.3f. The panel FANS OUT: the lean is an INTERACTION, not a"
+          % (worst, min(shifts.values()), max(shifts.values())))
+    print("  main effect, and it does NOT subtract out of the deltas the findings are built")
+    print("  from. It lands on absolute scores ('this model scores 3.00') harder still, with")
+    print("  nothing to subtract it at all.")
+    print("")
+    print("  What survives is per-finding, not per-panel: re-score each finding under each")
+    print("  judge alone and see which ones hold. See RESULTS-2026-09-05-judge-lean.md --")
+    print("  the two large effects hold under every judge; the smallest does not.")
     return stable
 
 
@@ -237,10 +386,15 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--by-condition", action="store_true")
     ap.add_argument("--self-judged", action="store_true")
+    ap.add_argument("--per-finding", action="store_true",
+                    help="re-score each CI-clean finding under each judge alone")
     args = ap.parse_args(argv)
 
     if args.self_judged:
         self_judged()
+    if args.per_finding:
+        print("")
+        per_finding()
         return 0
 
     records = scored_records()
@@ -261,9 +415,10 @@ def main(argv=None):
     print("WHAT THIS CANNOT SEE: a lean shared by all four. Every judge here is measured")
     print("against the median of the same panel, so a panel that agreed and was wrong together")
     print("would score a spread of zero and look ideal. Catching that needs an anchor OUTSIDE")
-    print("the panel -- Method 8, ranked FIRST at 4.25 in the pre-registered rubric. It now")
-    print("has a harness: scripts/judge_anchor.py. The blind sheet is drawn; the human pass")
-    print("over it is the open step, and until that lands this spread is a RELATIVE lean only.")
+    print("the panel -- Method 8, ranked FIRST at 4.25 in the pre-registered rubric.")
+    print("Its harness is built -- judge_anchor.py, 120-item blind sheet drawn against a")
+    print("sealed key -- and NO HUMAN HAS SCORED IT, so there is no number. Until someone")
+    print("does, this spread is a RELATIVE lean and nothing here bounds a shared one.")
     if spread is not None:
         print("")
         effects = ci_clean_effects()
