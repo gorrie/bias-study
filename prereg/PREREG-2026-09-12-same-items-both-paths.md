@@ -110,3 +110,72 @@ already in both corpora because they were collected on the workstation. Running 
 mean pulling roughly 20 GB and re-serving them at a different quantisation on different
 hardware, which changes the serving path this study has repeatedly shown moves the answer.
 Queue it as a 4090 job.
+
+---
+
+## Amendment A, 2026-09-12 — the standing rule against human re-scoring does not bar Method 8
+
+**Recorded BEFORE the Method 8 sheet is scored, and before its key is opened, which is the only
+time recording it is worth anything.** Written down now precisely so it cannot be written down
+later, after a result is visible, as a rationalisation for accepting it.
+
+### The conflict, stated at full strength
+
+Four pre-registrations in this repository fix the same decision rule, this one at line 74:
+
+> **No human re-scoring.** Standing rule: the author is the author, not the rater.
+
+Method 8 as built (`scripts/judge_anchor.py`) has the author scoring 120 responses on the
+study's own rubric, blind, against a sealed key. Read flatly, the rule forbids it. If the rule
+forbids it, the highest-ranked control in the pre-registered rubric cannot be run at all by this
+project, and the scoring layer stays bounded by a relative measure permanently.
+
+### Why the rule does not reach it
+
+The rule sits, in all four preregs, among decision rules that bar **post-hoc adjustment of the
+study's own scores** — no loosening a detector, no re-running until it cooperates, no second
+look at a number that came out wrong. Its target is the author reaching into the measurement
+after seeing it.
+
+Method 8 does not do that, and is constructed so it cannot:
+
+- It produces an **independent comparator**, not a revision. No panel score is ever overwritten,
+  re-scored or adjusted. `judge_anchor.py` writes only to the sheet and reads only the key.
+- The sheet is **blind** — question and response, nothing else. The rater cannot see the panel's
+  score, the per-judge breakdown, the model, or the condition.
+- The key is **sealed before the scoring**, so the comparison set is fixed in advance and the
+  draw cannot be steered toward agreeable items. It is stratified 24 per panel score across 1–5
+  over 38 models, so the rater cannot even infer difficulty from the sample's composition.
+- `--analyse` **refuses on a partial sheet** without `--partial`, so a rater cannot stop at the
+  point where the numbers look best and report what is finished.
+
+The rule is about the author revising the instrument's output. Method 8 is about the author
+standing outside the instrument as a second reading of the same material. Those are different
+acts and the four preregs only ever disallowed the first.
+
+### What this amendment does not claim
+
+It does not claim the author is a good anchor. **They are not the ideal one.** The author knows
+the study's hypotheses, has read many of these responses before, and has an interest in the
+outcome, and no amount of blinding removes that. Every one of those is a limitation and all of
+them ship with the number.
+
+**A second, non-author scorer would remove the objection outright** and should be Ian's call
+before the sheet is worked. The sheet is drawn and costs nothing to hand to someone else; the
+only thing that would be lost is time. A two-rater version also yields an inter-rater figure,
+which the one-rater version cannot produce and which is the thing a reviewer will ask for first.
+
+### Disclosure, which is not optional
+
+`README.md` already states that the one planned human step is scored by the author. Whatever is
+reported from this sheet carries, in the same paragraph as the number: who rated it, that they
+are an author, that they were blind to panel score and condition, that the key was sealed first,
+and this amendment by date. If the anchor disagrees with the panel, that publishes. If it
+agrees, that publishes with the caveat that an author agreeing with their own instrument is the
+weaker of the two possible results.
+
+### Status
+
+Amendment A is **recorded, not signed.** It travels with the prereg, which remains UNSIGNED. No
+sheet may be scored until Ian signs or rejects both — and if he prefers a non-author rater, this
+amendment is moot and should be superseded rather than deleted.
