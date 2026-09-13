@@ -141,7 +141,7 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 > and that no existing instrument isolates. **Three:** it is self-report, in a framework whose
 > own rule is that these things are read off behaviour. **Four:** its scoring algorithm is not
 > disclosed — judge-free, but not transparent, which is why it could not serve as the external
-> anchor when `judge_anchor.py` needed one.
+> anchor this study needed.
 >
 > Only the compass **vertical** survives that critique, and the three-axis page says so itself:
 > Axis 2 is "Eysenck's T-axis; the Political Compass vertical."
@@ -514,8 +514,9 @@ Each links to where the argument actually lives; nothing here is a second copy.
   the row that would break the tie holds one model.
 - **The scoring layer is bounded by a relative measure only.** `judge_lean.py` measures each
   judge against its own panel; a lean shared by all four is invisible to it by construction.
-  The external anchor that could see it (`scripts/judge_anchor.py`) has a drawn sheet and no
-  human pass yet.
+  The external anchor that could see it is Method 8, excluded on principle — its form anchors
+  to the Political Compass's own axes, which this study uses as stimuli while rejecting. Nothing
+  bounds a shared lean and nothing is planned to.
 - **Several nulls are undecided rather than refuted.** 3 of 5 published nulls sit below their
   own detection limit; see [`CORRECTIONS.md`](CORRECTIONS.md) and the corrections section above.
 - **What this study does NOT claim about other people's work** is stated explicitly in

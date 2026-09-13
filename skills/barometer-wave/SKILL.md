@@ -209,7 +209,6 @@ python scripts/key_numbers.py --check-website  # every website + dispatch surfac
 python scripts/gen_script_inventory.py --check # SCRIPTS.md vs scripts on disk
 python scripts/check_doc_links.py              # every relative markdown link resolves
 python scripts/judge_lean.py                   # per-judge spread vs the published effects
-python scripts/judge_anchor.py --check-rubric  # the human anchor scores the SAME rubric
 python scripts/check_no_fork.py                # MAINTAINER ONLY -- again, after committing
 ```
 
