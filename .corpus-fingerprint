@@ -12,6 +12,23 @@
 #
 # Publishing the instrument is not fixed by scrubbing after the fact -- a git history keeps
 # what a working tree forgets. The check runs before the commit, every time.
+#
+# DECISION 2026-09-12 (Ian): THE TEN PLAINTEXT FRAGMENTS STAY.
+#
+# The question was raised because they are ten verbatim propositions published in a public
+# repository by the very file that exists to keep the instrument out of it, and check_corpus
+# now supports --hashed-only for a tree that would rather not ship them.
+#
+# They stay for the reader. Someone auditing this gate has to be able to see what it matches
+# on; a file of truncated digests is unfalsifiable by inspection. Ten fragments of sixty-two
+# propositions is the disclosure a reviewer needs and is not a republication of the instrument.
+#
+# THE FUTURE-VERSION IDEA, recorded here so it is not lost: a HELD-BACK CORPUS. If a later
+# version wants to measure a model that has not already read the test, the instrument has to
+# stop being public before the models are trained on it. That argues for a held instrument
+# with only hashes published -- the opposite trade from this file -- and it is a v3 design
+# question, not a reason to change v2 now. Contamination of the measuring device by the thing
+# being measured is a real threat to any published benchmark and this study has not addressed it.
 
 inheritable disabilities should not be allowed to reproduce
 Sex outside marriage is usually immoral

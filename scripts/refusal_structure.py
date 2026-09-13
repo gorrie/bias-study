@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """Is whole-instrument refusal all-or-nothing, and which models do it?
 
+READ refusal_table.py FIRST. It already owns the refusal RATE by vendor and condition and
+regenerates it from runs/ on every invocation. This does not restate that and must never
+become a second answer to the same question. It adds two things that table cannot show:
+whether a failed run returns a partial sheet or nothing, and whether a model refuses
+sometimes or always.
+
 WHY. The study reports refusal as a RATE per condition -- 20.0% under forced balance, 0.0% under
 the placebo -- which invites reading it as a propensity that every model carries a bit of. The
 wave-0 records say otherwise on two axes, and neither had been checked:

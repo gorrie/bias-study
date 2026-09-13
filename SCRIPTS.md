@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-77 script(s). 0 carry no module docstring and are listed at the end.
+76 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -31,7 +31,7 @@
 - **`ci_analysis.py`** — ci_analysis.py — Bootstrap confidence intervals + inter-judge agreement over already-scored bias-study runs. No API calls; reads runs/<date>/scored/*.jsonl.
 - **`cross_method_report.py`** — Cross-method judge-effectiveness analysis.
 - **`judge_anchor.py`** — Method 8 — external anchoring. The one check that can see a lean shared by all four judges.
-- **`judge_lean.py`** — What is our OWN judge panel's lean, and does a judge score itself differently?
+- **`judge_lean.py`** — Do the judges lean, and by how much? The floor nobody computed for the scoring layer.
 - **`judge_methods.py`** — Multi-method judge framework for the bias study.
 - **`score.py`** — Score raw bias study responses against the rubric.
 - **`score_inproc_gemma.py`** — In-process Method 2 scorer — abliterated Gemma-2-9B via mlx_lm.
@@ -85,7 +85,6 @@
 - **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
 - **`constrained_probe.py`** — Score the instrument by CONSTRAINED DECODING: make an invalid answer ungenerable.
 - **`convergent_validity.py`** — Do the judged scale and the mechanical instrument measure the same thing?
-- **`disagreement_by_topic.py`** — Where do the five scoring methods disagree with the primary panel, and on what?
 - **`dl_model.py`** — dl_model.py — Robust HuggingFace model downloader (host-side, resume-until-valid).
 - **`dose_smoke_gate.py`** — Post-abliteration quality gate.
 - **`eligibility.py`** — One rule for whether a scored record may enter an aggregate — DATA-EMPTY-SCORES-002.
