@@ -83,6 +83,10 @@ NOT_A_PROCEDURE = {
                             "RESULTS-2026-09-12-refusal-structure.md. Shows wave-0 refusal is "
                             "whole-instrument (92% of failures return zero items) and bimodal "
                             "across models, so the per-condition rate is a mixing proportion",
+    "run_inventory.py": "generated accounting of every run directory and its role. Run with "
+                        "--check by release_check as a gate: a collection with records, no "
+                        "schema and no mention is surfaced rather than left for the next audit "
+                        "to rediscover by hand",
     "judge_lean.py": "one-shot 2026-09-12 analysis behind RESULTS-2026-09-12-judge-lean.md. "
                      "Measures our own panel's per-judge lean and the self-judging effect for "
                      "the two judges that are also subjects. Reruns to re-derive that document",
