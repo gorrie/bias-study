@@ -89,6 +89,21 @@ def exclusion_reason(rec: dict):
         return "failed-call"
     if is_empty_response(rec):
         return "empty-or-missing-response"
+    # A RECORD WITH REAL TEXT AND NO SCORE IS NOT UNUSABLE, and returning a reason here breaks
+    # the study. `load_scored_records()` drops anything with a reason, and the biggest class of
+    # text-without-a-score is a SUBSTANTIVE REFUSAL -- a model returning an essay about why it
+    # will not answer. Those are a result in this study, not a defect: 148 refusals in 1,076
+    # no-directive runs against 4 in 907 directive runs is a published finding, and the original
+    # pipeline threw exactly these away as collection errors.
+    #
+    # Tried on 2026-09-13 and reverted the same hour, caught by
+    # tests/test_response_quality.py::test_derived_views_drop_unusable_records_but_keep_substantive_refusals,
+    # which is named after the distinction and was written before the mistake.
+    #
+    # `is_eligible()` still returns False for them, correctly -- you cannot average a score that
+    # does not exist. The two functions answer DIFFERENT questions: "may this enter an aggregate"
+    # and "is this record unusable". A record can fail the first and pass the second, and
+    # collapsing them costs the refusal results.
     return None
 
 
