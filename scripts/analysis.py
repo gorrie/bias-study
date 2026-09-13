@@ -213,12 +213,32 @@ def find_pattern_examples(records: list[dict], n_per_pattern: int = 3) -> dict:
             for k, v in patterns.items()}
 
 
+def _empty_note(what, conditions):
+    """An empty table says nothing; it has to say that it says nothing.
+
+    runs/2026-05-27-g0dm0d3/ANALYSIS.md carried a heading for every table and rows under none,
+    for four months, and the README published a DIRECTION for that arm on the strength of it.
+    The cause: every table here keys on conditions A and B, and that arm runs B-STM,
+    B-Parseltongue and B-Layered. The records flowed through, matched no branch, and the
+    document rendered as a normal analysis with nothing in it.
+
+    A table that renders empty is indistinguishable from a table whose answer is "no effect",
+    which is how an empty file became a published claim. So an empty table now names what it
+    needed and what the run actually holds.
+    """
+    return ("> **EMPTY — nothing was computed here.** This table needs %s. This run's conditions "
+            "are `%s`, so no record matched. An empty table is not a null result; it is a "
+            "missing measurement, and it must not be read as one." % (what, "`, `".join(conditions)))
+
+
 def write_analysis_md(run_dir: Path, sensitivity: dict, heatmap: dict,
                        hedge_corr: dict, vendor_means: dict, patterns: dict, records: list[dict]) -> Path:
     lines = []
+    conds = sorted({r.get("condition") for r in records if r.get("condition")})
+    empty = []
     lines.append(f"# Bias Study Analysis - {run_dir.name}")
     lines.append("")
-    lines.append(f"Records analyzed: {len(records)}.")
+    lines.append(f"Records analyzed: {len(records)}. Conditions present: `" + "`, `".join(conds) + "`.")
     lines.append("")
 
     # Framing sensitivity
@@ -231,6 +251,8 @@ def write_analysis_md(run_dir: Path, sensitivity: dict, heatmap: dict,
     lines.append("")
     lines.append("| Model | mild B | neutral B | pointed B | Delta(mild->pointed) | type |")
     lines.append("|-------|------:|---------:|---------:|--------------------:|------|")
+    if not sensitivity:
+        empty.append("1. Framing sensitivity")
     for model, d in sorted(sensitivity.items(), key=lambda x: (x[1].get("mild_to_pointed_delta") or 0), reverse=True):
         dlt = d.get("mild_to_pointed_delta")
         if dlt is None:
@@ -244,6 +266,9 @@ def write_analysis_md(run_dir: Path, sensitivity: dict, heatmap: dict,
         dlt_str = f"{dlt:+.2f}" if dlt is not None else "-"
         lines.append(f"| {model} | {d.get('mild') or '-'} | {d.get('neutral') or '-'} | {d.get('pointed') or '-'} | "
                      f"{dlt_str} | {typ} |")
+    if not sensitivity:
+        lines.append("")
+        lines.append(_empty_note("per-model scores under mild / neutral / pointed framings", conds))
     lines.append("")
 
     # Vendor cluster
@@ -251,9 +276,14 @@ def write_analysis_md(run_dir: Path, sensitivity: dict, heatmap: dict,
     lines.append("")
     lines.append("| class | n_questions | mean delta | stdev |")
     lines.append("|-------|------------:|-----------:|------:|")
+    if not vendor_means:
+        empty.append("2. Vendor class means")
     for cls, d in sorted(vendor_means.items(), key=lambda x: -abs(x[1]["mean_delta"])):
         stdev = d["stdev_delta"] if d["stdev_delta"] is not None else "-"
         lines.append(f"| {cls} | {d['n_questions']} | {d['mean_delta']:+.3f} | {stdev} |")
+    if not vendor_means:
+        lines.append("")
+        lines.append(_empty_note("paired A and B records for the same question", conds))
     lines.append("")
 
     # Hedge correlation
@@ -269,6 +299,8 @@ def write_analysis_md(run_dir: Path, sensitivity: dict, heatmap: dict,
     lines.append("")
 
     # Topic heatmap
+    if not heatmap:
+        empty.append("4. Topic-by-topic delta heatmap")
     lines.append("## 4. Topic-by-topic delta heatmap")
     lines.append("")
     lines.append("Mean delta(B-A) per (model, topic). Each cell is averaged over the questions in that topic.")
@@ -308,6 +340,26 @@ def write_analysis_md(run_dir: Path, sensitivity: dict, heatmap: dict,
     lines.append("")
 
     out = run_dir / "ANALYSIS.md"
+    if empty:
+        banner = [
+            "> ## %d of this document's tables are EMPTY" % len(empty),
+            ">",
+            "> " + "; ".join(empty) + ".",
+            ">",
+            ("> This run's conditions are `" + "`, `".join(conds) + "`, and every table below "
+             "keys on **A** and **B**. Records that match no branch produce a heading with no "
+             "rows, which reads exactly like a measured null and is not one. **Do not publish a "
+             "direction for this arm from this document** — use an estimator written for its "
+             "conditions, as `scripts/pipeline_rung.py` is for the elicitation arm."
+             if set(conds) - {"A", "B"} else
+             "> The conditions are the expected **A** and **B**, so this is not a condition "
+             "mismatch: the run simply lacks the inputs those tables need, named under each. An "
+             "empty table is a missing measurement, not a measured null."),
+            "",
+        ]
+        lines[3:3] = banner
+        print("WARNING: %d table(s) empty in %s -- conditions are %s, not A/B"
+              % (len(empty), run_dir.name, ", ".join(conds)), file=sys.stderr)
     out.write_text("\n".join(lines), encoding="utf-8")
     return out
 
