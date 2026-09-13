@@ -74,6 +74,11 @@ NOT_A_PROCEDURE = {
                               "shift measured by the judged scale against the same shift "
                               "measured by the model-free forced-choice instrument, across the "
                               "24 models that appear in both",
+    "disagreement_by_topic.py": "one-shot 2026-09-12 analysis behind "
+                                "RESULTS-2026-09-12-disagreement-by-topic.md. Pairs every "
+                                "alternate-method score against the primary panel and averages "
+                                "by topic, showing the single agreement figure hides a "
+                                "nineteen-fold spread",
     "judge_lean.py": "one-shot 2026-09-12 analysis behind RESULTS-2026-09-12-judge-lean.md. "
                      "Measures our own panel's per-judge lean and the self-judging effect for "
                      "the two judges that are also subjects. Reruns to re-derive that document",
