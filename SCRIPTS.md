@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-76 script(s). 0 carry no module docstring and are listed at the end.
+77 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -100,6 +100,7 @@
 - **`refusal_suite_summary.py`** — Both model pairs of the XSTest-style refusal suite, with clustered intervals.
 - **`robustness_checks.py`** — robustness_checks.py — Two reviewer-requested robustness analyses over already- scored runs. No API calls.
 - **`run_dose_series.py`** — The Wash — Experiment 1 dose-series driver.
+- **`run_inventory.py`** — Every run directory, what is in it, and what reads it.
 - **`run_local.py`** — run_local.py — Run the bias question set against a LOCAL transformers model (stock or OBLITERATUS-abliterated), writing raw JSONL in the study schema so `score.py` / `aggregate.py` / `ci_analysis.py` consume it unchanged.
 - **`supervised_dose_series.py`** — Supervised wrapper around run_dose_series.py.
 - **`validate_runs.py`** — validate_runs.py — does each run directory say what it actually contains?
