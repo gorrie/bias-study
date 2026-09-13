@@ -68,13 +68,6 @@ NOT_A_PROCEDURE = {
                                 "corpus and writes a CSV somewhere else, touching nothing this "
                                 "study depends on. Documented where its audience will look, "
                                 "which is data/README.md, not in an internal procedure",
-    "judge_anchor.py": "Method 8's anchor harness. A _shim.forward to the one implementation "
-                       "in the public mirror, because the blind sheet and the sealed key are "
-                       "PUBLIC artifacts -- a reader has to see what a human was asked and that "
-                       "the key was sealed before the scoring. Not a procedure here: --sample "
-                       "and --analyse are run once each by a human, --check-rubric is a "
-                       "release_check item, and a skill telling someone to re-draw the sheet is "
-                       "the last thing this control needs",
     "ablation_termination.py": "one-shot 2026-09-12 analysis behind "
                                "RESULTS-2026-09-12-ablation-termination.md. Asks why 24 of 63 "
                                "ablation-wave cells came back short; the answer is that one "
