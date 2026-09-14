@@ -37,7 +37,7 @@ import requests
 SCRIPT_DIR = Path(__file__).parent
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from studypaths import runs_root  # noqa: E402
+from studypaths import runs_root, LEGACY_SEED  # noqa: E402
 sys.path.insert(0, str(SCRIPT_DIR))
 import run_study as rs  # reuse load_questions + safe_filename + STUDY_DIR
 
@@ -92,10 +92,15 @@ def main() -> int:
 
     out_dir = runs_root() / args.out_date / "raw"
     out_dir.mkdir(parents=True, exist_ok=True)
+    started_at = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
     total = len(models) * len(questions) * len(conditions) * args.samples
     print(f"G0DM0D3 pipeline rung: {len(models)} models x {len(questions)} Q x {len(conditions)} conds x {args.samples} = {total} calls")
 
     n = ok = truncated = 0
+    #: Models that produced at least one usable record. A model named in
+    #: models_attempted but absent here failed entirely, and the manifest must say
+    #: so rather than implying the run covered it.
+    completed_models: set = set()
     # REFUSE TO DESTROY RECORDS. The path is {model}__{condition}.jsonl and omits
     # --positions, so a second run at a different positions set replaced the first
     # instead of adding to it. Executed: --positions neutral then --positions mild
@@ -144,6 +149,7 @@ def main() -> int:
                                            "x_g0dm0d3": resp.get("x_g0dm0d3"),
                                            "obliteratus_applied": None})
                             ok += 1
+                            completed_models.add(model)
                             if is_trunc:
                                 truncated += 1
                         except Exception as e:
@@ -152,6 +158,34 @@ def main() -> int:
                                            "g0dm0d3_pipeline": {k: flags[k] for k in flags}})
                         fh.write(json.dumps(rec) + "\n"); fh.flush(); n += 1
             print(f"  {model} / {cond}: wrote {out_path.name}")
+    # WRITE THE MANIFEST. This collector wrote none at all, so every run it ever
+    # produced -- including the n=5 pair that is now the rung-2 default -- reached
+    # validate_runs as "no manifest.json" and could not be checked against its own
+    # intent. run_study.py has written one since May; this one never did, and the
+    # gap was invisible because the runs it produces are scored by the same tools.
+    manifest = {
+        "analysis_seed": getattr(args, "seed", None) or LEGACY_SEED,
+        "calls_completed": ok,
+        "calls_failed": n - ok,
+        "completed_at": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+        "collector": "run_g0dm0d3.py",
+        "conditions": conditions,
+        "max_tokens": args.max_tokens,
+        "models_attempted": list(models),
+        "models_completed": sorted(completed_models),
+        "models_failed": sorted(set(models) - completed_models),
+        "positions": args.positions.split(","),
+        "run_date": args.out_date,
+        "samples_per_cell": args.samples,
+        "started_at": started_at,
+        "total_calls_planned": total,
+        "truncated_by_text_test": truncated,
+    }
+    with open(runs_root() / args.out_date / "manifest.json", "w",
+              encoding="utf-8", newline="\n") as fh:
+        json.dump(manifest, fh, indent=2, sort_keys=True)
+        fh.write("\n")
+
     print(f"DONE: {ok}/{n} ok, {truncated} truncated (text test, NOT finish_reason) at "
           f"max_tokens={args.max_tokens} -> {out_dir}")
     # A RUN WHERE EVERY CALL FAILED IS NOT A SUCCESS. Only truncation returned

@@ -168,6 +168,29 @@ KNOWN = {
         "harmless direction, but it is still a provenance gap and is recorded as one.",
     ("2026-05-27-reversed-premise", "call-count-mismatch"):
         "Same cause: manifest claims 120 completed calls against 200 records on disk.",
+
+    # --- run_g0dm0d3.py wrote NO manifest at all until 2026-09-14 -------------
+    # run_study.py has written one since May; this collector never did, and the
+    # gap was invisible because the same tools score both. The collector is fixed,
+    # so runs from here carry one. These predate the fix.
+    #
+    # DELIBERATELY NOT RECONSTRUCTED. A manifest derived from the records it is
+    # meant to check makes calls_completed == records by construction, so the
+    # count gate would pass having compared a number to itself -- a vacuous gate
+    # dressed as a clean run, which is the failure this file exists to catch.
+    # Better an honest gap than a manufactured assurance.
+    ("2026-09-13-g0dm0d3-replicate", "no-manifest"):
+        "run_g0dm0d3.py wrote no manifest before 2026-09-14. 6 files, 300 records, scored, "
+        "and the n=5 pair behind the corrected rung-2 estimate. Collection intact, request "
+        "record absent. Not reconstructed on purpose -- see the note above.",
+    ("2026-09-13-g0dm0d3-smoke", "no-manifest"):
+        "Same collector, same gap. 1 file, 10 records. A smoke run, kept as the record that "
+        "the endpoint was checked before the wave.",
+    ("2026-09-13-g0dm0d3-smoke2", "no-manifest"):
+        "Same collector, same gap. 1 file, 10 records. The second smoke, after the auth change.",
+    ("2026-09-13-truncation-proof", "no-manifest"):
+        "Same collector, same gap. 1 file, 10 records. Collected to measure output length "
+        "against the cap before sizing the wave -- the step whose absence cost four months.",
 }
 
 
