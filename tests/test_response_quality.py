@@ -16,7 +16,13 @@ def test_substantive_response_and_missing_key_entrypoint_are_exercised(tmp_path,
     monkeypatch.setattr(score, 'runs_root', lambda: tmp_path)
     monkeypatch.setattr(score, 'load_env', lambda: {})
     monkeypatch.setattr(sys, 'argv', ['score.py', 'fixture'])
-    monkeypatch.setattr(score.requests, 'post', lambda *a, **k: pytest.fail('no network without key'))
+    # Patch requests ITSELF, not score.requests. score.py imports requests inside
+    # call_judge so `--skip-classifier` runs for a replicator who has not installed
+    # it, so there is no module-level attribute left to patch. Patching the library
+    # is the stronger form anyway: it fails a network call however the import is
+    # reached.
+    import requests as _requests
+    monkeypatch.setattr(_requests, 'post', lambda *a, **k: pytest.fail('no network without key'))
     assert score.main() == 2
 import ci_analysis as C
 import paired_analysis as P

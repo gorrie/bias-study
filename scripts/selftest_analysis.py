@@ -305,8 +305,16 @@ def g8():
     except json.JSONDecodeError:
         return False, f"non-JSON output: {p.stdout[:150]}"
     found = {(r["run"], f["code"]) for r in reports for f in r["findings"]}
+    # A registry entry naming a run THIS TREE DOES NOT HOLD is not a missing
+    # finding. The working study holds the 2026-09-13 g0dm0d3 runs and the public
+    # mirror does not, so an unscoped comparison reported four entries as missing
+    # from the mirror and failed a gate over data the mirror is not supposed to
+    # carry. Expectations are scoped to the runs actually scanned; the "extra"
+    # side is untouched, because an UNDECLARED finding is a defect in either tree.
+    scanned = {r["run"] for r in reports}
+    expected = {k for k in KNOWN_MANIFEST_FINDINGS if k[0] in scanned}
     extra = found - KNOWN_MANIFEST_FINDINGS
-    missing = KNOWN_MANIFEST_FINDINGS - found
+    missing = expected - found
     if extra or missing:
         return False, f"unexpected={sorted(extra)} missing={sorted(missing)}"
     # validate_runs exits 0 when every finding is in its KNOWN registry, and non-zero the

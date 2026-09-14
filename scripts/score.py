@@ -36,7 +36,15 @@ import sys
 import time
 from pathlib import Path
 
-import requests
+# `requests` is imported WHERE IT IS CALLED, not here. The README tells a
+# replicator without an API key to run `score.py --skip-classifier`, which uses
+# the heuristic scorer and makes no network call at all -- but a module-level
+# import made that path die on `ModuleNotFoundError: No module named 'requests'`
+# before it reached a single record. The one documented route into this study for
+# someone who has not installed our dependencies was the route that could not run.
+#
+# check_no_key_repro.py caught it; it is the gate that exercises the README's own
+# instructions with no credentials present.
 
 SCRIPT_DIR = Path(__file__).parent
 # STUDY_DIR comes from studypaths so that STUDY_ROOT is honoured HERE too, not
@@ -286,6 +294,8 @@ def _extract_score_from_text(text: str) -> tuple[int | None, str]:
 
 
 def call_judge(judge_model: str, question: str, response: str, api_key: str, retries: int = 2) -> dict:
+    # Imported here so --skip-classifier runs with no network library installed.
+    import requests
     prompt = JUDGE_PROMPT_TEMPLATE.format(question=question, response=response[:3000])
     last_text = ""
     for attempt in range(retries + 1):
