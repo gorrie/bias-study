@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -60,6 +61,101 @@ def is_empty_response(rec: dict) -> bool:
 
 def has_score(rec: dict) -> bool:
     return rec.get("score_classifier") is not None
+
+
+def looks_truncated_text(text: str) -> bool:
+    """Does this text end mid-sentence? The SINGLE definition, used everywhere.
+
+    DO NOT substitute `finish_reason`. Measured 2026-09-13: through the G0DM0D3
+    proxy, `claude-opus-4.7` at max_tokens=800 returned ten responses severed
+    mid-word -- '...and Genuinely', '...false positives to harass', '## My Actual
+    View\\n\\nThe decis' -- and the proxy reported finish_reason='stop' for every
+    one. It rewrites the response body and drops the upstream reason.
+
+    A complete answer ends on sentence-terminal punctuation, optionally wrapped in
+    closing quotes/brackets or a closed markdown emphasis run. Trailing '*', '_',
+    '`' or ':' alone do NOT count -- '- **' or 'the case for the other side:' is
+    mid-structure. Accepting them cost this detector one of ten known-truncated
+    records on its first version.
+
+    Two further corrections, 2026-09-13:
+      * a severed list marker ('...2. Speed. 3.') ends in '.' and would pass, so a
+        trailing enumerator is treated as severed;
+      * a closed code fence is a legitimate ending and must NOT be flagged, or a
+        complete answer forces a needless re-collection.
+    """
+    t = (text or "").rstrip()
+    if not t:
+        return True
+    if t.endswith("```"):          # a closed code fence is a complete ending
+        return False
+    # A dangling enumerator: the text is an enumerated list and the LAST item is
+    # empty ("1. Cost. 2. Speed. 3."). Requiring two earlier enumerators that
+    # actually carry content is what keeps an ordinary sentence ending in a number
+    # ("The score was 3.") from being called severed.
+    if re.search(r"\s\d+[.)]$", t) and len(re.findall(r"\b\d+[.)]\s+\S", t)) >= 2:
+        return True
+    return not re.search(r"[.!?][\"')\]*_`]*$", t)
+
+
+#: Below this many words, a missing full stop is not evidence of truncation.
+#: A response that actually hit a token cap is long by construction; a terse
+#: answer ending without punctuation is just terse.
+_TRUNCATION_MIN_WORDS = 50
+
+
+def is_truncated(rec: dict) -> bool:
+    """Was this response cut off? The EXCLUSION decision, which needs corroboration.
+
+    Evidence, in order of authority:
+      1. the collector's explicit `truncated` verdict, if it recorded one;
+      2. `tokens_out >= max_tokens` when both are known -- a response that spent
+         its entire budget did not choose to stop;
+      3. text that ends mid-sentence AND is long enough to have plausibly hit a
+         cap.
+
+    Clause 3 carries the length guard because the bare text heuristic is a
+    heuristic. On its own it called the three-word string "a real answer"
+    truncated, which would silently drop a good record -- the same class of harm
+    as admitting a severed one, in the other direction. Dropping good data to
+    look rigorous is not rigour.
+
+    MEASURED, 2026-09-13, against the one hard signal the May corpus carries.
+    `max_tokens` was never recorded (see INT-12), but `tokens_out` was, and that
+    collector's cap was 800 -- so `tokens_out == 800` is ground truth for "cut
+    off". Over 10,868 scored, non-empty records of >= 50 words:
+
+                          heuristic SEVERED   heuristic COMPLETE
+        tokens_out == 800        3278                1531
+        tokens_out <  800          47                6012
+
+        precision 98.6%   recall 68.2%
+
+    So clause 3 is safe to exclude on: of everything it flags, 98.6% genuinely
+    sat on the cap, and all 47 exceptions returned 752-759 tokens and do read as
+    severed. It is UNDER-inclusive -- it misses 1,531 records that hit the cap but
+    happened to finish a sentence on the boundary -- and that is the right
+    direction for a rule that drops data. Closing that gap needs the cap recorded
+    per record, which is why run_study.py now writes `max_tokens`, plus a one-time
+    backfill of the historical corpus under a correction ledger. Do NOT close it
+    by hardcoding 800 here.
+
+    `looks_truncated_text()` stays available unguarded for the collector's
+    warning and for tests, where the caller knows the context.
+    """
+    flag = rec.get("truncated")
+    if isinstance(flag, bool):
+        return flag
+    cap = rec.get("max_tokens")
+    if cap is None:
+        cap = ((rec.get("study_call_metadata") or {}).get("max_tokens"))
+    out = rec.get("tokens_out")
+    if isinstance(cap, int) and isinstance(out, int) and cap > 0 and out >= cap:
+        return True
+    text = response_text(rec)
+    if len(text.split()) < _TRUNCATION_MIN_WORDS:
+        return False
+    return looks_truncated_text(text)
 
 
 def is_failed_call(rec: dict) -> bool:
@@ -89,6 +185,13 @@ def exclusion_reason(rec: dict):
         return "failed-call"
     if is_empty_response(rec):
         return "empty-or-missing-response"
+    if is_truncated(rec):
+        # A severed response is not a measurement. Distinct from an empty one: there
+        # IS text, and a judge will happily score it. Measured 2026-09-13: 1,022 of
+        # 4,748 scored records (21.5%) sit exactly on an 800-token cap, from 96.7%
+        # of glm-4.5's records to near zero for terse models -- so the defect tracks
+        # verbosity and confounds every cross-vendor comparison in the study.
+        return "truncated-response"
     # A record with real text and no score is NOT unusable: the largest class of it is a
     # substantive refusal, which is a result in this study. `load_scored_records()` drops
     # anything with a reason, so returning one here would discard the refusal corpus.
@@ -99,7 +202,10 @@ def exclusion_reason(rec: dict):
 
 def is_eligible(rec: dict) -> bool:
     """May this record enter an aggregate, a CI, a drift series or a chart?"""
-    return has_score(rec) and not is_empty_response(rec) and not is_failed_call(rec)
+    return (has_score(rec)
+            and not is_empty_response(rec)
+            and not is_failed_call(rec)
+            and not is_truncated(rec))
 
 
 def is_scored_empty(rec: dict) -> bool:
@@ -107,18 +213,34 @@ def is_scored_empty(rec: dict) -> bool:
     return has_score(rec) and is_empty_response(rec)
 
 
+def is_scored_truncated(rec: dict) -> bool:
+    """A score derived from half a sentence. Counted, never silently dropped."""
+    return has_score(rec) and not is_empty_response(rec) and is_truncated(rec)
+
+
 def partition(records):
-    """-> (eligible, scored_empty, unscored). Every record lands in exactly one bucket, so a
-    caller can report what it excluded instead of quietly shrinking its own denominator."""
-    eligible, scored_empty, unscored = [], [], []
+    """-> (eligible, scored_empty, scored_truncated, unscored).
+
+    Every record lands in exactly one bucket, so a caller can report what it excluded
+    instead of quietly shrinking its own denominator.
+
+    ARITY CHANGED 2026-09-13 from 3 to 4. Truncated records were previously eligible,
+    which is how 21.5% of the corpus entered published aggregates as measurements.
+    The bucket is separate from `scored_empty` because the causes and the remedies
+    differ: an empty response needs re-collection at a bigger budget or exclusion,
+    a truncated one needs re-collection at a bigger budget, full stop.
+    """
+    eligible, scored_empty, scored_truncated, unscored = [], [], [], []
     for r in records:
         if is_failed_call(r) or not has_score(r):
             unscored.append(r)
         elif is_empty_response(r):
             scored_empty.append(r)
+        elif is_truncated(r):
+            scored_truncated.append(r)
         else:
             eligible.append(r)
-    return eligible, scored_empty, unscored
+    return eligible, scored_empty, scored_truncated, unscored
 
 
 def missingness(records):
@@ -179,10 +301,13 @@ def apply_rule(records, strict=None, label=""):
         strict = strict_default()
     if not strict:
         return records
-    eligible, scored_empty, _ = partition(records)
+    eligible, scored_empty, scored_truncated, _ = partition(records)
     if scored_empty:
         print("[eligibility] %s: excluded %d scored-empty record(s) of %d"
               % (label or "records", len(scored_empty), len(records)), file=sys.stderr)
+    if scored_truncated:
+        print("[eligibility] %s: excluded %d scored-TRUNCATED record(s) of %d"
+              % (label or "records", len(scored_truncated), len(records)), file=sys.stderr)
     return eligible + [r for r in records if not has_score(r)]
 
 

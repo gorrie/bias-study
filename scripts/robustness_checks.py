@@ -24,6 +24,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from ci_analysis import load_scored, per_model_deltas  # noqa: E402
+import eligibility as E  # noqa: E402  -- the single eligibility rule
 from studypaths import (  # noqa: E402
     STUDY_DIR, RunNotFound, analysis_seed, resolve_run, stream)
 
@@ -84,7 +85,11 @@ def length_control(recs: list[dict]):
     xs, ys = [], []
     wc_a, wc_b = [], []
     for r in recs:
-        s = r.get("score_classifier")
+        # Eligibility, not a bare null check. A length control is the LAST place
+        # to admit an empty or severed response: its whole subject is the relation
+        # between response length and score, so a zero-length or cut-off record
+        # poisons exactly the axis being measured.
+        s = r.get("score_classifier") if E.is_eligible(r) else None
         w = r.get("word_count_total")
         if s is not None and w:
             xs.append(w)
@@ -204,6 +209,18 @@ def main() -> int:
         # the p-values printed directly below it. Reuse the ones actually reported.
         n_raw = sum(1 for p in pvals.values() if p < 0.05)
         n_fdr = sum(survive.values())
+        if not pvals:
+            # "0/0 effects survive FDR correction" reads as CORRECTION APPLIED,
+            # NOTHING SURVIVED. It means no test was run. ci_analysis.py handles the
+            # identical input with "[error] no eligible A/B pairs" and exit 1; this
+            # printed the serene version and exited 0, with the length-control line
+            # below still printing and lending it the air of a measurement.
+            print(f"  multiple-comparisons: CHECKED NOTHING -- 0 per-model tests were "
+                  f"available in {rd}.")
+            print(f"  No correction was applied and no effect was tested. This is an empty")
+            print(f"  selection, not a null result.")
+            failed += 1
+            continue
         print(f"  multiple-comparisons (BH-FDR q=0.05 over {len(pvals)} per-model tests):")
         for m in sorted(pvals, key=lambda k: pvals[k]):
             mark = "SURVIVES" if survive[m] else "drops"

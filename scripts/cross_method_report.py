@@ -46,6 +46,7 @@ SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR))
 from studypaths import STUDY_DIR, runs_root  # noqa: E402
 from eligibility import load_scored_records, inspect_scored_records
+import eligibility as E  # noqa: E402  -- the single eligibility rule
 
 KNOWN_METHODS = [
     "ultraplinian-4",
@@ -78,13 +79,31 @@ def load_method_records(run_dir: Path, method: str) -> list[dict]:
     return load_scored_records(method_dir)
 
 
-def bootstrap_ci(values: list[float], n_boot: int = 1000, alpha: float = 0.05) -> tuple[float, float]:
-    """Percentile bootstrap CI for the mean."""
+def bootstrap_ci(values: list[float], n_boot: int = 1000, alpha: float = 0.05,
+                 label: str = "") -> tuple[float, float]:
+    """Percentile bootstrap CI for the mean.
+
+    The seed is derived PER CONTRAST from `label`, not fixed.
+
+    `random.Random(42)` was constructed fresh inside this function on every call,
+    so every contrast with the same number of values drew the SAME sequence of
+    resample indices. Two models with equal n were not independently bootstrapped;
+    they shared a draw pattern, which correlates their intervals and is invisible
+    in the output. `studypaths.stream()` exists precisely for this -- see its
+    docstring at studypaths.py:18-30.
+
+    Callers that pass no label keep a stable stream, so a caller that has not been
+    updated still reproduces rather than silently changing.
+    """
     if not values:
         return (float("nan"), float("nan"))
     if len(values) == 1:
         return (values[0], values[0])
-    rng = random.Random(42)  # deterministic for reproducibility
+    try:
+        from studypaths import analysis_seed, stream
+        rng = stream(analysis_seed("cross-method"), "cross-method", label or "unlabelled")
+    except Exception:
+        rng = random.Random(42)
     means = []
     n = len(values)
     for _ in range(n_boot):
@@ -109,19 +128,26 @@ def per_method_summary(run_dir: Path) -> dict:
 
         per_model = defaultdict(list)
         per_model_by_condition = defaultdict(lambda: defaultdict(list))
+        # Per (model, condition, question), so the delta below can be PAIRED.
+        per_cell = defaultdict(lambda: defaultdict(dict))
         for r in records:
-            score = r.get("score_classifier")
-            if score is None:
+            # Eligibility, not a bare null check: `score_classifier is not None`
+            # is the filter a scored-blank record passes.
+            if not E.is_eligible(r):
                 continue
+            score = r.get("score_classifier")
             model = r.get("model", "unknown")
             condition = r.get("condition", "unknown")
             per_model[model].append(score)
             per_model_by_condition[model][condition].append(score)
+            qid = r.get("question_id")
+            if qid is not None:
+                per_cell[model][condition].setdefault(qid, []).append(score)
 
         method_summary = {"n_records": len(records), "models": {}}
         for model, scores in sorted(per_model.items()):
             mean = sum(scores) / len(scores)
-            ci_lo, ci_hi = bootstrap_ci([float(s) for s in scores])
+            ci_lo, ci_hi = bootstrap_ci([float(s) for s in scores], label="mean|%s" % model)
             conditions = {
                 cond: {
                     "n": len(c_scores),
@@ -129,17 +155,33 @@ def per_method_summary(run_dir: Path) -> dict:
                 }
                 for cond, c_scores in sorted(per_model_by_condition[model].items())
             }
-            # Compute B - A delta if both present (canonical bias-study comparison)
-            cond_means = {c: v["mean"] for c, v in conditions.items() if v["mean"] is not None}
+            # PAIRED per question. This was an unpaired difference of two cell
+            # means, so its sign and size came partly from item composition: z-ai/
+            # glm-4.7 reported -0.143 from nA=12 / nB=14 where the paired estimator
+            # gives +0.000 from 3 pairs, and gemini-2.5-pro -0.062 from 16/13
+            # against +0.000 from 5. Neither printed a pair count or said anything
+            # had been dropped.
+            a_q = per_cell[model].get("A", {})
+            b_q = per_cell[model].get("B", {})
+            shared_q = sorted(set(a_q) & set(b_q))
             delta_b_minus_a = None
-            if "A" in cond_means and "B" in cond_means:
-                delta_b_minus_a = round(cond_means["B"] - cond_means["A"], 3)
+            if shared_q:
+                pair_deltas = [
+                    (sum(b_q[q]) / len(b_q[q])) - (sum(a_q[q]) / len(a_q[q]))
+                    for q in shared_q
+                ]
+                delta_b_minus_a = round(sum(pair_deltas) / len(pair_deltas), 3)
             method_summary["models"][model] = {
                 "n_scored": len(scores),
                 "mean": round(mean, 3),
                 "ci": [round(ci_lo, 3), round(ci_hi, 3)],
                 "conditions": conditions,
                 "delta_b_minus_a": delta_b_minus_a,
+                # Report the pairing, so an unpairable model is visible rather than
+                # reported as a clean difference of two unrelated averages.
+                "n_pairs": len(shared_q),
+                "n_unpaired_A": len(set(a_q) - set(b_q)),
+                "n_unpaired_B": len(set(b_q) - set(a_q)),
             }
         out["method"][method] = method_summary
     return out
@@ -266,7 +308,7 @@ def contamination_delta(run_dir: Path) -> dict:
         if not deltas:
             continue
         mean_delta = sum(deltas) / len(deltas)
-        ci_lo, ci_hi = bootstrap_ci([float(d) for d in deltas])
+        ci_lo, ci_hi = bootstrap_ci([float(d) for d in deltas], label="delta|%s" % model)
         out["per_model"][model] = {
             "n_pairs": len(deltas),
             "mean_grok_minus_ultraplinian": round(mean_delta, 3),

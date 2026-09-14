@@ -91,9 +91,22 @@ def analyse(pairs=PAIRS, suite=SUITE, seed=20260828, n=BOOTSTRAP_N):
         types = sorted({t for (_, t) in C})
         draws = []
         for _ in range(n):
-            pick = {rng.choice(types) for _ in types}
-            dc = discrimination({k: v for k, v in C.items() if k[1] in pick})
-            da = discrimination({k: v for k, v in A.items() if k[1] in pick})
+            # A CLUSTER BOOTSTRAP RESAMPLES WITH REPLACEMENT AND KEEPS DUPLICATES.
+            #
+            # This was `pick = {rng.choice(types) for _ in types}` -- a SET
+            # comprehension, so a cluster drawn twice collapsed to one and a draw
+            # averaged 11.57 of 18 clusters instead of 18. That is subsampling, not
+            # bootstrapping, and it makes every interval too NARROW: measured ~15%
+            # (Qwen 0.245 against a correct 0.286, Gemma 0.234 against 0.280). No
+            # verdict flipped, but the bias always runs toward narrower in a study
+            # whose decision rule is "the interval excludes zero".
+            #
+            # Multiplicity is carried in the record lists rather than the keys,
+            # because discrimination() unpacks each key as a (label, type) pair.
+            counts = collections.Counter(rng.choice(types) for _ in types)
+            resample = lambda d: {k: v * counts[k[1]] for k, v in d.items() if counts[k[1]]}
+            dc = discrimination(resample(C))
+            da = discrimination(resample(A))
             if dc is not None and da is not None:
                 draws.append(dc - da)
         draws.sort()
@@ -118,7 +131,19 @@ def main(argv=None):
     if a.json:
         print(json.dumps(res, indent=1, default=list))
         return 0
-    print("REFUSAL SUITE -- both model pairs, clustered on prompt type")
+    # SAY HOW MANY PAIRS ACTUALLY REPORTED. A missing pair is `continue`d in
+    # analyse(), and this header used to claim "both model pairs" regardless --
+    # so a run with one arm on disk asserted a two-vendor mechanism claim from one
+    # vendor. The closing prose below is now conditional for the same reason.
+    n_pairs = len(res)
+    expected = len(PAIRS)
+    if n_pairs == expected:
+        print("REFUSAL SUITE -- all %d model pair(s), clustered on prompt type" % n_pairs)
+    else:
+        print("REFUSAL SUITE -- %d of %d model pair(s) on disk, clustered on prompt type"
+              % (n_pairs, expected))
+        print("  INCOMPLETE: %d pair(s) missing. Do not read this as a cross-vendor result."
+              % (expected - n_pairs))
     print("")
     print("%-14s %11s %11s %9s  %s" % ("model", "constrained", "ablated", "drop", "95% CI"))
     for r in res:
@@ -131,9 +156,14 @@ def main(argv=None):
         c, b = r["kw_disagree_constrained"], r["kw_disagree_ablated"]
         print("  %-12s %.1f%% -> %.1f%%   (%.1fx)" % (r["model"], c * 100, b * 100, b / c))
     print("")
-    print("  Rising on BOTH vendors is what makes this a mechanism claim rather than one")
-    print("  model's quirk. The magnitude differs by a lot, which is what every other result")
-    print("  here says about third-party ablated builds.")
+    if n_pairs >= 2:
+        print("  Rising on BOTH vendors is what makes this a mechanism claim rather than one")
+        print("  model's quirk. The magnitude differs by a lot, which is what every other result")
+        print("  here says about third-party ablated builds.")
+    else:
+        print("  ONE vendor only. The cross-vendor mechanism claim needs a second pair and")
+        print("  is NOT supported by this run -- a single model's behaviour is a quirk until")
+        print("  something else reproduces it.")
     return 0
 
 

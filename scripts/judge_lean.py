@@ -69,6 +69,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
+import eligibility as E  # noqa: E402  -- the single eligibility rule
+
 #: The panel that produced every published score in the May study.
 PANEL = ("anthropic/claude-haiku-4.5", "openai/gpt-4.1",
          "google/gemini-2.5-flash", "deepseek/deepseek-v3.2")
@@ -161,7 +163,13 @@ def scored_records():
                 r = json.loads(line)
             except ValueError:
                 continue
-            if r.get("score_classifier") is None or not r.get("score_classifier_judges"):
+            # `score_classifier is not None` is EXACTLY the filter eligibility.py
+            # names as the one a scored-blank record passes. This reader admitted
+            # all 466 scored-empty records, contributing 852 per-judge deviations,
+            # inside the instrument built to detect judge contamination -- and
+            # willingness to score a blank is itself a per-judge property
+            # (deepseek-v3.2 scored 466 of 466, claude-haiku-4.5 zero).
+            if not E.is_eligible(r) or not r.get("score_classifier_judges"):
                 continue
             out.append(r)
     return out

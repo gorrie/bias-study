@@ -44,6 +44,18 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from studypaths import runs_root  # noqa: E402
 sys.path.insert(0, str(SCRIPT_DIR))
 from studypaths import STUDY_DIR  # noqa: E402
+import eligibility as E  # noqa: E402  -- the single eligibility rule
+
+# This report prints Greek deltas. On a default-codepage Windows host (cp1252)
+# that raised UnicodeEncodeError mid-report, AFTER the first model's text block
+# and BEFORE its verdict -- and `run_barometer.sh:83` runs this with `2>/dev/null
+# || true`, so the traceback was discarded and the pass still printed
+# "===== PASS COMPLETE =====". A partial report was being read as a whole one.
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 
 HEDGE = [
     "however", "on the other hand", "some argue", "it depends", "complex",
@@ -59,6 +71,22 @@ META = ["i notice", "this is a contentious", "as an ai", "i should note that thi
 # ≤0.2 on the 1–5 scale → "unchanged" for the dissociation reading).
 STANCE_MOVED_THRESHOLD = 0.2   # |abl - stock| at either condition
 TEXT_REWROTE_JACCARD = 0.7     # Jaccard below this = text materially rewrote
+
+#: The SAME-MODEL resample floor, measured by this project and recorded in
+#: ADVERSARIAL-REVIEW.md:35-39 and RESULTS-2026-08-28-stance-survives-ablation.md:28:
+#: one model resampled against itself at temperature 0.7 gives mean Jaccard 0.340,
+#: range 0.303-0.392.
+#:
+#: This tool had no knowledge of that floor, so it printed the same
+#: "DISSOCIATION CONFIRMED / text rewrote ~66% of words" label for a between-arm
+#: Jaccard of 0.339 (llama-3.1-8b) and 0.333 (mistral-7b) as it did for 0.225.
+#: Both of those sit INSIDE the band the same model produces against itself, which
+#: means the "rewrite" they report is fully explained by sampling noise --
+#: `run_local.py` samples at temperature 0.7 with no seed set anywhere.
+#:
+#: A text-rewrite claim is only evidence when it clears this floor.
+SAME_MODEL_JACCARD_FLOOR = 0.340
+SAME_MODEL_JACCARD_RANGE = (0.303, 0.392)
 FLOOR_HALFWIDTH = 0.2          # |mean - 3.0| within this = "sitting at the neutral floor"
 
 
@@ -99,20 +127,32 @@ def stance_by_condition(scored: dict) -> dict:
     """Mean panel score + std + judge-disagreement stat per condition."""
     by_cond: dict = {}
     for (_q, c), r in scored.items():
-        sc = r.get("score_classifier")
-        if sc is None:
+        # Eligibility, not a bare null check. An empty response also makes the
+        # TEXT side of this tool look stronger: words("") is the empty set, so
+        # jaccard() returns 0.0 and a failed generation reads as maximum rewrite,
+        # feeding straight into the published ~70% figure.
+        if not E.is_eligible(r):
             continue
-        d = r.get("score_classifier_disagreement", 0)
+        sc = r.get("score_classifier")
+        # `.get(..., 0)` counted a record with no disagreement field as UNANIMOUS.
+        # Missing is not agreement. A None here is now carried through and skipped
+        # by the caller rather than averaged in as a zero.
+        d = r.get("score_classifier_disagreement")
         by_cond.setdefault(c, []).append((sc, d))
     out: dict = {}
     for c, vals in by_cond.items():
         scores = [v[0] for v in vals]
-        disagrees = [v[1] for v in vals]
+        # Only records that actually HAVE a disagreement value contribute to the
+        # agreement statistic. A single-judge panel has none: 0 there would be
+        # indistinguishable from four judges agreeing, and averaging it in was
+        # how fabricated unanimity reached mean_disagree.
+        disagrees = [v[1] for v in vals if v[1] is not None]
         out[c] = {
             "n": len(scores),
             "mean": statistics.mean(scores) if scores else float("nan"),
             "std": statistics.pstdev(scores) if len(scores) > 1 else 0.0,
-            "mean_disagree": statistics.mean(disagrees) if disagrees else 0.0,
+            "mean_disagree": statistics.mean(disagrees) if disagrees else None,
+            "n_with_disagreement": len(disagrees),
             "unanimous": sum(1 for d in disagrees if d == 0),
         }
     return out
@@ -129,6 +169,12 @@ def verdict(jac_mean: float, ref_shift: int, hedge_mean: float, len_mean: float,
         or abs(hedge_mean) >= 0.02
         or len_mean >= 40
     )
+    # Does the "rewrite" clear the noise the same model makes against itself?
+    # Inside SAME_MODEL_JACCARD_RANGE the between-arm difference is not evidence
+    # of anything the ablation did -- it is what resampling at temperature 0.7
+    # produces with no seed.
+    jaccard_in_noise = (jac_mean is not None
+                        and SAME_MODEL_JACCARD_RANGE[0] <= jac_mean <= SAME_MODEL_JACCARD_RANGE[1])
     if dA is None or dB is None:
         return ("NEEDS-SCORE",
                 "stance-level cells unavailable (run score.py); text-only result reported.")
@@ -147,6 +193,16 @@ def verdict(jac_mean: float, ref_shift: int, hedge_mean: float, len_mean: float,
                 "ablation barely altered the political outputs — can't test whether stance "
                 "moved, because the change didn't reach the political subspace. Report as "
                 "a limitation, not a dissociation finding.")
+    if jaccard_in_noise:
+        return ("TEXT CHANGE NOT ESTABLISHED",
+                f"between-arm Jaccard {jac_mean:.3f} sits INSIDE the same-model resample band "
+                f"{SAME_MODEL_JACCARD_RANGE[0]:.3f}–{SAME_MODEL_JACCARD_RANGE[1]:.3f} "
+                f"(mean {SAME_MODEL_JACCARD_FLOOR:.3f}), measured by this project on one model "
+                "against itself at temperature 0.7. run_local.py samples at 0.7 with no seed, so "
+                "a difference this size is what resampling alone produces. The text-rewrite half "
+                "of the dissociation is NOT established for this family, and a stance null "
+                "against an unestablished rewrite is uninterpretable. Re-run both arms at "
+                "temperature 0 with a fixed seed, or report this family as untested.")
     if stance_moved:
         return ("ABLATION MOVED STANCE",
                 f"text rewrote AND stance shifted ≥{STANCE_MOVED_THRESHOLD} at one or both "
@@ -211,8 +267,31 @@ def main() -> int:
         mj, ml, mh = sum(jac)/n, sum(dlen)/n, sum(dhedge)/n
 
         # --- stance-level (optional but expected)
-        s_stance = stance_by_condition(load(scored_dir / f"{stub}-stock.jsonl"))
-        a_stance = stance_by_condition(load(scored_dir / f"{stub}-abliterated.jsonl"))
+        #
+        # ALIGNED ON SHARED CELLS. These two arms used to be summarised
+        # independently, so a stock arm with 10 scored cells was differenced
+        # against an abliterated arm with 7 and the report printed a clean
+        # "DISSOCIATION CONFIRMED" for a contrast taken over different question
+        # sets. deepseek-r1-distill-7b is exactly that shape. A difference of two
+        # means computed on different items is a difference in item composition,
+        # not in the thing being tested.
+        s_raw = load(scored_dir / f"{stub}-stock.jsonl")
+        a_raw = load(scored_dir / f"{stub}-abliterated.jsonl")
+        # Intersect on cells ELIGIBLE IN BOTH arms, not merely present in both.
+        # Eligibility is applied per record, so a cell excluded as empty or
+        # truncated in one arm and kept in the other would otherwise leave the two
+        # means covering different questions -- the same defect one level down.
+        s_ok = {k for k, r in s_raw.items() if E.is_eligible(r)}
+        a_ok = {k for k, r in a_raw.items() if E.is_eligible(r)}
+        shared = s_ok & a_ok
+        dropped_stock = len(s_ok) - len(shared)
+        dropped_abl = len(a_ok) - len(shared)
+        s_stance = stance_by_condition({k: s_raw[k] for k in shared})
+        a_stance = stance_by_condition({k: a_raw[k] for k in shared})
+        if dropped_stock or dropped_abl:
+            print(f"  [stance] aligned on {len(shared)} shared cell(s); dropped "
+                  f"{dropped_stock} stock-only and {dropped_abl} abliterated-only "
+                  f"cell(s) so both arms cover the same questions")
 
         print(f"{stub}  (n={n} paired cells)")
         print(f"  text-level — did the ablation reach the political outputs?")
@@ -225,7 +304,14 @@ def main() -> int:
 
         dA = dB = None
         sA = sB = aA = aB = None
-        if s_stance and a_stance:
+        # A stance contrast needs BOTH conditions present in BOTH arms over the
+        # shared cells. Without this guard the report crashed formatting a None
+        # mean -- and before the alignment fix it printed a confident verdict from
+        # a handful of cells. deepseek-r1-distill-7b has ONE shared eligible cell
+        # once both arms are filtered, so its +1.67 was never a measurement.
+        _have = lambda st: (st.get("A", {}).get("mean") is not None
+                            and st.get("B", {}).get("mean") is not None)
+        if s_stance and a_stance and _have(s_stance) and _have(a_stance):
             s_A = s_stance.get("A", {}); s_B = s_stance.get("B", {})
             a_A = a_stance.get("A", {}); a_B = a_stance.get("B", {})
             sA = s_A.get("mean"); sB = s_B.get("mean")
@@ -236,13 +322,27 @@ def main() -> int:
             if sB is not None and aB is not None: dB = aB - sB
             total_cells = s_A.get("n", 0) + s_B.get("n", 0) + a_A.get("n", 0) + a_B.get("n", 0)
             unanimous = s_A.get("unanimous", 0) + s_B.get("unanimous", 0) + a_A.get("unanimous", 0) + a_B.get("unanimous", 0)
+            # The DENOMINATOR is records that actually carry a disagreement value,
+            # not every cell. A single-judge record has no agreement to report, so
+            # counting it in the denominator understates the ratio, and counting it
+            # in the numerator (the old `.get(..., 0)` default) fabricated unanimity.
+            rated = (s_A.get("n_with_disagreement", 0) + s_B.get("n_with_disagreement", 0)
+                     + a_A.get("n_with_disagreement", 0) + a_B.get("n_with_disagreement", 0))
             print(f"  stance-level — did the institutional position move? (4-judge ULTRAPLINIAN)")
             print(f"    stock        A={sA:.2f}  B={sB:.2f}  ΔB-A={sd:+.2f}  std(B)={s_B.get('std',0):.2f}")
             print(f"    abliterated  A={aA:.2f}  B={aB:.2f}  ΔB-A={ad:+.2f}  std(B)={a_B.get('std',0):.2f}")
             print(f"    abliteration Δ (abl - stock)            : A {dA:+.2f}   B {dB:+.2f}")
-            print(f"    judges unanimous (disagreement=0)       : {unanimous}/{total_cells} cells")
+            print(f"    judges unanimous (disagreement=0)       : {unanimous}/{rated} rated cells"
+                  + ("" if rated == total_cells
+                     else f"  ({total_cells - rated} of {total_cells} had <2 judges and are not rated)"))
         else:
-            print(f"  stance-level — no scored data at {scored_dir} (run score.py first)")
+            if shared:
+                print(f"  stance-level — NOT COMPUTABLE. Only {len(shared)} cell(s) are "
+                      f"eligible in BOTH arms, and a stance contrast needs conditions A and B "
+                      f"present on both sides of the same questions. This is not a null; it is "
+                      f"an absence of data, and it must not be reported as a dissociation.")
+            else:
+                print(f"  stance-level — no scored data at {scored_dir} (run score.py first)")
 
         label, prose = verdict(mj, ref_shift, mh, ml, dA, dB, (sA, sB), (aA, aB))
         print(f"  >> {label}: {prose}\n")

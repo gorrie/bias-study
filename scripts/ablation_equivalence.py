@@ -22,8 +22,21 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 import random
 import statistics as st
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# This report prints en-dashes and em-dashes. On a default-codepage Windows host
+# those lines vanish or raise when stdout is a pipe, which is how a table can come
+# back missing rows without any error. Same trap as abliteration_effect_check.py.
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 
 # Observed, from the wave at n=5 with a swept seed (RESULTS-2026-09-07-ablation-wave.md).
 # side-flips between stock and ablated, per base, under A / D / P prompts.
@@ -33,11 +46,54 @@ import statistics as st
 # modal estimator floor of 3, but NOT zero. The difference matters: three identical zeros give a
 # degenerate bootstrap, while genuine small values give a real interval, so the wrong inputs
 # produced a stronger-sounding "not testable" than the data warrants on those two bases.
-OBSERVED = {
-    "qwen38-27b": [1, 2, 2],      # D/P reported as 1-2 across all three ablations
-    "phi4-14b":   [2, 3, 3],      # D=3, P=2; third condition taken at the reported range
-    "qwen25-14b": [8, 9, 9],      # the one that looked like an effect
+#: TRANSCRIBED VALUES, KEPT ONLY AS THE PUBLISHED BASELINE. Do not compute from them.
+#:
+#: This script used to derive its entire verdict from this dict and touched no file
+#: at all -- `grep -c "open(\|glob\|json.load\|Path("` returned 0. The literals were
+#: already wrong against the live wave: phi4-14b measures [2,3,2] not [2,3,3],
+#: qwen38-27b's ablated arm [0,2,2] not [1,2,2], and qwen25-14b has NINE values,
+#: of which the hardcode kept three and dropped the Josiefied ablator's near-zero
+#: row -- the cherry-picked triple that produced the "NOT equivalent" verdict.
+#:
+#: The comment history records this dict being corrected once before for exactly
+#: the same reason, which is the argument for not having it at all.
+PUBLISHED_OBSERVED = {
+    "qwen38-27b": [1, 2, 2],
+    "phi4-14b":   [2, 3, 3],
+    "qwen25-14b": [8, 9, 9],
 }
+
+
+def observed_from_runs():
+    """Derive the per-base side-flip lists from the wave on disk.
+
+    Returns (dict, note). A None dict means the wave is not readable here, and the
+    caller must SAY SO rather than silently falling back to the transcription.
+    """
+    try:
+        import ablation_analysis as AA
+    except Exception as exc:                      # pragma: no cover - import guard
+        return None, "ablation_analysis unavailable: %s" % exc
+    try:
+        per = AA.usable(AA.cells())
+        rows = AA.step4_weight_vs_prompt(per)
+    except Exception as exc:
+        return None, "could not read the wave: %s" % exc
+    if not rows:
+        return None, "the wave yielded 0 weight-vs-prompt rows"
+    out = {}
+    for r in rows:
+        side = r.get("weight_side")
+        if side is not None:
+            out.setdefault(r["base"], []).append(side)
+    if not out:
+        return None, "no base produced a usable weight-side measurement"
+    return {b: sorted(v) for b, v in out.items()}, "derived from %d live row(s)" % len(rows)
+
+
+OBSERVED, OBSERVED_NOTE = observed_from_runs()
+if OBSERVED is None:
+    OBSERVED = PUBLISHED_OBSERVED
 FLOOR = 3                          # modal estimator floor, from the floors table
 # The same base, two builds by ONE author vs a build by another. This is the ablator-spread
 # control, and it is the whole basis for attributing qwen25-14b's 8/9/9 to the ablator.
@@ -65,9 +121,27 @@ def main(argv=None):
     rng = random.Random(a.seed)
 
     print("ABLATION EFFECT, AS A BOUNDED CLAIM (side-flips of %d)" % SHEET)
-    print("n=%d per cell, 3 prompt conditions per base — so each base's interval rests on 3"
+    print("n=%d per cell — each base's interval rests on its measured rows, not on"
           % N_PER_CELL)
-    print("numbers, not 3 independent experiments.")
+    print("independent experiments.")
+    print("")
+    # SAY WHERE THE NUMBERS CAME FROM. This script used to compute entirely from
+    # transcribed literals and open no file, so a reader could not tell that its
+    # inputs had drifted from the wave -- and they had.
+    if OBSERVED_NOTE.startswith("derived"):
+        print("inputs: %s" % OBSERVED_NOTE)
+        drifted = {b: (PUBLISHED_OBSERVED[b], OBSERVED[b])
+                   for b in PUBLISHED_OBSERVED
+                   if b in OBSERVED and PUBLISHED_OBSERVED[b] != OBSERVED[b]}
+        if drifted:
+            print("WARNING: the transcribed values published earlier DISAGREE with the wave:")
+            for b, (was, now) in sorted(drifted.items()):
+                print("  %-14s published %-16s measured %s" % (b, was, now))
+            print("  The published verdict was computed from the first column.")
+    else:
+        print("inputs: TRANSCRIBED LITERALS — %s" % OBSERVED_NOTE)
+        print("  These are a record of what was published, NOT a measurement. Any verdict")
+        print("  below is a reproduction of the old number, not a check of it.")
     print("")
     print("%-14s %10s %22s %s" % ("base", "mean", "95% CI", "reading"))
     for base, xs in OBSERVED.items():

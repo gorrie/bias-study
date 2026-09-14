@@ -79,13 +79,18 @@ def _load(run):
     return out
 
 
-def _boot(deltas, label):
-    """Percentile interval over per-question paired deltas, seeded per contrast."""
+def _boot(deltas, label, run=None):
+    """Percentile interval over per-question paired deltas, seeded per contrast.
+
+    The seed is derived from the run being analysed, so a new collection does not
+    silently reuse the May wave's bootstrap stream.
+    """
+    run = run or PIPELINE_RUN
     if not deltas:
         return None
     try:
         from studypaths import analysis_seed, stream
-        rng = stream(analysis_seed(PIPELINE_RUN), PIPELINE_RUN, label)
+        rng = stream(analysis_seed(run), run, label)
     except Exception:
         import random
         rng = random.Random(20260527)
@@ -95,25 +100,57 @@ def _boot(deltas, label):
     return (st.mean(deltas), means[int(0.025 * BOOTSTRAP_N)], means[int(0.975 * BOOTSTRAP_N)])
 
 
-def estimate():
-    pipe = _load(PIPELINE_RUN)
-    base_recs = _load(BASELINE_RUN)
+def _mean_replicates(records, condition=None):
+    """Average replicate samples within a (model, condition, question) cell.
+
+    The May wave ran one sample per cell, so a plain dict assignment was lossless.
+    With --samples 5 it is NOT: keying a dict on question_id silently keeps only the
+    LAST sample and discards the other four, which would look like a completed n=5
+    collection and report an n=1 estimate. Samples within a cell are averaged, never
+    treated as independent observations, so per-question pairing is preserved and the
+    bootstrap still resamples questions rather than draws.
+
+    The key MUST carry the condition. Averaging over (model, question) alone would
+    pool B-STM, B-Parseltongue and B-Layered into one number and difference a cell
+    against itself.
+    """
+    acc = collections.defaultdict(list)
+    for r in records:
+        if condition is not None and r.get("condition") != condition:
+            continue
+        acc[(r["model"], r.get("condition"), r["question_id"])].append(r["score_classifier"])
+    means = {k: st.mean(v) for k, v in acc.items()}
+    depth = {k: len(v) for k, v in acc.items()}
+    return means, depth
+
+
+def estimate(pipeline_run=None, baseline_run=None):
+    pipeline_run = pipeline_run or PIPELINE_RUN
+    baseline_run = baseline_run or BASELINE_RUN
+    pipe = _load(pipeline_run)
+    base_recs = _load(baseline_run)
     if not pipe:
         return None
-    base = {(r["model"], r["question_id"]): r["score_classifier"]
-            for r in base_recs if r.get("condition") == BASELINE_CONDITION}
+    base_means, base_depth = _mean_replicates(base_recs, condition=BASELINE_CONDITION)
+    base = {(m, q): v for (m, _c, q), v in base_means.items()}
+    cell_means, cell_depth = _mean_replicates(pipe)
     cells = collections.defaultdict(dict)
-    for r in pipe:
-        cells[(r["model"], r["condition"])][r["question_id"]] = r["score_classifier"]
+    for (m, c, q), v in cell_means.items():
+        cells[(m, c)][q] = v
+    # A cell's replicate depth is reported, not assumed: a run that silently lost
+    # samples must be visible in the output rather than pass as a clean n.
+    reps = sorted(set(list(cell_depth.values()) + list(base_depth.values())))
     models = sorted({m for m, _ in cells})
 
-    out = {"run": PIPELINE_RUN, "baseline_run": BASELINE_RUN, "models": models,
-           "samples_per_cell": 1, "contrasts": []}
+    out = {"run": pipeline_run, "baseline_run": baseline_run, "models": models,
+           "samples_per_cell": reps[0] if len(reps) == 1 else reps,
+           "replicates_ragged": len(reps) > 1,
+           "contrasts": []}
     for m in models:
         for c in CONDITIONS:
             got = cells.get((m, c), {})
             d = [got[q] - base[(m, q)] for q in sorted(got) if (m, q) in base]
-            ci = _boot(d, "%s|%s|vs-base" % (m, c))
+            ci = _boot(d, "%s|%s|vs-base" % (m, c), run=pipeline_run)
             if ci:
                 out["contrasts"].append(
                     {"model": m, "contrast": "%s vs plain %s" % (c, BASELINE_CONDITION),
@@ -122,7 +159,7 @@ def estimate():
                      "excludes_zero": ci[1] > 0 or ci[2] < 0})
         lay, stm = cells.get((m, "B-Layered"), {}), cells.get((m, "B-STM"), {})
         d = [lay[q] - stm[q] for q in sorted(lay) if q in stm]
-        ci = _boot(d, "%s|layered-minus-stm" % m)
+        ci = _boot(d, "%s|layered-minus-stm" % m, run=pipeline_run)
         if ci:
             out["contrasts"].append(
                 {"model": m, "contrast": "B-Layered minus B-STM", "n": len(d),
@@ -136,16 +173,28 @@ def estimate():
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--pipeline-run", default=PIPELINE_RUN,
+                    help="run holding the B-STM / B-Parseltongue / B-Layered cells")
+    ap.add_argument("--baseline-run", default=BASELINE_RUN,
+                    help="run holding plain condition B. For a same-sitting baseline, "
+                         "pass the run collected alongside the pipeline arm.")
     args = ap.parse_args(argv)
-    res = estimate()
+    res = estimate(args.pipeline_run, args.baseline_run)
     if not res:
-        print("pipeline rung %s not present in this tree" % PIPELINE_RUN)
+        print("pipeline rung %s not present in this tree" % args.pipeline_run)
         return 2
     if args.json:
         print(json.dumps(res, indent=2))
         return 0
     print("RUNG 2 -- elicitation-layer force, paired per question against plain condition B")
-    print("%d models, one sample per cell. Positive = more institution-skeptical.\n" % len(res["models"]))
+    spc = res["samples_per_cell"]
+    if res.get("replicates_ragged"):
+        depth = "RAGGED replicate depth %s -- cells are not equally sampled" % (spc,)
+    else:
+        depth = "%s sample(s) per cell, averaged within cell" % spc
+    print("%d models, %s." % (len(res["models"]), depth))
+    print("pipeline run: %s   baseline run: %s" % (res["run"], res["baseline_run"]))
+    print("Positive = more institution-skeptical.\n")
     print("  %-26s %-28s %3s %8s %-18s" % ("model", "contrast", "n", "effect", "95% interval"))
     for c in res["contrasts"]:
         print("  %-26s %-28s %3d %+8.2f [%+0.2f, %+0.2f]%s"
@@ -154,9 +203,17 @@ def main(argv=None):
     print("")
     if not res["any_excludes_zero"]:
         print("  NOT ONE of the %d intervals excludes zero." % res["n_contrasts"])
-        print("  The arm does not support a direction. One sample per cell, so there is no")
-        print("  within-cell variance to appeal to either, and 'to a ceiling' was never")
-        print("  measured -- locating a ceiling needs more than three points on one axis.")
+        print("  The arm does not support a direction.")
+        if res["samples_per_cell"] == 1:
+            print("  One sample per cell, so there is no within-cell variance to appeal to")
+            print("  either.")
+        print("  'To a ceiling' was never measured -- locating a ceiling needs more than")
+        print("  three points on one axis, at any sample size.")
+    else:
+        n_ex = sum(1 for c in res["contrasts"] if c["excludes_zero"])
+        print("  %d of %d intervals exclude zero." % (n_ex, res["n_contrasts"]))
+        print("  'To a ceiling' is still NOT measured: three points on one axis cannot")
+        print("  locate where added force stops helping, at any sample size.")
     return 0
 
 

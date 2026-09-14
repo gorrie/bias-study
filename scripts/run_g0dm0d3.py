@@ -49,8 +49,15 @@ COND_FLAGS = {
 }
 
 
-def call(base_url: str, model: str, user_text: str, flags: dict, api_key: str = "", timeout: int = 120) -> dict:
-    body = {"model": model, "messages": [{"role": "user", "content": user_text}], "max_tokens": 800}
+from eligibility import looks_truncated_text as looks_truncated  # noqa: E402
+# ONE definition of "is this severed", in eligibility.py, because the collector's
+# verdict and the reader's verdict disagreeing is how 21.5% of the corpus became
+# eligible while the collector was flagging it. Two copies of a rule is two rules.
+
+
+def call(base_url: str, model: str, user_text: str, flags: dict, api_key: str = "", timeout: int = 120,
+         max_tokens: int = 800) -> dict:
+    body = {"model": model, "messages": [{"role": "user", "content": user_text}], "max_tokens": max_tokens}
     body.update(flags)
     headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
     r = requests.post(f"{base_url}/chat/completions", json=body, headers=headers, timeout=timeout)
@@ -67,6 +74,10 @@ def main() -> int:
     ap.add_argument("--base-url", default="http://localhost:7860/v1")
     ap.add_argument("--samples", type=int, default=1)
     ap.add_argument("--api-key", default="")
+    # The May 2026 wave ran at 800. Keep that the default so those records stay
+    # reproducible, but let a run match its own plain-B baseline: an arm capped
+    # lower than the arm it is contrasted against measures truncation, not force.
+    ap.add_argument("--max-tokens", type=int, default=800)
     args = ap.parse_args()
 
     models = [m.strip() for m in args.models.split(",") if m.strip()]
@@ -80,7 +91,7 @@ def main() -> int:
     total = len(models) * len(questions) * len(conditions) * args.samples
     print(f"G0DM0D3 pipeline rung: {len(models)} models x {len(questions)} Q x {len(conditions)} conds x {args.samples} = {total} calls")
 
-    n = ok = 0
+    n = ok = truncated = 0
     for model in models:
         for cond in conditions:
             flags = COND_FLAGS[cond]
@@ -95,23 +106,39 @@ def main() -> int:
                                "called_at": datetime.datetime.now(datetime.UTC).isoformat(), "sample_idx": s}
                         try:
                             t0 = time.time()
-                            resp = call(args.base_url, model, user_text, flags, api_key=args.api_key)
-                            txt = resp["choices"][0]["message"]["content"]
+                            resp = call(args.base_url, model, user_text, flags, api_key=args.api_key,
+                                        max_tokens=args.max_tokens)
+                            choice = resp["choices"][0]
+                            txt = choice["message"]["content"]
+                            finish = choice.get("finish_reason")
+                            is_trunc = looks_truncated(txt)
                             rec.update(ok=True, response_text=txt,
                                        latency_ms=int((time.time() - t0) * 1000),
                                        word_count_total=len(re.findall(r"\w+", txt)),
+                                       finish_reason=finish,
+                                       truncated=is_trunc,
+                                       usage=resp.get("usage"),
                                        study_call_metadata={"called_via": "g0dm0d3",
                                            "g0dm0d3_pipeline": {k: flags[k] for k in flags},
+                                           "max_tokens": args.max_tokens,
                                            "x_g0dm0d3": resp.get("x_g0dm0d3"),
                                            "obliteratus_applied": None})
                             ok += 1
+                            if is_trunc:
+                                truncated += 1
                         except Exception as e:
                             rec.update(ok=False, error=f"{type(e).__name__}: {str(e)[:200]}", response_text=None,
                                        study_call_metadata={"called_via": "g0dm0d3",
                                            "g0dm0d3_pipeline": {k: flags[k] for k in flags}})
                         fh.write(json.dumps(rec) + "\n"); fh.flush(); n += 1
             print(f"  {model} / {cond}: wrote {out_path.name}")
-    print(f"DONE: {ok}/{n} ok -> {out_dir}")
+    print(f"DONE: {ok}/{n} ok, {truncated} truncated (text test, NOT finish_reason) at "
+          f"max_tokens={args.max_tokens} -> {out_dir}")
+    if truncated:
+        print(f"WARNING: {truncated} of {ok} response(s) end mid-sentence. A severed response is "
+              f"not a measurement and must not be scored — raise --max-tokens and re-collect.",
+              file=sys.stderr)
+        return 3
     return 0
 
 

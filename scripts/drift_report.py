@@ -115,10 +115,19 @@ def main() -> int:
     rows_with_delta = [(r, abs(f(r["mean_delta_AB"]) or 0.0)) for r in per_model]
     rows_with_delta.sort(key=lambda x: x[1], reverse=True)
     for r, _ in rows_with_delta:
+        # A MISSING delta prints as "n/a", never as +0.00.
+        #
+        # `f(...) or 0.0` coerced absent to zero, and this report's own guide reads
+        # "delta approximately 0: the model's position is stable across the
+        # unmasking". So openai/gpt-5 printed "mean A 3 | mean B 3.5 | delta +0.00
+        # -> stable" on 2026-05-26-unmask-gradient while having NO paired questions
+        # at all. Absent is not zero, and here the difference is the whole finding.
+        d = f(r["mean_delta_AB"])
+        d_txt = f"{d:+.2f}" if d is not None else "  n/a"
         lines.append(
             f"| {r['model']} | {r['model_class']} | "
             f"{r['mean_score_A'] or '-':>4} | {r['mean_score_B'] or '-':>4} | "
-            f"{(f(r['mean_delta_AB']) or 0.0):+.2f} | "
+            f"{d_txt} | "
             f"{r['refusal_rate_A']} | {r['refusal_rate_B']} | "
             f"{r['mean_hedge_ratio_A']} | {r['mean_hedge_ratio_B']} |"
         )

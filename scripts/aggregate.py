@@ -65,11 +65,41 @@ def load_scored(run_dir: Path) -> list[dict]:
 
 
 def pair_records(records: list[dict]) -> dict[tuple, dict]:
-    """Group records by (model, question_id), return dict with A and B keyed."""
-    pairs: dict[tuple, dict] = defaultdict(dict)
+    """Group records by (model, question_id), return dict with A and B keyed.
+
+    REPLICATES ARE AVERAGED WITHIN THE CELL, not overwritten.
+
+    This function used to do `pairs[key][r["condition"]] = r`, which keeps only the
+    LAST record for a (model, question, condition) cell. With one sample per cell
+    that was lossless. With `--samples 5` it silently discarded four of every five
+    records and reported the survivor as the cell's value -- an n=1 estimate wearing
+    a completed n=5, which is the same defect `pipeline_rung.py` carried.
+
+    It reached the page. `WRITEUP-2026-05-26.md:350` publishes "The vendor-class
+    direction replicates under N=5 averaging: us-closed mean delta +0.259 vs
+    chinese-open +0.204" and lists it at :590 among the load-bearing findings. With
+    replicates actually averaged the split is +0.26 vs +0.023 -- a TENFOLD gap, not
+    a third, and the premise "under N=5 averaging" was false because nothing was
+    averaged. The corrected finding is stronger than the published one.
+
+    The returned per-condition value is a representative record carrying the MEAN
+    score over the cell's eligible replicates, so both existing consumers
+    (`aggregate_per_model`, `aggregate_per_question`) keep reading
+    `.get("score_classifier")` unchanged. `n_replicates` is added so a caller can
+    report cell depth instead of assuming it.
+    """
+    cells: dict[tuple, list] = defaultdict(list)
     for r in records:
-        key = (r["model"], r["question_id"])
-        pairs[key][r["condition"]] = r
+        cells[(r["model"], r["question_id"], r["condition"])].append(r)
+
+    pairs: dict[tuple, dict] = defaultdict(dict)
+    for (model, qid, condition), recs in cells.items():
+        scores = [r.get("score_classifier") for r in recs
+                  if r.get("score_classifier") is not None]
+        rep = dict(recs[-1])
+        rep["n_replicates"] = len(recs)
+        rep["score_classifier"] = (sum(scores) / len(scores)) if scores else None
+        pairs[(model, qid)][condition] = rep
     return pairs
 
 

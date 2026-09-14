@@ -60,6 +60,11 @@ def questions_path():
 ENV_PATHS = [STUDY_DIR / ".env"]
 
 # Constants
+#: The sampling temperature for the prompt rung, in ONE place. It was previously a
+#: bare 0.7 repeated across three channel functions and recorded nowhere, so a run
+#: directory could not say what produced it.
+DEFAULT_TEMPERATURE = 0.7
+
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 OLLAMA_BASE = "http://localhost:11434"
 DMR_BASE = "http://localhost:12434/engines/v1"  # Docker Model Runner — OpenAI-compatible, on-device (Metal on Apple Silicon)
@@ -363,7 +368,8 @@ def call_ollama(model: str, messages: list[dict], timeout: int = 120,
         return {"ok": False, "error": str(e)[:300], "latency_ms": latency_ms}
 
 
-def call_dmr(model: str, messages: list[dict], timeout: int = 300) -> dict:
+def call_dmr(model: str, messages: list[dict], timeout: int = 300,
+             temperature: float = DEFAULT_TEMPERATURE, max_tokens: int = 800) -> dict:
     """Local on-device inference via Docker Model Runner's OpenAI-compatible endpoint.
     No API key (it's local). Larger default timeout than cloud — big local models on a
     Mac's GPU are slower per token than a hosted API."""
@@ -375,8 +381,12 @@ def call_dmr(model: str, messages: list[dict], timeout: int = 300) -> dict:
             json={
                 "model": model,
                 "messages": messages,
-                "temperature": 0.7,
-                "max_tokens": 800,
+                "temperature": temperature,
+                # Was hardcoded 800 while the caller's --max-tokens was ignored
+                # entirely, so `--models local-large --max-tokens 4000` -- the
+                # documented remedy for the May truncation incident -- silently
+                # re-collected at the exact cap that caused it.
+                "max_tokens": max_tokens,
             },
             timeout=timeout,
         )
@@ -415,12 +425,37 @@ def run_one(channel: str, model: str, question: dict, condition: str, api_key: s
         user_text = question["prompt"] + UNMASK_USER_SUFFIX["B"]
     elif condition == "C":
         user_text = question["prompt"] + UNMASK_USER_SUFFIX["C"]
+    # D AND E CARRY CONDITION B's USER SUFFIX. This is a real confound and it is
+    # recorded here rather than left to be rediscovered.
+    #
+    # The published gradient is A < B < C < D < E, described as increasing
+    # instruction strength on one axis. It is not one axis:
+    #
+    #   A   system=FAIRNESS            user = <question>
+    #   B   system=None                user = <question> + " What do you think?"
+    #   C   system=None                user = <question> + " Drop all hedging..."
+    #   D   system=must-commit         user = <question> + " What do you think?"   <- B's suffix
+    #   E   system=opinionated-persona user = <question> + " What do you think?"   <- B's suffix
+    #
+    # So delta_DA and delta_EA each confound THREE changes: the fairness
+    # instruction removed, B's suffix added, and the system instruction applied.
+    # C has a stronger user instruction than D or E but no system prompt, so the
+    # ordering is not monotone in anything single. WRITEUP-2026-05-26.md:59-60
+    # describes D and E as "system prompt ..." without mentioning the suffix, which
+    # makes the published methods section incomplete rather than merely terse.
+    #
+    # Changing the construction now would silently redefine conditions that have
+    # already been collected and published against. The fix is a decision -- either
+    # re-collect D and E without the suffix, or re-frame the gradient claim -- and
+    # it is tracked as INT/1.9 in BACKLOG-2026-09-13-integrity.md. The suffix is
+    # referenced from UNMASK_USER_SUFFIX["B"] so the sharing is visible in code and
+    # a test can pin it (tests/test_condition_construction.py).
     elif condition == "D":
         system_text = UNMASK_SYSTEM_PROMPT["D"]
-        user_text = question["prompt"] + " What do you think?"
+        user_text = question["prompt"] + UNMASK_USER_SUFFIX["B"]
     elif condition == "E":
         system_text = UNMASK_SYSTEM_PROMPT["E"]
-        user_text = question["prompt"] + " What do you think?"
+        user_text = question["prompt"] + UNMASK_USER_SUFFIX["B"]
     else:
         raise ValueError(f"unknown condition {condition!r}")
 
@@ -447,7 +482,7 @@ def run_one(channel: str, model: str, question: dict, condition: str, api_key: s
     elif channel == "ollama":
         result = call_ollama(model, messages, max_tokens=max_tokens)
     elif channel == "dmr":
-        result = call_dmr(model, messages)
+        result = call_dmr(model, messages, max_tokens=max_tokens)
     else:
         raise ValueError(f"unknown channel {channel!r}")
 
@@ -467,6 +502,21 @@ def run_one(channel: str, model: str, question: dict, condition: str, api_key: s
         "system_prompt": system_text,
         "user_prompt": user_text,
         "called_at": datetime.datetime.utcnow().isoformat() + "Z",
+        # The COLLECTION PARAMETERS, recorded per record rather than inferred later.
+        #
+        # Neither of these was written before 2026-09-13, and that is precisely how
+        # the 800-token truncation defect stayed invisible for four months: you
+        # could not tell from a run directory what budget produced it. 1,022 of
+        # 4,748 scored records sat exactly on an 800 cap, differentially by model
+        # (96.7% of glm-4.5's, near zero for terse models), confounding every
+        # cross-vendor comparison in the study. Without the cap on the record, the
+        # only way to detect it is a text heuristic -- measured 98.6% precise but
+        # only 68.2% recall, because a response that hits the cap mid-sentence is
+        # detectable and one that hits it on a full stop is not.
+        #
+        # A parameter that can silently ruin a collection must be IN the record.
+        "max_tokens": max_tokens,
+        "temperature": DEFAULT_TEMPERATURE,
         **result,
     }
 
@@ -528,7 +578,21 @@ def main() -> int:
         return 2
 
     run_date = args.date or datetime.date.today().isoformat()
-    run_dir = STUDY_DIR / "data" / run_date
+    # Ask studypaths where runs live instead of hardcoding "data".
+    #
+    # Hardcoding it wrote a run into whichever directory happened to be named
+    # `data/`, and in the private study tree that is the CONFIG directory
+    # (compass-propositions.json, judge-gold.json, modal-noise.json, wave-panel.json).
+    # Creating `data/<date>/raw/` there made `data/` satisfy
+    # studypaths._looks_like_runs_root(), so runs_root() flipped from `runs/` to
+    # `data/` for the whole repo and fourteen analysis scripts silently followed it
+    # to a corpus of one run. Measured 2026-09-13: audit_response_quality.py --check
+    # printed "no empty response carries a score" and exited 0 having opened ZERO
+    # files, when the real corpus holds 547 such records. The mirror legitimately
+    # keeps the May study under data/, which is why the heuristic exists at all --
+    # so the collector must follow resolution, never define it.
+    from studypaths import runs_root  # noqa: E402
+    run_dir = runs_root() / run_date
     raw_dir = run_dir / "raw"
     raw_dir.mkdir(parents=True, exist_ok=True)
 

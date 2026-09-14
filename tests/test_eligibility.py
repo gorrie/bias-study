@@ -42,10 +42,26 @@ def test_missing_score_is_neither_eligible_nor_the_defect():
 
 
 def test_partition_is_total_and_disjoint():
+    """ARITY 4 since 2026-09-13: truncation became its own exclusion class.
+
+    Truncated records were previously eligible, which is how 21.5% of the corpus
+    entered published aggregates as measurements. The bucket is separate from
+    scored_empty because the remedies differ -- an empty response needs
+    re-collection or exclusion, a severed one needs a bigger token budget.
+    """
     recs = [rec(3, "a"), rec(3, ""), rec(None, ""), rec(4, "b"), rec(5, "  ")]
-    e, se, us = E.partition(recs)
-    assert len(e) + len(se) + len(us) == len(recs)
-    assert [id(x) for x in e + se + us].count(id(recs[1])) == 1
+    e, se, tr, us = E.partition(recs)
+    assert len(e) + len(se) + len(tr) + len(us) == len(recs)
+    assert [id(x) for x in e + se + tr + us].count(id(recs[1])) == 1
+
+
+def test_partition_separates_truncated_from_empty():
+    long_severed = ("The question turns on scope and remedy in ways that " * 12
+                    + "the office simply did not")
+    recs = [rec(3, "A complete answer."), rec(3, ""), rec(3, long_severed)]
+    e, se, tr, us = E.partition(recs)
+    assert len(e) == 1 and len(se) == 1 and len(tr) == 1
+    assert E.exclusion_reason(recs[2]) == "truncated-response"
 
 
 def test_missingness_reports_per_model_and_condition():

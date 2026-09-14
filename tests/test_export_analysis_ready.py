@@ -92,11 +92,32 @@ def test_eligible_only_still_reports_what_it_removed(tmp_path):
 
 
 def test_the_live_corpus_defect_count_matches_the_independent_audit():
-    """547 is audit_response_quality's headline, reached by a different code path."""
+    """547 is audit_response_quality's headline, reached by a different code path.
+
+    GUARDS A CLASS, NOT THE TOTAL, since 2026-09-13. Truncation became an exclusion
+    reason on that date, so `defect_rows` is now the sum of two defect classes while
+    `audit_response_quality` still counts only the scored-empty one. Comparing the
+    total against 547 would fail for a correct reason, and updating the constant to
+    the new total would destroy the cross-path check this test exists to be.
+    """
     table = list(X.rows(X.corpus_roots()))
     if not table:
         return
     man = X.manifest(table)
-    assert man["defect_rows"] == 547, (
-        "export says %d defect rows; audit_response_quality says 547. Two paths over one "
-        "corpus must agree." % man["defect_rows"])
+    trunc = man["ineligible_by_reason"].get("truncated-response", 0)
+    pre_existing_defects = man["defect_rows"] - trunc
+    assert pre_existing_defects == 547, (
+        "export says %d pre-truncation defect rows; audit_response_quality says 547. "
+        "Two paths over one corpus must agree." % pre_existing_defects)
+
+
+def test_truncated_rows_are_excluded_and_counted_separately():
+    """A severed response is excluded, and NOT pooled with the empty ones."""
+    table = list(X.rows(X.corpus_roots()))
+    if not table:
+        return
+    man = X.manifest(table)
+    trunc = man["ineligible_by_reason"].get("truncated-response", 0)
+    assert trunc > 0, (
+        "no truncated rows found. 21.5% of this corpus sat on an 800-token cap; a "
+        "zero here means the exclusion stopped firing, not that the corpus got clean.")

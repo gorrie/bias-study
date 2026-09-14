@@ -111,6 +111,27 @@ def pctile(vals, q):
     return v[min(i, len(v) - 1)]
 
 
+def pctile_is_max(vals, q):
+    """Is this 'percentile' just the sample maximum?
+
+    With small n, `int(q * len(v))` clamps to the last element, so a p95 or p90
+    IS the largest observation and carries none of the tail behaviour the name
+    implies. Measured: `requantisation` n=13, `presentation order, one sitting,
+    local 2026` n=3 -- both report their own maximum as a threshold, and the
+    requantisation row is what decides the ablation null's verdict.
+
+    `floor_table.summarise()` already computes `small_n` / `p90_is_max` and
+    `ci_str()` refuses to print an uncomputable interval. power.py re-derived the
+    statistic and carried none of that disclosure, so the same number appeared
+    with its caveat in one place and bare in the other.
+    """
+    v = sorted(vals)
+    if not v:
+        return False
+    i = min(int(q * len(v)), len(v) - 1)
+    return i == len(v) - 1
+
+
 #: The barometer's item count. A side or endpoint count cannot exceed it.
 BOUND = 62
 
@@ -234,16 +255,22 @@ def main(argv=None):
         for stat in ("side", "endpoint"):
             vals = d[stat]
             thr = pctile(vals, 1 - ALPHA)
-            rows.append((name, stat, len(vals), thr, mde(vals, thr)))
+            rows.append((name, stat, len(vals), thr, mde(vals, thr),
+                         pctile_is_max(vals, 1 - ALPHA)))
 
     print("DETECTION LIMITS -- what this instrument can resolve, per null, of 62 items")
     print("threshold = reference p95, an order statistic; NOT an alpha=0.05 rejection region")
     print("MDE       = smallest shift with 80% of mass above p95; a design sensitivity,")
     print("            NOT achieved power, and NOT a cutoff for reading an observation")
     print()
-    print("%-28s %-9s %6s %11s %6s" % ("null", "statistic", "pairs", "threshold", "MDE"))
-    for name, stat, n, thr, m in rows:
-        print("%-28s %-9s %6d %11.0f %6.0f" % (name, stat, n, thr, m))
+    print("%-28s %-9s %6s %11s %6s  %s"
+          % ("null", "statistic", "pairs", "threshold", "MDE", "note"))
+    for name, stat, n, thr, m, is_max in rows:
+        # SAY WHEN THE "p95" IS JUST THE LARGEST OBSERVATION. With small n the
+        # percentile index clamps to the last element, so the threshold carries
+        # none of the tail behaviour its name implies.
+        note = "p95 IS THE SAMPLE MAX (n=%d)" % n if is_max else ""
+        print("%-28s %-9s %6d %11.0f %6.0f  %s" % (name, stat, n, thr, m, note))
 
     print()
     print("PUBLISHED NULLS, AUDITED AGAINST THE LIMIT ABOVE")
@@ -268,7 +295,16 @@ def main(argv=None):
             print()
             missing_refs.append(c)
             continue
-        _, _, n, thr, m = match[0]
+        _, _, n, thr, m, thr_is_max = match[0]
+        # A threshold that IS the sample maximum is a measurement limitation, and it
+        # governs the verdict rather than sitting in a footnote. The requantisation
+        # floor (n=13) is exactly this, and it is the reference the ablation null is
+        # judged against -- the single most quotable line this audit produces.
+        if thr_is_max and not c.get("caveat"):
+            c = dict(c)
+            c["caveat"] = ("reference p95 is the sample maximum (n=%d), so the threshold "
+                           "carries no tail behaviour and the comparison is not resolvable"
+                           % n)
         # TWO DIFFERENT QUESTIONS, AND THIS LINE USED TO ASK ONLY THE SECOND ONE.
         #   thr (rejection threshold) -- could this observation have come from the null?
         #                               A calibrated test of the effect that WAS observed.
