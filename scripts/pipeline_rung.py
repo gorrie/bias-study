@@ -46,8 +46,31 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
-PIPELINE_RUN = "2026-05-27-g0dm0d3"
-BASELINE_RUN = "2026-05-25-full"
+#: The CURRENT rung-2 estimate. Changed 2026-09-14 from the 2026-05-27 pair below.
+#:
+#: The superseded pair ran ONE sample per cell and differenced against a baseline
+#: collected two days earlier by a different script, so every contrast was a
+#: difference of two single draws and nothing separated the rung from sampling
+#: noise. It returned 6 contrasts, none excluding zero, and the README published
+#: "all 6 intervals span zero" as the rung-2 finding.
+#:
+#: W13 re-collected both arms at n=5 with a matched same-day baseline. On that
+#: pair, 3 of 8 intervals exclude zero -- grok-4.3 B-Layered vs plain B at
+#: +0.56 [+0.23, +0.85] and B-Layered minus B-STM at +0.48 [+0.26, +0.70], and
+#: claude-opus-4.7 B-Layered minus B-STM at -0.31 [-0.64, -0.01], pointing the
+#: OTHER WAY. So rung 2 is real and model-specific, and the published "spans zero"
+#: sentence is an artifact of n=1, not a null.
+#:
+#: Reading the old pair is still possible and still correct for reproducing what
+#: was published -- pass --pipeline-run/--baseline-run, or HISTORICAL_* below.
+PIPELINE_RUN = "2026-09-13-g0dm0d3-replicate"
+BASELINE_RUN = "2026-09-13-g0dm0d3-replicate-baseline"
+
+#: The n=1 pair the published "all 6 intervals span zero" rests on. Kept named so
+#: reproducing the old number does not require reading a commit.
+HISTORICAL_PIPELINE_RUN = "2026-05-27-g0dm0d3"
+HISTORICAL_BASELINE_RUN = "2026-05-25-full"
+
 BASELINE_CONDITION = "B"
 CONDITIONS = ("B-STM", "B-Parseltongue", "B-Layered")
 BOOTSTRAP_N = 20000
@@ -124,9 +147,32 @@ def _mean_replicates(records, condition=None):
     return means, depth
 
 
+def default_pair():
+    """(pipeline_run, baseline_run, which) -- the best pair PRESENT in this tree.
+
+    The replicated pair is private; the public mirror holds only the n=1 pair. A
+    single hardcoded default therefore either forks the two trees or makes the
+    estimator uncomputable in one of them, and both are worse than resolving it
+    here where the choice can be NAMED.
+
+    `which` is "replicated" or "historical" and travels in the result, so nothing
+    downstream can quote a number without being able to say which collection it
+    came from. A silent fallback would be the same defect as an inherited analysis
+    seed: correct output, unattributable.
+    """
+    if _load(PIPELINE_RUN):
+        return PIPELINE_RUN, BASELINE_RUN, "replicated"
+    return HISTORICAL_PIPELINE_RUN, HISTORICAL_BASELINE_RUN, "historical"
+
+
 def estimate(pipeline_run=None, baseline_run=None):
-    pipeline_run = pipeline_run or PIPELINE_RUN
-    baseline_run = baseline_run or BASELINE_RUN
+    if pipeline_run is None and baseline_run is None:
+        pipeline_run, baseline_run, which = default_pair()
+    else:
+        pipeline_run = pipeline_run or PIPELINE_RUN
+        baseline_run = baseline_run or BASELINE_RUN
+        which = ("replicated" if pipeline_run == PIPELINE_RUN
+                 else "historical" if pipeline_run == HISTORICAL_PIPELINE_RUN else "explicit")
     pipe = _load(pipeline_run)
     base_recs = _load(baseline_run)
     if not pipe:
@@ -143,6 +189,10 @@ def estimate(pipeline_run=None, baseline_run=None):
     models = sorted({m for m, _ in cells})
 
     out = {"run": pipeline_run, "baseline_run": baseline_run, "models": models,
+           # Which collection this estimate came from, so no consumer can quote the
+           # number without being able to name its source. "historical" is the n=1
+           # pair whose every contrast is a difference of two single draws.
+           "pair": which,
            "samples_per_cell": reps[0] if len(reps) == 1 else reps,
            "replicates_ragged": len(reps) > 1,
            "contrasts": []}
@@ -173,15 +223,20 @@ def estimate(pipeline_run=None, baseline_run=None):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--json", action="store_true")
-    ap.add_argument("--pipeline-run", default=PIPELINE_RUN,
-                    help="run holding the B-STM / B-Parseltongue / B-Layered cells")
-    ap.add_argument("--baseline-run", default=BASELINE_RUN,
+    # Defaults resolve through default_pair() rather than being baked into argparse,
+    # which would pin the CLI to a run the public mirror does not hold and print
+    # "not present in this tree" there while the library computed fine.
+    ap.add_argument("--pipeline-run", default=None,
+                    help="run holding the B-STM / B-Parseltongue / B-Layered cells "
+                         "(default: the replicated pair where present, else the n=1 pair)")
+    ap.add_argument("--baseline-run", default=None,
                     help="run holding plain condition B. For a same-sitting baseline, "
                          "pass the run collected alongside the pipeline arm.")
     args = ap.parse_args(argv)
     res = estimate(args.pipeline_run, args.baseline_run)
     if not res:
-        print("pipeline rung %s not present in this tree" % args.pipeline_run)
+        print("pipeline rung %s not present in this tree"
+              % (args.pipeline_run or default_pair()[0]))
         return 2
     if args.json:
         print(json.dumps(res, indent=2))
@@ -193,7 +248,12 @@ def main(argv=None):
     else:
         depth = "%s sample(s) per cell, averaged within cell" % spc
     print("%d models, %s." % (len(res["models"]), depth))
-    print("pipeline run: %s   baseline run: %s" % (res["run"], res["baseline_run"]))
+    print("pipeline run: %s   baseline run: %s   [%s pair]"
+          % (res["run"], res["baseline_run"], res.get("pair", "?")))
+    if res.get("pair") == "historical":
+        print("  NOTE: this tree holds only the n=1 pair, so every contrast below is a "
+              "difference of two single draws. The replicated pair measures 3 of 8 "
+              "intervals excluding zero -- see PENDING-PUBLICATION-2026-09-14.md.")
     print("Positive = more institution-skeptical.\n")
     print("  %-26s %-28s %3s %8s %-18s" % ("model", "contrast", "n", "effect", "95% interval"))
     for c in res["contrasts"]:

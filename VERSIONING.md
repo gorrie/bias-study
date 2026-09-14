@@ -63,7 +63,7 @@ loses the priority date would cost more than it buys.
 
 Corrections are therefore **additive**. Every claim this study published and then withdrew is in
 `CORRECTIONS.md` with the date it went out, the date it came back, and what replaced it —
-**14 entries** as of 2026-09-12. This said seven for as long as there were fourteen, which
+**15 entries** as of 2026-09-14. This said seven for as long as there were fourteen, which
 is a small irony in a file arguing that the record has to be additive: the count was typed once
 and the entries kept arriving. The commits that carried the retracted claims stay in the log.
 

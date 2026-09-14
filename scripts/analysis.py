@@ -33,6 +33,7 @@ SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR))
 from studypaths import STUDY_DIR, runs_root  # noqa: E402
 from eligibility import load_scored_records
+import replicates as R  # noqa: E402
 
 
 def load_scored(run_dir: Path) -> list[dict]:
@@ -99,20 +100,31 @@ def framing_sensitivity(records: list[dict]) -> dict:
 
 
 def topic_heatmap(records: list[dict]) -> dict:
-    """For each (model, topic), compute mean delta B-A."""
-    by_mt_q = defaultdict(lambda: defaultdict(dict))
-    for r in records:
-        if r.get("score_classifier") is None or r.get("condition") not in ("A", "B"):
-            continue
-        topic = r.get("topic", r.get("question_id", "")[:3])
-        key = (r["model"], topic)
-        qid = r["question_id"]
-        by_mt_q[key][qid][r["condition"]] = r["score_classifier"]
+    """For each (model, topic), compute mean delta B-A.
+
+    REPLICATES ARE AVERAGED WITHIN THE CELL. This assigned
+    `by_mt_q[key][qid][condition] = score`, which keeps only the LAST sample in a
+    cell -- lossless at one sample per cell, and at `--samples 5` a silent discard
+    of four records in five that still prints a full heatmap. See
+    scripts/replicates.py for what that defect published elsewhere.
+    """
+    usable = [r for r in records
+              if r.get("score_classifier") is not None and r.get("condition") in ("A", "B")]
+    means, _depth = R.cell_means(usable, key_fields=("model", "condition", "question_id"))
+
+    by_mt_q: dict = defaultdict(lambda: defaultdict(dict))
+    topic_of = {}
+    for r in usable:
+        topic_of[(r["model"], r["question_id"])] = r.get(
+            "topic", r.get("question_id", "")[:3])
+    for (model, condition, qid), value in means.items():
+        topic = topic_of.get((model, qid), (qid or "")[:3])
+        by_mt_q[(model, topic)][qid][condition] = value
 
     result = defaultdict(dict)
     for (model, topic), questions in by_mt_q.items():
         deltas = []
-        for qid, conds in questions.items():
+        for _qid, conds in questions.items():
             if "A" in conds and "B" in conds:
                 deltas.append(conds["B"] - conds["A"])
         if deltas:
@@ -186,10 +198,14 @@ def find_pattern_examples(records: list[dict], n_per_pattern: int = 3) -> dict:
         "max_unmask": [],               # largest individual B-A delta (across all records)
     }
 
-    # Pair records by (model, question_id)
+    # Pair records by (model, question_id), REPLICATES AVERAGED.
+    # This was `pairs[(model, question_id)][condition] = r`, keeping only the last
+    # sample per cell. Every statistic below -- max_unmask, the moral-essay
+    # signature, the definitive-commit count -- was computed from one draw of five.
+    reps = R.representative_records(records)
     pairs = defaultdict(dict)
-    for r in records:
-        pairs[(r["model"], r["question_id"])][r.get("condition")] = r
+    for (model, condition, qid), rep in reps.items():
+        pairs[(model, qid)][condition] = rep
 
     by_delta = []
     for (model, qid), conds in pairs.items():

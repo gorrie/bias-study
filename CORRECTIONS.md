@@ -466,6 +466,14 @@ another **relocates the confound rather than removing it**, because what was exc
 missing at random. Restricting to cells with at least eight scored questions moves the class gap
 again, to +0.210 against −0.508, and drops two models entirely.
 
+**The same exclusion quietly changed a count elsewhere.** The rung-2 paragraph in the README said
+the arm had **eight** intervals, none excluding zero. Enforcing the truncation rule removed Claude
+Opus 4.7's two `B-Layered` cells from the eligible set, so two contrasts stopped being computable
+and `pipeline_rung.py` has printed **six** ever since while the prose kept saying eight. Corrected
+2026-09-14. The direction is unaffected — none of the six excludes zero — but a hand-typed count
+sitting beside a generated one is exactly the pairing this project keeps finding stale, and
+`key_numbers.py --check-release` is what caught it.
+
 **Disposition.** The published per-model deltas for this run are **withdrawn**. The regenerated
 ones are **provisional** and carry their sample counts wherever they are quoted. Neither number
 settles the vendor-class question; only re-collection at a token cap that does not truncate can,

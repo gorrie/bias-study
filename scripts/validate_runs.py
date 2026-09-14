@@ -37,28 +37,64 @@ from studypaths import LEGACY_SEED, resolve_run, run_roots  # noqa: E402
 FROZEN_PREFIX = "2026-05-"
 
 
-def count_records(d: Path) -> tuple[int, int]:
-    """(model files, records) under raw/."""
-    raw = d / "raw"
-    if not raw.is_dir():
-        return 0, 0
-    files = sorted(raw.glob("*.jsonl"))
-    n = 0
-    for f in files:
-        with f.open(encoding="utf-8") as fh:
-            n += sum(1 for line in fh if line.strip())
-    return len(files), n
+def count_records(d: Path) -> tuple[int, int, str]:
+    """(model files, records, layout) -- finding records WHEREVER this run keeps them.
+
+    This read `raw/` only and returned (0, 0) for anything else, so every run in the
+    flat collector layout was reported as "0 model file(s), 0 record(s) on disk".
+    `runs/2026-09-05-wave` holds 124 files. Reporting a layout it cannot read as an
+    empty run is the same defect this validator exists to catch, pointed inward: a
+    check that examined nothing and printed a number as though it had.
+
+    Layouts, in the order tried:
+      "raw"    raw/*.jsonl                     -- the manifest collector
+      "flat"   *.jsonl at the top level        -- the Aug-Sep barometer collector
+      "nested" */*.jsonl one level down        -- calibration/<model>/<model>__C.jsonl
+      "none"   no records anywhere
+    """
+    for layout, paths in (
+        ("raw", sorted((d / "raw").glob("*.jsonl")) if (d / "raw").is_dir() else []),
+        ("flat", sorted(d.glob("*.jsonl"))),
+        ("nested", sorted(d.glob("*/*.jsonl"))),
+    ):
+        if not paths:
+            continue
+        n = 0
+        for f in paths:
+            try:
+                with f.open(encoding="utf-8", errors="replace") as fh:
+                    n += sum(1 for line in fh if line.strip())
+            except OSError:
+                continue
+        return len(paths), n, layout
+    return 0, 0, "none"
 
 
 def inspect(d: Path) -> dict:
     out = {"run": d.name, "findings": []}
-    files, records = count_records(d)
+    files, records, layout = count_records(d)
     out["model_files"] = files
     out["records"] = records
+    out["layout"] = layout
     out["scored"] = (d / "scored").is_dir()
 
     mf = d / "manifest.json"
     if not mf.is_file():
+        # A MISSING manifest is only a defect where a manifest was ever written.
+        # The flat and nested collector layouts never had one, and the root-level
+        # skip that used to spare them broke the moment `runs/` became MIXED --
+        # run_study.py started writing manifests there, the root became "covered",
+        # and 30 flat runs were reported as defects on a discipline they predate.
+        # Classification is per directory now, because a root is not a layout.
+        if not _is_manifest_layout(d):
+            out["findings"].append({
+                "code": "not-manifest-layout",
+                "severity": "unvalidated",
+                "detail": (f"{layout} collector layout: {files} file(s), {records} record(s). "
+                           "No manifest discipline exists for this layout, so this run is "
+                           "NOT VALIDATED rather than clean."),
+            })
+            return out
         out["findings"].append({
             "code": "no-manifest",
             "detail": f"no manifest.json; {files} model file(s), {records} record(s) on disk",
@@ -217,11 +253,18 @@ def main(argv: list[str]) -> int:
         print(json.dumps(reports, indent=1))
     else:
         live_total = known_total = 0
+        unvalidated = []
         for r in reports:
             head = (f"{r['run']:<34} files={r['model_files']:>2} records={r['records']:>5} "
                     f"scored={'y' if r['scored'] else 'n'}")
             if not r["findings"]:
                 print(f"  ok   {head}")
+                continue
+            # An unvalidated layout is not a defect and not a pass. Counting it as
+            # either is how 38 layout mismatches buried 5 real findings.
+            if all(f.get("severity") == "unvalidated" for f in r["findings"]):
+                unvalidated.append(r)
+                print(f"  --   {head}   [{r.get('layout')} layout, not validated]")
                 continue
             print(f"  {'FLAG' if r['_live'] else 'known'}  {head}")
             for f in r["_live"]:
@@ -233,6 +276,11 @@ def main(argv: list[str]) -> int:
                 known_total += 1
         print(f"\n{live_total} live finding(s) and {known_total} known one(s) "
               f"across {len(reports)} run(s)")
+        if unvalidated:
+            recs = sum(r["records"] for r in unvalidated)
+            print(f"{len(unvalidated)} run(s) holding {recs} record(s) use a collector layout "
+                  f"with NO manifest discipline, so they are NOT VALIDATED -- not clean. "
+                  f"Building manifests for them is the only way this number goes down.")
         if known_total:
             print("Known findings are enumerated in validate_runs.KNOWN with the reason each "
                   "is not a defect in the data.")

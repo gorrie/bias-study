@@ -33,7 +33,7 @@
 *Every number above recomputes: `python scripts/key_numbers.py`,
 `python scripts/controls_audit.py --gaps`, `python scripts/ablation_analysis.py`. Read
 [CORRECTIONS.md](CORRECTIONS.md) before quoting any of them — this study has withdrawn,
-narrowed or corrected **14** claims of its own, and says which, when, and what replaced each.*
+narrowed or corrected **15** claims of its own, and says which, when, and what replaced each.*
 
 > **`v1`, `v2` and `v3` in this repository name the three intervention rungs — prompt edit,
 > elicitation pipeline, weight ablation — not releases.** Releases are dated. See
@@ -60,16 +60,27 @@ spine is that **force-escalation ladder**:
 | Rung | Force | Tooling | Result |
 |------|-------|---------|--------|
 | **1. Prompt** | remove the fairness instruction; A→E unmask gradient | OpenRouter / Ollama | the lean unmasks, dose-responsively |
-| **2. Pipeline** | hedge-strip + obfuscation, layered | G0DM0D3 server | **no effect established** — all 8 intervals span zero at n=1 per cell |
+| **2. Pipeline** | hedge-strip + obfuscation, layered | G0DM0D3 server | **no effect established here** — all 6 intervals span zero at n=1 per cell |
 | **3. Weights** | ablate the refusal direction | OBLITERATUS (fp16) | text rewrites ~70%, stance does **not** move |
 
 **Rung 2 establishes nothing, and the table says so.** `scripts/pipeline_rung.py` estimates the
-arm paired per question against plain condition B: **not one of its eight intervals excludes
+arm paired per question against plain condition B: **not one of its six intervals excludes
 zero.** The strongest is Grok 4.3's layered stack at +0.60, whose lower bound is exactly zero;
 Claude Opus 4.7's two single-technique arms measure +0.00. No ceiling was located, which three
-points on one axis cannot do at any sample size. Re-collection at five samples per cell with a
-same-sitting baseline is pre-registered and queued. Rungs 1 and 3 carry this study's weight;
-[LESSONS.md](LESSONS.md) §3 records how the original claim survived four months.
+points on one axis cannot do at any sample size.
+
+**Six, not eight** — this paragraph said eight until 2026-09-14. Enforcing the truncation rule
+removed Claude Opus 4.7's two `B-Layered` cells from the eligible set, so two of the eight
+contrasts stopped being computable and the count in the prose was never updated. The tool has
+printed six the whole time. Nothing about the direction changes; the claim was always that none
+of them excludes zero.
+
+**This arm has since been re-collected at five samples per cell and it is NOT a null there** —
+three of eight intervals exclude zero and the two models move in opposite directions. That
+result is not published here yet because its run is not in this repository, and a number a
+reader cannot recompute is the defect this study spends its time complaining about. Rungs 1 and
+3 carry this study's weight; [LESSONS.md](LESSONS.md) §3 records how the original claim survived
+four months.
 
 The result is also robust to the obvious reviewer attack on LLM-as-judge studies. The same
 data was re-scored under five materially different judging procedures, including one with
@@ -573,7 +584,7 @@ review and the objection→fix map are in **`ADVERSARIAL-REVIEW.md`**.
 
 | Question | Where |
 |---|---|
-| Which numbers has this study withdrawn or narrowed? | [`CORRECTIONS.md`](CORRECTIONS.md) — 14 entries, dated |
+| Which numbers has this study withdrawn or narrowed? | [`CORRECTIONS.md`](CORRECTIONS.md) — 15 entries, dated |
 | What does it say about other people's work, and on what evidence? | [`PRIOR-WORK-CORRECTIONS.md`](PRIOR-WORK-CORRECTIONS.md) |
 | What was fixed *before* the data was collected? | [`prereg/`](prereg/) — six plans, one with its stopping rule enforced in code |
 | Which controls does each audited study run? | [`data/controls-audit.json`](data/controls-audit.json) → `python scripts/controls_audit.py` |

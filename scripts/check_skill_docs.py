@@ -54,6 +54,13 @@ SKILLS = os.path.join(ROOT, "skills")
 #: Scripts that are deliberately not part of any procedure. Each needs a reason, so that
 #: adding one is a decision rather than a way to quiet the report.
 NOT_A_PROCEDURE = {
+    "replicates.py": "a LIBRARY, not a procedure -- the single implementation of "
+                     "'average the replicates in a cell', imported by aggregate, analysis, "
+                     "pipeline_rung, frame_gap and abliteration_effect_check. It has no main() "
+                     "and nothing to run. It exists because that three-line grouping shipped in "
+                     "six scripts and was fixed one call site at a time, so the last three "
+                     "survived; naming it in a skill would imply an operator step where there "
+                     "is none",
     "add_controls_2026_09.py": "one-shot migration, run once with --apply on 2026-09-05 to add "
                                "four columns to the audit matrix. Kept because its docstring is "
                                "the record of WHY those four are columns and why every external "

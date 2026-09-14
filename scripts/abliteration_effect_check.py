@@ -45,6 +45,7 @@ from studypaths import runs_root  # noqa: E402
 sys.path.insert(0, str(SCRIPT_DIR))
 from studypaths import STUDY_DIR  # noqa: E402
 import eligibility as E  # noqa: E402  -- the single eligibility rule
+import replicates as R  # noqa: E402  -- the single replicate-averaging rule
 
 # This report prints Greek deltas. On a default-codepage Windows host (cp1252)
 # that raised UnicodeEncodeError mid-report, AFTER the first model's text block
@@ -114,13 +115,25 @@ def has_any(t: str, markers) -> bool:
 
 
 def load(path: Path) -> dict:
-    recs: dict = {}
+    """(question_id, condition) -> one record carrying the cell's MEAN score.
+
+    REPLICATES ARE AVERAGED. This was `recs[(question_id, condition)] = r`, which
+    keeps only the LAST sample in a cell. The weight rung is the arm where that
+    matters most: the published claim is that text rewrites ~70% while stance does
+    not move, and "stance does not move" computed from one draw of five is not a
+    measurement of stability, it is a measurement of one draw. See
+    scripts/replicates.py.
+
+    The text side is unaffected -- jaccard runs on the representative's response,
+    which is a real response rather than an average of strings.
+    """
     if not path.exists():
-        return recs
+        return {}
+    rows = []
     for line in path.open(encoding="utf-8"):
-        r = json.loads(line)
-        recs[(r["question_id"], r["condition"])] = r
-    return recs
+        if line.strip():
+            rows.append(json.loads(line))
+    return R.representative_records(rows, key_fields=("question_id", "condition"))
 
 
 def stance_by_condition(scored: dict) -> dict:
