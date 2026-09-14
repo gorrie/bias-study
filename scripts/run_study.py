@@ -289,7 +289,18 @@ def _call_openrouter_once(model: str, messages: list[dict], api_key: str,
         if not r.ok:
             return {"ok": False, "error": f"HTTP {r.status_code}: {r.text[:300]}", "latency_ms": latency_ms}
         d = r.json()
-        choice = d.get("choices", [{}])[0]
+        # A 200 WITH NO `choices` IS A PROVIDER FAILURE, NOT AN EMPTY ANSWER.
+        # `d.get("choices", [{}])[0]` degraded a missing list to [{}], so the record
+        # came back ok=True with response_text="" -- and because `ok` was true the
+        # retry loop short-circuited. A recoverable outage was recorded as a completed
+        # call and attributed to the model as missing data. Eligibility catches these
+        # before they reach a mean, so no published number moves; what it corrupts is
+        # the ok/failed tally and the retry that would have got the real answer.
+        if not isinstance(d.get("choices"), list) or not d["choices"]:
+            return {"ok": False, "latency_ms": latency_ms, "transient": True,
+                    "error": "200 with no choices: %s"
+                             % json.dumps(d.get("error") or d)[:300]}
+        choice = d["choices"][0]
         text = choice.get("message", {}).get("content", "") or ""
         usage = d.get("usage", {})
         return {
@@ -394,7 +405,18 @@ def call_dmr(model: str, messages: list[dict], timeout: int = 300,
         if not r.ok:
             return {"ok": False, "error": f"HTTP {r.status_code}: {r.text[:300]}", "latency_ms": latency_ms}
         d = r.json()
-        choice = d.get("choices", [{}])[0]
+        # A 200 WITH NO `choices` IS A PROVIDER FAILURE, NOT AN EMPTY ANSWER.
+        # `d.get("choices", [{}])[0]` degraded a missing list to [{}], so the record
+        # came back ok=True with response_text="" -- and because `ok` was true the
+        # retry loop short-circuited. A recoverable outage was recorded as a completed
+        # call and attributed to the model as missing data. Eligibility catches these
+        # before they reach a mean, so no published number moves; what it corrupts is
+        # the ok/failed tally and the retry that would have got the real answer.
+        if not isinstance(d.get("choices"), list) or not d["choices"]:
+            return {"ok": False, "latency_ms": latency_ms, "transient": True,
+                    "error": "200 with no choices: %s"
+                             % json.dumps(d.get("error") or d)[:300]}
+        choice = d["choices"][0]
         text = choice.get("message", {}).get("content", "") or ""
         usage = d.get("usage", {})
         return {
@@ -546,6 +568,10 @@ def main() -> int:
                              "reasoning models; use 4000+ when re-collecting those.")
     parser.add_argument("--samples", type=int, default=1,
                         help="N samples per (model, question, condition) for variance bounding. Default: 1")
+    parser.add_argument("--overwrite", action="store_true",
+                        help="replace existing raw records for this --date. Without it the "
+                             "run refuses rather than silently replacing records the manifest "
+                             "would still count.")
     parser.add_argument("--dry-run", action="store_true", help="Print plan, do not call APIs")
     args = parser.parse_args()
 
@@ -655,6 +681,41 @@ def main() -> int:
             manifest[key] = merged
         manifest["total_calls_planned"] = (prior.get("total_calls_planned") or 0) + total_calls
         manifest["prior_calls_completed"] = prior.get("calls_completed", 0)
+
+    # REFUSE TO DESTROY RECORDS, rather than silently overwriting them.
+    #
+    # Two ways this collector used to lose data without a word:
+    #
+    #  1. Re-running with the same --date. Each model's file is opened "w", so a
+    #     second invocation replaced the first's records -- while the manifest
+    #     block above deliberately MERGES and counts both. Executed: two runs of
+    #     one model, disk holds 2 records (all from the second), manifest claims 4.
+    #     Any run directory with more than one invocation is suspect.
+    #  2. Two channels serving the same model id. safe_filename() drops the
+    #     channel, so `openrouter:X` and `ollama:X` collide onto one file and the
+    #     second wins entirely. DEFAULT_FRONTIER exists precisely to contrast
+    #     cloud and local copies of one family, so this is not hypothetical.
+    #
+    # Both now stop the run before a call is made. --overwrite is the deliberate
+    # escape hatch; there is no accidental one.
+    planned = {}
+    for channel, model in models:
+        fn = f"{safe_filename(model)}.jsonl"
+        if fn in planned:
+            print(f"ERROR: {planned[fn]}:{model} and {channel}:{model} both write "
+                  f"{fn} -- the channel is not in the filename, so the second would "
+                  f"silently replace the first. Run them as separate --date runs.",
+                  file=sys.stderr)
+            return 2
+        planned[fn] = channel
+        existing = raw_dir / fn
+        if existing.exists() and existing.stat().st_size > 0 and not args.overwrite:
+            n_existing = sum(1 for _ in existing.open(encoding="utf-8") if _.strip())
+            print(f"ERROR: {existing} already holds {n_existing} record(s). This run "
+                  f"would REPLACE them, while the manifest merges and counts both. "
+                  f"Use a new --date, or --overwrite if replacing them is intended.",
+                  file=sys.stderr)
+            return 2
 
     completed = 0
     fail_count = 0

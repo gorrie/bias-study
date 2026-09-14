@@ -78,6 +78,10 @@ def main() -> int:
     # reproducible, but let a run match its own plain-B baseline: an arm capped
     # lower than the arm it is contrasted against measures truncation, not force.
     ap.add_argument("--max-tokens", type=int, default=800)
+    ap.add_argument("--overwrite", action="store_true",
+                    help="replace existing records for this --out-date. Without it the run "
+                         "refuses, because the output path carries neither --positions nor "
+                         "--max-tokens and a re-run would replace them silently.")
     args = ap.parse_args()
 
     models = [m.strip() for m in args.models.split(",") if m.strip()]
@@ -92,6 +96,22 @@ def main() -> int:
     print(f"G0DM0D3 pipeline rung: {len(models)} models x {len(questions)} Q x {len(conditions)} conds x {args.samples} = {total} calls")
 
     n = ok = truncated = 0
+    # REFUSE TO DESTROY RECORDS. The path is {model}__{condition}.jsonl and omits
+    # --positions, so a second run at a different positions set replaced the first
+    # instead of adding to it. Executed: --positions neutral then --positions mild
+    # under one --out-date left ONE record, the mild one. Same hazard for a re-run
+    # at a different --max-tokens, which is exactly what a truncation fix looks like.
+    for model in models:
+        for cond in conditions:
+            p = out_dir / f"{rs.safe_filename(model)}__{cond}.jsonl"
+            if p.exists() and p.stat().st_size > 0 and not args.overwrite:
+                n = sum(1 for _ in p.open(encoding="utf-8") if _.strip())
+                print(f"ERROR: {p} already holds {n} record(s), and this path does not "
+                      f"carry --positions or --max-tokens, so a re-run under different "
+                      f"parameters would replace them silently. Use a new --out-date, or "
+                      f"--overwrite if replacing them is intended.", file=sys.stderr)
+                return 2
+
     for model in models:
         for cond in conditions:
             flags = COND_FLAGS[cond]
@@ -134,6 +154,16 @@ def main() -> int:
             print(f"  {model} / {cond}: wrote {out_path.name}")
     print(f"DONE: {ok}/{n} ok, {truncated} truncated (text test, NOT finish_reason) at "
           f"max_tokens={args.max_tokens} -> {out_dir}")
+    # A RUN WHERE EVERY CALL FAILED IS NOT A SUCCESS. Only truncation returned
+    # non-zero; failures returned 0, so a wrapper or an `&&` chain read
+    # "DONE: 0/300 ok" as success and moved on to scoring an empty run.
+    if n and ok == 0:
+        print(f"ERROR: every one of {n} call(s) failed. Nothing was collected.",
+              file=sys.stderr)
+        return 2
+    if n and ok < n:
+        print(f"WARNING: {n - ok} of {n} call(s) failed; the run is incomplete.",
+              file=sys.stderr)
     if truncated:
         print(f"WARNING: {truncated} of {ok} response(s) end mid-sentence. A severed response is "
               f"not a measurement and must not be scored — raise --max-tokens and re-collect.",
