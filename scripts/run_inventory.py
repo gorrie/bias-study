@@ -152,7 +152,30 @@ def main(argv=None):
             print("  %-44s %6d rec" % (r["run"], r["records"]))
         return 1
     if a.check:
-        print("run inventory: every directory accounted for")
+        # SAY WHAT WAS CHECKED AND HOW MANY. In --check mode this printed a bare
+        # "every directory accounted for" and exited 0 -- no WHAT, no HOW MANY --
+        # so it read identically over 63 run directories and over none. Pointed at
+        # an empty tree it passed.
+        n_dirs = len(rows)
+        n_records = sum(r.get("records", 0) for r in rows)
+        if not n_dirs:
+            print("run inventory: CHECKED NOTHING -- 0 run directories found under runs/.")
+            print("This is NOT a pass. Wrong tree, wrong run root, or an empty corpus.")
+            return 1
+        print("run inventory: every directory accounted for -- %d directories, %d records"
+              % (n_dirs, n_records))
+        # SCOPE DISCLOSURE. scan() globs `runs/*` ONLY. In the public mirror the May
+        # corpus behind the published table lives under data/, so this gate has
+        # never covered it and never said so.
+        import glob as _glob
+        data_dirs = [p for p in sorted(_glob.glob(os.path.join(STUDY, "data", "*")))
+                     if os.path.isdir(p) and (os.path.isdir(os.path.join(p, "raw"))
+                                              or os.path.isdir(os.path.join(p, "scored")))]
+        if data_dirs:
+            print("  NOT COVERED: %d run-shaped director(y/ies) under data/ are outside this"
+                  % len(data_dirs))
+            print("  gate's scope (it globs runs/* only): %s"
+                  % ", ".join(os.path.basename(p) for p in data_dirs[:5]))
     return 0
 
 

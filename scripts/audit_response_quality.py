@@ -112,6 +112,20 @@ def main(argv=None):
         print("no empty response carries a score.")
 
     if a.check:
+        # A CLEAN BILL OF HEALTH OVER ZERO RECORDS IS NOT A PASS.
+        #
+        # This printed "no empty response carries a score." and returned 0 having
+        # opened no files at all -- which is exactly what it did on 2026-09-13 while
+        # studypaths.runs_root() was pointing at a corpus of one run. The real
+        # corpus holds 547 such records. The count was printed (0) and the exit code
+        # said fine, so the half that anyone automates on was the wrong half.
+        total_records = sum(c["records"] for c in per_method.values())
+        if not total_records:
+            print("")
+            print("CHECKED NOTHING -- 0 scored records were readable. This is NOT a pass.")
+            print("Wrong run root, wrong tree, or an empty corpus. Set STUDY_RUN_LAYOUT or")
+            print("check that scored/ directories exist before trusting any verdict here.")
+            return 1
         return 1 if tot else 0
     return 0
 
