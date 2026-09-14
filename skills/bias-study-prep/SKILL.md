@@ -94,6 +94,24 @@ inside its own correction would keep the gate red forever.)*
    the floor tool carried a hardcoded list of run directories and a new directory is
    invisible to an include list by construction. Both times the collection looked successful
    and the row did not move. A pair count taken beforehand makes that a subtraction.
+5b. **Name the parameter that will silently ruin this collection, and say how you checked it.**
+   `COLLECTION-STANDARD.md` §4 asks exactly this, and for four months nothing executed it. The
+   answer in May was the token budget: `run_study.py`'s default of 800 truncated 21.5% of the
+   corpus, differentially by model — 96.7% of one model's records against near zero for terse
+   ones — and nothing recorded the cap, so it could not even be detected after the fact.
+
+   Concretely, before a wave:
+   - **Smoke one cell and measure the OUTPUT LENGTH, not just the exit code.** If the longest
+     response lands near the cap, the cap is the parameter, and the next model is more verbose
+     than this one.
+   - **Never trust `finish_reason`.** Through the G0DM0D3 proxy it reports `"stop"` on responses
+     severed mid-word, because the proxy rewrites the body and drops the upstream reason. Check
+     the text.
+   - **Record the parameters on every record** (`max_tokens`, `temperature`). A run directory
+     that cannot say what produced it cannot be audited later.
+   - Then run `scripts/collection_check.py <run>` on the smoke output. It is §4 made
+     executable, and it refuses rather than warning.
+
 6. **Verify the heavier toolchain only if those rungs are in scope:**
    - Pipeline rung: the G0DM0D3 server starts and answers a health check.
    - Weight rung: the OBLITERATUS CLI imports inside the GPU image, the GPU is visible to

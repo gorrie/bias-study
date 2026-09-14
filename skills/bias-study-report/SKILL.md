@@ -10,6 +10,26 @@ run. Companion: `README.md` and the writeup in `results/` for the framing each n
 
 ## Prerequisites
 
+- **The run has passed `scripts/collection_check.py <run>`.** Run it BEFORE scoring, not after.
+  It exits non-zero when a collection is not fit to score, and its blockers are the defects that
+  cost this study four months:
+
+  ```bash
+  python scripts/collection_check.py 2026-09-13-g0dm0d3-replicate
+  ```
+
+  Run against the May pipeline wave it produces three blockers — no `max_tokens` recorded, 16.7%
+  of responses severed mid-sentence, and truncation **differential** at 33.3% for one model
+  against 0.0% for the other. Any one of those makes the arm unmeasurable, and all three were
+  present while the run looked completely successful. A collection that fails this gate does not
+  get judge calls spent on it.
+
+  The differential check is the one people skip. A uniform truncation rate is a limitation you
+  can disclose; a rate that varies by model is a **confound**, because truncation tracks
+  verbosity, and excluding the records relocates the problem into the denominator rather than
+  removing it. Measured on this corpus, exclusion removed 94.1% of one vendor class's records
+  and 0.0% of another's. There is no filter that repairs that — only re-collection.
+
 - A scored run under `data/<run>/` (i.e. `scripts/score.py` has produced `scored/*.jsonl`). If
   the run is unscored, score it first.
 - Python 3.11+ and the repo deps. The analysis steps are pure-Python and need no API budget, so
