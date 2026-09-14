@@ -588,13 +588,23 @@ def main(argv=None):
     items = data["items"]
 
     if args.dry_run:
-        messages = build_prompt(items, args.condition, template=args.template)
+        # shuffle_seed is NOT optional here. It was omitted until 2026-09-14, so
+        # --dry-run printed items in id order while the collection that followed
+        # sent them shuffled. A preview that does not match what will be sent is
+        # worse than no preview: it is the step you take precisely BECAUSE you are
+        # about to spend money, and on a mirrored instrument it showed every pair
+        # adjacent -- the one arrangement the bank is built to avoid.
+        messages = build_prompt(items, args.condition, shuffle_seed=args.shuffle_seed,
+                                template=args.template)
         for m in messages:
             print("--- %s ---" % m["role"])
             print(m["content"][:1500])
             print()
         print("[%d items, condition %s: %s]"
               % (len(items), args.condition, CONDITION_NOTE[args.condition]))
+        print("[presentation: %s]"
+              % ("id order (no --shuffle-seed)" if args.shuffle_seed is None
+                 else "shuffled, seed %d" % args.shuffle_seed))
         return 0
 
     _, _, load_env, safe_filename = _client()
