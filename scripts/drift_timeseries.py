@@ -155,6 +155,44 @@ def collect_all_runs(runs: list[str] | None) -> list[dict]:
     return all_rows
 
 
+#: Run-name fragment -> the PROTOCOL that run measured. A "vendor arc" pooled
+#: across protocols is not a time series of one quantity.
+PROTOCOL_MARKERS = (
+    ("ood", "out-of-distribution"),
+    ("paraphrase", "paraphrase"),
+    ("reversed-premise", "reversed-premise"),
+    ("unmask-gradient", "dose-gradient"),
+    ("abliteration", "abliteration"),
+    ("g0dm0d3", "pipeline-rung"),
+    ("cn-expansion", "baseline-A/B"),
+    ("variance", "baseline-A/B"),
+    ("augmentation", "baseline-A/B"),
+    ("timeseries", "baseline-A/B"),
+    ("recollect", "baseline-A/B"),
+    ("full", "baseline-A/B"),
+)
+
+
+def protocol_of(run_date: str) -> str:
+    """Which protocol produced this run? Read from the run name, not assumed.
+
+    The arc used to pool SIX protocols into one line with no protocol column:
+    baseline A/B, out-of-distribution, paraphrase, reversed-premise, a five-level
+    dose gradient (A vs B only) and abliteration arms. Measured on the shipped
+    data, claude-opus-4.7 contributes +0.60 (a dose step), +0.50 (OOD) and +0.70
+    (reversed-premise) as three separate "measurements" of ONE version -- averaged
+    into the arc, and into the noise the arc is then said to clear.
+
+    Those are three different questions with three different expected effects.
+    Averaging them is not a longitudinal measurement of anything.
+    """
+    name = (run_date or "").lower()
+    for marker, proto in PROTOCOL_MARKERS:
+        if marker in name:
+            return proto
+    return "unclassified"
+
+
 def build_drift_timeseries(rows: list[dict]) -> dict:
     """Group by family, sort by version, emit arc data."""
     by_family: dict[str, list[dict]] = defaultdict(list)
@@ -179,13 +217,24 @@ def build_drift_timeseries(rows: list[dict]) -> dict:
             "model_class": r.get("model_class"),
             "n_questions": r.get("n_questions_scored"),
             "run_date": r.get("run_date"),
+            "protocol": protocol_of(r.get("run_date")),
         })
 
     # Sort each family by sort_key
     for family in by_family:
         by_family[family].sort(key=lambda x: x["sort_key"])
 
-    return {"families": dict(by_family), "unmatched": unmatched}
+    # WHICH ARCS POOL PROTOCOLS? Reported, not silently averaged. An arc built from
+    # more than one protocol is not a time series of a single quantity, and the
+    # caller has to be told which ones they are.
+    mixed = {}
+    for family, entries in by_family.items():
+        protos = sorted({e["protocol"] for e in entries})
+        if len(protos) > 1:
+            mixed[family] = protos
+
+    return {"families": dict(by_family), "unmatched": unmatched,
+            "protocol_mixed_families": mixed}
 
 
 def write_csv(rows: list[dict], path: Path) -> None:
@@ -223,8 +272,17 @@ def write_vendor_arcs_md(families: dict, path: Path) -> None:
             continue  # nothing to show at all
         lines.append(f"## {family} ({len(distinct)} version(s), {len(versions)} measurements)")
         lines.append("")
-        lines.append("| version | model | mean A | mean B | Delta(B-A) | n questions | run |")
-        lines.append("|---------|-------|-------:|-------:|----------:|------------:|-----|")
+        # .get(), because a caller may hand-build rows (the tests do) and a missing
+        # protocol must degrade to "unclassified" rather than raise.
+        protos = sorted({v.get("protocol", "unclassified") for v in versions})
+        if len(protos) > 1:
+            lines.append("> **POOLS %d PROTOCOLS: %s.** These measure different questions with "
+                         "different expected effects, so the arc below is not a time series of "
+                         "one quantity. Read the protocol column before comparing any two rows."
+                         % (len(protos), ", ".join(protos)))
+            lines.append("")
+        lines.append("| version | protocol | model | mean A | mean B | Delta(B-A) | n questions | run |")
+        lines.append("|---------|----------|-------|-------:|-------:|----------:|------------:|-----|")
         for v in versions:
             dlt = v["mean_delta_AB"]
             a = v["mean_score_A"]
@@ -233,7 +291,7 @@ def write_vendor_arcs_md(families: dict, path: Path) -> None:
             b_str = f"{b:.2f}" if b is not None else "-"
             dlt_str = f"{dlt:+.2f}" if dlt is not None else "-"
             lines.append(
-                f"| {v['version_label']} | `{v['model']}` | "
+                f"| {v['version_label']} | {v.get('protocol', 'unclassified')} | `{v['model']}` | "
                 f"{a_str} | {b_str} | {dlt_str} | "
                 f"{v['n_questions']} | {v['run_date']} |"
             )
