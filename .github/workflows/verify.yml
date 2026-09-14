@@ -47,8 +47,34 @@ jobs:
       - name: Parser fixtures
         run: python scripts/test_compass_parser.py
 
+      # BOTH DIRECTORIES. `pytest scripts/` alone collected 53 of 144 tests, so 91
+      # of them -- 63% -- never ran in CI. The unrun ones are the regressions for
+      # defects this repository has already fixed once: test_eligibility.py
+      # (DATA-EMPTY-SCORES-002), test_release_check.py (the gate that exited 0
+      # while printing failures), test_surface_gate.py ("every website surface that
+      # states a study number must be gated"), test_pipeline_rung.py,
+      # test_analysis_empty_tables.py. They passed the whole time, and nothing
+      # would have told anyone if they stopped.
       - name: Analysis tests
-        run: python -m pytest scripts/ -q
+        run: python -m pytest scripts/ tests/ -q
+
+      # A SUITE THAT COLLECTS ALMOST NOTHING MUST NOT PASS. If a rename, a moved
+      # directory or a broken import silently shrinks collection, the step above
+      # still exits 0 over whatever survived. This floor is deliberately well below
+      # the current count so it fails on collapse, not on ordinary churn.
+      - name: Test collection floor
+        run: |
+          python - <<'PY'
+          import re, subprocess, sys
+          out = subprocess.run([sys.executable, "-m", "pytest", "scripts/", "tests/",
+                                "--collect-only", "-q"],
+                               capture_output=True, text=True).stdout
+          m = re.search(r"(\d+)\s+tests? collected", out)
+          n = int(m.group(1)) if m else 0
+          print("collected %d test(s)" % n)
+          if n < 120:
+              sys.exit("COLLECTED ONLY %d TESTS -- the suite has collapsed, not passed." % n)
+          PY
 
       # THE README'S OWN PROMISE, AS A TEST. If these move, either the data changed or the
       # analysis did, and a replicator is entitled to be told which.
