@@ -421,6 +421,58 @@ produce **byte-identical floor tables**. The parity is now structural rather tha
 of which collections each tree happens to hold — which is the better fix, and it was reached by
 asking why the two disagreed instead of copying data across to make them agree.
 
+### 15. Every per-model delta in the variance run was computed from one replicate — corrected 2026-09-14
+
+**Published:** since the run was first aggregated. **Corrected:** 2026-09-14.
+
+`aggregate.py` keyed its accumulator on `(model, question_id)` and then assigned per condition,
+so where a cell held several samples **only the last record survived**. The run it aggregates
+carries five. Every `mean_delta_AB` in `data/2026-05-26-variance/` was therefore a single draw
+wearing the name of a mean, and the tell was visible in the published file the whole time: the
+deltas were all multiples of 0.1, which is what a one-sample difference of integers must be.
+
+The same defect was found and fixed in `pipeline_rung.py` first; this is the same bug in the
+older, more widely quoted path.
+
+| model | as published | regenerated | note |
+|---|---:|---:|---|
+| deepseek/deepseek-r1 | +0.10 | **−1.20** | sign reversed |
+| x-ai/grok-4.3 | +0.30 | **+0.58** | nearly doubled |
+| anthropic/claude-opus-4.7 | +0.50 | **+0.18** | and see below |
+| anthropic/claude-opus-4 | +0.10 | +0.02 | |
+| qwen/qwen3-235b-a22b-thinking-2507 | +0.30 | 0.00 | and see below |
+
+At the vendor-class level the published gap was **us-closed +0.248 against chinese-open +0.200**,
+a difference of +0.048. Regenerated it is **+0.206 against −0.339**, a difference of +0.545 —
+an order of magnitude larger, and with the two classes now on opposite sides of zero. The
+corrected finding is *stronger* than the one it replaces, which is the uncomfortable kind: a
+defect that was suppressing our own result went unexamined longer than one that inflated it.
+
+**The regenerated numbers are not yet publishable either, and the reason is the second half of
+this correction.** The eligibility rule now excludes truncated responses, and the exclusion is
+severely differential:
+
+| model | questions before | after | lost |
+|---|---:|---:|---:|
+| anthropic/claude-opus-4.7 | 50 | 5 | 90% |
+| qwen/qwen3-235b-a22b-thinking-2507 | 50 | 3 | 94% |
+| deepseek/deepseek-r1 | 49 | 28 | 43% |
+| openai/gpt-5 | 2 | 0 | 100% |
+| everything else | 49–50 | 48–50 | ≤4% |
+
+So opus-4.7's +0.18 rests on four scored questions and qwen3-thinking's 0.00 on one. Excluding a
+truncated response is right — it is not an answer — but excluding 90% of one model and 2% of
+another **relocates the confound rather than removing it**, because what was excluded is not
+missing at random. Restricting to cells with at least eight scored questions moves the class gap
+again, to +0.210 against −0.508, and drops two models entirely.
+
+**Disposition.** The published per-model deltas for this run are **withdrawn**. The regenerated
+ones are **provisional** and carry their sample counts wherever they are quoted. Neither number
+settles the vendor-class question; only re-collection at a token cap that does not truncate can,
+and that is what the re-collection plan exists for. The single number that survives both
+treatments is the direction of `deepseek-r1`, which is negative under every weighting and was
+published positive.
+
 ---
 
 ## How to read this file

@@ -45,11 +45,56 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import hashlib
 import json
+import os
 import re
 import sys
 import time
 from pathlib import Path
+
+
+#: Filled in by main() once the model path and versions are known. Module-level so
+#: the record builder can reach them; None until set, never silently absent.
+WEIGHT_FP = None
+TORCH_VERSION = None
+TRANSFORMERS_VERSION = None
+
+
+def weight_fingerprint(model_path):
+    """A cheap, verifiable fingerprint of the weights actually loaded.
+
+    WHY THIS EXISTS. Provenance used to be
+        "obliteratus_applied": ("ablit" in args.label.lower())
+    -- inferred from a substring of a USER-SUPPLIED LABEL. Nothing inspected the
+    weights. Point --model-path at the stock directory with --label
+    "qwen-abliterated" and the record asserts the ablation was applied; use
+    --label "gemma-ablated" on a genuinely abliterated model and it records False.
+    The abliteration skill's own hard lesson is that "an abliterated run that
+    silently loads stock = a fake null", and nothing mechanical stood behind it.
+
+    Hashes the file inventory (names + sizes) plus config.json, not the tensor
+    bytes: enough to distinguish stock from abliterated, cheap on a multi-GB
+    directory, and stable across reads.
+    """
+    h = hashlib.sha256()
+    files = []
+    try:
+        for root, _dirs, names in os.walk(model_path):
+            for n in sorted(names):
+                if n.endswith((".safetensors", ".bin", ".gguf", ".json")):
+                    p = os.path.join(root, n)
+                    rel = os.path.relpath(p, model_path).replace(os.sep, "/")
+                    files.append((rel, os.path.getsize(p)))
+        for rel, size in sorted(files):
+            h.update(("%s:%d\n" % (rel, size)).encode("utf-8"))
+        cfg = os.path.join(model_path, "config.json")
+        if os.path.exists(cfg):
+            h.update(open(cfg, "rb").read())
+    except Exception as exc:                       # pragma: no cover - IO guard
+        return {"error": "%s: %s" % (type(exc).__name__, exc), "n_files": len(files)}
+    return {"sha256_12": h.hexdigest()[:12], "n_files": len(files),
+            "total_bytes": sum(s for _r, s in files)}
 
 SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR))
@@ -92,6 +137,17 @@ def main() -> int:
     ap.add_argument("--positions", default="neutral")
     ap.add_argument("--temperature", type=float, default=0.7)
     ap.add_argument("--max-new-tokens", type=int, default=800)
+    # A SEED, BECAUSE THERE WAS NONE AND IT COST THE WEIGHT RUNG ITS HEADLINE.
+    #
+    # This samples at temperature 0.7 and `torch.manual_seed` appeared nowhere in
+    # the file, so the stock and abliterated arms drew from different RNG streams
+    # and no run reproduced. Measured consequence: between-arm Jaccard of 0.339
+    # (llama-3.1-8b) and 0.333 (mistral-7b) sit INSIDE the 0.303-0.392 band this
+    # project measured for ONE MODEL RESAMPLED AGAINST ITSELF. Two of four
+    # families were certified as "text rewrote ~66%" on nothing but sampling noise.
+    ap.add_argument("--seed", type=int, default=20260913,
+                    help="RNG seed. Both arms of a stock/abliterated pair MUST use "
+                         "the same one, or the contrast measures resampling.")
     ap.add_argument("--resume", action="store_true",
                     help="If the output JSONL already exists, skip cells already recorded "
                          "and append new ones (don't truncate). Useful when a long M5 run is "
@@ -99,7 +155,21 @@ def main() -> int:
     args = ap.parse_args()
 
     import torch
+    import transformers
     from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    # SEED EVERY STREAM, BEFORE ANYTHING GENERATES. Both arms of a stock/abliterated
+    # pair must run the same seed, or the between-arm difference is resampling.
+    global WEIGHT_FP, TORCH_VERSION, TRANSFORMERS_VERSION
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
+    WEIGHT_FP = weight_fingerprint(args.model_path)
+    TORCH_VERSION = torch.__version__
+    TRANSFORMERS_VERSION = transformers.__version__
+    print("weights %s  seed %d  temp %s  max_new_tokens %d"
+          % (WEIGHT_FP.get("sha256_12", WEIGHT_FP.get("error")), args.seed,
+             args.temperature, args.max_new_tokens), flush=True)
 
     positions = args.positions.split(",")
     conditions = [c.strip() for c in args.conditions.split(",") if c.strip()]
@@ -213,10 +283,26 @@ def main() -> int:
                         "latency_ms": int((time.time() - start) * 1000),
                         "word_count_total": len(re.findall(r"\w+", resp)),
                         "sample_idx": s,
+                        # THE COLLECTION PARAMETERS, recorded rather than inferred.
+                        # None of max_new_tokens, temperature, seed, dtype, device
+                        # or any weight identity was recorded before 2026-09-13, so
+                        # a local run directory could not say what produced it.
+                        "max_tokens": args.max_new_tokens,
+                        "temperature": args.temperature,
+                        "seed": args.seed,
                         "study_call_metadata": {
                             "called_via": "transformers-local",
                             "model_path": args.model_path,
+                            # DERIVED FROM THE LABEL, and now SAID so. Kept because
+                            # existing readers key on it; no longer the only evidence.
+                            "obliteratus_applied_label_derived": ("ablit" in args.label.lower()),
                             "obliteratus_applied": ("ablit" in args.label.lower()),
+                            # THE ACTUAL EVIDENCE. Two arms of a pair must differ
+                            # here; if their fingerprints match, the "abliterated"
+                            # arm loaded stock weights and the null is fake.
+                            "weight_fingerprint": WEIGHT_FP,
+                            "torch_version": TORCH_VERSION,
+                            "transformers_version": TRANSFORMERS_VERSION,
                             "g0dm0d3_pipeline": None,
                         },
                     }

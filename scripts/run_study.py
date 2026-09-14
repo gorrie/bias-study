@@ -754,29 +754,42 @@ def main() -> int:
         out_path = raw_dir / f"{safe_filename(model)}.jsonl"
         records = []
         model_failed = False
+        # WRITE AND FLUSH EVERY RECORD AS IT ARRIVES.
+        #
+        # This used to accumulate a whole model's records in memory and write once,
+        # after the last call, so a crash, a kill or a dead laptop threw away
+        # everything collected for that model. At 20 items x 4 conditions x 5
+        # samples that is 400 calls and roughly a hundred minutes of API spend
+        # held in RAM with nothing on disk.
+        #
+        # It also made progress UNOBSERVABLE: with stdout block-buffered to a log,
+        # a run an hour in looks identical to a run that died in its first minute,
+        # and no gate can inspect partial data because there is none. Both of those
+        # bit on 2026-09-13. run_g0dm0d3.py has flushed per record all along.
+        out_fh = out_path.open("w", encoding="utf-8")
         for question in questions:
             for condition in conditions_to_run:
                 for sample_idx in range(n_samples):
                     record = run_one(channel, model, question, condition, api_key, sample_idx=sample_idx, max_tokens=args.max_tokens)
                     records.append(record)
+                    out_fh.write(json.dumps(record) + "\n")
+                    out_fh.flush()
                     completed += 1
                     if not record.get("ok"):
                         fail_count += 1
                         err = record.get("error", "")[:80]
-                        print(f"  FAIL [{completed:>4}/{total_calls}] {model} {question['id']} {condition}#{sample_idx}: {err}")
+                        print(f"  FAIL [{completed:>4}/{total_calls}] {model} {question['id']} {condition}#{sample_idx}: {err}", flush=True)
                         if "401" in err or "403" in err or "model not found" in err.lower():
                             model_failed = True
                             break
                     else:
-                        print(f"  ok   [{completed:>4}/{total_calls}] {model} {question['id']} {condition}#{sample_idx} ({record['latency_ms']}ms)")
+                        print(f"  ok   [{completed:>4}/{total_calls}] {model} {question['id']} {condition}#{sample_idx} ({record['latency_ms']}ms)", flush=True)
                 if model_failed:
                     break
             if model_failed:
                 break
 
-        with out_path.open("w", encoding="utf-8") as f:
-            for r in records:
-                f.write(json.dumps(r) + "\n")
+        out_fh.close()
 
         if model_failed:
             manifest["models_failed"].append({"model": model, "reason": "auth/availability"})

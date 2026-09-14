@@ -69,6 +69,46 @@ def test_empty_responses_block():
     assert any("returned no text" in p for p in out["problems"])
 
 
+def test_systemic_empties_still_block_at_the_gpt5_rate():
+    """The defect this check exists for must still stop a run.
+
+    gpt-5 returned 287 empty responses of 310 in the May corpus (92.6%) -- the
+    whole budget spent on reasoning tokens -- and 310 of 310 reached the writeup
+    as if they were measurements. Making the gate a rate rather than an absolute
+    must not weaken THIS case, which is the case it was built for.
+    """
+    rows = [rec("", question_id="T%03d" % i) for i in range(287)]
+    rows += [rec("A complete answer.", question_id="T%03d" % (900 + i)) for i in range(23)]
+    out = C.analyse(rows)
+    blockers = [p for p in out["problems"] if "returned no text" in p]
+    assert blockers, "a 92.6%% empty rate must BLOCK, not warn"
+    assert "92.6%" in blockers[0], "the blocker must print the rate it measured"
+
+
+def test_a_single_stray_empty_warns_and_does_not_block():
+    """One empty in 1,600 is a missing cell, not an unmeasurable model.
+
+    It cannot reach a judge (score.py returns skipped-empty-response) and cannot
+    reach an aggregate (eligibility excludes it), so blocking the whole run on it
+    only teaches the operator to bypass the gate. It must still be SAID.
+    """
+    rows = [rec("Answer %d." % i, question_id="T%04d" % i) for i in range(1599)]
+    rows += [rec("", question_id="T9999")]
+    out = C.analyse(rows)
+    assert not any("returned no text" in p for p in out["problems"])
+    warned = [w for w in out["warnings"] if "returned no text" in w]
+    assert warned, "a stray empty must never pass SILENTLY"
+    assert "0.06%" in warned[0]
+
+
+def test_the_empty_threshold_is_not_so_loose_it_admits_a_broken_arm():
+    """A tenth of a model's cells missing is not a stray record."""
+    rows = [rec("", question_id="T%03d" % i) for i in range(10)]
+    rows += [rec("Answer %d." % i, question_id="T%03d" % (900 + i)) for i in range(90)]
+    out = C.analyse(rows)
+    assert any("returned no text" in p for p in out["problems"])
+
+
 def test_identical_replicates_block():
     """--samples 5 buys nothing if the server serves one deterministic answer."""
     rows = [rec(question_id="T01", sample_idx=i) for i in range(5)]

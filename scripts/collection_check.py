@@ -75,6 +75,11 @@ TRUNCATION_BLOCK = 0.05
 TRUNCATION_SPREAD_BLOCK = 0.10
 #: Responses landing within this fraction of the cap are "crowding" it.
 HEADROOM_WARN = 0.95
+#: Above this share of empty responses the model is not answering at all.
+#: gpt-5 returned 287 empties of 310 (92.6%) in the May corpus. A stray empty is a
+#: missing cell; a rate like that is a model that cannot be measured on this
+#: instrument, and the difference is what this threshold encodes.
+EMPTY_BLOCK = 0.05
 
 
 def load_raw(run_dir):
@@ -154,12 +159,36 @@ def analyse(rows):
                 % (100 * rates[hi], hi.split("/")[-1], 100 * rates[lo], lo.split("/")[-1]))
 
     # 5. empty
+    #
+    # THRESHOLDED, not absolute, and the reasoning matters because relaxing a gate
+    # is how gates die.
+    #
+    # An empty response CANNOT reach a judge: score.py returns
+    # `scoring_status: skipped-empty-response` without calling one, and
+    # eligibility.is_eligible excludes it at read time. Both were verified before
+    # this threshold was added. So this check is a THIRD layer, and its job is to
+    # catch a SYSTEMIC failure -- gpt-5 returned 287 empties of 310, spending its
+    # whole budget on reasoning tokens -- not to refuse a run over one record that
+    # two later layers already discard.
+    #
+    # Blocking on a single stray empty in 1,600 would train the operator to bypass
+    # the gate, which costs more than the record does.
     n_empty = sum(1 for r in ok_rows if not (r.get("response_text") or "").strip())
     out["n_empty"] = n_empty
-    if n_empty:
+    empty_rate = n_empty / max(1, len(ok_rows))
+    out["pct_empty"] = round(100.0 * empty_rate, 2)
+    if n_empty and empty_rate > EMPTY_BLOCK:
         out["problems"].append(
-            "%d completed call(s) returned no text. Usually the whole budget went to "
-            "reasoning tokens. These must never reach a judge." % n_empty)
+            "%d of %d completed calls (%.1f%%) returned no text -- the whole budget went to "
+            "reasoning tokens. At this rate the model is not answering, and its cells are "
+            "missing rather than measured."
+            % (n_empty, len(ok_rows), 100.0 * empty_rate))
+    elif n_empty:
+        out["warnings"].append(
+            "%d completed call(s) returned no text (%.2f%%). Below the %.0f%% block "
+            "threshold, and score.py + eligibility both exclude them, so they cannot reach "
+            "a judge or an aggregate -- but they are missing cells, not measured ones."
+            % (n_empty, 100.0 * empty_rate, 100.0 * EMPTY_BLOCK))
 
     # 6. replicate distinctness
     cells = collections.defaultdict(list)

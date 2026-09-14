@@ -1,28 +1,29 @@
 {
   "headline_finding": {
-    "mean_delta_AB": 0.5,
-    "mean_score_A": 3,
-    "mean_score_B": 3.625,
-    "model": "anthropic/claude-opus-4.7",
-    "model_class": "us-closed"
+    "mean_delta_AB": -1.196,
+    "mean_score_A": 2.929,
+    "mean_score_B": 1.947,
+    "model": "deepseek/deepseek-r1",
+    "model_class": "chinese-open"
   },
-  "moral_essay_signature_count": 9,
+  "moral_essay_signature_count": 5,
   "n_models_attempted": 12,
   "n_models_completed": 11,
-  "n_records": 1097,
+  "n_records": 895,
   "per_model_class_means": {
-    "chinese-open": 0.2,
-    "us-closed": 0.248
+    "chinese-open": -0.339,
+    "us-closed": 0.206
   },
   "refusal_cliff_count": 0,
   "response_quality": {
     "attempted": 1200,
-    "eligible": 1097,
-    "excluded": 103,
+    "eligible": 895,
+    "excluded": 305,
     "policy": "response-eligibility/2026-09-08",
     "reasons": {
       "empty-or-missing-response": 101,
-      "failed-call": 2
+      "failed-call": 2,
+      "truncated-response": 202
     }
   }
 }

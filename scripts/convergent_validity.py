@@ -49,8 +49,18 @@ def judged_scores(roots=None):
     return out
 
 
-def mechanical_positions(roots=None):
-    """Mean forced-choice position per run. NO MODEL IN THE SCORING PATH -- that is the point."""
+def mechanical_positions(roots=None, temps=None):
+    """Mean forced-choice position per run. NO MODEL IN THE SCORING PATH -- that is the point.
+
+    `temps`, when passed, is filled with the set of sampling temperatures behind each
+    (model, condition) arm.
+
+    WHY THAT MATTERS. This pools every run for a (model, condition) with no key for
+    the experiment, the temperature or the template. Measured: `x-ai/grok-4.3`'s
+    mechanical A arm carries SIX temperature-0 runs and its B arm carries NONE, so
+    the reported A->B shift is partly a temperature contrast wearing a condition
+    label. An arm assembled from different sampling regimes is not one arm.
+    """
     out = collections.defaultdict(lambda: collections.defaultdict(list))
     for root in (roots or run_roots()):
         for path in glob.glob(os.path.join(str(root), "*", "*.jsonl")):
@@ -64,8 +74,29 @@ def mechanical_positions(roots=None):
                         continue
                     pos = [a["position"] for a in rec["answers"] if a.get("position") is not None]
                     if pos:
-                        out[rec.get("model")][rec.get("condition")].append(st.mean(pos))
+                        m, c = rec.get("model"), rec.get("condition")
+                        out[m][c].append(st.mean(pos))
+                        if temps is not None:
+                            temps.setdefault((m, c), set()).add(rec.get("temperature"))
     return out
+
+
+def temperature_mismatches(temps, conditions=("A", "B")):
+    """Models whose two arms were collected at DIFFERENT temperatures.
+
+    Returns [(model, {condition: {temps}})]. A non-empty result means the
+    corresponding A->B shift confounds condition with sampling temperature and
+    must not be read as a condition effect.
+    """
+    bad = []
+    for m in sorted({m for (m, _c) in temps}):
+        arms = {c: temps.get((m, c), set()) for c in conditions}
+        present = {c: t for c, t in arms.items() if t}
+        if len(present) == len(conditions):
+            sets = list(present.values())
+            if any(s != sets[0] for s in sets):
+                bad.append((m, present))
+    return bad
 
 
 def pearson(xs, ys):
@@ -113,7 +144,9 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
-    judged, mech = judged_scores(), mechanical_positions()
+    temps = {}
+    judged, mech = judged_scores(), mechanical_positions(temps=temps)
+    temp_bad = temperature_mismatches(temps)
     rows = shifts(judged, mech)
     res = analyse(rows)
     if res is None:
@@ -125,6 +158,18 @@ def main(argv=None):
 
     print("CONVERGENT VALIDITY -- the A->B shift, measured two ways")
     print("")
+    # ARMS ASSEMBLED FROM DIFFERENT SAMPLING REGIMES ARE NOT ONE ARM.
+    # grok-4.3's mechanical A arm carries six temperature-0 runs and its B arm
+    # none, so that model's "condition effect" is partly a temperature contrast.
+    if temp_bad:
+        print("  WARNING: %d model(s) have A and B arms collected at DIFFERENT temperatures,"
+              % len(temp_bad))
+        print("  so their mechanical shift confounds condition with sampling regime:")
+        for m, arms in temp_bad:
+            detail = "   ".join("%s=%s" % (c, sorted(t, key=str))
+                                for c, t in sorted(arms.items()))
+            print("    %-32s %s" % (m.split("/")[-1], detail))
+        print("")
     print("%-36s %13s %13s" % ("model", "judged 1-5", "mechanical"))
     for r in rows:
         print("  %-34s %+13.3f %+13.3f" % (r["model"], r["judged_shift"], r["mechanical_shift"]))

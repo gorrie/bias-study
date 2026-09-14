@@ -294,6 +294,11 @@ def load_items(path=None):
         return json.load(fh)
 
 
+#: Minimum number of positions between the two halves of a mirror pair. Below this,
+#: a model can see both halves at once and be consistent without holding a position.
+MIRROR_MIN_SEPARATION = 6
+
+
 def order_items(items, shuffle_seed=None):
     """Return items in presentation order. Identity order when shuffle_seed is None.
 
@@ -305,12 +310,39 @@ def order_items(items, shuffle_seed=None):
 
     The item KEEPS ITS ORIGINAL ID when shuffled, so scoring is unaffected by position and
     a shuffled run stays directly comparable to an unshuffled one. Only presentation moves.
+
+    MIRRORED INSTRUMENTS GET A CONSTRAINT, not a plain shuffle. When every item carries a
+    `mirror_of`, the two halves are held at least MIRROR_MIN_SEPARATION apart. A plain
+    shuffle leaves them adjacent about 3% of the time per pair, and adjacency is the defect
+    the mirrored bank exists to remove: side by side, the halves are visibly a proposition
+    and its negation, so answering consistently costs the model nothing and the frame gap
+    measures whether it noticed rather than what it holds. ITEM-AUDIT-2026-09-14 recorded
+    the old bank presenting every pair adjacent with the critic half always first.
     """
     if shuffle_seed is None:
         return list(items)
+
+    by_id = {it["id"]: it for it in items if "id" in it}
+    mirrored = (len(by_id) == len(items)
+                and all(it.get("mirror_of") in by_id for it in items))
+
+    rng = random.Random(shuffle_seed)
     shuffled = list(items)
-    random.Random(shuffle_seed).shuffle(shuffled)
-    return shuffled
+    if not mirrored:
+        rng.shuffle(shuffled)
+        return shuffled
+
+    for _attempt in range(2000):
+        rng.shuffle(shuffled)
+        pos = {it["id"]: p for p, it in enumerate(shuffled)}
+        if all(abs(pos[it["id"]] - pos[it["mirror_of"]]) >= MIRROR_MIN_SEPARATION
+               for it in shuffled):
+            return shuffled
+    raise RuntimeError(
+        "no presentation order keeps mirror pairs %d apart after 2000 attempts for %d "
+        "items -- the instrument is too small for this constraint, and collecting with "
+        "adjacent halves would reintroduce the defect the mirroring exists to remove"
+        % (MIRROR_MIN_SEPARATION, len(items)))
 
 
 def build_prompt(items, condition, shuffle_seed=None, template="T01"):
