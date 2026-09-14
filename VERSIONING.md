@@ -1,7 +1,16 @@
 # Versioning
 
-This repository has **two independent version axes**, and conflating them is easy because both
-have used the letter v. Read this once and the tags make sense.
+This repository has **three independent version axes**, and conflating them is easy because two
+of them have used the letter v. Read this once and the tags make sense.
+
+| axis | values | means |
+|---|---|---|
+| **rung** | `v1` `v2` `v3` | the INTERVENTION applied — prompt, pipeline, weights |
+| **release** | dated tags | a published snapshot |
+| **instrument** | `I1` `I2` `I3` | WHAT is measured and HOW |
+
+A rung is a property of any instrument, so the two axes are orthogonal: every instrument can in
+principle be run at every rung.
 
 ## Axis 1 — the intervention rungs. These are NOT releases.
 
@@ -74,3 +83,23 @@ The next study — language and character-set effects, doing the ablation oursel
 scoring, larger open-weight models — is in `BACKLOG-larger-hardware-and-v3.md` in the private
 tree. **It will be a dated release too**, not "v3", precisely because `v3` already means the
 weight rung.
+
+## Axis 3 — the instrument. `I1`, `I2`, `I3`.
+
+What is being measured, and how. Added 2026-09-13, because the repo had shipped two
+fundamentally different instruments under one title and had no vocabulary to say so — the
+README's summary argues the second while the books print the first.
+
+| instrument | first shipped | what it is |
+|---|---|---|
+| **I1** | `release-2026-05-27` | free text, a 1–5 deference/skepticism rubric, four LLM judges. Ten topics, all critic-framed. |
+| **I2** | `release-2026-09-11` | 62 forced-choice propositions, no judge anywhere in the scoring path, twelve measured floors. |
+| **I3** | *in design* | mirrored forced choice: every claim asked from both sides, no midpoint, no judge, and the fairness instruction treated as a TREATMENT against a no-instruction baseline rather than as the baseline itself. |
+
+**Why the axis was needed.** I1 and I2 disagree about the same models on the same items —
+convergent validity across 24 models is **r = −0.12, 95% CI [−0.57, +0.37]**. Two instruments
+that do not correlate are not both measuring the construct, and until 2026-09-13 there was no
+way to name which one a given number came from.
+
+A rung is a property of any instrument. `I3` is a new instrument, **not a fourth rung**, and
+`v3` still means weight ablation.
