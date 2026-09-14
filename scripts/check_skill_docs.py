@@ -337,6 +337,19 @@ def results_doc_dead_paths():
             base = os.path.basename(path)
             if base.startswith("test_") or base == "_shim.py":
                 continue
+            # A CROSS-TREE DRIVER names scripts in BOTH trees, so from inside either
+            # one about half its references cannot resolve. release_check.py is the
+            # only such file: it scopes every entry to STUDY or MIRROR and runs the
+            # checklist across the pair. Scanning it from the mirror reported
+            # check_release_table.py as a script "never committed" -- it exists in
+            # the working tree and passes there.
+            #
+            # Detected from the source rather than whitelisted by name, so a new
+            # driver is covered and a file that stops being one loses the exemption.
+            # The working tree still verifies these through _resolves_in_sibling_tree,
+            # which is the side that can see both.
+            if _is_cross_tree_driver(text):
+                continue
             low = text.lower()
             for ref in set(_re.findall(r"scripts/[a-z0-9_]+\.py", text)):
                 if os.path.exists(os.path.join(ROOT, ref)):
@@ -345,8 +358,49 @@ def results_doc_dead_paths():
                 ctx = " ".join(near) + " " + low[:4000]
                 if any(d in ctx for d in denials):
                     continue
+                # A reference that resolves in the OTHER tree is live, not dead.
+                # `release_check.py` runs some checks against the working study and
+                # some against the public mirror, so from inside the mirror it names
+                # study-only tools like check_release_table.py. Flagging those told
+                # the reader to "write the script, or correct the claim" about a
+                # script that exists and runs.
+                #
+                # This VERIFIES rather than exempts: the reference must resolve
+                # somewhere. A name that is dead in both trees still fails, so a tool
+                # that is genuinely never committed cannot hide behind this.
+                if _resolves_in_sibling_tree(ref):
+                    continue
                 dead.append((os.path.relpath(path, ROOT), ref))
     return sorted(set(dead))
+
+
+def _is_cross_tree_driver(text):
+    """Does this script dispatch checks into BOTH trees?
+
+    Such a file names scripts that live in whichever tree each entry targets, so
+    roughly half its references cannot resolve from inside either one. The marker
+    is that it binds both roots AND scopes entries to them.
+    """
+    import re as _re
+    has_both_roots = bool(_re.search(r"^\s*STUDY\s*=", text, _re.M)) and \
+        bool(_re.search(r"^\s*MIRROR\s*=", text, _re.M))
+    scopes_entries = text.count(", STUDY,") + text.count(", MIRROR,") >= 2
+    return has_both_roots and scopes_entries
+
+
+def _resolves_in_sibling_tree(ref):
+    """Does `ref` exist in the paired tree? False when there is no paired tree."""
+    try:
+        from _shim import public_scripts
+        # `.parent` of the scripts dir IS the paired tree's root. Taking a dirname
+        # of it went one level too high, to the workspace, where nothing resolves --
+        # so this returned False for everything and the check silently did nothing.
+        sibling = str(public_scripts(__file__).parent)
+    except Exception:
+        return False
+    if not sibling or os.path.abspath(sibling) == os.path.abspath(ROOT):
+        return False
+    return os.path.exists(os.path.join(sibling, ref))
 
 
 

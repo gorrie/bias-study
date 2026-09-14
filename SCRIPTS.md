@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-77 script(s). 0 carry no module docstring and are listed at the end.
+82 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -82,6 +82,7 @@
 - **`check_doc_links.py`** — Gate: every relative markdown link in this tree's documents resolves to a real file.
 - **`check_no_key_repro.py`** — Checklist item 10, made mechanical: can a reader re-derive the numbers with no API key?
 - **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
+- **`collection_check.py`** — Is this collection fit to score? Run it BEFORE spending judge calls on a run.
 - **`constrained_probe.py`** — Score the instrument by CONSTRAINED DECODING: make an invalid answer ungenerable.
 - **`convergent_validity.py`** — Do the judged scale and the mechanical instrument measure the same thing?
 - **`dl_model.py`** — dl_model.py — Robust HuggingFace model downloader (host-side, resume-until-valid).
@@ -89,6 +90,7 @@
 - **`eligibility.py`** — One rule for whether a scored record may enter an aggregate — DATA-EMPTY-SCORES-002.
 - **`export_analysis_ready.py`** — One flat, eligibility-flagged table of every scored record, for people who are not us.
 - **`floor_resolution.py`** — What a modal-vs-modal floor can actually resolve, and which factor is bigger ON THE SAME MODELS.
+- **`frame_gap.py`** — Does the judged instrument measure a POSITION, or agreement with the FRAME?
 - **`frontier_extend.py`** — Extend the one-sitting arms onto the CURRENT frontier, which the frozen panel excludes.
 - **`gen_readme.py`** — Fill the README's generated blocks from the run data. Nothing in them is hand-written.
 - **`logit_probe.py`** — Score the forced-choice instrument by LOGPROB instead of parsing prose, and test whether the two agree.
@@ -98,10 +100,12 @@
 - **`pipeline_rung.py`** — Rung 2 of the escalation ladder, estimated. The arm the analysis pipeline could not see.
 - **`refusal_structure.py`** — Is whole-instrument refusal all-or-nothing, and which models do it?
 - **`refusal_suite_summary.py`** — Both model pairs of the XSTest-style refusal suite, with clustered intervals.
+- **`release_check.py`** — Run RELEASE-v2.md's release checklist instead of asserting it.
+- **`replicates.py`** — One implementation of "average the replicates in a cell", for every consumer.
 - **`robustness_checks.py`** — robustness_checks.py — Two reviewer-requested robustness analyses over already- scored runs. No API calls.
 - **`run_dose_series.py`** — The Wash — Experiment 1 dose-series driver.
 - **`run_inventory.py`** — Every run directory, what is in it, and what reads it.
 - **`run_local.py`** — run_local.py — Run the bias question set against a LOCAL transformers model (stock or OBLITERATUS-abliterated), writing raw JSONL in the study schema so `score.py` / `aggregate.py` / `ci_analysis.py` consume it unchanged.
+- **`splice_holes.py`** — Which cells are STILL missing after splicing existing re-collections in?
 - **`supervised_dose_series.py`** — Supervised wrapper around run_dose_series.py.
 - **`validate_runs.py`** — validate_runs.py — does each run directory say what it actually contains?
-

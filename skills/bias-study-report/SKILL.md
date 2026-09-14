@@ -96,5 +96,29 @@ not a hard dependency: any reasonable local instruct model works.
   "proven zero".
 - Lead with what survives FDR, not the long near-zero tail.
 - Keep the writeup, any public summary, and the rubric's condition tags consistent with what was
-  actually executed — doc-reality discipline. Never describe an unrun leg (currently the
-  pipeline rung) as run.
+  actually executed — doc-reality discipline. Never describe an unrun leg as run.
+  *(Corrected 2026-09-14: this named the pipeline rung as the unrun leg. It was collected at
+  n=1 in May and re-collected at n=5 on 2026-09-13. `pipeline_rung.py` reports which pair it
+  read, and the n=5 pair is not a null — three of eight intervals exclude zero and the two
+  models move in opposite directions.)*
+- **A number stays out of a public surface until its run is in the same repository.** A reader
+  who cannot recompute it has to take it on trust, which is the failure this study audits other
+  studies for. `PENDING-PUBLICATION-2026-09-14.md` in the working tree is where a finding waits
+  when it is settled but its data has not been exported yet.
+
+## Before anything ships
+
+`python scripts/release_check.py` runs the whole release checklist across BOTH trees and is the
+only thing that does — the working study and the public mirror each hold checks the other
+cannot run. It exits non-zero and prints every failing item; treat NOT RELEASABLE as the answer,
+not as an obstacle to route around. Its companions, each also runnable alone:
+
+- `scripts/key_numbers.py --check --check-release --check-website` — every hand-typed number on
+  a public surface against the generated one. This is what caught a rung-2 contrast count that
+  had said eight since the truncation rule made it six.
+- `scripts/check_no_fork.py` — the same filename with different contents in the two trees is how
+  a fix lands on one side only.
+- `scripts/validate_runs.py` — run directories against their manifests. Read the NOT VALIDATED
+  line as well as the findings: a layout with no manifest discipline is not a clean run.
+- `scripts/gen_script_inventory.py --check` and `scripts/check_skill_docs.py --strict` — the
+  generated inventory and the skill docs against what is actually on disk.
