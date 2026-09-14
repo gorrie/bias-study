@@ -1,0 +1,229 @@
+#!/usr/bin/env python3
+"""Write a repaired corpus the ANALYSIS can actually read.
+
+WHY THIS FILE EXISTS
+--------------------
+`splice_holes.py` reports how many cells a re-collection WOULD recover. Nothing
+acted on that report. `ci_analysis.py`, `aggregate.py`, `analysis.py` and
+`drift_timeseries.py` all read one run directory, so the re-collected records sat
+in `2026-09-05-recollect` and no published number moved because of them.
+
+That gap would have made the whole repair pointless: the cells were paid for,
+collected, scored, and then read by nothing.
+
+WHAT THIS DOES, AND WHAT IT REFUSES TO DO
+-----------------------------------------
+It writes a NEW DATED RUN. It does not modify the base run, and no reader asking
+for `2026-05-25-full` is silently handed something else -- a transparent
+substitution would be worse than the gap, because then nobody could tell which
+corpus a number came from.
+
+For every cell the base attempted:
+  * the base record, when it is eligible;
+  * otherwise the first ELIGIBLE record for that cell from a splice source,
+    stamped with `spliced_from` and `spliced_replaces` so its provenance travels
+    with it;
+  * otherwise the base record as-is, still ineligible, still excluded downstream.
+    A hole that was not repaired stays a hole and is counted as one.
+
+The output is therefore a superset in usable cells and identical in shape, and
+every substituted record says so in its own fields.
+
+    python scripts/splice_corpus.py --plan          # what would change, writes nothing
+    python scripts/splice_corpus.py --write         # write the spliced run
+    python scripts/splice_corpus.py --write --out 2026-09-14-full-spliced
+"""
+from __future__ import annotations
+
+import argparse
+import collections
+import glob
+import io
+import json
+import os
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+STUDY = os.path.dirname(HERE)
+sys.path.insert(0, HERE)
+
+import eligibility as E  # noqa: E402
+from studypaths import run_roots  # noqa: E402
+
+BASE = "2026-05-25-full"
+SPLICE_SOURCES = ("2026-09-05-recollect",)
+DEFAULT_OUT = "2026-09-14-full-spliced"
+
+
+def key(r):
+    return (r.get("model"), r.get("question_id"), r.get("condition"))
+
+
+def _run_dir(name, sub="scored"):
+    for root in run_roots():
+        d = root / name / sub
+        if d.is_dir():
+            return d
+    return None
+
+
+def load(name, sub="scored"):
+    d = _run_dir(name, sub)
+    if d is None:
+        return []
+    rows = []
+    for p in sorted(glob.glob(os.path.join(str(d), "**", "*.jsonl"), recursive=True)):
+        with io.open(p, encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                line = line.strip()
+                if line:
+                    try:
+                        rows.append(json.loads(line))
+                    except ValueError:
+                        pass
+    return rows
+
+
+def build(base_name=BASE, sources=SPLICE_SOURCES):
+    """Return (records, stats). Pure -- writes nothing."""
+    base = load(base_name)
+    if not base:
+        return [], {"error": "base run %s not found or empty" % base_name}
+
+    repairs = {}
+    per_source = collections.Counter()
+    for src in sources:
+        for r in load(src):
+            k = key(r)
+            if k in repairs or not E.is_eligible(r):
+                continue
+            repairs[k] = (src, r)
+
+    out = []
+    # Seeded so every key is always reported, including as zero. A Counter drops
+    # absent keys, and a summary that omits "repaired 0" reads like a summary that
+    # forgot to check rather than one that checked and found none.
+    stats = collections.Counter({"base_eligible": 0, "spliced": 0, "still_unusable": 0})
+    substituted_models = collections.Counter()
+    unrepaired_models = collections.Counter()
+
+    for r in base:
+        k = key(r)
+        if E.is_eligible(r):
+            stats["base_eligible"] += 1
+            out.append(r)
+            continue
+        hit = repairs.get(k)
+        if hit is None:
+            stats["still_unusable"] += 1
+            unrepaired_models[r.get("model")] += 1
+            out.append(r)
+            continue
+        src, rep = hit
+        merged = dict(rep)
+        # Provenance travels WITH the record. A spliced corpus whose records do not
+        # say where they came from is a corpus nobody can audit afterwards.
+        merged["spliced_from"] = src
+        merged["spliced_replaces"] = base_name
+        merged["spliced_base_exclusion"] = (
+            E.exclusion_reason(r) if hasattr(E, "exclusion_reason") else None)
+        out.append(merged)
+        stats["spliced"] += 1
+        per_source[src] += 1
+        substituted_models[r.get("model")] += 1
+
+    stats["records"] = len(out)
+    stats["eligible_after"] = sum(1 for r in out if E.is_eligible(r))
+    return out, {
+        "counts": dict(stats),
+        "per_source": dict(per_source),
+        "substituted_by_model": dict(substituted_models),
+        "unrepaired_by_model": dict(unrepaired_models),
+    }
+
+
+def write(records, out_name):
+    """Write one jsonl per model under runs/<out_name>/scored, plus a manifest."""
+    root = run_roots()[0]
+    d = root / out_name / "scored"
+    d.mkdir(parents=True, exist_ok=True)
+    by_model = collections.defaultdict(list)
+    for r in records:
+        by_model[r.get("model") or "unknown"].append(r)
+    for model, rows in sorted(by_model.items()):
+        safe = "".join(c if c.isalnum() or c in "-._" else "_" for c in model)
+        with io.open(d / ("%s.jsonl" % safe), "w", encoding="utf-8", newline="\n") as fh:
+            for r in rows:
+                fh.write(json.dumps(r, ensure_ascii=False) + "\n")
+    return d
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--plan", action="store_true", help="what would change; writes nothing")
+    ap.add_argument("--write", action="store_true", help="write the spliced run")
+    ap.add_argument("--base", default=BASE)
+    ap.add_argument("--out", default=DEFAULT_OUT)
+    args = ap.parse_args(argv)
+
+    records, info = build(args.base)
+    if info.get("error"):
+        print("ERROR: %s" % info["error"], file=sys.stderr)
+        return 2
+
+    c = info["counts"]
+    print("SPLICE PLAN  base=%s  ->  %s" % (args.base, args.out))
+    print("  records                  %d" % c.get("records", 0))
+    print("  eligible in base         %d" % c.get("base_eligible", 0))
+    print("  repaired by splicing     %d" % c.get("spliced", 0))
+    print("  still unusable           %d" % c.get("still_unusable", 0))
+    print("  eligible after splice    %d" % c.get("eligible_after", 0))
+    if info["substituted_by_model"]:
+        print("")
+        print("  %-32s %8s %10s" % ("model", "repaired", "unrepaired"))
+        models = set(info["substituted_by_model"]) | set(info["unrepaired_by_model"])
+        for m in sorted(models, key=lambda m: -info["substituted_by_model"].get(m, 0)):
+            print("  %-32s %8d %10d"
+                  % ((m or "?").split("/")[-1],
+                     info["substituted_by_model"].get(m, 0),
+                     info["unrepaired_by_model"].get(m, 0)))
+
+    if not args.write:
+        print("")
+        print("Nothing written. Re-run with --write to produce the spliced run.")
+        return 0
+
+    if c.get("spliced", 0) == 0:
+        # A splice that repaired nothing would write a copy of the base run under a
+        # new name -- a second corpus with no reason to exist, and a number quoted
+        # from it would be unattributable to either.
+        print("REFUSING to write: nothing was repaired, so the output would be a "
+              "renamed copy of the base run.", file=sys.stderr)
+        return 2
+
+    d = write(records, args.out)
+    manifest = {
+        "analysis_seed": 20260914,
+        "base_run": args.base,
+        "splice_sources": list(SPLICE_SOURCES),
+        "calls_completed": 0,
+        "generated_by": "scripts/splice_corpus.py",
+        "derived": True,
+        "note": "DERIVED corpus. No calls were made to build it. Records carry "
+                "spliced_from / spliced_replaces where a repair was substituted.",
+        "records": c.get("records", 0),
+        "spliced": c.get("spliced", 0),
+        "still_unusable": c.get("still_unusable", 0),
+        "run_date": args.out,
+    }
+    with io.open(d.parent / "manifest.json", "w", encoding="utf-8", newline="\n") as fh:
+        json.dump(manifest, fh, indent=2, sort_keys=True)
+        fh.write("\n")
+    print("")
+    print("wrote %s" % d)
+    print("Analysis reads this run by name; the base run is untouched.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

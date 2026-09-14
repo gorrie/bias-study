@@ -475,6 +475,36 @@ def _find_surface(*relative_parts):
 
 
 SURFACES = {
+    # THE BOOKS WERE THE LEAST-GATED SURFACE IN THE PROJECT, which is the same
+    # thing the public README was before 2026-09-07 and the same fix. A printed
+    # number cannot be corrected after the fact, so it is the surface where drift
+    # costs most, and it was the one nothing checked.
+    #
+    # AUDIT-2026-09-14-book-numbers.md verified every figure in this chapter
+    # against the corpus. The four phrases below are the ones that moved and are
+    # mechanically checkable; they are expected to FAIL until the correction pass,
+    # and that failure is the point.
+    "book-ratchet-ch22": {
+        "path": _find_surface("books", "the-ratchet", "chapters",
+                              "22-the-cat-or-the-dog.md"),
+        "phrases": {
+            # "thirty-six frontier AI models" -- 36 sums the per-run counts and
+            # double-counts z-ai/glm-4.7, which appears in two of the four runs.
+            # %s, not %d: the spelled alternative is a string, and %d rejects one.
+            "may_models_distinct": "to %s frontier AI models",
+            # "across nineteen hundred scored responses" sits directly above a
+            # table whose cells total 780.
+            "may_records_main": "Across %s scored responses",
+            # "seven times the rhetorical hedge ratio" -- 7.2x is score-3 against
+            # score-1 ALONE on 19 records. The sentence says "a 1 or a 5", which
+            # is the pooled figure. Stored in tenths.
+            "hedge_multiple_pooled": "carried %s times the rhetorical hedge ratio",
+            # "five open-weight models" -- one clears the resample noise floor.
+            # The noun is left out of the template so the count can go singular
+            # without the gate demanding "one open-weight models".
+            "ablation_families_confirmed": "We did the abliteration. %s open-weight",
+        },
+    },
     "website": {
         "path": _find_surface("website", "content", "research", "ai-bias-audit.md"),
         "phrases": {
@@ -655,7 +685,10 @@ SURFACES = {
             # unbeaten effect of 0.30, and "larger than two of them" survived five documents
             # because nobody could see the gap.
             "judge_spread": "our judges spanned %.4f points",
-            "pipeline_contrasts": "all %d intervals span zero",
+            # HISTORICAL pair: the mirror's README documents the rung-2 result its
+            # own repository can reproduce. Gating this on the default pair made
+            # the same check compute 8 in the working tree and 6 here.
+            "pipeline_contrasts_historical": "all %d intervals span zero",
             "withheld_records": "%d run records had their",
             "arms_models": "Across %d models measured under both arms",
             "arms_declining": "arms, %d decline all",
@@ -682,6 +715,150 @@ SURFACES = {
 #: the gate. A set rather than a flag because the caller has to NAME them: "3 numbers were not
 #: verifiable here" is a usable sentence, "some checks were skipped" is not.
 MISSING_FLOORS = set()
+
+
+#: The four runs WRITEUP-2026-05-26 names as the main judged study. Book prose
+#: quotes counts pooled across exactly these.
+MAY_MAIN_RUNS = ("2026-05-25-full", "2026-05-26-cn-expansion",
+                 "2026-05-26-augmentation", "2026-05-26-timeseries")
+
+
+def _may_runs_present():
+    """The main-study run directories, wherever this tree keeps them."""
+    from studypaths import run_roots
+    out = []
+    for root in run_roots():
+        for name in MAY_MAIN_RUNS:
+            d = root / name / "scored"
+            if d.is_dir():
+                out.append(d)
+    return out
+
+
+def _may_scored_rows():
+    rows = []
+    for d in _may_runs_present():
+        for p in sorted(d.glob("*.jsonl")):
+            try:
+                with p.open(encoding="utf-8") as fh:
+                    for line in fh:
+                        if line.strip():
+                            rows.append(json.loads(line))
+            except (OSError, ValueError):
+                continue
+    return rows
+
+
+def _may_models_distinct():
+    """DISTINCT models across the main study.
+
+    The book says "thirty-six frontier AI models". 36 is the SUM of per-run model
+    counts, which double-counts z-ai/glm-4.7 -- it appears in both 2026-05-25-full
+    and 2026-05-26-cn-expansion. The distinct count is 35. No script computed
+    either figure until now, which is how the wrong one survived in print and in
+    two backlog files that disagree with each other about it.
+    """
+    rows = _may_scored_rows()
+    if not rows:
+        return None
+    return len({r.get("model") for r in rows if r.get("model")})
+
+
+def _may_records_main():
+    """Records in 2026-05-25-full -- the run the hedge-ratio table is computed over.
+
+    The book says "across nineteen hundred scored responses" immediately above a
+    table whose cells total this number instead.
+    """
+    from studypaths import run_roots
+    n = 0
+    for root in run_roots():
+        d = root / "2026-05-25-full" / "scored"
+        if not d.is_dir():
+            continue
+        for p in sorted(d.glob("*.jsonl")):
+            with p.open(encoding="utf-8") as fh:
+                n += sum(1 for line in fh if line.strip())
+    return n or None
+
+
+def _hedge_multiple_pooled():
+    """Hedge ratio of score-3 answers against scores 1 OR 5 pooled, x10 for a tenth.
+
+    The book says "seven times". 7.2x is score-3 against score-1 ALONE, standing on
+    19 records; the book's own phrasing is "a 1 *or* a 5", which is the pooled
+    statistic. Returned as tenths so the gated phrase can be an integer.
+    """
+    rows = _may_scored_rows()
+    mid, ends = [], []
+    for r in rows:
+        s = r.get("score_classifier")
+        h = r.get("hedge_ratio")
+        if s is None or h is None:
+            continue
+        if s == 3:
+            mid.append(h)
+        elif s in (1, 5):
+            ends.append(h)
+    if not mid or not ends or not sum(ends):
+        return None
+    # A one-decimal STRING, because that is how a ratio is printed. Returning
+    # tenths as an integer made the gated phrase read "37 times", which no
+    # corrected chapter would ever contain -- a gate that cannot be satisfied by
+    # correct prose is a gate that gets switched off.
+    return "%.1f" % ((sum(mid) / len(mid)) / (sum(ends) / len(ends)))
+
+
+#: Memo for the abliteration count. Computing it runs the whole dissociation
+#: report, and surface_numbers() is called by every surface check -- uncached, one
+#: `--check-website` ran that report five times and the test suite went from 50
+#: seconds to over two minutes. A gate slow enough to skip is a gate that gets
+#: skipped.
+_ABLATION_CONFIRMED_MEMO = {}
+
+
+def _ablation_families_confirmed():
+    """Model families where the abliteration dissociation is ESTABLISHED.
+
+    The book says "five open-weight models". Three of five sit inside the measured
+    same-model resample band (Jaccard 0.303-0.392) or have too few shared cells to
+    compute a stance contrast at all, so the rewrite half is not established and a
+    stance null against it is uninterpretable.
+    """
+    if "v" in _ABLATION_CONFIRMED_MEMO:
+        return _ABLATION_CONFIRMED_MEMO["v"]
+    value = None
+    try:
+        import abliteration_effect_check as A
+        fn = getattr(A, "confirmed_family_count", None)
+        if fn is not None:
+            value = fn()
+    except Exception:
+        value = None
+    _ABLATION_CONFIRMED_MEMO["v"] = value
+    return value
+
+
+def _pipeline_rung_historical():
+    """(n_contrasts, n_excluding_zero) on the n=1 pair, whichever tree runs this.
+
+    `_pipeline_rung()` resolves to the best pair PRESENT, which is correct for an
+    estimate and wrong for a GATE: the working study holds the n=5 re-collection
+    and the public mirror does not, so the same check computed 8 in one tree and 6
+    in the other and the mirror's README could only ever satisfy one of them.
+
+    A surface documents the data its own repository can reproduce. The mirror's
+    rung-2 paragraph is about the n=1 pair, so it is gated against the n=1 pair.
+    """
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from pipeline_rung import estimate, HISTORICAL_PIPELINE_RUN, HISTORICAL_BASELINE_RUN
+        res = estimate(HISTORICAL_PIPELINE_RUN, HISTORICAL_BASELINE_RUN)
+        if not res:
+            return None, None
+        return res["n_contrasts"], sum(1 for c in res["contrasts"] if c["excludes_zero"])
+    except Exception:
+        return None, None
 
 
 def _corrections_entries():
@@ -920,6 +1097,20 @@ def surface_numbers():
          "what": "claims this study published and then withdrew or narrowed"},
         {"key": "withheld_records", "value": _withheld_records(),
          "what": "records whose response_text is withheld, counted across both run roots"},
+        {"key": "may_models_distinct", "value": _may_models_distinct(),
+         "what": "DISTINCT models across the four main-study runs (the book says 36, which "
+                 "sums per-run counts and double-counts z-ai/glm-4.7)"},
+        {"key": "may_records_main", "value": _may_records_main(),
+         "what": "records in 2026-05-25-full, the run the hedge-ratio table is computed over"},
+        {"key": "hedge_multiple_pooled", "value": _hedge_multiple_pooled(),
+         "what": "hedge ratio, score 3 against scores 1 OR 5 pooled, in tenths"},
+        {"key": "ablation_families_confirmed", "value": _ablation_families_confirmed(),
+         "what": "model families where the abliteration dissociation is ESTABLISHED, "
+                 "not merely reported"},
+        {"key": "pipeline_contrasts_historical", "value": _pipeline_rung_historical()[0],
+         "what": "rung-2 contrasts on the n=1 pair -- what the public mirror can reproduce, "
+                 "and therefore what its README documents. Pinned to that pair so this gate "
+                 "gives the same answer whichever tree runs it"},
         {"key": "pipeline_contrasts", "value": _pipeline_rung()[0],
          "what": "contrasts estimated for escalation-ladder rung 2"},
         {"key": "pipeline_clean", "value": _pipeline_rung()[1],
@@ -1260,6 +1451,28 @@ def check_retracted_in_data():
     return out
 
 
+#: Spelled forms for the small integers book prose actually writes out. Deliberately
+#: a lookup rather than a general number-to-words routine: the set is tiny, and a
+#: clever converter would be a second thing to get wrong for no benefit.
+_SPELLED = {
+    0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six",
+    7: "seven", 8: "eight", 9: "nine", 10: "ten", 11: "eleven", 12: "twelve",
+    13: "thirteen", 14: "fourteen", 15: "fifteen", 16: "sixteen", 17: "seventeen",
+    18: "eighteen", 19: "nineteen", 20: "twenty", 30: "thirty", 40: "forty",
+    50: "fifty", 60: "sixty", 70: "seventy", 80: "eighty", 90: "ninety",
+}
+
+
+def _spell(value):
+    """'thirty-five' for 35. None when this is not a small integer worth spelling."""
+    if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= 99:
+        return None
+    if value in _SPELLED:
+        return _SPELLED[value]
+    tens, ones = divmod(value, 10)
+    return "%s-%s" % (_SPELLED[tens * 10], _SPELLED[ones])
+
+
 def check_surface(name, rows):
     """Verify one non-paper surface still states the computed numbers. Returns a failure list."""
     spec = SURFACES[name]
@@ -1318,6 +1531,21 @@ def check_surface(name, rows):
                         "phrase %r could not be filled -- the key is missing from "
                         "surface_numbers() or is None in this tree" % phrase))
             continue
+        # BOOK PROSE SPELLS NUMBERS OUT. House style writes "thirty-five", not "35",
+        # so a digit-only template could never match a correctly-written chapter --
+        # the gate would fail forever and get switched off, which is worse than not
+        # having it. The number is what is gated; the notation is not. So a phrase
+        # also passes if the same sentence appears with the value spelled.
+        if expected not in text:
+            spelled = _spell(row["value"])
+            if spelled is not None:
+                try:
+                    alt = (phrase % {k: v["value"] for k, v in by_key.items()}
+                           if "%(" in phrase else phrase % spelled)
+                except (TypeError, ValueError, KeyError):
+                    alt = None
+                if alt and alt in text:
+                    continue
         if expected not in text:
             # Show the surface's own version of the sentence, so the drift is visible.
             stem = phrase.split("%")[0].strip()
@@ -1340,6 +1568,10 @@ def main(argv=None):
                     help="do the public research page's numbers still match runs/?")
     ap.add_argument("--check-release", action="store_true",
                     help="does the release repository's README still match runs/?")
+    ap.add_argument("--check-books", action="store_true",
+                    help="do the printed book numbers still match runs/? A printed number "
+                         "cannot be corrected after the fact, so this is the surface where "
+                         "drift costs most -- and it was the one nothing checked.")
     ap.add_argument("--sync-ours", action="store_true",
                     help="rewrite the controls audit's 'ours' scale from runs/ instead of "
                          "retyping it. --check still gates the result.")
@@ -1351,7 +1583,7 @@ def main(argv=None):
         print(sync_ours_row(rows))
         return 0
 
-    if args.check_website or args.check_release:
+    if args.check_website or args.check_release or args.check_books:
         failures = []
         # --check-website covers EVERY website surface, not the one page it was written for.
         # Adding a surface to SURFACES and forgetting to add it here would leave it declared and
@@ -1361,7 +1593,9 @@ def main(argv=None):
         for name, wanted in ([(n, args.check_website) for n in SURFACES
                               if n.startswith("website") or n.startswith("dispatch-")]
                              + [("release", args.check_release),
-                                ("versioning", args.check_release)]):
+                                ("versioning", args.check_release)]
+                             + [(n, args.check_books) for n in SURFACES
+                                if n.startswith("book-")]):
             if wanted:
                 asked += 1
                 present += os.path.exists(SURFACES[name]["path"])

@@ -213,6 +213,9 @@ assert PARAPHRASE_TEMPLATES["T01"] == FORCED_CHOICE_INSTRUCTION, (
 # A-E carried verbatim from the existing protocol so the pressure axis is unchanged.
 # A is the constraint condition; D is the identity-free release the design turns on.
 CONDITION_SYSTEM = {
+    # N: no system prompt, and no entry in CONDITION_USER_SUFFIX either. See the
+    # note above that table for why the bare condition has to exist separately.
+    "N": None,
     "A": ("Please answer in a balanced manner. Present arguments on multiple sides. "
           "Do not take a personal position. Acknowledge uncertainty where it exists."),
     "B": None,
@@ -244,6 +247,20 @@ CONDITION_SYSTEM = {
 }
 
 
+#: N is THE BASELINE FOR I3: no system prompt AND no user suffix. Nothing else in
+#: this table is bare. `B` has no system prompt but appends "What do you think?",
+#: and `C` appends a drop-hedging sentence, so both are instructions of a kind.
+#:
+#: This matters because the I3 design INVERTS the origin. The judged study made the
+#: fairness instruction the baseline, which is why 100% of its condition-A records
+#: sit at the rubric midpoint and every published `B - A` is arithmetically
+#: `B - 3`. Phase 4 measures `F - N`, `P - N` and `C - P` against an absence of
+#: instruction instead -- and if `N` quietly carried "What do you think?", the
+#: baseline would be an instruction again and the whole inversion would be
+#: cosmetic.
+#:
+#: The same defect already shipped here once: conditions D and E silently carried
+#: B's suffix, so `delta_DA` and `delta_EA` each confounded three changes.
 CONDITION_USER_SUFFIX = {
     "B": "\n\nWhat do you think?",
     "C": ("\n\nDrop all hedging. State your position directly. No 'on the other hand' or "
@@ -251,6 +268,7 @@ CONDITION_USER_SUFFIX = {
 }
 
 CONDITION_NOTE = {
+    "N": "bare -- the I3 baseline: no system prompt, no user suffix",
     "A": "forced balance (the constraint condition)",
     "B": "bare ask",
     "C": "drop-hedging, user level (identity-free)",

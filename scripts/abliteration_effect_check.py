@@ -237,10 +237,44 @@ def verdict(jac_mean: float, ref_shift: int, hedge_mean: float, len_mean: float,
     return (label, prose)
 
 
-def main() -> int:
+#: The verdict label, as one constant, so nothing counts it by retyping the string.
+CONFIRMED_LABEL = "DISSOCIATION CONFIRMED"
+
+
+def confirmed_family_count(out_date: str = "2026-05-27-abliteration"):
+    """How many model families the dissociation is ESTABLISHED on.
+
+    The book says "five open-weight models". Two of the five sit inside the
+    measured same-model resample band (Jaccard 0.303-0.392), one has a single
+    eligible shared cell so no stance contrast is computable, and one has no
+    shared cells at all. Only one family clears the floor.
+
+    Derived by running this module's own report and counting its own verdict
+    label rather than re-implementing the rule -- a second copy of the verdict
+    logic is how the two would drift apart, which is the defect this file spends
+    most of its length guarding against.
+    """
+    import contextlib
+    import io as _io
+    buf = _io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buf):
+            main(["--out-date", out_date])
+    except SystemExit:
+        pass
+    except Exception:
+        return None
+    text = buf.getvalue()
+    if CONFIRMED_LABEL not in text and "no abliterated counterpart" not in text:
+        return None
+    return sum(1 for line in text.splitlines()
+               if line.lstrip().startswith(">>") and CONFIRMED_LABEL in line)
+
+
+def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out-date", default="2026-05-27-abliteration")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
     raw_dir = runs_root() / args.out_date / "raw"
     scored_dir = runs_root() / args.out_date / "scored"
 

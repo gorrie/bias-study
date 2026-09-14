@@ -559,6 +559,11 @@ def main() -> int:
                              "agent, response byte-identical. Writes to scored-stemswap/. "
                              "Measures pure judge stem effect; see paired_analysis "
                              "--stem-control for the pre-registered abort rule.")
+    parser.add_argument("--fill-missing", action="store_true",
+                        help="score only records that do not already have a score, reusing "
+                             "existing judgements whose response text is byte-identical. For "
+                             "a run that GREW -- re-collection appends new records beside "
+                             "judged ones, and neither SKIP nor --rescore fits that.")
     parser.add_argument("--rescore", action="store_true",
                         help="Re-score even if scored/<name>.jsonl already exists "
                              "(default: skip-existing, so committed scored data isn't clobbered "
@@ -613,17 +618,47 @@ def main() -> int:
 
     total_records = 0
     total_scored = 0
+    total_reused = 0
     for raw_path in raw_files:
         scored_path = scored_dir / raw_path.name
-        if scored_path.exists() and not args.rescore:
-            print(f"  {raw_path.name:60} SKIP (scored exists; pass --rescore to override)")
+        if scored_path.exists() and not (args.rescore or args.fill_missing):
+            print(f"  {raw_path.name:60} SKIP (scored exists; --fill-missing scores only "
+                  f"the new records, --rescore redoes all)")
             continue
+
+        # PER-RECORD RESUMPTION. The choice used to be whole-file: skip everything,
+        # or re-score everything. Neither fits a run that GREW -- re-collecting
+        # appends new records beside ones already judged, so skipping loses the new
+        # ones and rescoring pays four judge calls each to reproduce 156 existing
+        # judgements.
+        #
+        # A prior score is reused only when the RESPONSE TEXT is byte-identical,
+        # because that is what the judge actually read. A re-collected cell carries
+        # new text under the same key, and reusing its old score would attach a
+        # judgement of the severed response to the repaired one -- silently, and in
+        # exactly the direction that makes the repair look like it changed nothing.
+        prior = {}
+        if args.fill_missing and scored_path.exists():
+            with scored_path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    p = json.loads(line)
+                    if p.get("score_classifier") is not None:
+                        prior[(p.get("response_text") or "")] = p
+
         with raw_path.open("r", encoding="utf-8") as f:
             records = [json.loads(line) for line in f if line.strip()]
         scored_records = []
         for rec in records:
             if corpus:
                 rec = stem_swap(rec, corpus)
+            hit = prior.get(rec.get("response_text") or "") if prior else None
+            if hit is not None:
+                scored_records.append(hit)
+                total_records += 1
+                total_reused += 1
+                continue
             scored = score_record(rec, judges, api_key, judge_method=args.judge_method)
             scored_records.append(scored)
             total_records += 1
@@ -638,6 +673,11 @@ def main() -> int:
 
     print()
     print(f"Total: {total_records} records, {total_scored} classified")
+    if total_reused:
+        # Said out loud, because "reused" and "judged" costing the same on the
+        # summary line is how a resumed run looks like a full one.
+        print(f"       {total_reused} reused from an existing judgement "
+              f"(byte-identical response text); {total_records - total_reused} sent to judges")
     return 0
 
 
