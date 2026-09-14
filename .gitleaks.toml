@@ -8,24 +8,78 @@
 [extend]
 useDefault = true
 
-[allowlist]
-description = "Templates, docstrings, and validator code that intentionally contain key-shaped patterns"
+# ---------------------------------------------------------------------------
+# THE KEY THIS PROJECT ACTUALLY USES HAD NO RULE.
+#
+# Measured 2026-09-13: a decoy file containing a real-shaped OpenRouter key, an
+# AWS secret and a GitHub token was scanned with this config AND with gitleaks'
+# defaults alone. Both reported "no leaks found", exit 0. The default ruleset
+# carries no OpenRouter pattern, so the one credential every collection in this
+# repository depends on was the one the scanner could not see.
+#
+# A secret scanner that misses your own secret is the same defect as a gate that
+# passes over an empty corpus: it reports clean because it looked at nothing
+# relevant.
+#
+# VALIDATE ANY CHANGE HERE AGAINST A DECOY BEFORE TRUSTING IT:
+#   gitleaks dir <dir-containing-a-decoy-key> --config .gitleaks.toml -v
+# and require a finding. A rule nobody has watched fire is not known to work.
+# ---------------------------------------------------------------------------
 
-# Files that are documentation / templates by design.
+[[rules]]
+id = "openrouter-api-key"
+description = "OpenRouter API key (sk-or-v1-<64 hex>)"
+regex = '''sk-or-v1-[0-9a-f]{64}'''
+keywords = ["sk-or-v1-"]
+
+[[rules]]
+id = "openrouter-api-key-loose"
+description = "Anything shaped like an OpenRouter key, including truncated or re-cased variants"
+regex = '''sk-or-(?:v[0-9]-)?[0-9a-zA-Z]{32,}'''
+keywords = ["sk-or-"]
+
+# ---------------------------------------------------------------------------
+# Allowlists. Both are SHAPE-based, not path-based, wherever a real credential
+# could plausibly appear.
+#
+# Note the deliberate absence of README.md / DEVELOPER.md / SKILL.md from any
+# path allowlist for the OpenRouter rules: those are exactly the files a key gets
+# pasted into by accident, and a path exemption there would reproduce the defect
+# this rule was written to fix.
+# ---------------------------------------------------------------------------
+
+[[allowlists]]
+description = "Templates and validator code that intentionally contain key-shaped patterns"
+regexTarget = "match"
 paths = [
   '''\.env\.example$''',
   '''CONTRIBUTING\.md$''',
-  '''DEVELOPER\.md$''',
-  '''README\.md$''',
-  '''skills/.*/SKILL\.md$''',
 ]
-
-# Lines that contain key-shaped strings but are clearly placeholders.
 regexes = [
   '''REPLACE_WITH_YOUR_OWN_KEY''',
   '''REPLACE_WITH_YOUR_OWN_TOKEN''',
   '''startswith\(['"]sk-or-['"]\)''',
   '''startswith\(['"]hf_['"]\)''',
   '''sk-or-\.\.\.''',
-  '''sk-or-v1-XXX''',
+  '''sk-or-v1-X+''',
+  '''sk-or-v1-0{8,}''',
+]
+
+[[allowlists]]
+description = "Source-hash inventories: a .py path mapped to its sha256 is not a credential"
+regexTarget = "line"
+regexes = [
+  # `operations/*/verification/*.json` map a script path to the sha256 of its
+  # contents. gitleaks' default `generic-api-key` rule fires on
+  #     "scripts/key_numbers.py": "<64 hex>"
+  # because the FILENAME contains "key" and a digest looks like a secret.
+  # Measured 2026-09-13: five such findings, every one false.
+  #
+  # This has to target the LINE. The secret gitleaks extracts is the bare digest,
+  # so the surrounding shape -- which is what makes it obviously a hash -- is
+  # invisible to a secret-targeted regex.
+  #
+  # Matched by shape, never by file path, so a real secret sitting in one of
+  # those files is still caught.
+  '''"[A-Za-z0-9_\-./\\:]+\.py"\s*:\s*"[0-9a-f]{64}"''',
 ]

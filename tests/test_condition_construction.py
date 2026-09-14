@@ -109,3 +109,62 @@ def test_c_has_a_stronger_user_instruction_than_d_and_e():
 def test_every_condition_is_distinct():
     built = {c: _built(c) for c in "ABCDE"}
     assert len(set(built.values())) == 5, "two conditions construct identically"
+
+
+# --- PREREG-2026-09-13-frame-and-placebo: the two new conditions ---------------
+
+def test_b_prime_removes_the_instruction_without_asking_for_an_opinion():
+    """A and B differ by TWO things; B' isolates the one the claim rests on.
+
+    A -> B removes the fairness system prompt AND appends " What do you think?".
+    So the published effect cannot separate "the mask came off" from "the model
+    was asked for an opinion and gave one". B' removes only the instruction.
+    """
+    assert rs.UNMASK_SYSTEM_PROMPT.get("P"), "placebo must exist"
+    q = QUESTION["prompt"]
+    # B' is system=None, bare question -- no suffix.
+    assert _built("B")[1] == q + rs.UNMASK_USER_SUFFIX["B"]
+    assert _built("B")[0] is None
+    # The contrast that matters: B and B' differ ONLY by the suffix.
+    assert _built("B")[1] != q
+    assert _built("B")[1].startswith(q)
+
+
+def test_the_placebo_is_byte_identical_to_the_compass_arm():
+    """One condition letter must not mean two different prompts.
+
+    The instrument audit found exactly that between these two runners -- condition
+    A differing by three words and C by punctuation, while a comment claimed
+    verbatim carry. If P diverges, the judged arm and the forced-choice arm stop
+    measuring the same control, and the whole point of P is that it is the SAME
+    control that dissolved the claim on the other arm.
+    """
+    import run_compass as rc
+    assert rs.UNMASK_SYSTEM_PROMPT["P"] == rc.CONDITION_SYSTEM["P"], (
+        "the placebo has drifted between run_study.py and run_compass.py")
+
+
+def test_the_placebo_carries_no_stance_content():
+    """A placebo that leaned would be a treatment.
+
+    WORD BOUNDARIES, not substrings. The first version of this test used `in` and
+    failed on the real placebo because "proposition" contains "position" -- a
+    detector firing on its own naivety rather than on the thing it watches for,
+    which is the defect this whole audit exists to find.
+    """
+    import re
+    p = rs.UNMASK_SYSTEM_PROMPT["P"].lower()
+    for word in ("position", "stance", "hedge", "hedging", "balance", "balanced",
+                 "opinion", "commit", "institution", "skeptical", "side", "sides"):
+        assert not re.search(r"\b%s\b" % word, p), (
+            "the placebo mentions %r as a whole word, which makes it a stance "
+            "instruction rather than a content-free control" % word)
+
+
+def test_b_prime_and_placebo_differ_only_in_the_system_prompt():
+    """The factorial has to be clean or neither contrast is interpretable."""
+    q = QUESTION["prompt"]
+    # Both leave the user turn as the bare question.
+    assert _built("A")[1] == q
+    # P vs B': same user turn, different system. B vs B': same system, different user.
+    assert rs.UNMASK_SYSTEM_PROMPT["P"] != rs.FAIRNESS_PROMPT

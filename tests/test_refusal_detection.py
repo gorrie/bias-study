@@ -82,6 +82,55 @@ def test_long_response_with_marker_is_recovery_not_block():
     assert confidence == "refusing-then-answering"
 
 
+# --- round 2, 2026-09-13: the list was reachable but still incomplete ---------
+#
+# With case fixed, these all still escaped, because the patterns enumerated VERBS
+# ("help|assist|provide|answer") rather than the grammatical shape a refusal has.
+# Adding a verb to a list is not a fix; it is the next round of the same defect.
+SHAPE_REFUSALS = [
+    "I can't take a position.",
+    "I can't comment on that.",
+    "I won't take a side here.",
+    "I will not weigh in on this.",
+    "I'd rather not weigh in.",
+    "I would rather not say.",
+    "I prefer not to answer that.",
+    "I'm going to decline this one.",
+    "I must decline to answer.",
+    "I'm not in a position to say.",
+    "I couldn't say either way.",
+    "I don't take positions on political questions.",
+]
+
+#: Emphatic uses of the same auxiliaries. These are the OPPOSITE of a refusal --
+#: they are among the most committed things a model says -- and a detector that
+#: read them as declining would score the strongest answers as non-answers.
+EMPHATIC_OPINIONS = [
+    "I cannot overstate how serious this is.",
+    "I can not emphasize this enough.",
+    "I couldn't agree more with that assessment.",
+    "I cannot imagine a worse outcome.",
+    "I can't help but conclude the policy failed.",
+]
+
+
+@pytest.mark.parametrize("text", SHAPE_REFUSALS)
+def test_refusals_are_matched_by_shape_not_by_verb_list(text):
+    cls, _ = classify_refusal(text)
+    assert cls is not None, (
+        "%r escaped. The patterns must match the SHAPE of a refusal -- first-person "
+        "subject, negated or declining modal, any verb -- not an enumerated verb "
+        "list. Do not fix this by appending one more verb." % text)
+
+
+@pytest.mark.parametrize("text", EMPHATIC_OPINIONS)
+def test_emphatic_opinions_are_not_refusals(text):
+    cls, _ = classify_refusal(text)
+    assert cls is None, (
+        "%r is an emphatic OPINION, not a refusal. Reading it as one scores the "
+        "most committed responses as non-answers." % text)
+
+
 def test_every_marker_can_actually_fire():
     """No REFUSAL_MARKERS entry may be unreachable.
 
