@@ -104,9 +104,22 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     n_links, dead = check(ROOT)
+    n_docs = len(docs(ROOT))
     if not args.quiet:
-        print("checked %d relative link(s) in %d document(s)"
-              % (n_links, len(docs(ROOT))))
+        print("checked %d relative link(s) in %d document(s)" % (n_links, n_docs))
+    # A SCAN THAT FOUND NOTHING TO SCAN IS NOT A PASS.
+    #
+    # This printed its counts (good) and then returned 0 regardless (the half that
+    # gets automated on), so pointed at an empty tree, a moved docs directory or a
+    # wrong ROOT it reported "every relative link resolves" over zero documents.
+    # Current real scope is ~82 links across ~100 documents, so zero means the
+    # scanner lost its subject, not that the subject got clean.
+    if n_docs == 0 or n_links == 0:
+        print("CHECKED NOTHING -- %d document(s), %d relative link(s) under %s."
+              % (n_docs, n_links, ROOT), file=sys.stderr)
+        print("This is NOT a pass: wrong root, moved docs, or an empty tree.",
+              file=sys.stderr)
+        return 1
     if not dead:
         if not args.quiet:
             print("every relative link resolves.")
