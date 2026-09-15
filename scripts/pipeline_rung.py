@@ -140,6 +140,25 @@ NULL_CONDITION = "B-Parseltongue"
 #: this file computed before.
 STM_VS_NULL = ("B-STM", NULL_CONDITION)
 
+#: THE PROXY PATH, MEASURED RATHER THAN INFERRED. Collected 2026-09-14.
+#:
+#: Every record in the pipeline arm goes through the G0DM0D3 proxy; the plain-B
+#: baseline it is differenced against goes DIRECT to OpenRouter. So all six
+#: "vs plain B" contrasts confound the named transform with the path -- which was
+#: invisible for as long as B-Parseltongue looked like a treatment arm.
+#:
+#: `B-Proxy` is plain condition B sent THROUGH the proxy with every transform
+#: explicitly off (the falses matter: the server defaults godmode and
+#: parseltongue to TRUE when the field is absent). Same questions, same 4,000-
+#: token cap, same 5 samples per cell. Differenced against the same baseline, it
+#: is the proxy path and the run-to-run gap and nothing else.
+#:
+#: This is what B-Parseltongue's contrast was accidentally estimating. Having
+#: both lets the arm say which part of its own floor is the path and which is
+#: drift, instead of carrying one number that could be either.
+PROXY_CONTROL_RUN = "2026-09-14-g0dm0d3-proxy-control"
+PROXY_CONDITION = "B-Proxy"
+
 
 def _roots():
     try:
@@ -296,6 +315,26 @@ def estimate(pipeline_run=None, baseline_run=None):
                  "n": len(d), "effect": round(ci[0], 3), "lo": round(ci[1], 3),
                  "hi": round(ci[2], 3), "excludes_zero": ci[1] > 0 or ci[2] < 0,
                  "within_run": True})
+    # The proxy path measured directly, where the control arm exists. Reported
+    # beside the inferred floor rather than replacing it: they answer different
+    # questions (one is "what does the path cost", the other "what does an
+    # untreated arm report"), and a reader should be able to see both.
+    proxy = _load(PROXY_CONTROL_RUN)
+    if proxy:
+        proxy_means, _ = _mean_replicates(proxy, condition=PROXY_CONDITION)
+        pm = {(m, q): v for (m, _c, q), v in proxy_means.items()}
+        out["measured_proxy_floor"] = {}
+        for m in sorted({k[0] for k in pm}):
+            d = [pm[(m, q)] - base[(m, q)]
+                 for (mm, q) in sorted(pm) if mm == m and (m, q) in base]
+            ci = _boot(d, "%s|proxy-vs-direct" % m, run=PROXY_CONTROL_RUN)
+            if ci:
+                out["measured_proxy_floor"][m] = {
+                    "n": len(d), "effect": round(ci[0], 3),
+                    "lo": round(ci[1], 3), "hi": round(ci[2], 3),
+                    "excludes_zero": ci[1] > 0 or ci[2] < 0}
+        out["proxy_control_run"] = PROXY_CONTROL_RUN
+
     out["any_excludes_zero"] = any(c["excludes_zero"] for c in out["contrasts"])
     out["n_contrasts"] = len(out["contrasts"])
     # The measured floor, per model: what a contrast against plain B reports when
@@ -371,6 +410,16 @@ def main(argv=None):
                      "   and it EXCLUDES ZERO" if f["excludes_zero"] else ""))
         print("  Any 'vs plain B' effect of that magnitude is not distinguishable from it.")
         print("  Verify with: python scripts/pipeline_transform_audit.py\n")
+    if res.get("measured_proxy_floor"):
+        print("  MEASURED PROXY FLOOR (%s). Plain condition B sent THROUGH the proxy"
+              % res["proxy_control_run"])
+        print("  with every transform off, differenced against the same direct-to-OpenRouter")
+        print("  baseline. This is the path cost, measured rather than inferred:")
+        for m, f in sorted(res["measured_proxy_floor"].items()):
+            print("      %-24s %+0.2f [%+0.2f, %+0.2f]  n=%d%s"
+                  % (m.split("/")[-1], f["effect"], f["lo"], f["hi"], f["n"],
+                     "   EXCLUDES 0" if f["excludes_zero"] else ""))
+        print("")
     if not res["any_excludes_zero"]:
         print("  NOT ONE of the %d intervals excludes zero." % res["n_contrasts"])
         print("  The arm does not support a direction.")

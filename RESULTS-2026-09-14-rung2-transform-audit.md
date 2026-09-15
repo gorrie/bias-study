@@ -134,6 +134,42 @@ The published conclusion — *"STM alone (3.60) and Parseltongue alone (3.70) ar
 turns out to be right about STM. It was not right for the reason given, and for Parseltongue it
 could not have come out any other way.
 
+### The floor, measured: it is drift, not the proxy
+
+The obvious suspect for that +0.24 was the **proxy path** — every pipeline record goes through
+G0DM0D3 while the baseline goes direct to OpenRouter. So it was collected rather than argued
+about. `B-Proxy` is plain condition B sent **through the proxy with every transform explicitly
+off**, same questions, same 4,000-token cap, same five samples per cell, differenced against the
+same baseline. 100 calls, `collection_check` ACCEPTED on the first pass, 100 of 100 classified.
+
+| model | inferred floor (B-Parseltongue) | **measured path cost (B-Proxy)** |
+|---|---|---|
+| claude-opus-4.7 | +0.24 [+0.02, +0.49] · excludes 0 | **+0.06 [−0.16, +0.28]** |
+| grok-4.3 | +0.11 [−0.10, +0.29] | **−0.14 [−0.28, +0.00]** |
+
+**The proxy path costs approximately nothing.** Both intervals span zero.
+
+The two differ in one other respect, and it is now the one that matters. The control was
+collected in the **same sitting** as the baseline (both 2026-09-15 UTC); the pipeline arm was
+collected one to two days earlier (2026-09-13 and -14). So the decomposition is:
+
+- same-sitting, through-proxy vs direct → **the path**: +0.06 on Opus
+- cross-sitting, through-proxy vs direct → **path + drift**: +0.24 on Opus
+
+which leaves roughly **+0.18 of pure cross-sitting drift on Opus**, and a comparable magnitude
+on Grok in the other direction. Two *identical* arms collected a day apart differ by about a
+quarter point on a five-point rubric, with an interval that excludes zero.
+
+**That changes what rung 2 needs.** The fix is not a proxy-matched baseline, it is a
+**same-sitting** one — and every "vs plain B" contrast in this arm currently crosses a sitting.
+It also puts a resolution limit on the design: a 10-question, 5-sample cell on Opus cannot
+distinguish an effect below roughly 0.25 across sittings, which is larger than most of what this
+arm reports.
+
+(The decomposition is a difference of two n=10 bootstraps and should be read as an order of
+magnitude, not a point estimate. The part that is not in doubt is the direct measurement: the
+path is small and spans zero on both models.)
+
 ### An interval excluding zero on an arm that received no treatment
 
 This is the sharpest thing in the audit and it is a statement about the method, not the models.
@@ -187,17 +223,22 @@ generous by one ingredient out of two.
 
 Each is cheap, local, and answers a question the arm currently cannot.
 
-1. **Plain condition B *through the proxy*, all transforms off.** The present baseline goes
-   direct to OpenRouter while every pipeline record goes through G0DM0D3, so the proxy path is
-   uncontrolled in all six "vs plain B" contrasts. 10 questions × 5 samples × 2 models = 100
-   calls. This is the control that turns the null floor from an inference into a measurement.
-2. **godmode without autotune, and autotune without godmode.** Splits B-Layered's effect into
-   system prompt versus sampling. 200 calls.
-3. **A trigger-bearing instrument, if the Parseltongue claim is to be made at all.** Obfuscation
+1. ~~**Plain condition B through the proxy, all transforms off.**~~ **DONE** —
+   `2026-09-14-g0dm0d3-proxy-control`, 100 calls, scored. The path costs +0.06 on Opus and
+   −0.14 on Grok, both spanning zero, which is what moved the floor's explanation from the
+   proxy to cross-sitting drift.
+2. **A same-sitting baseline.** This is now the one that matters and it was not on the list
+   before the control was run. Collect plain B alongside the pipeline arm, in the same sitting,
+   rather than a day or two later. 100 calls. Without it every "vs plain B" contrast in this arm
+   carries ~0.2 of drift it cannot separate from its effect.
+3. **godmode without autotune, and autotune without godmode.** Splits B-Layered's effect — the
+   arm's only surviving one — into system prompt versus sampling change. 200 calls.
+4. **A trigger-bearing instrument, if the Parseltongue claim is to be made at all.** Obfuscation
    can only be tested on text it will actually transform. This is an instrument change, not a
    re-collection, and it should be pre-registered rather than bolted on.
 
-Until (1) exists, the honest reading of rung 2 is the within-arm contrast and nothing else.
+Until (2) exists, the honest reading of rung 2 is the within-arm contrast and nothing else —
+`B-Layered minus B-STM`, which is collected in one sitting and never touches the baseline.
 
 ---
 
