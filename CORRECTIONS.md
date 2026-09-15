@@ -483,6 +483,72 @@ published positive.
 
 ---
 
+### 16. The obfuscation arm applied no obfuscation — corrected 2026-09-14
+
+**Published:** 2026-05-26 (`WRITEUP-2026-05-26.md` §4.3), carried into the README's rung-2 row,
+`DEVELOPER.md`, `PREREG-2026-09-13-pipeline-rung.md` and `X-AMMUNITION-DRAFT.md`.
+**Withdrawn:** 2026-09-14.
+
+The claim was that rung 2 applies elicitation-layer force as **"STM hedge-strip, Parseltongue
+obfuscation, or both layered"**, and that *"only the layered stack moves the needle — STM alone
+(3.60) and Parseltongue alone (3.70) are ≈ prompt-B... the practitioner intuition that layered
+obfuscation is the potent form."*
+
+**No obfuscation was ever applied.** G0DM0D3's Parseltongue rewrites trigger words from a fixed
+list of 53 security and jailbreak terms and returns the text **unchanged** when it finds none.
+The instrument is ten neutral policy questions and not one contains a trigger, so the transform
+fired on **0 of 240 requests** across both pipeline runs. `B-Parseltongue` was condition B,
+collected a second time, under a different label.
+
+Every check the study runs had passed on it: the call succeeded, the text was complete, the
+judges scored it, and on Claude Opus the interval excluded zero. The evidence was in every
+record from the first run — the collector stores the server's own echo of what it did, and no
+analysis had ever read it. `scripts/pipeline_transform_audit.py` is that read; it takes no API
+calls.
+
+**What this does to the numbers.**
+
+- `B-Parseltongue vs plain B` is a **null by construction** and therefore the floor every other
+  contrast in the arm must clear. On Opus it reads **+0.24 [+0.02, +0.49] and excludes zero**, on
+  an arm that received nothing.
+- Opus's `B-STM vs plain B` of **+0.37** sits on that floor. Differenced within the run, where
+  the baseline run, the date and the proxy path all cancel, STM is **+0.13 [−0.07, +0.36]** on
+  Opus and **−0.02** on Grok. **Both span zero. STM does not move either model.** The published
+  conclusion about STM was right; it was right by luck.
+- A control collected 2026-09-14 (`2026-09-14-g0dm0d3-proxy-control`, plain B through the same
+  proxy with every transform off) shows the **proxy path costs +0.06 on Opus and −0.14 on Grok,
+  both spanning zero**. So the floor is not the path — it is **cross-sitting drift**, roughly
+  +0.18 on Opus between collections a day apart.
+
+**Two further facts about this arm, neither previously recorded.** `STM` is not a prompt
+transform: `applySTMPost(response, …)` runs it after generation and deletes *"I think"*,
+*"perhaps"*, *"In my opinion"* and eight siblings from the model's reply, which the judges then
+score on a rubric where hedging separates a hedged 3 from a committed 4. Measured over all 225
+scored pipeline records it removes a **median of 16 characters** from responses averaging ~3,500,
+and edited records score *lower* rather than higher — so it does not manufacture the finding. It
+is badly differential though, firing on 45 of 60 Opus records against 1 of 60 for Grok, so
+`B-STM` is **not the same intervention on the two models**.
+
+**Disposition.** The sentence *"layered obfuscation is the potent form"* is **withdrawn**: no
+obfuscation occurred, and B-Layered's distinguishing ingredients are `godmode` (a system prompt
+plus temperature +0.1) and `autotune` (adaptive sampling). Every `vs plain B` figure in this arm
+is **provisional** pending a same-sitting baseline.
+
+**What survives, and it is the finding that mattered.** `B-Layered minus B-STM` never reads the
+baseline run, so it is immune to this confound *and* to the token-budget confound corrected the
+same day: **Opus −0.31 [−0.64, −0.01], Grok +0.48 [+0.26, +0.70]** — two models moving in
+**opposite directions** under the same intervention. Grok's result cannot be an editing artefact
+either: STM touched 1 of its 55 records and removed a single character. Whether the effect
+belongs to the instruction or to the sampling change is being collected now
+(`B-Godmode` / `B-Autotune`); until then the attribution is open and is stated as open.
+
+Full account: `RESULTS-2026-09-14-rung2-transform-audit.md`. The arms where a treatment was not
+administered, or where nothing records that it was, are enumerated in
+`studypaths.UNVERIFIED_TREATMENT` — including 220 abliteration records whose `obliteratus_applied`
+is derived from whether the string `ablit` appears in the run **label**.
+
+---
+
 ## How to read this file
 
 If a number in the README, the writeup or the run data disagrees with something you have seen
