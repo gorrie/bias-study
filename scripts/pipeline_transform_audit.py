@@ -72,7 +72,8 @@ from studypaths import UNVERIFIED_TREATMENT, run_roots  # noqa: E402
 # The runs that went through the G0DM0D3 proxy. Named, not globbed: a run that
 # did not use the proxy carries no echo, and "no echo" would otherwise read as
 # "transform did not fire" -- the same confusion this tool exists to end.
-PIPELINE_RUNS = ("2026-09-13-g0dm0d3-replicate", "2026-05-27-g0dm0d3")
+PIPELINE_RUNS = ("2026-09-13-g0dm0d3-replicate", "2026-05-27-g0dm0d3",
+                 "2026-09-14-g0dm0d3-proxy-control")
 
 # What each condition CLAIMS, by name. The audit is the comparison between this
 # and what the server echoed back.
@@ -80,7 +81,24 @@ CLAIMS = {
     "B-STM": ("stm",),
     "B-Parseltongue": ("parseltongue",),
     "B-Layered": ("parseltongue", "stm", "godmode", "autotune"),
+    "B-Godmode": ("godmode",),
+    "B-Autotune": ("autotune",),
+    # A control claims nothing, and that is a checkable claim too -- see below.
+    "B-Proxy": (),
 }
+
+#: CONDITIONS THAT MUST HAVE RECEIVED NOTHING.
+#:
+#: The inverse of the check this tool was written for, and the more dangerous
+#: direction now that the arm has controls in it. A treated arm that was not
+#: treated overstates a null; an untreated CONTROL that was quietly treated
+#: understates every effect measured against it, and it does so while looking
+#: exactly like a clean baseline.
+#:
+#: This is not hypothetical on this server: `godmode` and `parseltongue` default
+#: to TRUE when the field is absent, so a control assembled by leaving flags out
+#: -- the natural way to write one -- is the fully-forced arm.
+CONTROL_CONDITIONS = ("B-Proxy",)
 
 
 def _records(run):
@@ -138,6 +156,18 @@ def audit(runs=PIPELINE_RUNS):
             for name in _fired(echo):
                 per[key][name] += 1
 
+    # Controls: anything that fired is a contaminated baseline.
+    contaminated = []
+    for key in sorted(totals):
+        run, cond = key
+        if cond not in CONTROL_CONDITIONS:
+            continue
+        for name, count in sorted(per[key].items()):
+            if name == "stm:effective":
+                continue
+            contaminated.append({"run": run, "condition": cond, "transform": name,
+                                 "fired": count, "records": totals[key]})
+
     rows = []
     for key in sorted(totals):
         run, cond = key
@@ -155,6 +185,8 @@ def audit(runs=PIPELINE_RUNS):
                                          if n else None)
             rows.append(row)
     return {"runs": list(runs), "rows": rows,
+            "contaminated_controls": contaminated,
+            "controls_checked": sorted({k for k in totals if k[1] in CONTROL_CONDITIONS}),
             "records_examined": sum(totals.values())}
 
 
@@ -360,6 +392,24 @@ def main(argv=None):
                           % (d["run"], d["condition"], d["transform"], d["records"]))
                 print("Record them in studypaths.UNVERIFIED_TREATMENT with the evidence,"
                       "\nor fix the arm. Do not simply widen this gate.")
+
+    if res["controls_checked"]:
+        bad = res["contaminated_controls"]
+        if not args.json:
+            if bad:
+                print("\nCONTAMINATED CONTROL -- a baseline that received treatment:")
+                for c in bad:
+                    print("    %s / %s: %s fired on %d of %d records"
+                          % (c["run"], c["condition"], c["transform"],
+                             c["fired"], c["records"]))
+                print("Every effect measured against this control is understated by"
+                      "\nwhatever that transform does. This is not a disclosable defect;"
+                      "\nit is a wrong baseline.")
+            else:
+                print("\nControls clean: %d control arm(s) received no transform."
+                      % len(res["controls_checked"]))
+        if args.check and bad:
+            return 1
 
     if args.check and undisclosed:
         return 1

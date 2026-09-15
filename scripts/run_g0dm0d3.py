@@ -64,6 +64,27 @@ COND_FLAGS = {
     #
     # This condition measures that floor directly instead of inferring it.
     "B-Proxy":        {"stm_modules": [], "parseltongue": False, "godmode": False, "autotune": False},
+    # SPLITTING B-LAYERED, added 2026-09-14.
+    #
+    # With Parseltongue shown to be inert and STM's edit bounded at a median of
+    # 16 characters, B-Layered's effect -- the only one rung 2 has left, and the
+    # one that moves Opus and Grok in OPPOSITE directions -- belongs to `godmode`
+    # and `autotune`. Which of the two is not answerable from the collected data,
+    # because no arm has ever run one without the other.
+    #
+    #   godmode   prepends GODMODE_SYSTEM_PROMPT + DEPTH_DIRECTIVE, and boosts
+    #             sampling: temperature +0.1, presence +0.15, frequency +0.1.
+    #   autotune  replaces the sampling parameters outright from a context
+    #             classifier. Suppressed entirely when the caller sends an
+    #             explicit temperature, which is why this collector sends none.
+    #
+    # The two cannot be separated further by flags: `applyGodmodeBoost` runs
+    # whenever godmode is set, so "system prompt with no parameter change" is not
+    # reachable through this API. The split these conditions CAN make is
+    # prompt+small-boost against sampling-only, which is the one that decides
+    # whether the finding is about an instruction or about temperature.
+    "B-Godmode":      {"stm_modules": [], "parseltongue": False, "godmode": True, "autotune": False},
+    "B-Autotune":     {"stm_modules": [], "parseltongue": False, "godmode": False, "autotune": True},
 }
 
 

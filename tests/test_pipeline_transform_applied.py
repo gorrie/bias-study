@@ -197,6 +197,34 @@ def test_the_surviving_finding_is_within_arm_and_opposite_signed():
     assert opus["excludes_zero"] and grok["excludes_zero"]
 
 
+@PIPELINE_ONLY
+def test_the_control_arm_received_nothing():
+    """The inverse check, and the more dangerous direction now controls exist.
+
+    A treated arm that was not treated overstates a null. An untreated CONTROL
+    that was quietly treated understates every effect measured against it, and
+    it does so while looking exactly like a clean baseline.
+
+    Not hypothetical on this server: godmode and parseltongue default to TRUE
+    when the field is absent, so a control assembled by leaving flags out -- the
+    natural way to write one -- is the fully-forced arm.
+    """
+    res = _audit()
+    if not res["controls_checked"]:
+        # The public mirror holds the pipeline runs but not the control arm, so
+        # absence here means "not exported", not "missing". A test cannot tell
+        # those apart and must not fork to one tree by pretending it can.
+        pytest.skip("no control arm in this tree")
+    assert not res["contaminated_controls"], res["contaminated_controls"]
+
+
+@PIPELINE_ONLY
+def test_the_gate_fails_on_a_contaminated_control(monkeypatch):
+    """Validated against known-bad input: treat a treated arm as a control."""
+    monkeypatch.setattr(A, "CONTROL_CONDITIONS", ("B-Layered",))
+    assert A.main(["--check"]) == 1
+
+
 def _profile():
     return {(p["model"], p["condition"]): p for p in A.stm_edit_profile()}
 
