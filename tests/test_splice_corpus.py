@@ -44,6 +44,11 @@ def _patch(monkeypatch, base_rows, source_rows):
     def fake_load(name, sub="scored"):
         return base_rows if name == "BASE" else source_rows
     monkeypatch.setattr(SC, "load", fake_load)
+    # `main` resolves its sources through CORPUS_REPAIRS now, so the fixture base
+    # has to be registered for the CLI-level tests. build() is called directly by
+    # the rest and does not need it.
+    monkeypatch.setitem(SC.CORPUS_REPAIRS, "BASE",
+                        {"sources": ("SRC",), "out": "should-not-appear"})
 
 
 def test_an_eligible_base_record_is_kept_untouched(monkeypatch):

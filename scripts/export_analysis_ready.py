@@ -108,6 +108,17 @@ def vendor_of(model):
 def rows(roots):
     """Every scored record under every run root and every judging method."""
     import eligibility as E
+    # DERIVED CORPORA ARE SKIPPED HERE. A spliced run is a view over a base run
+    # plus its repairs, so counting it alongside both double-counts every record
+    # it contains -- it added 2,483 rows that were not new measurements and put a
+    # cross-path defect count off by one. Analyses read a derived corpus by name
+    # through `studypaths.canonical_run`; enumeration of the corpus does not.
+    try:
+        from studypaths import is_derived_run
+    except Exception:
+        def is_derived_run(_name):
+            return False
+
     for root in roots:
         for path in sorted(glob.glob(os.path.join(root, "*", "scored*", "**", "*.jsonl"),
                                      recursive=True)):
@@ -119,6 +130,8 @@ def rows(roots):
                     method = seg
                     run = parts[i - 1] if i else ""
                     break
+            if run and is_derived_run(run):
+                continue
             for line in io.open(path, encoding="utf-8", errors="replace"):
                 if not line.strip():
                     continue

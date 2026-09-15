@@ -623,7 +623,30 @@ def main() -> int:
     if args.models in MODEL_SETS:
         models = MODEL_SETS[args.models]
     else:
-        models = [tuple(s.split(":", 1)) for s in args.models.split(",")]
+        # EVERY ENTRY NEEDS ITS CHANNEL. Without the prefix `s.split(":", 1)`
+        # yields a 1-tuple, and the next line's `for ch, _ in models` dies with
+        # "not enough values to unpack (expected 2, got 1)" -- which names neither
+        # the argument nor the fix, and cost a 100-call run before it was read.
+        models = []
+        bad = []
+        for s in args.models.split(","):
+            s = s.strip()
+            if not s:
+                continue
+            if ":" not in s:
+                bad.append(s)
+                continue
+            models.append(tuple(s.split(":", 1)))
+        if bad:
+            print("ERROR: --models entries need a channel prefix. Got %s; want %s.\n"
+                  "       Or name a model set: %s"
+                  % (", ".join(repr(b) for b in bad),
+                     ", ".join("openrouter:%s" % b for b in bad),
+                     ", ".join(sorted(MODEL_SETS))), file=sys.stderr)
+            return 2
+        if not models:
+            print("ERROR: --models resolved to nothing.", file=sys.stderr)
+            return 2
 
     # OpenRouter key is only required when the run actually includes cloud models — a
     # local-only run (dmr/ollama, e.g. on a Mac) needs no API key or network.

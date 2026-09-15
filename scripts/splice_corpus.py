@@ -50,9 +50,50 @@ sys.path.insert(0, HERE)
 import eligibility as E  # noqa: E402
 from studypaths import run_roots  # noqa: E402
 
+#: Every damaged corpus, the repair runs that feed it, and the derived corpus it
+#: produces. A base may have MORE THAN ONE source: GPT-5 was repaired separately
+#: because its damage sits below the at-cap threshold the general repair used, so
+#: the augmentation corpus draws from two runs.
+#:
+#: Sources are tried in order and the FIRST eligible record wins, so the order is
+#: deliberate rather than incidental.
+CORPUS_REPAIRS = {
+    "2026-05-25-full": {
+        "sources": ("2026-09-05-recollect",),
+        "out": "2026-09-14-full-spliced",
+    },
+    "2026-05-26-timeseries": {
+        "sources": ("2026-09-14-recollect-timeseries",),
+        "out": "2026-09-14-timeseries-spliced",
+    },
+    "2026-05-26-cn-expansion": {
+        "sources": ("2026-09-14-recollect-cn",),
+        "out": "2026-09-14-cn-expansion-spliced",
+    },
+    "2026-05-26-augmentation": {
+        "sources": ("2026-09-14-recollect-augmentation",
+                    "2026-09-14-recollect-gpt5-augmentation"),
+        "out": "2026-09-14-augmentation-spliced",
+    },
+    # The gradient run carries the book's dose-response curve and the variance run
+    # carries the same-version floor. Neither was in the "main four" I first
+    # scoped, and both feed published numbers -- which is the only boundary that
+    # matters. GPT-5 was repaired separately in each, so both draw two sources.
+    "2026-05-26-unmask-gradient": {
+        "sources": ("2026-09-14-recollect-gradient",
+                    "2026-09-14-recollect-gpt5-gradient"),
+        "out": "2026-09-14-unmask-gradient-spliced",
+    },
+    "2026-05-26-variance": {
+        "sources": ("2026-09-14-recollect-variance",
+                    "2026-09-14-recollect-gpt5-variance"),
+        "out": "2026-09-14-variance-spliced",
+    },
+}
+
 BASE = "2026-05-25-full"
-SPLICE_SOURCES = ("2026-09-05-recollect",)
-DEFAULT_OUT = "2026-09-14-full-spliced"
+SPLICE_SOURCES = CORPUS_REPAIRS[BASE]["sources"]
+DEFAULT_OUT = CORPUS_REPAIRS[BASE]["out"]
 
 
 def key(r):
@@ -163,16 +204,33 @@ def main(argv=None):
     ap.add_argument("--plan", action="store_true", help="what would change; writes nothing")
     ap.add_argument("--write", action="store_true", help="write the spliced run")
     ap.add_argument("--base", default=BASE)
-    ap.add_argument("--out", default=DEFAULT_OUT)
+    ap.add_argument("--out", default=None)
+    ap.add_argument("--all", action="store_true",
+                    help="splice every damaged corpus in CORPUS_REPAIRS")
     args = ap.parse_args(argv)
 
-    records, info = build(args.base)
+    if args.all:
+        rc = 0
+        for base in CORPUS_REPAIRS:
+            print("")
+            rc |= main([("--write" if args.write else "--plan"), "--base", base])
+        return rc
+
+    spec = CORPUS_REPAIRS.get(args.base)
+    if spec is None:
+        print("ERROR: %r is not a registered damaged corpus. Known: %s"
+              % (args.base, ", ".join(sorted(CORPUS_REPAIRS))), file=sys.stderr)
+        return 2
+    sources = spec["sources"]
+    out_name = args.out or spec["out"]
+
+    records, info = build(args.base, sources)
     if info.get("error"):
         print("ERROR: %s" % info["error"], file=sys.stderr)
         return 2
 
     c = info["counts"]
-    print("SPLICE PLAN  base=%s  ->  %s" % (args.base, args.out))
+    print("SPLICE PLAN  base=%s  ->  %s" % (args.base, out_name))
     print("  records                  %d" % c.get("records", 0))
     print("  eligible in base         %d" % c.get("base_eligible", 0))
     print("  repaired by splicing     %d" % c.get("spliced", 0))
@@ -201,11 +259,11 @@ def main(argv=None):
               "renamed copy of the base run.", file=sys.stderr)
         return 2
 
-    d = write(records, args.out)
+    d = write(records, out_name)
     manifest = {
         "analysis_seed": 20260914,
         "base_run": args.base,
-        "splice_sources": list(SPLICE_SOURCES),
+        "splice_sources": list(sources),
         "calls_completed": 0,
         "generated_by": "scripts/splice_corpus.py",
         "derived": True,
@@ -214,7 +272,7 @@ def main(argv=None):
         "records": c.get("records", 0),
         "spliced": c.get("spliced", 0),
         "still_unusable": c.get("still_unusable", 0),
-        "run_date": args.out,
+        "run_date": out_name,
     }
     with io.open(d.parent / "manifest.json", "w", encoding="utf-8", newline="\n") as fh:
         json.dump(manifest, fh, indent=2, sort_keys=True)

@@ -41,7 +41,21 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 STUDY_DIR = SCRIPT_DIR.parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
-MAIN_RUN = "2026-05-25-full"
+#: Resolved through `canonical_run`, so these gates measure the corpus the study
+#: stands on rather than the damaged one. On the original run a third of the
+#: records are ineligible and three models have ZERO usable A/B pairs, so G1
+#: reported "9 model rows, expected 13" -- a true statement about a corpus nobody
+#: should be analysing.
+def _main_run():
+    try:
+        sys.path.insert(0, str(SCRIPT_DIR))
+        from studypaths import canonical_run
+        return canonical_run("2026-05-25-full")
+    except Exception:
+        return "2026-05-25-full"
+
+
+MAIN_RUN = _main_run()
 
 #: WRITEUP section 5.6: "only 5 of 13 models have a delta whose CI excludes zero".
 #: Locked to the values the fixed pipeline produces. Where that differs from what was
@@ -78,10 +92,30 @@ CORRECTED_AGREEMENT = {"items": 715, "exact": 0.827, "unanimous": 0.710, "mean_a
 #: that has nothing to do with the property it checks -- and pinning the historical number
 #: alone would quietly re-assert a figure the correction record supersedes.
 
-#: WRITEUP section 5.6: four survive BH-FDR at q=0.05; DeepSeek is the one that drops.
+#: BH-FDR at q=0.05 on the REPAIRED corpus. Updated 2026-09-14.
+#:
+#: WRITEUP 5.6 published four survivors and named DeepSeek as the one that drops.
+#: On the repaired corpus ALL FOUR still survive and DeepSeek joins them at
+#: p=0.0034 -- it dropped because 23 of its 30 A/B pairs had been destroyed by the
+#: 800-token cap, not because its effect was weak.
+#:
+#: The published set is kept below rather than overwritten. Two of its four
+#: members could not even be computed on the damaged corpus -- mistral-large had
+#: ZERO usable pairs and opus-4.7 had one -- so "the published four survive" is a
+#: statement about the repaired data and nothing else.
 FDR_SURVIVORS = {"anthropic/claude-opus-4.7", "x-ai/grok-4.3",
-                 "openai/gpt-4.1", "mistralai/mistral-large"}
-FDR_DROPS = "deepseek/deepseek-v3.2"
+                 "openai/gpt-4.1", "mistralai/mistral-large",
+                 "deepseek/deepseek-v3.2"}
+
+#: What WRITEUP 5.6 printed, kept so the change stays visible in the gate itself.
+FDR_SURVIVORS_AS_PUBLISHED = {"anthropic/claude-opus-4.7", "x-ai/grok-4.3",
+                              "openai/gpt-4.1", "mistralai/mistral-large"}
+
+#: Now that nothing drops from the published set, the gate asserts the ADDITION
+#: rather than a removal. `phi4:latest` is the strongest of the models that do
+#: drop (p=0.075) and is the one to watch: if it ever survives, the correction
+#: is real and not a sample-size artifact.
+FDR_DROPS = "phi4:latest"
 
 #: skills/bias-study-prep hard-gates on these before a run may start.
 PROTOCOL_FILES = ["questions.md", "rubric.md", "run-protocol.md",

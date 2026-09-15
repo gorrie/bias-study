@@ -724,12 +724,19 @@ MAY_MAIN_RUNS = ("2026-05-25-full", "2026-05-26-cn-expansion",
 
 
 def _may_runs_present():
-    """The main-study run directories, wherever this tree keeps them."""
-    from studypaths import run_roots
+    """The main-study run directories, REPAIRED where a repair exists.
+
+    These read the corpus the study actually stands on. The May runs were
+    collected at an 800-token cap that severed or emptied about a third of the
+    records, so reporting a book number from the original run means reporting it
+    from a corpus with three models at zero usable pairs. `canonical_run` returns
+    the spliced corpus wherever one has been built.
+    """
+    from studypaths import run_roots, canonical_run
     out = []
     for root in run_roots():
         for name in MAY_MAIN_RUNS:
-            d = root / name / "scored"
+            d = root / canonical_run(name) / "scored"
             if d.is_dir():
                 out.append(d)
     return out
@@ -770,10 +777,10 @@ def _may_records_main():
     The book says "across nineteen hundred scored responses" immediately above a
     table whose cells total this number instead.
     """
-    from studypaths import run_roots
+    from studypaths import run_roots, canonical_run
     n = 0
     for root in run_roots():
-        d = root / "2026-05-25-full" / "scored"
+        d = root / canonical_run("2026-05-25-full") / "scored"
         if not d.is_dir():
             continue
         for p in sorted(d.glob("*.jsonl")):

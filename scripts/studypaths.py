@@ -157,6 +157,108 @@ def run_roots() -> list[Path]:
     return populated or roots
 
 
+#: A run that has been REPAIRED, and the repaired corpus that supersedes it.
+#:
+#: The May 2026 corpus was collected at an 800-token cap that severed or emptied
+#: about a third of it, differentially by model: three models had ZERO usable A/B
+#: pairs and GPT-5 had none in any run. Each entry here names a derived corpus
+#: built by `splice_corpus.py` -- the original records where they are usable, and
+#: a re-collection at 4,000 tokens where they are not.
+#:
+#: THE REPAIRED CORPUS IS THE STUDY. The originals are kept because the
+#: corrections ledger cites them and because deleting evidence is not how this
+#: project handles being wrong, but no analysis should default to reading a
+#: corpus a third of which is missing.
+REPAIRS = {
+    "2026-05-25-full": "2026-09-14-full-spliced",
+    "2026-05-26-cn-expansion": "2026-09-14-cn-expansion-spliced",
+    "2026-05-26-timeseries": "2026-09-14-timeseries-spliced",
+    "2026-05-26-augmentation": "2026-09-14-augmentation-spliced",
+    "2026-05-26-unmask-gradient": "2026-09-14-unmask-gradient-spliced",
+}
+
+#: Holes no budget fixes, kept as a named record rather than quietly carried.
+#: A corpus that cannot say what is still missing from it is not repaired, it is
+#: only larger.
+UNREPAIRABLE = {
+    # THE MODEL IS GONE. Probed directly 2026-09-14: both return
+    #   HTTP 404 {"error":{"message":"No endpoints found for <model>."}}
+    # They have been withdrawn from the provider. This is a limit of a
+    # LONGITUDINAL instrument, not of this repair: a study that measures how model
+    # framing drifts across versions cannot re-measure a version that no longer
+    # exists, and the window in which a result stays reproducible is set by the
+    # vendor, not by us. Worth stating in the write-up rather than filing as a
+    # footnote.
+    ("2026-05-26-cn-expansion", "baidu/ernie-4.5-300b-a47b"):
+        "19 cells truncate at 740-772 tokens, below the cap. Re-collection on "
+        "2026-09-14 failed on all 19: HTTP 404, no endpoints found. The model has "
+        "been withdrawn from the provider; the cells stay excluded permanently.",
+    ("2026-05-26-timeseries", "google/gemini-2.0-flash-001"):
+        "33 cells. Re-collection failed on all 33: HTTP 404, no endpoints found. "
+        "Withdrawn from the provider, same as ernie above.",
+    ("2026-05-26-augmentation", "google/gemma-2-9b-it"):
+        "All 60 cells failed AT COLLECTION TIME in May -- they never produced a "
+        "response at all, so this is not budget exhaustion and the repair tool "
+        "correctly did not target it. Probed 2026-09-14: HTTP 404, no endpoints "
+        "found. Withdrawn. NOTE its second role: gemma-2-9b-it is the base of the "
+        "ABLIERATED JUDGE the cross-method robustness leg rests on, so that "
+        "check cannot be re-run either -- see RESULTS/THE-WASH.",
+    ("2026-05-26-cn-expansion", "bytedance/seed-1.6"):
+        "1 call failed outright at collection time. No budget fixes a failed call.",
+    ("2026-05-25-full", "phi4:latest"):
+        "1 cell. phi4 is a LOCAL model and the re-collector calls OpenRouter, so "
+        "it was never reachable by that path.",
+    ("2026-05-25-full", "google/gemma-3-27b-it"):
+        "1 cell, and a probable FALSE POSITIVE: 1,938 tokens of 4,000, so the "
+        "model stopped voluntarily, ending on a markdown URL with no full stop. "
+        "Checked corpus-wide before leaving the detector alone -- one record in "
+        "2,101 ends in a URL and that one genuinely hit the cap.",
+}
+
+
+def is_derived_run(run_date: str) -> bool:
+    """Is this a DERIVED corpus rather than a collection?
+
+    A spliced corpus is a VIEW over a base run plus its repairs. Its records are
+    already counted twice over if a corpus-wide scan reads it alongside the base
+    it derives from and the repair runs it draws on -- which is exactly what
+    happened when the first splice landed: the corpus grew by 2,483 rows that
+    were not new measurements, and a cross-path defect count went from agreeing
+    to off-by-one.
+
+    So: analyses read a derived corpus BY NAME, through `canonical_run`.
+    Corpus-wide enumeration skips it. The distinction is declared in the
+    manifest by `splice_corpus.py`, not inferred from the name, because a naming
+    convention is not a guarantee.
+    """
+    for root in run_roots():
+        p = root / run_date / "manifest.json"
+        if not p.is_file():
+            continue
+        try:
+            with p.open(encoding="utf-8") as fh:
+                return bool(json.load(fh).get("derived"))
+        except (OSError, ValueError):
+            return False
+    return False
+
+
+def canonical_run(run_date: str) -> str:
+    """The name an analysis should actually read for `run_date`.
+
+    Returns the repaired corpus when one exists ON DISK, otherwise the name given.
+    Callers that genuinely want the original pass it through `REPAIRS` themselves
+    or read the original name directly -- this is a default, not a lock.
+    """
+    repaired = REPAIRS.get(run_date)
+    if not repaired:
+        return run_date
+    for root in run_roots():
+        if (root / repaired / "scored").is_dir():
+            return repaired
+    return run_date
+
+
 def resolve_run(run_date: str, *, require_scored: bool = True) -> Path:
     """Return the run directory, raising rather than returning None.
 

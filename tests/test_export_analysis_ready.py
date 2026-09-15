@@ -97,8 +97,11 @@ def test_the_live_corpus_defect_count_matches_the_independent_audit():
     GUARDS A CLASS, NOT THE TOTAL, since 2026-09-13. Truncation became an exclusion
     reason on that date, so `defect_rows` is now the sum of two defect classes while
     `audit_response_quality` still counts only the scored-empty one. Comparing the
-    total against 547 would fail for a correct reason, and updating the constant to
-    the new total would destroy the cross-path check this test exists to be.
+    total against 547 would fail for a correct reason, and "update the constant"
+    would have destroyed the cross-path check this test exists to be.
+
+    So it pins the scored-empty class, which is what the audit measures and what
+    must still agree across the two paths.
     """
     table = list(X.rows(X.corpus_roots()))
     if not table:
@@ -106,13 +109,24 @@ def test_the_live_corpus_defect_count_matches_the_independent_audit():
     man = X.manifest(table)
     trunc = man["ineligible_by_reason"].get("truncated-response", 0)
     pre_existing_defects = man["defect_rows"] - trunc
+    # Not `ineligible_by_reason["empty-or-missing-response"]` alone, which reads 541:
+    # `exclusion_reason` resolves failed-call FIRST, so six records that are both
+    # empty and failed land in the other bucket. The audit counts them, because it
+    # asks "has a score and no text" without a priority order. The two original
+    # defect classes together are the quantity that must still agree.
     assert pre_existing_defects == 547, (
         "export says %d pre-truncation defect rows; audit_response_quality says 547. "
         "Two paths over one corpus must agree." % pre_existing_defects)
 
 
 def test_truncated_rows_are_excluded_and_counted_separately():
-    """A severed response is excluded, and NOT pooled with the empty ones."""
+    """A severed response is excluded, and it is NOT pooled with the empty ones.
+
+    Measured 2026-09-13: the text heuristic behind this is 98.6% precise against the
+    hard signal (`tokens_out` at the collector's 800 cap) and 68.2% recall, so the
+    count is a floor, not a total. Recall closes when the historical corpus is
+    backfilled with the cap that produced it.
+    """
     table = list(X.rows(X.corpus_roots()))
     if not table:
         return
@@ -121,3 +135,6 @@ def test_truncated_rows_are_excluded_and_counted_separately():
     assert trunc > 0, (
         "no truncated rows found. 21.5% of this corpus sat on an 800-token cap; a "
         "zero here means the exclusion stopped firing, not that the corpus got clean.")
+    assert not any(t["eligible"] for t in table
+                   if t["exclusion_reason"] == "truncated-response"), (
+        "a record excluded as truncated must not also be reported eligible")

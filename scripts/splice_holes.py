@@ -38,8 +38,26 @@ SPLICE_SOURCES = ("2026-09-05-recollect",)
 
 
 def load(run, sub="scored"):
+    """Records for one run, found through the run roots rather than a fixed path.
+
+    This globbed `runs/<run>/<sub>` -- hardcoded to one root name AND relative to
+    the working directory. In the public mirror the May corpus lives under
+    `data/`, so it matched nothing and returned an empty list: every count came
+    back zero and the report read like a clean corpus. `splice_corpus` resolves
+    through `run_roots()` and the two disagreed by 252 cells, which is how this
+    was found.
+
+    A tool that cannot find the corpus should not be able to report on it.
+    """
+    from studypaths import run_roots
+    paths = []
+    for root in run_roots():
+        d = root / run / sub
+        if d.is_dir():
+            paths.extend(sorted(glob.glob(os.path.join(str(d), "**", "*.jsonl"),
+                                          recursive=True)))
     rows = []
-    for p in sorted(glob.glob(os.path.join("runs", run, sub, "**", "*.jsonl"), recursive=True)):
+    for p in paths:
         for line in open(p, encoding="utf-8", errors="replace"):
             line = line.strip()
             if not line:
