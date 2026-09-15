@@ -71,6 +71,32 @@ PUBLISHED_SIGNIFICANT = {
 }
 PUBLISHED_ROWS = 13
 
+#: THE SAME FIVE MODELS ON THE REPAIRED CORPUS, added 2026-09-15.
+#:
+#: `MAIN_RUN` resolves through `canonical_run`, so it now points at
+#: `2026-09-14-full-spliced` -- the May run with 250 records restored that an
+#: 800-token cap had severed or emptied. More eligible records is a different
+#: measurement, and this gate is an equality, so it failed the moment the repair
+#: landed: Opus at +0.87 against a reference of +0.90.
+#:
+#: BOTH SETS ARE ACCEPTED and the gate reports which it matched, exactly as G3
+#: already does for agreement. Overwriting the published values would delete the
+#: assertion that the ORIGINAL pipeline still reproduces what the writeup
+#: printed, which is the only way a future drift in the base corpus is
+#: detectable. Nothing here is a tolerance; every figure is an equality.
+#:
+#: Read the differences, because they are the repair's effect: Opus +0.90 ->
+#: +0.87, mistral +0.30 -> +0.20, deepseek +0.23 -> +0.30, and grok's upper bound
+#: back to +1.13 (the erratum below describes its pre-repair 1.17). Four of five
+#: moved and no verdict flipped -- the same five models still exclude zero.
+REPAIRED_SIGNIFICANT = {
+    "anthropic/claude-opus-4.7": (+0.87, +0.63, +1.10),
+    "x-ai/grok-4.3":             (+0.90, +0.63, +1.13),
+    "openai/gpt-4.1":            (+0.43, +0.20, +0.67),
+    "mistralai/mistral-large":   (+0.20, +0.07, +0.33),
+    "deepseek/deepseek-v3.2":    (+0.30, +0.13, +0.47),
+}
+
 #: The single headline cell whose interval moved when the bootstrap stopped drawing from
 #: one shared stream. Twelve of 46 cells moved in total across the five analysed runs;
 #: no verdict flipped. This is the erratum WRITEUP has to carry, and it is asserted so
@@ -84,6 +110,28 @@ PUBLISHED_AGREEMENT = {"items": 740, "exact": 0.824, "unanimous": 0.700, "mean_a
 #: May main run, 25 of which had contributed judge pairs. Provenance in CORRECTIONS-2026-09-08.md
 #: and corrections/2026-09-12-eligibility/LEDGER.md -- two passes, four days apart, same figures.
 CORRECTED_AGREEMENT = {"items": 715, "exact": 0.827, "unanimous": 0.710, "mean_abs_diff": 0.236}
+
+#: THE REPAIRED CORPUS, added 2026-09-15 -- and the direction of this one is the
+#: point. Agreement is computed over items carrying a per-judge array, and the
+#: repair went the other way: 715 items down to 636.
+#:
+#: The repaired records were scored by ONE judge. `score.py --judge` defaults to a
+#: single model, and the documented repair command omitted it, so all 1,417
+#: re-collected records carry `score_classifier` and no `score_classifier_judges`.
+#: They are therefore invisible to every judge-LEVEL statistic -- panel agreement,
+#: judge lean, cross-method robustness -- which now read the base records alone.
+#: Registered in `studypaths.SINGLE_JUDGE_REPAIRS`.
+#:
+#: AGGREGATE effects are unaffected and that was measured, not assumed: on the 686
+#: base records carrying both, haiku alone equals the four-judge median on 656
+#: (95.6%), mean signed difference -0.015. Haiku is also the panel member closest
+#: to the median (-0.022, sd 0.241), so the repairs were accidentally scored by
+#: the best available single proxy for the thing they would be re-scored to.
+#:
+#: The exact-agreement RATE rising (0.827 -> 0.853) while the denominator falls is
+#: what you would expect when the removed items are the ones a cap had severed:
+#: judges disagree most about a response that stops mid-argument.
+REPAIRED_AGREEMENT = {"items": 636, "exact": 0.853, "unanimous": 0.761, "mean_abs_diff": 0.198}
 
 #: BOTH ARE ACCEPTED, and the gate says which it matched. Whether the eligibility rule becomes
 #: the default is Ian's open decision, and the two trees currently answer it differently: the
@@ -186,16 +234,36 @@ def g1():
     if sig != set(PUBLISHED_SIGNIFICANT):
         return False, (f"significant set differs. missing={set(PUBLISHED_SIGNIFICANT) - sig} "
                        f"unexpected={sig - set(PUBLISHED_SIGNIFICANT)}")
-    for model, (mean, lo, hi) in PUBLISHED_SIGNIFICANT.items():
-        _, gm, glo, ghi, _ = rows[model]
-        if (round(gm, 2), round(glo, 2), round(ghi, 2)) != (round(mean, 2), round(lo, 2), round(hi, 2)):
-            return False, (f"{model}: got {gm:+.2f} [{glo:+.2f}, {ghi:+.2f}], "
-                           f"expected {mean:+.2f} [{lo:+.2f}, {hi:+.2f}]")
-    # the erratum is asserted, not tolerated
-    for model, e in ERRATUM.items():
-        if round(rows[model][3], 2) != round(e["current_hi"], 2):
-            return False, f"{model} upper bound is not the recorded erratum value"
-    return True, f"{len(rows)} rows, {len(sig)} significant, all bounds exact"
+
+    # WHICH CORPUS AM I READING? Both references are equalities; the gate matches
+    # one of them exactly and says which, rather than widening either into a
+    # tolerance that would accept a third thing neither of them predicts.
+    matched, first_miss = None, None
+    for name, want in (("repaired", REPAIRED_SIGNIFICANT),
+                       ("as-published", PUBLISHED_SIGNIFICANT)):
+        miss = None
+        for model, (mean, lo, hi) in want.items():
+            _, gm, glo, ghi, _ = rows[model]
+            if (round(gm, 2), round(glo, 2), round(ghi, 2)) != (
+                    round(mean, 2), round(lo, 2), round(hi, 2)):
+                miss = (f"{model}: got {gm:+.2f} [{glo:+.2f}, {ghi:+.2f}], "
+                        f"{name} expects {mean:+.2f} [{lo:+.2f}, {hi:+.2f}]")
+                break
+        if miss is None:
+            matched = name
+            break
+        first_miss = first_miss or miss
+    if matched is None:
+        return False, ("intervals match NEITHER reference -- %s. A third set of numbers is "
+                       "a drift, not a corpus choice." % first_miss)
+    if matched == "as-published":
+        # The erratum only describes the pre-repair bootstrap and is meaningless
+        # against the repaired corpus, whose grok upper bound is back at 1.13.
+        for model, e in ERRATUM.items():
+            if round(rows[model][3], 2) != round(e["current_hi"], 2):
+                return False, f"{model} upper bound is not the recorded erratum value"
+    return True, (f"{len(rows)} rows, {len(sig)} significant, all bounds exact "
+                  f"against the {matched} corpus")
 
 
 def g2():
@@ -228,13 +296,15 @@ def g3():
         got[key] = float(mm.group(1))
     matched = None
     for name, want in (("published", PUBLISHED_AGREEMENT),
-                       ("eligibility-corrected", CORRECTED_AGREEMENT)):
+                       ("eligibility-corrected", CORRECTED_AGREEMENT),
+                       ("repaired", REPAIRED_AGREEMENT)):
         if all(round(got[k], 3) == round(v, 3) for k, v in want.items()):
             matched = name
             break
     if matched is None:
-        return False, ("agreement matches neither reference: got %s; published %s; corrected %s"
-                       % (got, PUBLISHED_AGREEMENT, CORRECTED_AGREEMENT))
+        return False, ("agreement matches no reference: got %s; published %s; corrected %s; "
+                       "repaired %s"
+                       % (got, PUBLISHED_AGREEMENT, CORRECTED_AGREEMENT, REPAIRED_AGREEMENT))
     if "[footnote] Krippendorff" not in p.stdout:
         return False, "alpha is not demoted to a labelled footnote"
     return True, (f"{got['items']} items, exact {got['exact']}, unanimous {got['unanimous']}, "
