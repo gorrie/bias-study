@@ -56,7 +56,13 @@ STUDY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
 import eligibility as E  # noqa: E402  -- the one eligibility rule
-from studypaths import run_roots  # noqa: E402
+# LEGACY_SEED is used at manifest-write time and was never imported, so this
+# collector crashed with NameError AFTER every call had been paid for and
+# written -- the run's records landed and its manifest did not. Silent, because
+# the records look complete and a missing manifest only surfaces later, in
+# validate_runs, as a provenance finding on a run nobody remembers.
+# `2026-09-14-recollect-ood` is the one that caught it.
+from studypaths import LEGACY_SEED, run_roots  # noqa: E402
 
 #: At or above this many output tokens, a response hit the 800 cap. 790 rather than 800 because
 #: the provider's count and ours differ by a token or two on some models.

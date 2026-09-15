@@ -35,6 +35,12 @@ import re
 import shutil
 import sys
 
+# Used by the one skip path in this file, and never imported until 2026-09-14 --
+# so a checkout with no local hf.co/ build got NameError where it should have got
+# a skip. Found by scripts/check_undefined_names.py, second instance of the same
+# shape as recollect_at_cap.py's missing LEGACY_SEED.
+import pytest
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
