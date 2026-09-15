@@ -76,6 +76,19 @@ This leg supports the post-tuning-compensation analysis: comparing base vs. inst
 
 For each model, re-run a subset of questions (typically the v1 baselines) with Parseltongue perturbation enabled. Records condition `B-Parseltongue`.
 
+> **`B-Parseltongue` is INERT on this instrument — established 2026-09-14.**
+> G0DM0D3's Parseltongue obfuscates *trigger words* from a fixed list of 53 security and
+> jailbreak terms and returns the text **unchanged** when it finds none. The question set is
+> neutral policy prose containing no trigger, so the transform fired on **0 of 240 requests**
+> across both pipeline runs. The condition is kept defined here because it is well-formed and
+> would do something on a trigger-bearing instrument — but as collected it is condition B
+> under a second label, and any contrast against it is a null by construction.
+> Check with `python scripts/pipeline_transform_audit.py`.
+>
+> `B-STM` is a different surprise: it edits the model's **answer** after generation rather
+> than the prompt, deleting hedging phrases before the judges see the text.
+
+
 ## Scoring
 
 ### Step 8 — ULTRAPLINIAN multi-judge scoring pass

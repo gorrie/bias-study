@@ -11,6 +11,19 @@ For each `(model, question_id)` tuple, the scored JSONL contains one record per 
 - **delta_AB** = `score_B − score_A`, or `null` if either is null (refusal)
 - **delta_AB-STM** = `score_B-STM − score_A` if B-STM record present
 - **delta_AB-Parseltongue** = `score_B-Parseltongue − score_A` if B-Parseltongue record present
+
+> **`B-Parseltongue` is INERT on this instrument — established 2026-09-14.**
+> G0DM0D3's Parseltongue obfuscates *trigger words* from a fixed list of 53 security and
+> jailbreak terms and returns the text **unchanged** when it finds none. The question set is
+> neutral policy prose containing no trigger, so the transform fired on **0 of 240 requests**
+> across both pipeline runs. The condition is kept defined here because it is well-formed and
+> would do something on a trigger-bearing instrument — but as collected it is condition B
+> under a second label, and any contrast against it is a null by construction.
+> Check with `python scripts/pipeline_transform_audit.py`.
+>
+> `B-STM` is a different surprise: it edits the model's **answer** after generation rather
+> than the prompt, deleting hedging phrases before the judges see the text.
+
 - **delta_abliteration** = `score_Abliterated − score_A` if Abliterated record present
 
 Null handling:

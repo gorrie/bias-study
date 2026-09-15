@@ -61,6 +61,19 @@ The **moral-essay-mode** failure (the model spends 600 words sermonizing instead
 
 - `condition=B-STM` — *(planned)* fairness removed AND hedge-stripping via G0DM0D3 STM
 - `condition=B-Parseltongue` — *(planned)* Parseltongue perturbation
+
+> **`B-Parseltongue` is INERT on this instrument — established 2026-09-14.**
+> G0DM0D3's Parseltongue obfuscates *trigger words* from a fixed list of 53 security and
+> jailbreak terms and returns the text **unchanged** when it finds none. The question set is
+> neutral policy prose containing no trigger, so the transform fired on **0 of 240 requests**
+> across both pipeline runs. The condition is kept defined here because it is well-formed and
+> would do something on a trigger-bearing instrument — but as collected it is condition B
+> under a second label, and any contrast against it is a null by construction.
+> Check with `python scripts/pipeline_transform_audit.py`.
+>
+> `B-STM` is a different surprise: it edits the model's **answer** after generation rather
+> than the prompt, deleting hedging phrases before the judges see the text.
+
 - `condition=Abliterated` — *(planned)* OBLITERATUS-abliterated open-weight model; first attempt (Qwen2.5-14B) hit the quantization wall (see writeup §5.5), a 7B-fp16 run is the next attempt
 
 ### 5. Score record
