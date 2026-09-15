@@ -1,5 +1,6 @@
-wrote SCRIPTS.md (90 documented script(s))
- docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
+# Scripts
+
+**Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
 90 script(s). 0 carry no module docstring and are listed at the end.
 

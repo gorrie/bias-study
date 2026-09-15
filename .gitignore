@@ -1,43 +1,52 @@
-
-#
-# /agents/ was ignored here until 2026-09-11, with no reason recorded, while
-# Claude Code config, and shipping two copies is how they drift.
 # Credentials — NEVER commit
-# Derived analysis outputs that land beside the run records. DEVELOPER.md §2 calls
-# Ignoring it means the accident cannot start.
-# OS
-# Python
-# Third-party instrument, fetched by the reader and NEVER committed.
-# Weight-rung working dirs (large; regenerated locally, never committed)
-# `.claude/` above stays ignored: it holds a second copy of these same files as local
-# `data/<run>/` immutable, and the RECORDS are — raw/, scored/, aggregated/ and the manifest
-# and were arriving untracked in every clone that followed the documented pipeline, so a
-# cloner's first act of reproducing a number made their tree dirty.
-# failure mode was 525 untracked run files sitting one `git add -A` away from publication.
-# hook would refuse it, but the hook only sees what is STAGED -- and on 2026-09-01 the
-# never change. These three are regenerated on demand by analysis.py and drift_timeseries.py
-# re-runnable by someone else — did not ship, and the link was dead in every clone. The
-# reproducibility claim rests on the skills AND the agents; both are published now.
-# retrieved at the reader's end so this repository never republishes them. The pre-commit
-# scripts/fetch_items.py writes this file: the 62 politicalcompass.org propositions,
-# skills/README.md linked into it. So the agent definitions — half of what makes this study
+.env
 *.key
+*token*
+
+# Python
+__pycache__/
 *.pyc
 *.pyo
-*token*
-.DS_Store
-.claude/
-.env
 .venv/
+venv/
+
+# OS
+.DS_Store
 Thumbs.db
-__pycache__/
-abliteration-output/
+
+# Third-party instrument, fetched by the reader and NEVER committed.
+# scripts/fetch_items.py writes this file: the 62 politicalcompass.org propositions,
+# retrieved at the reader's end so this repository never republishes them. The pre-commit
+# hook would refuse it, but the hook only sees what is STAGED -- and on 2026-09-01 the
+# failure mode was 525 untracked run files sitting one `git add -A` away from publication.
+# Ignoring it means the accident cannot start.
+#
+# RETIRED 2026-09-15 as the study's instrument -- the authored bank
+# data/ratchet-propositions-i3.json replaced it and ships in full. This entry stays:
+# a fetched copy is still licensed text, and a tree that no longer needs it is exactly
+# where a stale copy sits unnoticed.
+data/compass-propositions.json
+data/xstest-prompts.json
+
+# /agents/ was ignored here until 2026-09-11, with no reason recorded, while
+# skills/README.md linked into it. So the agent definitions — half of what makes this study
+# re-runnable by someone else — did not ship, and the link was dead in every clone. The
+# reproducibility claim rests on the skills AND the agents; both are published now.
+# `.claude/` above stays ignored: it holds a second copy of these same files as local
+# Claude Code config, and shipping two copies is how they drift.
+.claude/
+
+# Derived analysis outputs that land beside the run records. DEVELOPER.md §2 calls
+# `data/<run>/` immutable, and the RECORDS are — raw/, scored/, aggregated/ and the manifest
+# never change. These three are regenerated on demand by analysis.py and drift_timeseries.py
+# and were arriving untracked in every clone that followed the documented pipeline, so a
+# cloner's first act of reproducing a number made their tree dirty.
 data/*/ANALYSIS.md
 data/_aggregated/*.log
 data/_aggregated/cross-method-report.json
 data/_aggregated/drift_timeseries.csv
 data/_aggregated/vendor_arcs.md
-data/compass-propositions.json
-data/xstest-prompts.json
+
+# Weight-rung working dirs (large; regenerated locally, never committed)
+abliteration-output/
 models/
-venv/

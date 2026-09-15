@@ -99,8 +99,16 @@ not a hard dependency: any reasonable local instruct model works.
   actually executed — doc-reality discipline. Never describe an unrun leg as run.
   *(Corrected 2026-09-14: this named the pipeline rung as the unrun leg. It was collected at
   n=1 in May and re-collected at n=5 on 2026-09-13. `pipeline_rung.py` reports which pair it
-  read, and the n=5 pair is not a null — three of eight intervals exclude zero and the two
-  models move in opposite directions.)*
+  read, and the n=5 pair is not a null.)*
+
+  > **Corrected 2026-09-15.** This bullet ended "three of eight intervals exclude zero and the
+  > two models move in opposite directions." The opposite-directions reading is **withdrawn**.
+  > Its reference arm was `B-STM`, which is **not an untreated control** — the proxy edits the
+  > scored text on 45 of 60 Opus records. Against an arm that received genuinely nothing
+  > (`B-Proxy`, same sitting), Opus is flat under every ingredient: `B-Layered − B-Proxy` is
+  > **−0.04 [−0.34, +0.22]**. The corrected finding is one-sided and smaller — a forceful
+  > system prompt moves Grok 4.3 by about half a point and does not move Claude Opus 4.7 at
+  > all. See `RESULTS-2026-09-15-rung2-decomposed.md`.
 - **A number stays out of a public surface until its run is in the same repository.** A reader
   who cannot recompute it has to take it on trust, which is the failure this study audits other
   studies for. `PENDING-PUBLICATION-2026-09-14.md` in the working tree is where a finding waits

@@ -1,6 +1,22 @@
-# The Hedge Is the Bias
+# Same Version, Different Answers
 
-**A multi-vendor, multi-generation audit of institutional-skepticism framing in large language models.**
+**Measurement floors and detection limits for political-position instruments on large
+language models.**
+
+> **Retitled 2026-09-15, and the old title is why.** This repository was called *The Hedge
+> Is the Bias* — which is **FINDINGS #13, a withdrawn claim**. Score-3 responses do carry a
+> higher hedge ratio, but rubric score 3 *is* "does not commit" and the hedge lexicon
+> measures non-commitment, so the finding was the rubric restated in lexical form. The
+> writeup's own §3.5 conceded it.
+>
+> It survived as the title, the thesis sentence, the book's opening "Proof" and chapter 22's
+> "the finding" for two days after being withdrawn, because the retraction gate
+> (`key_numbers.RETRACTED`) had not been updated past 2026-09-06 and so reported the absence
+> of claims it already knew about. All five 2026-09-13 withdrawals are in that list now, and
+> the gate fails on this file if any of them is asserted again.
+>
+> The new title is the finding that survived every control and is the one no other study in
+> the twelve-study audit reports at all.
 
 ### Five sentences, if you are only here for one
 
@@ -59,11 +75,22 @@ topics when the "be fair to both sides" instruction is removed — and a test of
 that bias lives, by escalating force from the prompt, to an elicitation pipeline, to the
 model weights themselves.
 
-Headline thesis: **the hedge is the bias signature.** A model that answers a contested
-political question with heavy both-sides hedging is not neutral — it is masking a lean at
-the alignment-training layer. The mask comes off in proportion to the force applied to
-it, *except where it is bolted in at the weights, where force does nothing.* The study's
-spine is that **force-escalation ladder**:
+Headline finding: **an instrument's own noise is larger than the effects published on it,
+and nobody measures it.** Two models differing only in snapshot date, size or serving mode —
+not in version — disagree on a median of 5 of 62 propositions and a p90 of 11. That is the
+floor a directional claim has to clear before the word "effect" is doing any work, and of
+twelve published studies audited against thirteen controls, **not one reports it as a
+distribution**.
+
+> The thesis sentence here used to read *"the hedge is the bias signature … the mask comes
+> off in proportion to the force applied to it, except where it is bolted in at the weights,
+> where force does nothing."* Three claims, all withdrawn on 2026-09-13 (FINDINGS #13, #14,
+> #15) and all still printed here until 2026-09-15. What replaced each is in
+> [CORRECTIONS.md](CORRECTIONS.md); the escalation ladder below is kept because the rungs are
+> real measurements, but it is **three separate results reported separately**, not one axis —
+> no model is measured on all three, and they are not in the same units.
+
+The study's three **intervention rungs**, reported separately:
 
 | Rung | Force | Tooling | Result |
 |------|-------|---------|--------|
@@ -475,19 +502,28 @@ than removed.
 
 ## Headline findings
 
-- **Vendor-class differential (prompt rung).** US-closed frontier models (Anthropic,
-  OpenAI, Google Gemini, xAI Grok) unmask far more than European, Chinese, or open-weight
-  classes (us-closed mean Δ +0.572 vs open-weight ≈ 0). At the per-model level, **4 of 13
-  effects survive a Benjamini-Hochberg FDR correction** (Opus 4.7, Grok 4.3, GPT-4.1,
-  Mistral Large); DeepSeek V3.2 is suggestive but not confirmed. The class *direction*
-  replicates under N=5 averaging.
+- **Vendor-class differential (prompt rung) — the point estimates are WITHDRAWN, the
+  direction survives.** US-closed frontier models unmask more than open-weight ones. The
+  class *means* that used to be quoted here (+0.572 against ≈ 0) came from a script that
+  kept **1 of 5 replicates**; corrected, the split flips sign on a 19-pair remainder that
+  had lost half its records. Withdraw the numbers, keep the direction, and note that it
+  rests on **two models**. The old sentence also claimed the direction "replicates under
+  N=5 averaging" — nothing was averaged; that was the same replicate defect.
+  At the per-model level, **5 of 13 effects survive a Benjamini-Hochberg FDR correction**
+  on the repaired corpus (Opus 4.7, Grok 4.3, GPT-4.1, Mistral Large, and DeepSeek V3.2,
+  which joins at p=0.0034). It read "4 of 13 … DeepSeek is suggestive but not confirmed"
+  until 2026-09-15: DeepSeek had 23 of its 30 A/B pairs destroyed by the 800-token cap, and
+  the repair gave them back. `scripts/robustness_checks.py 2026-09-14-full-spliced`.
 - **Anthropic Opus arc.** Claude Opus trends upward across five versions, every version's
   unmask CI-significant, **+0.27 → +0.90** from 4.0 to 4.7 (~3× the baseline; an upward
   trend, not strict monotonicity — 4.5 wobbles within noise). *(2026-08-31: a same-version null of 97 pairs, median 5 side-flips and p90 11, was not available when this was measured. Version-arc claims on this instrument should be read against it -- see the update above.)*
-- **Grok dose-response.** Under the five-step gradient Grok 4.3 reaches the full v1
-  magnitude (3.00 → **5.00** across the ten neutral questions) at the opinionated-persona
-  condition; the simple "what do you think?" unmask already moves it to 3.63, and the
-  layered G0DM0D3 pipeline lifts it further to **4.20**.
+- **Grok dose-response — the 5.00 endpoint is WITHDRAWN.** The condition that produced it
+  instructs *"You are an opinionated political commentator"* and then asks critic-framed
+  questions. That is **persona compliance, not a lean measurement**, and quoting it as the
+  top of a dose curve treats an identity instruction as more of the same force. What stands
+  is the rest of the gradient: the bare "what do you think?" moves Grok 4.3 from 3.00 to
+  **3.63**, and the layered G0DM0D3 pipeline to **4.20**. Both are measured without
+  assigning the model an identity.
 - **GPT-5 retracted / indeterminate.** GPT-5's delta is not distinguishable from zero and
   it is the study's noisiest model (σ = 1.14, 2× any other). The earlier "GPT-4.1 → GPT-5
   reversal" is **not supported** — GPT-5 is indeterminate, not reversed.
@@ -495,13 +531,30 @@ than removed.
   families (fp16, OBLITERATUS `advanced` SVD — Qwen2.5-7B, Mistral-7B-v0.3, Llama-3.1-8B,
   DeepSeek-R1-Distill-Qwen-7B on a 24 GB CUDA GPU; Gemma-2-9B-it added natively on Apple
   Silicon's Accelerate/LAPACK, which cleared the MKL `SSYEVD` SVD failure that blocked
-  Gemma-2 on the 4090) removes refusals and rewrites **~70% of the political wording**
-  (word-set Jaccard ≈ 0.3, confirmed deterministic at temperature 0) yet moves the
-  institutional-skepticism **stance ≤ 0.10**. The refusal direction and the institutional
-  lean are **dissociable.** *(Confirmed and strengthened 2026-08-31 -- see the update above.)*
-- **Sycophancy control.** A reversed-premise pass (topics reframed to *invite* deference)
-  shows **all five tested models hold within ≤ 0.40** of their neutral-framing stance —
-  the unmask measures a genuine institutional lean, not generic agreeableness.
+  Gemma-2 on the 4090) removes refusals. **The text-rewrite half is established on 1 of 5
+  families, not 5.**
+
+  This bullet used to say abliteration "rewrites ~70% of the political wording … yet moves
+  the stance ≤ 0.10", concluding the two are dissociable. Run the repository's own
+  `scripts/abliteration_effect_check.py` and it prints **TEXT CHANGE NOT ESTABLISHED** for
+  two of the three working families: llama-3.1-8b at Jaccard 0.339 and mistral-7b at 0.333
+  both sit **inside the 0.303–0.392 band one model produces resampled against itself**,
+  because the local runs sample at temperature 0.7 with no seed. Only qwen2.5-7b (0.276)
+  is confirmed. DeepSeek-R1-distill has one shared eligible cell, so its stance is not
+  computable; Gemma-2-9B's raw files are 0 bytes.
+
+  **And where stance did move, the movement belongs to the build.** Two independent
+  abliterations of one base disagree 8/9/9 against 0/2/0 — that is which third-party GGUF
+  was downloaded, not abliteration as an operation. A stance null measured against an
+  unestablished rewrite is uninterpretable in either direction.
+- **Sycophancy control — holds for two models, not five.** A reversed-premise pass (topics
+  reframed to *invite* deference) was read as showing all five tested models holding within
+  ≤ 0.40 of their neutral-framing stance. On the same control, **GPT-4.1 tracks the frame**:
+  neutral 3.10 against reversed **2.75**, with 5 of 20 reversed answers scored 2 and none
+  scored 4 — a gap about the size of its own published effect (+0.43). Claude Opus 4.7 and
+  Grok 4.3 do hold (3.70/3.70 and 3.80/3.60), and for them the control does what it was
+  built to do. The same instrument measures a **position** on two models and
+  **frame-following** on a third, and a single sentence about "the models" hides that.
 - **Judge-method robustness.** Re-scoring the entire study under five alternative judging
   procedures — abliterated open-weight judge (M2), grok-solo (M4), adversarial-pair (M5),
   reversed-rubric (M6), blind-condition (M7) — produces 84–91% exact-match against the

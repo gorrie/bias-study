@@ -1366,6 +1366,52 @@ RETRACTED = [
      "nuisance floors, withdrawn 2026-09-06 (CORRECTIONS #7). 23 of the order floor's 37 "
      "shuffled-order cells hold ONE run, so it pairs a single run against a five-run "
      "consensus"),
+
+    # --- the 2026-09-13 withdrawals, added to this list 2026-09-15 ------------
+    #
+    # THIS LIST STOPPED AT 2026-09-06 WHILE FINDINGS.md KEPT WITHDRAWING THINGS.
+    # Five headline claims were withdrawn on 2026-09-13 and none was added here,
+    # so `--check-release` exited 0 over a public README that still asserted all
+    # five -- including the repository's own TITLE. A retraction gate that is not
+    # updated when a retraction happens reports the absence of the claims it
+    # already knows about, which is exactly the vacuous pass this project keeps
+    # finding elsewhere.
+    ("the hedge is the bias signature",
+     "FINDINGS #13, withdrawn 2026-09-13. Score-3 responses do carry a higher hedge ratio, "
+     "but rubric score 3 IS 'does not commit' and the hedge lexicon measures non-commitment: "
+     "the finding is the rubric restated in lexical form, which the writeup's own 3.5 "
+     "concedes. It was the study's title, the book's opening 'Proof', and chapter 22's 'the "
+     "finding'"),
+    ("The mask comes off in proportion to force",
+     "FINDINGS #14, withdrawn 2026-09-13. The ladder is not one axis, one scale or one "
+     "subject set: conditions D and E silently carry condition B's user suffix, no model is "
+     "measured on all three rungs, and a content-free placebo does most of it anyway"),
+    ("the lean is in the weights",
+     "FINDINGS #15, withdrawn 2026-09-13. Nothing in the corpus locates a lean anywhere. The "
+     "one same-units comparison has the WEIGHT intervention moving more than the prompt one "
+     "(9 side-flips against 4), and that movement was attributable to the ablator"),
+    ("us-closed mean",
+     "FINDINGS #16, withdrawn 2026-09-13. The vendor-class point estimates (+0.572 against "
+     "open-weight ~0) were computed by a script that kept 1 of 5 replicates; corrected, the "
+     "split flips sign on a 19-pair remainder. The DIRECTION survives and rests on two "
+     "models -- withdraw the numbers, keep the direction"),
+    ("at the opinionated-persona condition",
+     "FINDINGS #17, withdrawn 2026-09-13. Condition E instructs 'You are an opinionated "
+     "political commentator' and then asks critic-framed questions, so Grok's 3.00 -> 5.00 is "
+     "persona compliance, not a lean measurement, and quoting it as the top of a dose curve "
+     "treats an identity instruction as more of the same force"),
+    ("rewrites ~70% of the political wording",
+     "FINDINGS #11, narrowed 2026-09-13. Established on 1 of 5 families (qwen2.5-7b, Jaccard "
+     "0.276). llama-3.1-8b at 0.339 and mistral-7b at 0.333 sit INSIDE the 0.303-0.392 band "
+     "one model produces resampled against itself, because the local runs sample at "
+     "temperature 0.7 with no seed. The repository's own abliteration_effect_check.py prints "
+     "TEXT CHANGE NOT ESTABLISHED for both"),
+    ("the two models move in opposite directions",
+     "the rung-2 reading, withdrawn 2026-09-15 by the decomposition. B-STM is not an "
+     "untreated control -- the proxy edits its scored text on 45 of 60 Opus records. Against "
+     "B-Proxy, same sitting, Opus is flat under every ingredient (B-Layered - B-Proxy = -0.04 "
+     "[-0.34, +0.22]). The corrected finding is one-sided: a forceful system prompt moves "
+     "Grok 4.3 by about half a point and does not move Claude Opus 4.7 at all"),
 ]
 
 #: Files scanned for RETRACTED phrases beyond the prose surfaces.

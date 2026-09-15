@@ -134,7 +134,18 @@ def main(argv=None):
     with io.open(OUT, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(want + "\n")
     n = want.count("\n- **`")
-    print("wrote %s (%d documented script(s))" % (os.path.relpath(OUT, STUDY), n))
+    # STDERR, NOT STDOUT. This script WRITES the file itself, so anything on
+    # stdout is a confirmation message and never content -- and on 2026-09-15
+    # SCRIPTS.md was found committed with this line as its first line, the header
+    # gone. The cause is `gen_script_inventory.py > SCRIPTS.md`: the redirect
+    # truncates the file the program just wrote and captures the message instead.
+    #
+    # An ordinary mistake, and the file it corrupted is the one the README calls
+    # "gated so it cannot drift from what is actually there". CI caught it, as
+    # step 7, by going red on a push -- which is the expensive place to catch a
+    # thing that can be made impossible here for one word.
+    print("wrote %s (%d documented script(s))" % (os.path.relpath(OUT, STUDY), n),
+          file=sys.stderr)
     return 0
 
 
