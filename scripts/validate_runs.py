@@ -145,6 +145,30 @@ def inspect(d: Path) -> dict:
                       f"raw/ holds {records} record(s)",
         })
 
+    # A MANIFEST WRITTEN TO ANOTHER SPECIFICATION IS NOT MISSING A FIELD.
+    #
+    # Four runs here belong to the evidence-collection and residency-probe
+    # workstreams and declare their own schemas -- `evidence-collection/1`,
+    # `bias-residency-probe/1`, and an offline review export keyed by `kind`.
+    # Their manifests carry approval records, export digests, retry policies and
+    # scheduled slots; none of them has ever had an `analysis_seed`, because
+    # nothing bootstraps over them.
+    #
+    # Demanding one produced four permanent findings that no correct action would
+    # ever clear, which is how a report teaches its reader to skim. This validator
+    # checks the bias-study collection discipline, and says so when a run is not
+    # one rather than judging it against a rule it was never written to.
+    foreign = m.get("schema") or m.get("kind")
+    if foreign and not str(foreign).startswith(("compass-run", "bias-study")):
+        out["findings"].append({
+            "code": "other-workstream",
+            "severity": "unvalidated",
+            "detail": "manifest declares schema %r -- this run belongs to another "
+                      "workstream and is NOT VALIDATED by the bias-study collection "
+                      "rules, rather than failing them." % (foreign,),
+        })
+        return out
+
     # The May 2026 runs predate the declared-seed rule and correctly inherit the frozen
     # LEGACY_SEED, so their silence is policy rather than a defect. Flagging them would
     # bury the two real findings under twelve expected ones, and a report that always
