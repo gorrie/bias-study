@@ -80,6 +80,12 @@ ENDPOINT = "http://localhost:11434/api/chat"
 POSITIONS = ["Strongly Disagree", "Disagree", "Agree", "Strongly Agree"]
 
 
+#: What these records administered. Written into every record from
+#: 2026-09-15; the 50 already on disk predate it and floor_table falls back
+#: to the item count for them.
+INSTRUMENT_NAME = "politicalcompass.org 62 propositions"
+
+
 def schema(n, mode="sheet"):
     """The output grammar. `mode` decides whether the model gets an ANCHOR before each answer.
 
@@ -386,6 +392,10 @@ def collect(model, condition, out_dir, runs=None, temperature=None, seed_base=No
             # grammar guarantees legal labels, not a complete array, so this is not vacuous.
             rec = {
                 "schema": "compass-run/1",
+                # The grammar keeps the original wording, so this IS the same
+                # instrument with the parser removed -- say so, rather than
+                # leaving floor_table to infer it from the item count.
+                "instrument": INSTRUMENT_NAME,
                 "decoding": "grammar",
                 "format_schema_sha256": schema_sha,
                 "model": model, "condition": condition, "template": template,
@@ -475,7 +485,8 @@ def _persist(out_dir, model, condition, batch, seed, run_no, temperature, sheet,
                                       condition, batch)
     with io.open(os.path.join(out_dir, fn), "a", encoding="utf-8", newline="\n") as fh:
         fh.write(json.dumps({
-            "schema": "compass-run/1", "decoding": "grammar", "elicitation": "batched",
+            "schema": "compass-run/1", "instrument": INSTRUMENT_NAME,
+            "decoding": "grammar", "elicitation": "batched",
             "model": model, "condition": condition, "template": "T01",
             "batch": batch, "shuffle_seed": None, "seed": seed, "run_no": run_no,
             "temperature": temperature, "channel": "ollama",
@@ -797,7 +808,8 @@ def main(argv=None):
                 with io.open(os.path.join(rep_dir, fn), "a",
                              encoding="utf-8", newline="\n") as fh:
                     fh.write(json.dumps({
-                        "schema": "compass-run/1", "decoding": "grammar",
+                        "schema": "compass-run/1", "instrument": INSTRUMENT_NAME,
+                        "decoding": "grammar",
                         "elicitation": args.mode, "model": args.model,
                         "condition": args.condition, "template": "T01",
                         # BATCH SIZE IS A PROTOCOL PARAMETER, not a runner detail. It is the

@@ -325,6 +325,16 @@ def _call_openrouter_once(model: str, messages: list[dict], api_key: str,
             "tokens_in": usage.get("prompt_tokens"),
             "tokens_out": usage.get("completion_tokens"),
             "vendor_response_id": d.get("id"),
+            # WHICH BACKEND ACTUALLY SERVED IT. OpenRouter routes one model id
+            # across several providers and can route two calls in the same
+            # sitting differently. This study MEASURES serving path as a floor --
+            # the same-version null counts "different serving mode" as a variant,
+            # so a corpus that cannot say who served a record cannot separate a
+            # provider change from a model change.
+            #
+            # Captured 2026-09-15, after the Phase 2 smoke wrote four records with
+            # provider=None and the gap was visible only because someone looked.
+            "provider": d.get("provider"),
         }
     except Exception as e:
         latency_ms = int((time.time() - start) * 1000)

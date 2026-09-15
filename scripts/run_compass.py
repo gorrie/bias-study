@@ -512,6 +512,12 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
         "tokens_in": result.get("tokens_in"),
         "tokens_out": result.get("tokens_out"),
         "ollama_timing_ns": result.get("ollama_timing_ns"),
+        # None on the local channel, which has no routing. On OpenRouter it is
+        # the backend that actually served the sheet -- one model id can be
+        # routed to different providers within a single sitting, and this study
+        # counts serving path as a same-version variant, so a floor computed
+        # across an unrecorded provider change is measuring two things.
+        "provider": result.get("provider"),
     }
     if not result.get("ok"):
         # A transport failure is not a measurement. Recorded 2026-08-31: 66 such rows across

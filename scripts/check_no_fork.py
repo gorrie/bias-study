@@ -29,12 +29,33 @@ import subprocess
 import sys
 from pathlib import Path
 
-from _shim import public_scripts
-
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
-PUBLIC = str(public_scripts(__file__).parent)
-PUBLIC_SCRIPTS = os.path.join(PUBLIC, "scripts")
+
+# THIS GATE COMPARES TWO TREES AND ONLY ONE OF THEM EXISTS HERE.
+#
+# It is a PRIVATE-tree check: it walks the working study's scripts and diffs each
+# against the mirror's copy. It is also shipped INTO the mirror, where `_shim`
+# does not exist and there is no second tree to compare against -- so on a public
+# clone it died with `ModuleNotFoundError: No module named '_shim'`.
+#
+# A reviewer's reasonable move on a repository that advertises its own gates is
+# to run all of them. Handing them a traceback on a file whose docstring promises
+# to catch divergence says the checks are decorative, which is the opposite of
+# what this repository is for.
+#
+# Exit 2 = NOT APPLICABLE, the same code collection_check uses for "this examined
+# nothing". Never 0: a gate that cannot run has not passed.
+try:
+    from _shim import public_scripts
+except ModuleNotFoundError:
+    public_scripts = None
+
+if public_scripts is None:
+    PUBLIC = PUBLIC_SCRIPTS = None
+else:
+    PUBLIC = str(public_scripts(__file__).parent)
+    PUBLIC_SCRIPTS = os.path.join(PUBLIC, "scripts")
 
 #: A retired script forwards to the mirror. These markers identify one.
 SHIM_MARKERS = ("_shim import", "forwards to it", "RETIRED IN PLACE")
@@ -103,6 +124,15 @@ def main(argv=None):
     ap.add_argument("--source-only", action="store_true",
                     help="development check: no entry point may forward into a release checkout")
     args = ap.parse_args(argv)
+
+    if PUBLIC_SCRIPTS is None or not os.path.isdir(PUBLIC_SCRIPTS):
+        print("NOT APPLICABLE -- this check compares the working study tree against the")
+        print("public mirror, and only one tree is present here. Run it from the study")
+        print("tree; in a public clone there is nothing to diff against.")
+        print("")
+        print("This is NOT a pass. A gate that cannot run has not run.")
+        return 2
+
     if args.source_only:
         shims = [p.name for p in Path(HERE).glob('*.py') if is_shim(read(p) or '')]
         shims += [p.name for p in Path(HERE).glob('*.sh')

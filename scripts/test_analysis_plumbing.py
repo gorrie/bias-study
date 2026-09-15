@@ -116,6 +116,7 @@ def test_order_floor_discovers_a_new_run_directory():
         for seed, offset in ((101, 0), (202, 1)):
             record = {
                 "schema": "compass-run/1", "model": model, "condition": "A",
+                "instrument": "politicalcompass.org 62 propositions",
                 "shuffle_seed": seed, "valid": True, "n_answers": 62,
                 # Not a constant sheet: load() drops degenerate ones on purpose.
                 "answers": [{"q": q, "position": (q + offset) % 4} for q in range(1, 63)],
@@ -172,6 +173,7 @@ def test_no_order_cell_pools_two_temperatures():
         for temp, offset in ((0.0, 0), (0.7, 1)):
             record = {
                 "schema": "compass-run/1", "model": model, "condition": "A",
+                "instrument": "politicalcompass.org 62 propositions",
                 "shuffle_seed": None, "temperature": temp, "valid": True, "n_answers": 62,
                 "answers": [{"q": q, "position": (q + offset) % 4} for q in range(1, 63)],
             }
@@ -402,6 +404,7 @@ def test_sweep_records_will_not_match_an_unlabelled_batch():
 
     def rec(**kw):
         base = {"schema": "compass-run/1", "model": "m", "condition": "D",
+                "instrument": "politicalcompass.org 62 propositions",
                 "valid": True, "seed": 1,
                 "answers": [{"q": "q%d" % i, "position": 1} for i in range(62)]}
         base.update(kw)

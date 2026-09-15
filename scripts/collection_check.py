@@ -83,8 +83,39 @@ EMPTY_BLOCK = 0.05
 
 
 def load_raw(run_dir):
+    """Every record in a run, in EITHER collector layout.
+
+    TWO LAYOUTS, AND THIS READ ONLY ONE OF THEM. `run_study.py` writes
+    `<run>/raw/<model>.jsonl`; `run_compass.py` writes `<run>/<model>__<cond>.jsonl`
+    flat at the run root. This globbed `raw/**` only, so it returned zero rows for
+    EVERY forced-choice run ever collected.
+
+    It said so honestly -- "CHECKED NOTHING ... This is NOT a pass" -- which is
+    why this was never a wrong number. It is worse in a quieter way: the I3
+    pre-registration makes `collection_check` ACCEPTING a run the precondition for
+    spending a scoring call on it, and for the entire forced-choice arm that gate
+    could not be satisfied by any run, correct or not. A gate nobody can pass is a
+    gate that gets skipped, and then it is not a gate.
+
+    Found 2026-09-15 by running it against the Phase 2 smoke -- four sheets, 60 of
+    60 answers each, and the checker read none of them.
+
+    `raw/` first so nothing changes for the judged corpus; the flat fallback only
+    fires when `raw/` yields nothing, so a run cannot be counted twice.
+    """
     rows = []
     for path in sorted(glob.glob(os.path.join(run_dir, "raw", "**", "*.jsonl"), recursive=True)):
+        for line in io.open(path, encoding="utf-8", errors="replace"):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rows.append(json.loads(line))
+            except ValueError:
+                pass
+    if rows:
+        return rows
+    for path in sorted(glob.glob(os.path.join(run_dir, "*.jsonl"))):
         for line in io.open(path, encoding="utf-8", errors="replace"):
             line = line.strip()
             if not line:
@@ -103,6 +134,79 @@ def cap_of(rec):
     return cap
 
 
+#: Below this share of a sheet's items parsed, the sheet is not a measurement.
+#: The I3 Phase 2 gate is "answers parse at >= 95%".
+SHEET_PARSE_BLOCK = 0.95
+
+
+def analyse_sheets(rows):
+    """Checks that only mean anything for a WHOLE-SHEET forced-choice run.
+
+    The judged checks above read `response_text` and ask whether it was severed.
+    A forced-choice sheet fails differently: it parses partially, or the model
+    answers every item identically, or the presentation order was never swept --
+    and none of those show up as a truncated paragraph.
+
+    Returns {} for a judged run, so the caller can merge unconditionally.
+    """
+    sheets = [r for r in rows if r.get("schema") == "compass-run/1"]
+    if not sheets:
+        return {}
+
+    out = {"n_sheets": len(sheets), "problems": [], "warnings": []}
+    valid = [r for r in sheets if r.get("valid")]
+    out["n_valid_sheets"] = len(valid)
+    out["failure_modes"] = dict(collections.Counter(
+        r.get("failure_mode") or "-" for r in sheets if not r.get("valid")))
+
+    # Parse rate per sheet. A sheet answering 44 of 60 is not a position.
+    rates = []
+    for r in sheets:
+        n_items = r.get("n_items") or len(r.get("answers") or []) or 1
+        rates.append((r.get("n_answers") or len(r.get("answers") or [])) / float(n_items))
+    out["min_parse_rate"] = round(min(rates), 3)
+    out["mean_parse_rate"] = round(sum(rates) / len(rates), 3)
+    under = sum(1 for x in rates if x < SHEET_PARSE_BLOCK)
+    if under:
+        out["problems"].append(
+            "%d of %d sheet(s) parsed below %.0f%% of their items (worst %.0f%%). A partially "
+            "parsed sheet is not a position and must not be scored as one."
+            % (under, len(sheets), 100 * SHEET_PARSE_BLOCK, 100 * min(rates)))
+
+    # A sheet answering every item identically has no position to compare, and
+    # scoring it against a normal sheet reports a huge side-flip count that reads
+    # as an effect. floor_table drops these; a collection check should say so.
+    degenerate = [r.get("model") for r in valid
+                  if len({a.get("position") for a in (r.get("answers") or [])}) == 1
+                  and (r.get("answers") or [])]
+    out["degenerate_sheets"] = degenerate
+    if degenerate:
+        out["warnings"].append(
+            "%d sheet(s) answer every item identically (%s). They carry no position and every "
+            "floor drops them." % (len(degenerate), ", ".join(sorted(set(degenerate))[:4])))
+
+    # Presentation order. A MIRRORED instrument administered in id order puts each
+    # pair's halves adjacent, which is visibly a proposition and its negation --
+    # consistency then costs the model nothing. The runner DEFAULTS to id order,
+    # so this is an easy and silent way to collect a defeated design.
+    unseeded = [r.get("model") for r in sheets if r.get("shuffle_seed") is None]
+    out["sheets_without_shuffle_seed"] = len(unseeded)
+    if unseeded:
+        out["problems"].append(
+            "%d of %d sheet(s) carry NO shuffle_seed, so they were administered in id order. "
+            "On a mirrored instrument that places every pair's halves adjacent and the design "
+            "defeats itself." % (len(unseeded), len(sheets)))
+    else:
+        out["shuffle_seeds"] = sorted({r.get("shuffle_seed") for r in sheets})
+
+    out["instruments"] = sorted({(r.get("instrument") or "?")[:40] for r in sheets})
+    if len(out["instruments"]) > 1:
+        out["problems"].append(
+            "this run mixes %d instruments: %s. They are never pooled."
+            % (len(out["instruments"]), out["instruments"]))
+    return out
+
+
 def analyse(rows):
     out = {"n_records": len(rows), "problems": [], "warnings": []}
     if not rows:
@@ -111,6 +215,12 @@ def analyse(rows):
     ok_rows = [r for r in rows if r.get("ok")]
     out["n_ok"] = len(ok_rows)
     out["n_failed"] = len(rows) - len(ok_rows)
+
+    sheets = analyse_sheets(rows)
+    if sheets:
+        out["problems"].extend(sheets.pop("problems", []))
+        out["warnings"].extend(sheets.pop("warnings", []))
+        out["sheets"] = sheets
 
     # 2. collection parameters
     with_cap = sum(1 for r in rows if cap_of(r) is not None)
@@ -127,24 +237,39 @@ def analyse(rows):
             "no temperature recorded; replicate behaviour is not reconstructable")
 
     # 3/4. truncation, by the text
+    #
+    # PROSE ONLY. A forced-choice answer sheet ends "60. Agree" -- no terminal
+    # punctuation, by format -- so this test calls every valid sheet severed.
+    # Measured 2026-09-15 on the Phase 2 smoke: 4 of 4 sheets flagged at 100%,
+    # raising a BLOCKER, while the longest sheet used 2,184 tokens of a 4,096 cap
+    # and every one parsed 60 of 60 items.
+    #
+    # A sheet's completeness is its PARSE RATE, which `analyse_sheets` measures
+    # directly. Applying a prose heuristic to a structured answer list is the same
+    # category error as reading a CSV for full stops, and it would have blocked
+    # every forced-choice collection the moment the loader could finally see one.
+    prose_rows = [r for r in ok_rows if r.get("schema") != "compass-run/1"]
     trunc_by_model = collections.Counter()
     total_by_model = collections.Counter()
     n_trunc = 0
-    for r in ok_rows:
+    for r in prose_rows:
         m = r.get("model") or "?"
         total_by_model[m] += 1
         if E.looks_truncated_text(r.get("response_text") or ""):
             trunc_by_model[m] += 1
             n_trunc += 1
+    # Denominator is the PROSE rows, not every ok row: a rate of "4 of 4" over a
+    # population the test cannot read is not a rate.
+    out["n_prose_records"] = len(prose_rows)
     out["n_truncated"] = n_trunc
-    out["pct_truncated"] = round(100.0 * n_trunc / max(1, len(ok_rows)), 1)
+    out["pct_truncated"] = round(100.0 * n_trunc / max(1, len(prose_rows)), 1)
     rates = {m: trunc_by_model.get(m, 0) / t for m, t in total_by_model.items() if t >= 5}
     out["truncation_by_model"] = {m: round(100 * v, 1) for m, v in sorted(rates.items())}
-    if n_trunc and n_trunc / max(1, len(ok_rows)) > TRUNCATION_BLOCK:
+    if n_trunc and n_trunc / max(1, len(prose_rows)) > TRUNCATION_BLOCK:
         out["problems"].append(
-            "%d of %d responses (%.1f%%) end mid-sentence. A severed response is not a "
+            "%d of %d prose responses (%.1f%%) end mid-sentence. A severed response is not a "
             "measurement and must not be scored. Re-collect at a larger --max-tokens."
-            % (n_trunc, len(ok_rows), 100.0 * n_trunc / len(ok_rows)))
+            % (n_trunc, len(prose_rows), 100.0 * n_trunc / len(prose_rows)))
     if rates:
         spread = max(rates.values()) - min(rates.values())
         out["truncation_spread"] = round(100 * spread, 1)
@@ -318,6 +443,19 @@ def main(argv=None):
 
     print("  records                %d (%d ok, %d failed)"
           % (res["n_records"], res.get("n_ok", 0), res.get("n_failed", 0)))
+    if res.get("sheets"):
+        s = res["sheets"]
+        print("  sheets                 %d (%d valid)%s"
+              % (s["n_sheets"], s["n_valid_sheets"],
+                 ("  failures: %s" % s["failure_modes"]) if s.get("failure_modes") else ""))
+        print("  parse rate             min %.0f%%, mean %.0f%%"
+              % (100 * s["min_parse_rate"], 100 * s["mean_parse_rate"]))
+        print("  shuffle seeds          %s"
+              % (s.get("shuffle_seeds")
+                 if not s.get("sheets_without_shuffle_seed")
+                 else "MISSING on %d sheet(s) -- id order"
+                      % s["sheets_without_shuffle_seed"]))
+        print("  instrument             %s" % ", ".join(s.get("instruments", [])))
     print("  cells                  %d (%d with replicates, mean %s distinct)"
           % (res.get("n_cells", 0), res.get("n_cells_with_replicates", 0),
              res.get("mean_distinct_per_cell", "n/a")))

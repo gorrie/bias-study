@@ -168,6 +168,97 @@ DROPPED = collections.Counter()
 _DROPPED_SEEN = set()
 
 
+#: TWO INSTRUMENTS NOW SHARE ONE RUNNER, ONE SCHEMA AND ONE `runs/` TREE.
+#:
+#: `load()` filtered on `schema == "compass-run/1"` and nothing else. That was
+#: sufficient while `run_compass.py` only ever administered the 62 external
+#: propositions. It stopped being sufficient the moment the project authored its
+#: own instrument: `data/ratchet-propositions-i3.json` is 60 items in 30 mirrored
+#: pairs, administered by the SAME runner, written with the SAME schema, into the
+#: SAME tree.
+#:
+#: Pooled, the two produce a floor computed across instruments -- a side-flip
+#: count over 62 items averaged with one over 60, on different propositions, in
+#: different topic space. That number describes neither instrument and there is
+#: no reading of it that is correct.
+#:
+#: Nothing would have announced it. The cell key is
+#: (model, condition, shuffle_seed); `n_items` is not in it, the schema matches,
+#: `valid` is true, and the sheets parse. The first symptom would have been the
+#: published pair counts moving -- 84 and 97 -- which CI asserts as a replication
+#: test, so it would have failed as a REPLICATION defect rather than as the
+#: pooling defect it is.
+#:
+#: The records already carry the discriminator: `instrument` is written straight
+#: from the bank's own field (`run_compass.py:719`), so the compass sheets say
+#: "politicalcompass.org ..." and the I3 sheets say "ratchet-battery-i3".
+#:
+#: DEFAULT IS THE COMPASS, deliberately, so this commit changes no published
+#: number. The floors move to the I3 bank when its wave has been collected, by
+#: flipping `INSTRUMENT_DEFAULT` in the SAME commit that moves CI's expected pair
+#: counts -- one deliberate change, reviewable as one diff, rather than a silent
+#: drift the day the first I3 run lands.
+COMPASS_INSTRUMENT = "politicalcompass"
+I3_INSTRUMENT = "ratchet-battery-i3"
+INSTRUMENT_DEFAULT = COMPASS_INSTRUMENT
+
+#: Item count per instrument, used ONLY when a record does not name its own.
+#:
+#: NOT EVERY COLLECTOR WRITES THE FIELD. `constrained_probe.py` -- the grammar /
+#: constrained-decoding arm -- writes `compass-run/1` records with no
+#: `instrument` key at all: 50 records across 5 models, every one `n_items: 62`.
+#: Its docstring is explicit that it administers the same items ("the grammar
+#: keeps the ORIGINAL WORDING. So it is the same instrument with the parser
+#: removed").
+#:
+#: Failing closed on those dropped the whole elicitation-format row out of the
+#: generated floors table, silently, the moment the guard landed. That row is a
+#: published disqualification -- "ARM UNSTABLE, NOT A FLOOR" -- and deleting a
+#: negative result is not a safer error than keeping it.
+#:
+#: So: name wins, and item count is the fallback when there is no name. This
+#: still cannot pool the two instruments, because 60 != 62. It is narrower than
+#: it looks -- a record with neither a name nor a matching count is still
+#: dropped.
+INSTRUMENT_ITEMS = {COMPASS_INSTRUMENT: 62, I3_INSTRUMENT: 60}
+
+#: Set by the CLI; `load()` reads it. A module global rather than a parameter
+#: threaded through ~15 call sites, because every one of them wants the same
+#: answer and a per-caller override is exactly the freedom that lets two floors
+#: in one table come from two instruments.
+_INSTRUMENT = INSTRUMENT_DEFAULT
+
+
+def set_instrument(name):
+    """Choose which instrument every floor in this process is computed from."""
+    global _INSTRUMENT
+    _INSTRUMENT = name
+
+
+def _instrument_matches(rec):
+    """Is this sheet from the instrument under analysis?
+
+    Substring, not equality: the compass records carry a long descriptive string
+    ("politicalcompass.org 62-proposition test; texts and per-item research
+    classifications ...") whose tail has changed before now. The discriminating
+    part is the head, and an exact match on a sentence nobody guards is a filter
+    that fails open the next time somebody edits it.
+
+    A record with NO instrument field falls back to its ITEM COUNT, because one
+    collector never wrote the field -- see INSTRUMENT_ITEMS. That fallback cannot
+    pool the two instruments (60 != 62) and a record matching neither a name nor
+    a count is still dropped.
+    """
+    got = rec.get("instrument")
+    if isinstance(got, str):
+        return _INSTRUMENT.lower() in got.lower()
+    want_items = INSTRUMENT_ITEMS.get(_INSTRUMENT)
+    if want_items is None:
+        return False
+    n = rec.get("n_items") or len(rec.get("answers") or [])
+    return n == want_items
+
+
 def _count_drop(reason, rec):
     ident = (rec.get("model"), rec.get("condition"), rec.get("collected_at"),
              rec.get("shuffle_seed"), rec.get("template"))
@@ -227,6 +318,12 @@ def load(pattern, condition=None, key=None, dedupe_by_seed=False):
                 continue
             r = json.loads(line)
             if r.get("schema") != "compass-run/1":
+                continue
+            # The instrument guard. Counted, never silent: a floor whose pair
+            # count moved because another instrument entered the tree must say
+            # so in the same breath as the number.
+            if not _instrument_matches(r):
+                _count_drop("other instrument (%s)" % (r.get("instrument") or "unset"), r)
                 continue
             if not r.get("valid"):
                 _count_drop("invalid run (%s)" % (r.get("failure_mode") or "unclassified"), r)
@@ -1555,9 +1652,15 @@ def all_floors():
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--markdown", action="store_true")
+    ap.add_argument("--instrument", default=INSTRUMENT_DEFAULT,
+                    help="which instrument every floor is computed from, matched as a "
+                         "substring of the record's `instrument` field. Default %s. "
+                         "Use %s for the project's own mirrored bank. Floors from two "
+                         "instruments are never pooled." % (COMPASS_INSTRUMENT, I3_INSTRUMENT))
     ap.add_argument("--class-split", action="store_true",
                     help="the 2x2 of nuisance-vs-manipulation by model class, as markdown")
     args = ap.parse_args(argv)
+    set_instrument(args.instrument)
 
     rows = list(all_floors().values())
     rows.sort(key=lambda r: -r["side"][1])
