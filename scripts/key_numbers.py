@@ -22,6 +22,7 @@ import argparse
 import io
 import json
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -702,6 +703,16 @@ SURFACES = {
             "null_mde": "and **%d** against the same-version floor",
             "null_p90": "differ by **p90 %d**",
             "null_pairs_prose": "over %d pairs",
+            # THE COUNT THE README STATED FIVE DIFFERENT WAYS. Gated 2026-09-15
+            # after an audit found "**18** claims", "Fourteen claims", "Fourteen
+            # claims", "15 entries" and "14 claims" in one file -- and a reader
+            # who followed the link from the 15 counted 23. Only the VERSIONING.md
+            # copy was gated, so `--check-release` passed over all five.
+            #
+            # The same twin problem as the judge spread: a number is gated on one
+            # surface and its prose restatements are not. All five now use this
+            # phrase, so one key holds every copy.
+            "corrections_entries": "corrected **%d** claims of its own",
         },
     },
 }
@@ -1526,6 +1537,59 @@ def _spell(value):
     return "%s-%s" % (_SPELLED[tens * 10], _SPELLED[ones])
 
 
+def _stale_twins(text, phrase, value, by_key):
+    """Lines stating this phrase's shape with a DIFFERENT number.
+
+    The gate above asks whether the correct sentence is PRESENT. This asks
+    whether an incorrect one is present too, which is the failure a
+    present-check cannot see: the README carried five statements of the
+    corrections count, one right and four wrong, and gating the key changed
+    nothing because the right one existed.
+
+    Only single-placeholder numeric phrases are scanned. A mapping phrase
+    (`%(a)d ... %(b)d`) has two values in one sentence and no unambiguous
+    "the number", so it is left to the existence check rather than guessed at --
+    a false positive here would fail a build over a sentence that is correct,
+    which is how a gate gets switched off.
+
+    Quoted occurrences are exempt, by the same rule RETRACTED uses: a correction
+    has to be able to write "this said 15 entries until 2026-09-15" without
+    failing the build that carries the correction.
+    """
+    if "%(" in phrase or phrase.count("%") != 1:
+        return []
+    m = re.search(r"%[-+ #0]*[\d.]*([sdf])", phrase)
+    if not m:
+        return []
+    head, tail = phrase[:m.start()], phrase[m.end():]
+    if not head.strip() and not tail.strip():
+        return []            # a bare number with no sentence around it: unmatchable
+    pattern = (re.escape(head) + r"(?P<num>[0-9][0-9,]*(?:\.[0-9]+)?)" + re.escape(tail))
+    # BOTH SIDES NORMALISED. The generated value may itself be a thousands-
+    # separated string ("2,866"), and stripping commas from only the found number
+    # made "2866" != "2,866" -- reporting the CORRECT sentence as a stale twin on
+    # the first run of this check.
+    want = str(value).replace(",", "")
+    out = []
+    for line in text.split("\n"):
+        for hit in re.finditer(pattern, line):
+            got = hit.group("num").replace(",", "")
+            try:
+                same = abs(float(got) - float(want)) < 1e-9
+            except ValueError:
+                same = got == want
+            if same:
+                continue
+            # quoted -> a correction describing the old value, not asserting it
+            before, after = line[:hit.start()], line[hit.end():]
+            if before.count('"') % 2 == 1 and '"' in after:
+                continue
+            if before.count("'") % 2 == 1 and "'" in after:
+                continue
+            out.append(line.strip()[:160])
+    return out
+
+
 def check_surface(name, rows):
     """Verify one non-paper surface still states the computed numbers. Returns a failure list."""
     spec = SURFACES[name]
@@ -1609,6 +1673,27 @@ def check_surface(name, rows):
                         found = line.strip()[:160]
                         break
             bad.append((key, expected, found))
+            continue
+
+        # PRESENT IS NOT THE SAME AS CONSISTENT.
+        #
+        # Everything above is `expected in text` -- a SUBSTRING EXISTENCE check.
+        # One correct occurrence satisfies it no matter how many stale twins of
+        # the same sentence sit beside it, so a file may state a gated number
+        # five times, four of them wrong, and pass.
+        #
+        # That is not hypothetical. Measured 2026-09-15: the README stated the
+        # corrections count as "**18** claims", "Fourteen claims", "Fourteen
+        # claims", "15 entries" and "14 claims" -- and a reader following the
+        # link from the 15 counted 23. Adding a gate for that key did NOT catch
+        # it, because one occurrence was right.
+        #
+        # So: find every occurrence of this phrase's SHAPE and require them all
+        # to carry the same value. Quoted occurrences are exempt by the same rule
+        # RETRACTED uses -- a correction has to be able to say what the old
+        # number was.
+        for stale in _stale_twins(text, phrase, row["value"], by_key):
+            bad.append((key, expected, stale))
     if not bad:
         print("%s: all %d stated number(s) agree with runs/" % (name, checked))
     return bad

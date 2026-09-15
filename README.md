@@ -57,7 +57,7 @@ language models.**
 *Every number above recomputes: `python scripts/key_numbers.py`,
 `python scripts/controls_audit.py --gaps`, `python scripts/ablation_analysis.py`. Read
 [CORRECTIONS.md](CORRECTIONS.md) before quoting any of them — this study has withdrawn,
-narrowed or corrected **18** claims of its own, and says which, when, and what replaced each.*
+narrowed or corrected **23** claims of its own, and says which, when, and what replaced each.*
 
 > **`v1`, `v2` and `v3` in this repository name the three intervention rungs — prompt edit,
 > elicitation pipeline, weight ablation — not releases.** Releases are dated. See
@@ -94,15 +94,23 @@ The study's three **intervention rungs**, reported separately:
 
 | Rung | Force | Tooling | Result |
 |------|-------|---------|--------|
-| **1. Prompt** | remove the fairness instruction; A→E unmask gradient | OpenRouter / Ollama | the lean unmasks, dose-responsively |
-| **2. Pipeline** | ~~hedge-strip + obfuscation~~ **a system prompt + a sampling change** — see below | G0DM0D3 server | **no effect established here** — all 6 intervals span zero at n=1 per cell |
-| **3. Weights** | ablate the refusal direction | OBLITERATUS (fp16) | text rewrites ~70%, stance does **not** move |
+| **1. Prompt** | remove the fairness instruction; N → A → P → D | OpenRouter / Ollama | the fairness instruction **pins the midpoint**; a content-free placebo lifts it as much as a commit instruction; the *direction* underneath is model-specific |
+| **2. Pipeline** | a system prompt + a sampling change | G0DM0D3 server | **real, one-sided, one model** — a forceful system prompt moves Grok 4.3 by about half a point and does **not** move Claude Opus 4.7 at all; the sampling change moves neither |
+| **3. Weights** | ablate the refusal direction | OBLITERATUS (fp16) | text change established on **1 of 5 model families**; two sit inside the band one model gives resampled against itself |
 
-**Rung 2 establishes nothing, and the table says so.** `scripts/pipeline_rung.py` estimates the
-arm paired per question against plain condition B: **all 8 intervals span zero.** The strongest
-is Grok 4.3's layered stack at +0.60, whose lower bound is exactly zero; Claude Opus 4.7's two
-single-technique arms measure +0.00. No ceiling was located, which three points on one axis
-cannot do at any sample size.
+**The historical n=1 pair established nothing, and said so:** `scripts/pipeline_rung.py` against
+the superseded pair gives **all 8 intervals span zero**, every contrast a difference of two
+single draws. That is kept as `HISTORICAL_PIPELINE_RUN` and still reproduces.
+
+> **The table row said "all 6 intervals span zero" while this sentence said 8, four lines
+> apart.** The count moved 8 → 6 → 8 as the arm was re-collected, and the row never got the
+> last update. The gate greps this sentence, found its 8, and passed — a substring check is
+> satisfied by one correct occurrence however many stale twins sit beside it. Caught
+> 2026-09-15 by `_stale_twins`, added to `key_numbers` for exactly this class of defect.
+>
+> Both numbers are now moot for the current finding: the arm was re-collected at n=5 and then
+> **decomposed**, and rung 2's result is no longer a count of intervals spanning zero. See
+> `RESULTS-2026-09-15-rung2-decomposed.md`.
 
 **This count has moved twice and the number is generated, not typed** — `key_numbers.py
 --check-release` fails when the sentence above disagrees with `pipeline_rung.py`, which is what
@@ -476,7 +484,7 @@ discarded as collection errors. The decline survives reordering: three Google mo
 
 ### And the corrections to us
 
-Fourteen claims of ours withdrawn or narrowed, the founding thesis among them. Then the correction to the
+Claims of ours withdrawn or narrowed ([the full ledger](CORRECTIONS.md)), the founding thesis among them. Then the correction to the
 correction: every control we ran was aimed at claims asserting an effect and none at claims
 asserting absence, so four of five of our own nulls turned out to sit below what the instrument
 can detect. Undecided is not refuted, and it is not a restoration either.
@@ -496,7 +504,7 @@ direction. An earlier three-lineage version of this result held only against a t
 null.
 
 Detail, data and the pre-publication gate that enforces these controls are in the
-companion research directory. Fourteen claims were withdrawn or narrowed during this pass,
+companion research directory. Claims were withdrawn or narrowed during this pass,
 including the study's own founding thesis; the corrections are recorded in place rather
 than removed.
 
@@ -714,7 +722,7 @@ review and the objection→fix map are in **`ADVERSARIAL-REVIEW.md`**.
 
 | Question | Where |
 |---|---|
-| Which numbers has this study withdrawn or narrowed? | [`CORRECTIONS.md`](CORRECTIONS.md) — 15 entries, dated |
+| Which numbers has this study withdrawn or narrowed? | [`CORRECTIONS.md`](CORRECTIONS.md) — every one, dated |
 | What does it say about other people's work, and on what evidence? | [`PRIOR-WORK-CORRECTIONS.md`](PRIOR-WORK-CORRECTIONS.md) |
 | What was fixed *before* the data was collected? | [`prereg/`](prereg/) — six plans, one with its stopping rule enforced in code |
 | Which controls does each audited study run? | [`data/controls-audit.json`](data/controls-audit.json) → `python scripts/controls_audit.py` |
@@ -739,7 +747,7 @@ prereg/     Analysis plans fixed before their data was collected.
 ```
 
 **Two correction files, and they point in opposite directions.**
-[`CORRECTIONS.md`](CORRECTIONS.md) is what this study got wrong — 14 claims withdrawn, narrowed
+[`CORRECTIONS.md`](CORRECTIONS.md) is what this study got wrong — every claim withdrawn, narrowed
 or corrected, each with the date it went out, the date it came back, and what replaced it.
 [`PRIOR-WORK-CORRECTIONS.md`](PRIOR-WORK-CORRECTIONS.md) is what this study finds wrong
 elsewhere: the twelve-study controls audit, the seven studies holding the pairs to fix their own

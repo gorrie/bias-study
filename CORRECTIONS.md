@@ -664,6 +664,144 @@ from its instruction arm.
 
 ## How to read this file
 
+### 19. The study's title was a withdrawn finding — withdrawn 2026-09-13, corrected on this surface 2026-09-15
+
+**Published:** 26 May 2026, as the title of the writeup, of this repository, of the
+`CITATION.cff` record, of the book's opening "Proof", and of *The Ratchet* chapter 22's "the
+finding".
+**Withdrawn:** 2026-09-13, in the private `FINDINGS.md` (#13).
+**Still asserted publicly until:** 2026-09-15. Two days.
+
+The claim was **"the hedge is the bias signature"**: that a model answering a contested political
+question with heavy both-sides hedging is masking a lean, and that hedge density therefore detects
+the mask.
+
+Score-3 responses do carry a much higher hedge ratio. But **rubric score 3 *is* "does not
+commit"**, and the hedge lexicon measures non-commitment. The finding is the rubric restated in
+lexical form — as the writeup's own §3.5 conceded in the same document that led with it.
+
+**Why it outlived its own withdrawal.** `key_numbers.RETRACTED` is the gate that fails a build
+when a withdrawn phrase is asserted on a public surface. It held six phrases, all dated
+2026-09-04 to 2026-09-06. The five withdrawals of 2026-09-13 were never added, so
+`--check-release` kept exiting 0 over a README that asserted every one of them. A retraction gate
+that is not updated when a retraction happens reports the absence of the claims it already knows
+about — which is the vacuous-pass failure this project has now found in four separate tools.
+
+**What replaced it.** The repository is now *Same Version, Different Answers*: two models
+differing only in snapshot date, size or serving mode disagree on a median of 5 of 62
+propositions, p90 11, and of twelve audited studies not one reports that null as a distribution.
+That claim survives every control this study owns and is the one no other study reports at all.
+
+`CITATION.cff` still carries the old title as of this entry, because it is copied verbatim into
+the Zenodo record and is permanent once a release fires. It is changed before any tag, not after.
+
+---
+
+### 20. The vendor-class point estimates — withdrawn 2026-09-13
+
+**Published:** 26 May 2026. **Withdrawn:** 2026-09-13 (`FINDINGS.md` #16). **Corrected here:**
+2026-09-15.
+
+The claim was a class differential in point estimates: **us-closed mean Δ +0.572 against
+open-weight ≈ 0**, with the direction said to "replicate under N=5 averaging".
+
+Both halves fail, for the same reason. The script computing them keyed its records on
+`(model, question_id)` — which is not unique when a cell holds five replicates — so it **kept one
+of five** and silently discarded the rest. Nothing was averaged; the phrase "replicates under N=5
+averaging" describes an operation that did not occur. Corrected, the split **flips sign** on a
+19-pair remainder that had lost half its records.
+
+**The direction survives**: US-closed frontier models unmask more than open-weight ones. It rests
+on **two models**, and it is reported that way now. Withdraw the numbers, keep the direction.
+
+---
+
+### 21. "The mask comes off in proportion to force", and "the lean is in the weights" — withdrawn 2026-09-13
+
+**Published:** 26 May 2026, as the study's spine. **Withdrawn:** 2026-09-13 (`FINDINGS.md` #14,
+#15). **Corrected here:** 2026-09-15.
+
+The escalation ladder was presented as one axis with three rungs — prompt, pipeline, weights —
+along which force increases and the mask comes off in proportion, *"except where it is bolted in
+at the weights, where force does nothing."*
+
+It is not one axis, and the rungs are not in the same units:
+
+- conditions D and E silently carry condition B's user suffix, so their deltas confound three
+  changes at once, while condition C has a stronger *user* instruction than either and no system
+  prompt;
+- **no model is measured on all three rungs**;
+- the weight rung was tested only on open models that sit at 3.00 under prompt force too, so
+  "force does nothing at the weights" was established where force does nothing at all;
+- and a **content-free placebo** — an instruction with no stance content whatsoever — restores
+  endpoint answers as much as an explicit must-commit instruction does, so most of what the
+  ladder attributed to increasing force is instruction-following.
+
+"The lean is in the weights" fails separately: nothing in the corpus locates a lean anywhere. The
+one same-units comparison has the **weight** intervention moving *more* than the prompt one (9
+side-flips against 4), and that movement was attributable to which third-party build was
+downloaded — see entry 22.
+
+The three rungs are real measurements and are now reported **separately**, which loses no finding.
+
+---
+
+### 22. Grok 3.00 → 5.00, and "abliteration rewrites ~70% of the political wording" — withdrawn and narrowed 2026-09-13
+
+**Published:** 26 May 2026. **Withdrawn / narrowed:** 2026-09-13 (`FINDINGS.md` #17, #11).
+**Corrected here:** 2026-09-15.
+
+**The dose-response endpoint.** Grok 4.3 reaching 5.00 across the ten neutral questions was
+quoted as the top of the gradient. The condition that produces it instructs *"You are an
+opinionated political commentator"* and then asks critic-framed questions. That is **persona
+compliance, not a lean measurement**, and placing it at the top of a dose curve treats an identity
+instruction as more of the same force. The rest of the gradient stands: 3.00 bare → **3.63** under
+"what do you think?", → **4.20** under the layered pipeline, neither assigning an identity.
+
+**The weight-rung dissociation.** The claim was that abliterating the refusal direction from five
+open-weight families rewrites ~70% of the political wording while moving stance ≤ 0.10, proving
+the refusal direction and the institutional lean dissociable.
+
+The text-rewrite half is established on **one family of five**. Run this repository's own
+`scripts/abliteration_effect_check.py`: it prints **TEXT CHANGE NOT ESTABLISHED** for
+llama-3.1-8b (between-arm Jaccard 0.339) and mistral-7b (0.333), because both sit **inside the
+0.303–0.392 band one model produces resampled against itself** — the local runs sample at
+temperature 0.7 with no seed, so that "rewrite" is what resampling alone produces. Only qwen2.5-7b
+(0.276) is confirmed. DeepSeek-R1-distill has one shared eligible cell; Gemma-2-9B's raw files are
+0 bytes.
+
+And where stance did move, **two independent abliterations of the same base disagree 8/9/9 against
+0/2/0** — the movement belongs to which GGUF was downloaded, not to abliteration as an operation.
+A stance null measured against an unestablished rewrite is uninterpretable in either direction.
+
+---
+
+### 23. "4 of 13 effects survive FDR", and the sycophancy control — corrected 2026-09-15
+
+**Published:** 26 May 2026. **Corrected:** 2026-09-15, by the corpus repair rather than by an
+argument.
+
+**FDR survivors: 4 → 5.** DeepSeek V3.2 was reported as "suggestive but not confirmed". It had
+**23 of its 30 A/B pairs destroyed by the 800-token cap**; the 2026-09-14 repair returned them and
+it now survives Benjamini-Hochberg at p=0.0034. `scripts/robustness_checks.py
+2026-09-14-full-spliced` has printed 5/13 since the splice landed, and `selftest_analysis.py` G2
+asserts the five-model set — so the repository's own tooling and its README disagreed for a day.
+This one is worth stating plainly: a published null was an artifact of a token budget.
+
+**The sycophancy control holds for two models, not five.** A reversed-premise pass was read as
+showing all five tested models holding within ≤ 0.40 of their neutral-framing stance, and
+therefore as evidence that the unmask measures a genuine institutional lean rather than
+agreeableness. On the same control, **GPT-4.1 tracks the frame**: neutral 3.10 against reversed
+**2.75**, with 5 of 20 reversed answers scored 2 and none scored 4 — a gap about the size of its
+own published effect (+0.43). Claude Opus 4.7 (3.70/3.70) and Grok 4.3 (3.80/3.60) do hold.
+
+The same instrument, on the same items, measures a **position** on two models and
+**frame-following** on a third. A single sentence about "the models" hides that, and the control
+is now reported per model.
+
+---
+
+
 If a number in the README, the writeup or the run data disagrees with something you have seen
 quoted elsewhere, this file is the first place to look. If a claim you can find in the git
 history is not listed here and you think it should be,
