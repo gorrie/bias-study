@@ -108,13 +108,21 @@ two models move in **opposite directions** was never at risk.
 | run | what it controls for | result |
 |---|---|---|
 | `2026-09-14-g0dm0d3-proxy-control` | the **proxy path**: plain condition B sent through G0DM0D3 with every transform off, against the same direct-to-OpenRouter baseline | the path costs **+0.06** on Opus and **−0.14** on Grok, both spanning zero |
+| `2026-09-15-g0dm0d3-decomposition` | **what B-Layered's effect is made of**, and the cross-sitting drift below: `B-Proxy`, `B-Godmode`, `B-Autotune` and `B-Layered`, all four collected in ONE sitting so no contrast crosses a day | collecting |
 
 Collected because the pipeline arm goes through the proxy and its baseline does not, so all six
 `vs plain B` contrasts confounded the named transform with the path. They do not, materially —
 which relocates the problem. The control was collected in the **same sitting** as the baseline
 while the pipeline arm predates it by a day or two, so the ~+0.24 floor on Opus is
-**cross-sitting drift**, not the proxy. The outstanding control is therefore a **same-sitting
-plain-B baseline**, which nothing has yet collected.
+**cross-sitting drift**, not the proxy. That is what the decomposition arm now answers, by
+collecting its own baseline alongside its arms.
+
+The decomposition also exists because rung 2's surviving effect belongs to `godmode` and
+`autotune` — Parseltongue is inert here and STM's edit is a median of 16 characters — and no arm
+has ever run one without the other. Until it lands, the honest sentence is *"a system prompt plus
+a sampling change moved Grok and not Opus"*, which cannot say whether the models are responding
+to an instruction or to a temperature. Estimator: `scripts/pipeline_decomposition.py`, written
+and validated on planted answers before the collection finished.
 
 Conditions are in `run_g0dm0d3.COND_FLAGS` as `B-Proxy`. Note that every flag is sent
 explicitly, including the false ones: the server defaults `godmode` and `parseltongue` to **true**
@@ -131,6 +139,7 @@ when the field is absent, so an omitted flag is not "off".
 | `2026-09-14-unmask-gradient-spliced` | 2026-05-26-unmask-gradient | 277 → **450 of 450** |
 | `2026-09-14-variance-spliced` | 2026-05-26-variance | 883 → **1190** |
 | `2026-09-14-may25-spliced` | 2026-05-25 | 168 → **259** of 260 |
+| `2026-09-14-ood-spliced` | 2026-05-27-ood | 90 → **160 of 160** |
 
 `2026-05-25` and `2026-05-25-full` are **different runs**, one character apart. The repair is
 keyed from its own records' `recollected_from`, not from its directory name — which reads

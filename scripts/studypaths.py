@@ -181,6 +181,7 @@ REPAIRS = {
     # than from its directory name, which says "may25" and would have pointed the
     # splice at -full.
     "2026-05-25": "2026-09-14-may25-spliced",
+    "2026-05-27-ood": "2026-09-14-ood-spliced",
 }
 
 #: Holes no budget fixes, kept as a named record rather than quietly carried.

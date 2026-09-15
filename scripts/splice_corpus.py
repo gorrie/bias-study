@@ -99,6 +99,14 @@ CORPUS_REPAIRS = {
         "sources": ("2026-09-14-recollect-may25",),
         "out": "2026-09-14-may25-spliced",
     },
+    # The out-of-domain arm. Its repair is the one that tripped the differential-
+    # truncation blocker at 85.7% on llama-4-maverick, which turned out to be
+    # nine complete answers ending in a closed LaTeX box -- see
+    # eligibility.looks_truncated_text.
+    "2026-05-27-ood": {
+        "sources": ("2026-09-14-recollect-ood",),
+        "out": "2026-09-14-ood-spliced",
+    },
 }
 
 BASE = "2026-05-25-full"
