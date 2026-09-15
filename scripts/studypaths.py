@@ -225,11 +225,33 @@ UNREPAIRABLE = {
     ("2026-05-25-full", "phi4:latest"):
         "1 cell. phi4 is a LOCAL model and the re-collector calls OpenRouter, so "
         "it was never reachable by that path.",
-    ("2026-05-25-full", "google/gemma-3-27b-it"):
-        "1 cell, and a probable FALSE POSITIVE: 1,938 tokens of 4,000, so the "
-        "model stopped voluntarily, ending on a markdown URL with no full stop. "
-        "Checked corpus-wide before leaving the detector alone -- one record in "
-        "2,101 ends in a URL and that one genuinely hit the cap.",
+    # RESOLVED 2026-09-15 -- entry kept as the record of a wrong call, not as a
+    # live exclusion. It read:
+    #
+    #     ("2026-05-25-full", "google/gemma-3-27b-it"): "1 cell, and a probable
+    #     FALSE POSITIVE: 1,938 tokens of 4,000, so the model stopped
+    #     voluntarily, ending on a markdown URL with no full stop. Checked
+    #     corpus-wide before leaving the detector alone -- one record in 2,101
+    #     ends in a URL and that one genuinely hit the cap."
+    #
+    # The diagnosis was right and the remedy was wrong. Re-counted over the whole
+    # corpus rather than one run -- 30,089 records, every non-derived run -- NINE
+    # end on a closed markdown link while flagged severed, across five cells, two
+    # models and three runs, and NONE is within 95% of its cap. The "one record
+    # in 2,101 that genuinely hit the cap" was an artifact of counting inside a
+    # single run.
+    #
+    # Two of the nine are `gpt-4.1` in `2026-09-13-i3-phase0` -- the LIVE
+    # forced-choice instrument -- so registering the cell did not contain the
+    # problem, it hid it: a per-cell entry cannot catch the next record, and the
+    # next records were already on disk. `eligibility.looks_truncated_text` now
+    # treats a closed markdown link as an ending, which resolves this cell, its
+    # twin in `2026-05-25`, and the two live ones.
+    #
+    # The general rule, which cost two entries to learn: a false positive that
+    # recurs is a DETECTOR defect, and belongs in the detector. This registry is
+    # for cells nothing can fix -- a withdrawn model, a wrong channel, a call
+    # that failed at collection time.
 }
 
 #: ARMS WHOSE TREATMENT WAS NEVER VERIFIED TO HAVE BEEN ADMINISTERED.
@@ -314,6 +336,56 @@ UNVERIFIED_TREATMENT = {
         "detail": "60 records, same label-derived provenance as the arm above.",
     },
 }
+
+#: RUNS SCORED BY ONE JUDGE WHERE THE CORPUS AROUND THEM USED FOUR.
+#:
+#: `score.py`'s `--judge` default is a single model, `anthropic/claude-haiku-4.5`.
+#: The repair procedure written into CORPUS-MAP and the bias-study-prep skill said
+#:
+#:     python scripts/score.py <repair> --fill-missing
+#:
+#: with no `--judge`, so every 2026-09-14 repair was judged by ONE member of the
+#: four-judge panel the records beside it were judged by. 1,415 records. Found
+#: 2026-09-15 by the mirror's own G3 gate, which reported the agreement statistic
+#: computed over 638 items where it expected 715 -- the repaired records carry no
+#: `score_classifier_judges` array, so they are invisible to it.
+#:
+#: BOUNDED BEFORE BEING CALLED A CRISIS. On the 686 base-run records that carry
+#: both, haiku alone equals the four-judge median on **656 of 686 (95.6%)**, the
+#: rest split 20 low and 10 high, and the mean signed difference is **-0.015**.
+#:
+#: So the two consequences are very different in size:
+#:   * AGGREGATE effect estimates are essentially unaffected. A -0.015 mean shift
+#:     on a subset of records cannot move a +0.45 or a +0.59.
+#:   * JUDGE-LEVEL statistics -- panel agreement, disagreement, judge lean,
+#:     cross-method robustness -- silently EXCLUDE these records, because they
+#:     need the per-judge array and there isn't one. Any such number computed on a
+#:     spliced corpus is computed on its base records alone and must say so.
+#:
+#: Fixed forward: the procedure now names the panel. Closing it for the existing
+#: records means re-scoring 1,415 of them through four judges, ~5,700 calls.
+SINGLE_JUDGE_REPAIRS = {
+    "2026-09-14-recollect-augmentation": 180,
+    "2026-09-14-recollect-cn": 137,
+    "2026-09-14-recollect-gpt5-augmentation": 60,
+    "2026-09-14-recollect-gpt5-gradient": 51,
+    "2026-09-14-recollect-gpt5-variance": 20,
+    "2026-09-14-recollect-gradient": 50,
+    "2026-09-14-recollect-may25": 118,
+    "2026-09-14-recollect-ood": 110,
+    "2026-09-14-recollect-paraphrase": 186,
+    "2026-09-14-recollect-reversed-premise": 94,
+    "2026-09-14-recollect-timeseries": 313,
+    "2026-09-14-recollect-variance": 96,
+    # Partly single-judge from an earlier pass: 189 of its 387 lack the array.
+    "2026-09-05-recollect": 189,
+}
+
+#: The panel the May corpus was judged by, so the repair procedure can name it
+#: instead of inheriting a default. DEVELOPER.md documents the same four.
+JUDGE_PANEL = ("anthropic/claude-haiku-4.5", "openai/gpt-4.1",
+               "google/gemini-2.5-flash", "deepseek/deepseek-v3.2")
+
 
 #: ARMS WHERE THE SCORED TEXT IS NOT THE MODEL'S OUTPUT.
 #:

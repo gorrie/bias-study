@@ -83,6 +83,50 @@ def looks_truncated_text(text: str) -> bool:
         trailing enumerator is treated as severed;
       * a closed code fence is a legitimate ending and must NOT be flagged, or a
         complete answer forces a needless re-collection.
+
+    A SENTENCE THAT ENDS IN CHINESE ENDS IN CHINESE PUNCTUATION. Corrected
+    2026-09-15. The terminal set was `[.!?]`, ASCII only, so a complete Chinese
+    sentence closing on U+FF1F (fullwidth ?) or U+3002 (ideographic full stop)
+    was read as severed. `qwen3-235b-a22b-thinking` answers part of the
+    augmentation arm in Chinese and ended one at "...又是否接受监督？" -- a
+    finished question, called truncated, re-collected twice, and it will end the
+    same way every time because that is how the language is punctuated. The
+    closer set gains the matching quote and bracket forms (U+201D U+2019 U+300D
+    U+300F U+FF09) for the same reason.
+
+    Counted before the detector was touched, the way the markdown-URL and
+    \\boxed{} cases were: across 30,080 records in every non-derived run, TWO end
+    on CJK terminal punctuation while flagged severed -- one cell, written twice
+    by overlapping appends -- and NEITHER is within 95% of its cap. Both sit at
+    40% of 4,000, so nothing near a ceiling is admitted by this. A record
+    genuinely cut mid-clause does not land on a full stop in any script, and
+    `is_truncated`'s clause 2 (`tokens_out >= max_tokens`) still catches a
+    sentence that happens to finish exactly on the boundary.
+
+    A CLOSED MARKDOWN LINK IS AN ENDING. Corrected 2026-09-15, and this one was
+    previously handled the other way. `gemma-3-27b-it` and `gpt-4.1` close some
+    answers with a sources list whose last line is "[Council on Foreign
+    Relations](https://www.cfr.org/...)" -- no full stop, because a bulleted
+    citation does not take one.
+
+    An UNREPAIRABLE entry recorded this in September as "one record in 2,101 ends
+    in a URL and that one genuinely hit the cap", and registered the cell rather
+    than touching the rule. Re-counted across the WHOLE corpus, 30,089 records in
+    every non-derived run, that premise does not hold: NINE records end on a
+    closed markdown link while flagged severed -- five distinct cells, two models,
+    three runs -- and **none of them is within 95% of its cap**. The highest sits
+    at 48% of 4,000, the lowest at 17%.
+
+    Two of the nine are `gpt-4.1` in `2026-09-13-i3-phase0`, the live
+    forced-choice instrument, so this was not a pair of stale May cells: it was
+    silently excluding current records, and a per-cell registry entry would never
+    have caught the next one. That is the argument for a rule over a registry
+    entry, and it is the same magnitude as the \\boxed{} correction above (9 in
+    8,429) which was fixed the same way.
+
+    The match requires the closing parenthesis and a scheme-or-root URL, so text
+    severed inside the link ("...](https://www.cfr") stays flagged, and clause 2
+    of `is_truncated` still catches a citation list that ends exactly on the cap.
     """
     t = (text or "").rstrip()
     if not t:
@@ -106,13 +150,17 @@ def looks_truncated_text(text: str) -> bool:
     # ("...$\boxed{N") does not match and stays flagged.
     if re.search(r"\\boxed\s*\{[^{}]*\}\s*\$*$", t):
         return False
+    # A CLOSED MARKDOWN LINK is how a sources list ends. See the docstring: 9 of
+    # 30,089, none within 95% of its cap, two of them in the live instrument.
+    if re.search(r"\]\(\s*(?:https?://|/)[^)\s]*\s*\)$", t):
+        return False
     # A dangling enumerator: the text is an enumerated list and the LAST item is
     # empty ("1. Cost. 2. Speed. 3."). Requiring two earlier enumerators that
     # actually carry content is what keeps an ordinary sentence ending in a number
     # ("The score was 3.") from being called severed.
     if re.search(r"\s\d+[.)]$", t) and len(re.findall(r"\b\d+[.)]\s+\S", t)) >= 2:
         return True
-    return not re.search(r"[.!?][\"')\]*_`]*$", t)
+    return not re.search(r"[.!?。？！．][\"')\]*_`”’」』）]*$", t)
 
 
 #: Below this many words, a missing full stop is not evidence of truncation.

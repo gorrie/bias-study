@@ -1,8 +1,7 @@
-# Scripts
+wrote SCRIPTS.md (90 documented script(s))
+ docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-**Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
-
-86 script(s). 0 carry no module docstring and are listed at the end.
+90 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -84,6 +83,7 @@
 - **`check_doc_links.py`** — Gate: every relative markdown link in this tree's documents resolves to a real file.
 - **`check_no_key_repro.py`** — Checklist item 10, made mechanical: can a reader re-derive the numbers with no API key?
 - **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
+- **`check_undefined_names.py`** — Names a script uses and never binds -- the NameError that waits for a rare path.
 - **`collection_check.py`** — Is this collection fit to score? Run it BEFORE spending judge calls on a run.
 - **`constrained_probe.py`** — Score the instrument by CONSTRAINED DECODING: make an invalid answer ungenerable.
 - **`convergent_validity.py`** — Do the judged scale and the mechanical instrument measure the same thing?
@@ -91,6 +91,7 @@
 - **`dose_smoke_gate.py`** — Post-abliteration quality gate.
 - **`eligibility.py`** — One rule for whether a scored record may enter an aggregate — DATA-EMPTY-SCORES-002.
 - **`export_analysis_ready.py`** — One flat, eligibility-flagged table of every scored record, for people who are not us.
+- **`export_repairs.py`** — Copy the repaired corpus into the public mirror, deriving the list rather than typing it.
 - **`floor_resolution.py`** — What a modal-vs-modal floor can actually resolve, and which factor is bigger ON THE SAME MODELS.
 - **`frame_gap.py`** — Does the judged instrument measure a POSITION, or agreement with the FRAME?
 - **`frontier_extend.py`** — Extend the one-sitting arms onto the CURRENT frontier, which the frozen panel excludes.
@@ -99,7 +100,9 @@
 - **`model_cards.py`** — One card per model: can this model carry a claim at all, and on what evidence?
 - **`monitor_experiment.py`** — monitor_experiment.py — the durable, cross-platform half of the experiment-monitor agent.
 - **`paired_analysis.py`** — paired_analysis.py — the estimator for a matched-pair arm study. No API calls.
+- **`pipeline_decomposition.py`** — What is rung 2's surviving effect actually made of?
 - **`pipeline_rung.py`** — Rung 2 of the escalation ladder, estimated. The arm the analysis pipeline could not see.
+- **`pipeline_transform_audit.py`** — Did the pipeline rung apply the transform each condition is named after?
 - **`position_analysis.py`** — I3 Phase 4 estimator: position, consistency and acquiescence on a mirrored bank.
 - **`refusal_structure.py`** — Is whole-instrument refusal all-or-nothing, and which models do it?
 - **`refusal_suite_summary.py`** — Both model pairs of the XSTest-style refusal suite, with clustered intervals.

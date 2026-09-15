@@ -279,6 +279,24 @@ def main(argv=None):
     ap.add_argument("--plan", action="store_true", help="what would be called; no API")
     ap.add_argument("--run", action="store_true", help="collect")
     ap.add_argument("--compare", action="store_true", help="paired before/after")
+    # RE-EMIT PROVENANCE WITHOUT THE ABILITY TO SPEND. A manifest goes stale
+    # whenever the directory changes underneath it -- a dedup pass, a file removed
+    # -- and `records_on_disk` then disagrees with the files, which validate_runs
+    # reports as `call-count-mismatch`.
+    #
+    # The obvious fix, re-running `--run` on a finished repair, is a trap, and it
+    # sprang on 2026-09-15: `--run` without `--models` re-derives `todo` from the
+    # WHOLE source, and for a source whose GPT-5 cells were deliberately repaired
+    # into a separate run, those cells look outstanding in this one. It wrote 13
+    # gpt-5 records into the general augmentation directory -- cells already
+    # repaired next door -- before it was stopped, and one output directory per
+    # source is the invariant that keeps a spliced corpus attributable.
+    #
+    # So the operation that only wants to rewrite the manifest gets a mode that
+    # CANNOT call an API, rather than a longer argument line that must be
+    # remembered every time.
+    ap.add_argument("--manifest-only", action="store_true",
+                    help="collapse duplicates and rewrite manifest.json; makes NO calls")
     ap.add_argument("--budget", type=int, default=BUDGET)
     ap.add_argument("--delay", type=float, default=2.0)
     ap.add_argument("--limit", type=int, default=0, help="stop after N cells (chunked runs)")
@@ -345,7 +363,7 @@ def main(argv=None):
     done = existing_usable(budget=args.budget)
     todo = [k for k in sorted(cells) if k not in done]
 
-    if args.plan or not (args.run or args.compare):
+    if args.plan or not (args.run or args.compare or args.manifest_only):
         by_model = collections.Counter(k[0] for k in cells)
         empty = sum(1 for v in cells.values() if not (v.get("response_text") or "").strip())
         print("BUDGET-EXHAUSTED CELLS in %s" % os.path.basename(SOURCE.rstrip("/\\")))
@@ -370,11 +388,17 @@ def main(argv=None):
     if args.compare:
         return compare(cells, done)
 
-    import run_study as R
-    key = R.load_env().get("OPENROUTER_API_KEY", "")
-    if not key:
-        print("no OPENROUTER_API_KEY", file=sys.stderr)
-        return 1
+    # An empty work list is what makes this mode safe: the collection loop below
+    # is the only caller of the API, and it iterates `todo`.
+    if args.manifest_only:
+        todo = []
+
+    if not args.manifest_only:
+        import run_study as R
+        key = R.load_env().get("OPENROUTER_API_KEY", "")
+        if not key:
+            print("no OPENROUTER_API_KEY", file=sys.stderr)
+            return 1
     if not os.path.isdir(OUT_DIR):
         os.makedirs(OUT_DIR)
 
@@ -451,6 +475,22 @@ def main(argv=None):
                  "  WAS EMPTY" if not (old.get("response_text") or "").strip() else ""))
         time.sleep(args.delay)
 
+    # COLLAPSE DUPLICATE ROWS. `dedup` has said "called automatically after a
+    # collection run" in its own docstring since it was written, and nothing
+    # called it -- so every repair directory accumulated one row per attempt.
+    # Measured 2026-09-15: seven of ten repair directories carried duplicates,
+    # 34 rows in the timeseries repair alone, and `collection_check` read the
+    # superseded rows as live data and reported 2.2% truncation in a directory
+    # whose cells are all usable.
+    #
+    # Harmless to the readers, which are dict-keyed and take the last row, and
+    # not harmless to anything that counts: a row count, a truncation rate, a
+    # judge bill. Scoring pays per ROW, so an uncollapsed retry is judged twice.
+    #
+    # Runs BEFORE the manifest so `records_on_disk` describes the file that
+    # exists rather than the one that did a moment ago.
+    dedup()
+
     # WRITE A MANIFEST. Every repair run reached validate_runs as "no manifest",
     # the same gap run_g0dm0d3.py had: a collection that cannot be checked against
     # its own intent. A partial repair and a complete one look identical on disk
@@ -463,10 +503,31 @@ def main(argv=None):
         "calls_failed": 0,
         "collector": "recollect_at_cap.py",
         "completed_at": _dt.datetime.now(_dt.timezone.utc).isoformat().replace("+00:00", "Z"),
+        # MEASURED FROM THE DIRECTORY, not from this invocation's work list.
+        #
+        # `todo` is what was STILL OUTSTANDING when this invocation started, so on
+        # a resumed or already-finished repair it is empty and these lists came
+        # out empty with it -- a manifest saying "0 models, 0 calls planned" over
+        # a directory holding 110 records across 8 models. Accurate about the
+        # invocation, useless as provenance, and it is provenance the file is for.
+        "models_on_disk": sorted({
+            json.loads(line)["model"]
+            for p in glob.glob(os.path.join(OUT_DIR, "*.jsonl"))
+            for line in io.open(p, encoding="utf-8", errors="replace") if line.strip()}),
         "models_attempted": sorted({k[0] for k in todo}),
         "models_completed": completed,
         "models_failed": sorted({k[0] for k in todo} - set(completed)),
+        "calls_this_invocation": n,
         "repairs": os.path.basename(SOURCE.rstrip("/\\")),
+        # `calls_completed` counts what THIS invocation did, which after a resume
+        # is not what the run holds. Re-running a finished repair to write the
+        # manifest its NameError crash skipped stamped `calls_completed: 0` over a
+        # directory of 94 records -- accurate about the invocation, misleading
+        # about the run. Measured off disk at write time, so it is an observation
+        # rather than a claim.
+        "records_on_disk": sum(
+            1 for p in glob.glob(os.path.join(OUT_DIR, "*.jsonl"))
+            for line in io.open(p, encoding="utf-8", errors="replace") if line.strip()),
         "run_date": os.path.basename(os.path.dirname(OUT_DIR)),
         "started_at": started_at,
         "total_calls_planned": len(todo),

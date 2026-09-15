@@ -67,6 +67,13 @@ NOT_A_PROCEDURE = {
                                "study is scored `unknown` rather than `no` -- controls_audit.py "
                                "cites it by name",
     "studypaths.py": "shared path/RNG resolution, imported never invoked",
+    "export_repairs.py": "a MAINTAINER operation, not a replication step -- it copies the "
+                         "repaired corpus out of the private study tree into this public one, "
+                         "and a reader has no second tree to copy from. It is what put the "
+                         "repaired runs HERE, so it belongs in this repository as provenance "
+                         "for how the data arrived; it is not something anyone reproducing the "
+                         "study runs. What a replicator needs from the repair chain is in the "
+                         "bias-study-prep skill",
     "pipeline_rung.py": "the estimator for escalation-ladder rung 2, which analysis.py cannot "
                         "see because it keys on conditions A/B and that arm runs B-STM / "
                         "B-Parseltongue / B-Layered. Rerun it to re-derive the README row and "

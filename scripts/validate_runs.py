@@ -128,21 +128,53 @@ def inspect(d: Path) -> dict:
         out["findings"].append({"code": "unreadable-manifest", "detail": str(e)})
         return out
 
+    # `models_on_disk` is MEASURED from the records; the other two describe one
+    # invocation and go empty on a resume. Prefer the measurement where it exists.
     attempted = m.get("models_attempted") or []
     completed = m.get("models_completed") or []
-    claimed_models = max(len(attempted), len(completed))
-    if claimed_models and files and claimed_models != files:
+    on_disk_models = m.get("models_on_disk") or []
+    claimed_models = (len(on_disk_models) if on_disk_models
+                      else max(len(attempted), len(completed)))
+    # ONE FILE PER MODEL IS NOT THE ONLY LAYOUT. `run_g0dm0d3.py` writes one file
+    # per (model, CONDITION) -- 2 models x 4 conditions = 8 files -- so comparing
+    # a model count against a file count flags a correct run. Scale the
+    # expectation by the conditions the manifest itself declares.
+    conditions = m.get("conditions") or []
+    expected_files = claimed_models * max(1, len(conditions))
+    if claimed_models and files and expected_files != files:
         out["findings"].append({
             "code": "model-count-mismatch",
-            "detail": f"manifest names {claimed_models} model(s); raw/ holds {files} file(s)",
+            "detail": f"manifest names {claimed_models} model(s)"
+                      + (f" x {len(conditions)} condition(s)" if conditions else "")
+                      + f"; raw/ holds {files} file(s)",
         })
 
+    # A FAILED CALL IS STILL A RECORD, and a RESUMED collection did not make every
+    # call it can see. Both were reported as mismatches until 2026-09-15:
+    #
+    #  * `run_g0dm0d3.py` writes a record for a failed call and counts it in
+    #    `calls_failed`, not `calls_completed`. The decomposition run read
+    #    "claims 397, holds 400" -- and 397 + 3 IS 400.
+    #  * `recollect_at_cap.py` records the calls IT made. Re-running a finished
+    #    repair to write the manifest its NameError crash skipped therefore
+    #    stamps `calls_completed: 0` over a directory holding 94 records. That is
+    #    an accurate statement about the invocation and a misleading one about
+    #    the run, so the manifest now also carries `records_on_disk`.
     claimed_calls = m.get("calls_completed")
-    if isinstance(claimed_calls, int) and records and claimed_calls != records:
+    failed_calls = m.get("calls_failed") or 0
+    on_disk = m.get("records_on_disk")
+    # Collectors differ in whether a FAILED call also gets a record written, so
+    # all three readings are legitimate and the record count must match one of
+    # them: this invocation's completed calls, completed plus failed, or the
+    # count measured off disk.
+    accounted = {claimed_calls if isinstance(claimed_calls, int) else None,
+                 claimed_calls + failed_calls if isinstance(claimed_calls, int) else None,
+                 on_disk if isinstance(on_disk, int) else None}
+    if isinstance(claimed_calls, int) and records and records not in accounted:
         out["findings"].append({
             "code": "call-count-mismatch",
-            "detail": f"manifest claims {claimed_calls} completed call(s); "
-                      f"raw/ holds {records} record(s)",
+            "detail": f"manifest claims {claimed_calls} completed + {failed_calls} "
+                      f"failed call(s); raw/ holds {records} record(s)",
         })
 
     # A MANIFEST WRITTEN TO ANOTHER SPECIFICATION IS NOT MISSING A FIELD.
