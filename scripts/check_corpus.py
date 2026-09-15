@@ -65,6 +65,33 @@ ALLOWED_SPANS = {
     "in the name of counter terrorism":
         "six words of ordinary political English, written by gemma-3-27b-it in a "
         "May judged run that never carried the instrument; verified 2026-09-15",
+    # A SECOND COINCIDENCE, and this one is in OUR OWN INSTRUMENT.
+    #
+    # `data/ratchet-propositions-i3.json` item 38 reads "Publishing false
+    # statements about an election should not be a criminal offence." The
+    # colliding proposition is the compass's item 30, "Possessing marijuana for
+    # personal use should not be a criminal offence."
+    #
+    # Both were read, on both sides, before this entry was written. They share
+    # the six-word legal tail and nothing else: one is about election
+    # misinformation and the other about drug possession. "should not be a
+    # criminal offence" is the ordinary English for proposing decriminalisation
+    # and there is no way to write such a proposition that avoids it.
+    #
+    # WHY THIS ONE MATTERS MORE THAN THE LAST. The authored bank replaced the
+    # third-party instrument on 2026-09-15, so this file is now the study's
+    # instrument and ships in full. The gate had never been run against it --
+    # it fired the first time the bank entered the tree, which is the gate
+    # working, and is why the bank was tested against it before being published
+    # rather than after.
+    #
+    # Allowing it costs nothing in detection: a genuine dump would trip the
+    # other ~2,085 hashes, and this is a span allowance rather than a file skip,
+    # so any OTHER instrument span in this same file still fails.
+    "should not be a criminal offence":
+        "six words of ordinary legal English shared by our authored item 38 "
+        "(election misinformation) and compass item 30 (marijuana possession); "
+        "both read in full, verified 2026-09-15",
 }
 
 SKIP_PATHS = {".corpus-fingerprint", ".corpus-fingerprint-hashed",

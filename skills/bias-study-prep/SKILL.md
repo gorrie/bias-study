@@ -1,6 +1,6 @@
 ---
 name: bias-study-prep
-description: Pre-run refresh and sanity check for the LLM bias study. Validates the live forced-choice instrument (62 propositions, contiguous ids, one sentence each), runs the five pre-run gates, and snapshots every noise floor's pair count so a collection that lands nowhere is detectable. Also pulls the repo, checks the legacy judge-scored protocol files, verifies the OpenRouter key is reachable and — for the heavier rungs — the OBLITERATUS / G0DM0D3 toolchain, then records a dated prep-state file. Run before every study run to guarantee reproducibility against a known-good state.
+description: Pre-run refresh and sanity check for the LLM bias study. Validates the live forced-choice instrument (the authored 30-pair mirrored bank — contiguous ids, every pair one inserted "not", counts matching its own declaration, one sentence each), runs the five pre-run gates, and snapshots every noise floor's pair count so a collection that lands nowhere is detectable. Also pulls the repo, checks the legacy judge-scored protocol files, verifies the OpenRouter key is reachable and — for the heavier rungs — the OBLITERATUS / G0DM0D3 toolchain, then records a dated prep-state file. Run before every study run to guarantee reproducibility against a known-good state.
 ---
 
 # bias-study-prep
@@ -68,16 +68,40 @@ inside its own correction would keep the gate red forever.)*
    `vendor-enrollment-brief.md` are all present and non-empty. These are the spec the
    *judge-scored* runs are validated against. A pass here is not a statement about the
    forced-choice instrument — see step 3.
-3. **Validate the live forced-choice instrument.** The proposition file is **not in this
-   repository and never will be** — it is third-party instrument text, fetched at your end by
-   `python scripts/fetch_items.py`, which writes `data/compass-propositions.json`. Run that
-   first if it is absent; a fresh clone will not have it. Then confirm
-   that file, `scripts/run_compass.py`,
-   `scripts/test_compass_parser.py` and the live prereg are present, and that the item set is
-   **62 propositions with contiguous ids 1..62** — answers are keyed by item id, so a gap
-   silently misaligns every comparison. Also confirm each proposition is **exactly one
-   sentence**, a measured property of this instrument that the parser bound in
-   `scripts/fetch_items.py` depends on.
+3. **Validate the live forced-choice instrument.** It is **`data/ratchet-propositions-i3.json`,
+   and it ships in this repository in full** — 60 items in 30 mirrored pairs, authored for this
+   study and licensed CC BY 4.0. There is no fetch step and a fresh clone has everything.
+
+   > **Changed 2026-09-15.** This step used to describe 62 third-party propositions that were
+   > "not in this repository and never will be", fetched by `scripts/fetch_items.py`. That
+   > instrument has been removed from the study. It could not be republished, which forced an
+   > id-only data export and produced the 2026-09-12 leak incident; the whole
+   > `fetch_items` / `.corpus-fingerprint` / `check_corpus` apparatus exists to keep it out of
+   > the tree. `refresh.py` also hard-coded "expected 62, 1..62" and made the entire prep
+   > verdict depend on it, so the first prep run after the change would have **failed on the
+   > instrument being correct** — and a pre-run gate that rejects the live instrument teaches
+   > the operator to pass `--skip` and stop reading.
+
+   The checks, and why each one is there:
+   - the item file, `scripts/run_compass.py` and `scripts/test_compass_parser.py` are present;
+   - **ids are contiguous** — answers are keyed by item id, so a gap silently misaligns every
+     comparison;
+   - **every pair is a clean negation**: the two halves differ by exactly one inserted "not"
+     and nothing else. This is the invariant that makes a mirror a mirror. An earlier build
+     *derived* each negation by inserting "not" after the first auxiliary, and on one item that
+     auxiliary sat in a subordinate clause — it produced a *different* proposition that
+     collected and scored cleanly. Identity is decidable; grammar is not;
+   - **the file agrees with its own declared `counts`**, rather than with a number typed into
+     the gate. A constant here ages into a false alarm the day the instrument legitimately
+     changes, which is exactly what happened;
+   - **frames are balanced** (30 critic / 30 defender) — the acquiescence control is that the
+     affirmative half is the critic side on half the pairs, so a model that simply agrees more
+     than it disagrees cannot manufacture a frame gap;
+   - each proposition is **exactly one sentence**, which the sheet prompt and the parser both
+     rely on.
+
+   If the retired third-party file is still on disk it is reported as a warning, not an error:
+   it is gitignored, and `check_corpus.py` is the gate that actually matters.
 4. **Run the five pre-run gates.** All must *already* pass before new runs land: if the paper
    disagrees with the data now, adding runs makes the disagreement harder to attribute rather
    than easier.

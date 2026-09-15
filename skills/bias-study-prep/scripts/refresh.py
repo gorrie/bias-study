@@ -11,6 +11,7 @@ Exit codes:
 """
 from __future__ import annotations
 
+import collections
 import datetime
 import hashlib
 import json
@@ -75,11 +76,35 @@ LEGACY_PROTOCOL_FILES = [
 ]
 
 # What a FORCED-CHOICE run actually depends on.
-COMPASS_FILES = [
-    "data/compass-propositions.json",
+#
+# THE INSTRUMENT CHANGED ON 2026-09-15 AND THIS LIST WAS THE LAST THING HOLDING
+# THE OLD ONE UP. The study ran on 62 third-party propositions
+# (`data/compass-propositions.json`) that it could not republish: they forced an
+# id-only data export, they caused the 2026-09-12 instrument leak, and the whole
+# `fetch_items.py` / `.corpus-fingerprint` / `check_corpus` apparatus exists to
+# keep them out of the repository. They are gone.
+#
+# The live instrument is the project's OWN authored bank:
+# `data/ratchet-propositions-i3.json`, 60 items in 30 mirrored pairs, each pair
+# verified to differ by exactly one inserted "not". It ships in full under
+# CC BY 4.0, so a replicator needs no fetch step and there is no leak surface.
+#
+# This mattered here more than anywhere else: `refresh.py` hard-coded "expected
+# 62, 1..62" and made the whole prep verdict depend on it, so the first prep run
+# after the instrument changed would have failed on the instrument being CORRECT.
+# A pre-run gate that rejects the live instrument is worse than no gate: it
+# teaches the operator to pass `--skip` and stop reading.
+LIVE_INSTRUMENT = "data/ratchet-propositions-i3.json"
+
+#: The retired one. Its presence is no longer required and no longer fatal; if it
+#: is still on disk it is reported, because a fetched copy of licensed text
+#: sitting in a tree that is about to be published is worth one line of output.
+RETIRED_INSTRUMENT = "data/compass-propositions.json"
+
+FORCED_CHOICE_FILES = [
+    LIVE_INSTRUMENT,
     "scripts/run_compass.py",
     "scripts/test_compass_parser.py",
-    "PREREG-2026-08-29-mask-surface-v2.md",
 ]
 
 # Gates that must already pass BEFORE new runs land. If the paper disagrees with the data now,
@@ -190,46 +215,131 @@ def verify_compass() -> dict:
     Added 2026-09-02 after this skill was found scoped entirely to the retired battery. It
     checked six protocol files that still exist, passed, and said nothing about the instrument
     a collection was about to use.
+
+    Rewritten 2026-09-15 for the instrument change. It asserted "expected 62, 1..62" against a
+    third-party item set that has since been removed from the study, so the first prep run
+    after the change would have FAILED ON THE INSTRUMENT BEING CORRECT. The invariants below
+    are the ones the authored bank actually has, and they are stronger than a count: a mirrored
+    pair whose halves do not differ by exactly one inserted "not" is not a mirror, and the
+    frame gap measured on it is a different question wearing the same name.
+
+    The name is kept so `prep-state` keys, the SKILL.md procedure and every existing test keep
+    resolving; what it verifies is the live instrument.
     """
-    result = {"files": {}, "status": "ok"}
-    for rel in COMPASS_FILES:
+    result = {"files": {}, "status": "ok", "instrument": LIVE_INSTRUMENT}
+    for rel in FORCED_CHOICE_FILES:
         fp = BIAS_STUDY_DIR / rel
         sha = file_sha256(fp)
         if sha is None:
             result["files"][rel] = {"status": "missing"}
-            log("ERROR", f"compass dependency missing: {rel}")
+            log("ERROR", f"forced-choice dependency missing: {rel}")
             result["status"] = "failed"
         else:
             result["files"][rel] = {"status": "ok", "sha256": sha}
-            log("OK   ", f"compass: {rel}")
+            log("OK   ", f"forced-choice: {rel}")
 
-    items_path = BIAS_STUDY_DIR / "data" / "compass-propositions.json"
-    if items_path.exists():
-        try:
-            payload = json.loads(items_path.read_text(encoding="utf-8"))
-            items = payload["items"] if isinstance(payload, dict) and "items" in payload \
-                else payload
-            ids = sorted(int(i["id"]) for i in items)
-            result["n_items"] = len(items)
-            result["ids_contiguous"] = ids == list(range(1, len(items) + 1))
-            if len(items) != 62 or not result["ids_contiguous"]:
-                log("ERROR", f"instrument is {len(items)} item(s), ids contiguous="
-                             f"{result['ids_contiguous']} -- expected 62, 1..62")
-                result["status"] = "failed"
-            else:
-                log("OK   ", "instrument: 62 propositions, ids 1..62")
-            # One sentence per proposition is a verified property of this instrument and the
-            # bound fetch_items.py relies on. If it stops holding, the item set changed.
-            multi = [int(i["id"]) for i in items
-                     if len(re.findall(r"[.!?](?=\s+[A-Z\"“]|$)",
-                                       (i.get("text") or "").strip())) != 1]
-            result["multi_sentence_items"] = multi
-            if multi:
-                log("WARN ", f"{len(multi)} proposition(s) are not exactly one sentence: "
-                             f"{multi[:6]}")
-        except (ValueError, KeyError, TypeError) as exc:
+    # The retired instrument is licensed text. Not required, not fatal, and worth
+    # one line if a fetched copy is sitting in a tree that is about to be published.
+    if (BIAS_STUDY_DIR / RETIRED_INSTRUMENT).exists():
+        result["retired_instrument_present"] = True
+        log("WARN ", f"retired third-party instrument still on disk: {RETIRED_INSTRUMENT} "
+                     f"-- it is gitignored, and check_corpus is the gate that matters")
+
+    items_path = BIAS_STUDY_DIR / LIVE_INSTRUMENT
+    if not items_path.exists():
+        return result
+    try:
+        payload = json.loads(items_path.read_text(encoding="utf-8"))
+        items = payload["items"] if isinstance(payload, dict) and "items" in payload \
+            else payload
+        ids = sorted(int(i["id"]) for i in items)
+        result["n_items"] = len(items)
+        result["ids_contiguous"] = ids == list(range(1, len(items) + 1))
+        if not result["ids_contiguous"]:
+            log("ERROR", f"instrument ids are not contiguous 1..{len(items)}")
             result["status"] = "failed"
-            log("ERROR", f"instrument unreadable: {exc}")
+
+        # MIRRORED PAIRS, and the identity that makes them mirrors. Checked here
+        # rather than trusted, because the generator that preceded this bank
+        # DERIVED each negation and produced "have not more influence" and, on
+        # the secrecy-orders item, a different proposition that collected and
+        # scored cleanly. Identity is decidable; grammar is not.
+        by_id = {int(i["id"]): i for i in items}
+        pairs, seen, broken = [], set(), []
+        for it in items:
+            iid, mid = int(it["id"]), it.get("mirror_of")
+            if iid in seen or mid is None:
+                continue
+            other = by_id.get(int(mid))
+            if other is None:
+                broken.append((iid, "mirror_of points nowhere"))
+                continue
+            seen.update({iid, int(mid)})
+            a, b = (it.get("text") or "").split(), (other.get("text") or "").split()
+            longer, shorter = (a, b) if len(a) >= len(b) else (b, a)
+            if len(longer) - len(shorter) != 1:
+                broken.append((iid, "halves differ by %d words" % (len(longer) - len(shorter))))
+                continue
+            removed = [w for w in longer if w not in shorter] or ["?"]
+            rest = [w for w in longer if w != "not"]
+            if removed[0] != "not" or rest != [w for w in shorter if w != "not"]:
+                broken.append((iid, "the difference is not a single inserted 'not'"))
+                continue
+            pairs.append((iid, int(mid)))
+        result["n_pairs"] = len(pairs)
+        result["broken_pairs"] = broken
+        if broken:
+            result["status"] = "failed"
+            log("ERROR", f"{len(broken)} pair(s) are not clean negations: {broken[:4]}")
+        else:
+            log("OK   ", f"instrument: {len(items)} items, {len(pairs)} mirrored pairs, "
+                         f"every pair one inserted 'not'")
+
+        # THE BANK DECLARES ITS OWN SIZE; check the file against its declaration
+        # rather than against a number typed here. The previous version of this
+        # function hard-coded "expected 62, 1..62", which is why it would have
+        # rejected the replacement instrument for being the replacement
+        # instrument. A constant in a pre-flight gate ages into a false alarm the
+        # day the thing it describes legitimately changes -- and a false alarm in
+        # a pre-run gate teaches the operator to skip it.
+        #
+        # Self-consistency still catches the case that matters: a bank that has
+        # silently lost or gained a pair no longer matches the counts it ships.
+        declared = payload.get("counts") if isinstance(payload, dict) else None
+        if isinstance(declared, dict):
+            want_items = declared.get("items")
+            want_pairs = declared.get("pairs")
+            result["declared_counts"] = {"items": want_items, "pairs": want_pairs}
+            if want_items is not None and want_items != len(items):
+                result["status"] = "failed"
+                log("ERROR", f"instrument declares {want_items} items and holds {len(items)}")
+            if want_pairs is not None and not broken and want_pairs != len(pairs):
+                result["status"] = "failed"
+                log("ERROR", f"instrument declares {want_pairs} pairs and holds {len(pairs)}")
+        else:
+            log("WARN ", "instrument declares no `counts` block; size is unchecked")
+
+        # Frame balance. The acquiescence control is that the AFFIRMATIVE half is
+        # the critic side on half the pairs and the defender side on the other
+        # half, so a model that simply agrees more than it disagrees cannot
+        # produce a frame gap. If that balance drifts, the gap is confounded.
+        frames = collections.Counter((i.get("frame") or "?") for i in items)
+        result["frames"] = dict(frames)
+        if len(set(frames.values())) != 1:
+            log("WARN ", f"frames are not balanced: {dict(frames)}")
+
+        # One sentence per proposition -- a property the parser and the sheet
+        # prompt both rely on.
+        multi = [int(i["id"]) for i in items
+                 if len(re.findall(r"[.!?](?=\s+[A-Z\"“]|$)",
+                                   (i.get("text") or "").strip())) != 1]
+        result["multi_sentence_items"] = multi
+        if multi:
+            log("WARN ", f"{len(multi)} proposition(s) are not exactly one sentence: "
+                         f"{multi[:6]}")
+    except (ValueError, KeyError, TypeError) as exc:
+        result["status"] = "failed"
+        log("ERROR", f"instrument unreadable: {exc}")
     return result
 
 

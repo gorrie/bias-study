@@ -5,8 +5,37 @@ description: Run and verify a forced-choice barometer wave end-to-end — the fi
 
 # barometer-wave
 
-The repeatability procedure for the **forced-choice barometer** — 62 externally authored
-propositions, four options, no LLM judge anywhere in the scoring path.
+> ## THE INSTRUMENT CHANGED ON 2026-09-15. Read this before following anything below.
+>
+> Every procedure in this document was written against **62 externally authored propositions**
+> (`data/compass-propositions.json`, fetched by `scripts/fetch_items.py`). **That instrument has
+> been removed from the study.** It could not be republished, which forced an id-only data
+> export and produced the 2026-09-12 leak incident.
+>
+> The live instrument is **`data/ratchet-propositions-i3.json`** — 60 items in 30 mirrored
+> pairs, authored here, shipped in full under CC BY 4.0, no fetch step.
+>
+> **What this means for the commands below.** The mechanics — `wave.py`, the seed sweep, the
+> residency and batch-size findings, the estimator floor, the gates — all still hold; they are
+> properties of the harness, not of the item set. What does not hold is any **number**: every
+> "62", every pair count, every floor quoted here was measured on the retired instrument and
+> does not transfer. `run_compass.py` needs `--items data/ratchet-propositions-i3.json`, and
+> `floor_table.py` now takes `--instrument` and **refuses to pool the two** (it defaults to the
+> compass until the I3 wave is collected, so that the switch is one reviewable change rather
+> than a silent drift).
+>
+> Two traps verified 2026-09-15 and not yet reflected in the body of this document:
+> - the prereg's conditions **N/F/P/C are the runner's `N, A, P, D`**. `--condition C` collects
+>   a user-suffix arm the prereg explicitly excludes;
+> - `run_compass.py` defaults to **id order, which puts mirror pairs adjacent**. A mirrored
+>   instrument administered in id order defeats its own design. Pass `--shuffle-seed` and record
+>   it.
+>
+> This banner is deliberately not a rewrite. The body is revised when the I3 wave is actually
+> collected, so the procedure describes what was done rather than what was intended.
+
+The repeatability procedure for the **forced-choice barometer** — a whole-sheet position
+instrument, four options, no LLM judge anywhere in the scoring path.
 
 **Why this skill exists.** Eight of the nine scripts that do this work — `wave.py`,
 `order_floor_wave.py`, `ablation_wave.py`, `floor_table.py`, `floor_resolution.py`,
