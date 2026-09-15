@@ -141,3 +141,76 @@ no number.
 HTTP 404, including the base of the abliterated judge — so one published robustness leg is
 unreproducible by anyone. `studypaths.UNREPAIRABLE` records each with evidence. A corpus that
 cannot say what is missing from it is not repaired, only larger.
+
+## 2026-09-14 — ask whether the treatment was administered, because nothing else does
+
+`run_g0dm0d3.py` sent `parseltongue: true`. The server returned 200. The response was complete,
+the judges scored it, the interval was computed, and on Claude Opus it **excluded zero**. Every
+check this project runs passed. The obfuscation never happened — on **0 of 240 requests**, across
+both pipeline runs.
+
+G0DM0D3's Parseltongue rewrites **trigger words** from a fixed list of 53 security and jailbreak
+terms, and returns the text **unchanged** when it finds none. The instrument is ten neutral
+policy questions. Not one contains a trigger. So `B-Parseltongue` was condition B, collected
+again, under a different label — and its contrast against plain B was published as an
+elicitation result.
+
+**This is the study's signature failure mode in its purest form: a call that succeeded, a
+response that was complete, a score that was valid, an interval that excluded zero, and nothing
+underneath.** Everything was checked except whether the treatment was applied.
+
+### Rules
+
+- **Ask what the SERVER says it did, not what you asked it to do.** The evidence was in every
+  record from the first run: the collector had been storing the server's echo
+  (`study_call_metadata.x_g0dm0d3.pipeline`) all along and no analysis had ever read it. A
+  vendor extension block you store and never read is not provenance, it is a habit.
+  `scripts/pipeline_transform_audit.py` is that read, and it takes no API calls.
+- **An arm named after a transform is a claim, and it needs a receipt.** Record what actually
+  ran per record. `run_local.py` inferred `obliteratus_applied` from whether the string `ablit`
+  appeared in the run **label** — 220 abliteration records cannot say whether they ran on
+  abliterated weights. That is a weaker finding than Parseltongue's (no evidence either way
+  rather than proof of absence) and it is recorded separately for exactly that reason.
+- **Send every flag explicitly, including the false ones.** G0DM0D3 defaults `godmode` and
+  `parseltongue` to **true** when the field is absent. An omitted flag is not "off", it is the
+  opposite of off.
+- **A null arm is worth more than a mislabelled treatment, once you know it is null.** Because
+  B-Parseltongue applies nothing, its contrast against plain B is a **null by construction** and
+  therefore the floor every other contrast in the column must clear. On Opus that floor reads
+  **+0.24 [+0.02, +0.49] and excludes zero.** Five of ten intervals in that arm exclude zero and
+  one of the five is a measurement of nothing — which is a statement about the interval
+  machinery, not about the models.
+- **Difference within the run when you can.** `B-STM minus B-Parseltongue` cancels the baseline
+  run, the collection date and the proxy path, leaving only STM: **+0.13 [−0.07, +0.36]** on Opus
+  and **−0.02** on Grok, both spanning zero. The `vs plain B` version of the same question read
+  +0.37 and excluded zero. The confounded contrast was the one that looked like a result.
+- **Check the baseline came down the same pipe.** The rung-2 baseline goes direct to OpenRouter
+  while every pipeline record goes through the proxy, so all six `vs plain B` contrasts confound
+  the transform with the path. The fix is a control arm — plain condition B **through the
+  proxy**, every transform off — not a caveat.
+- **Verify the conditions differ IN THE RECORDS, not in the constructor.**
+  `tests/test_condition_construction.py` passed throughout: the flags were right in the source
+  and the collection was still wrong. `collection_check.py` check 9 now compares the stored
+  prompts across conditions within a run. Corpus-wide over 33 runs and 1,206 cells the only hits
+  are the two pipeline runs. Related: on a **proxied** record `user_prompt` is the
+  **pre-transform** text, so it does not say what the model received.
+- **Do not let a disclosed defect hold a gate red.** Parseltongue stays dead until the instrument
+  changes. `--check` therefore blocks on an **undisclosed** dead transform and reports the known
+  ones from `studypaths.UNVERIFIED_TREATMENT`. A gate that can never go green is a gate someone
+  deletes, taking the check for the next one with it. Writing that registry is also what caught
+  the second defect: `B-Layered` requests obfuscation too, I had documented it in prose and
+  forgotten to record it, and the gate went red naming the exact pair.
+- **Three verdicts, kept apart.** DISPROVEN (the treatment provably did not happen),
+  PARTIALLY INERT (the arm is treated; one named ingredient is not), UNRECORDED (no evidence
+  either way, which is itself the finding). Collapsing them would have thrown away rung 2's only
+  surviving effect: `B-Layered minus B-STM` is **−0.31** on Opus and **+0.48** on Grok. That
+  contrast never reads the baseline run, so it survived both this confound and the token-budget
+  confound repaired the same day — two models moving in **opposite directions** under the same
+  intervention.
+
+### For a replicator
+
+Run `python scripts/pipeline_transform_audit.py --live` before trusting any pipeline-rung number.
+It reads what the collection actually did and probes whether your server still behaves that way.
+If you are running the pipeline rung against your own G0DM0D3 checkout, a transform that is inert
+on your instrument will produce clean, scorable, plausible output and no error anywhere.

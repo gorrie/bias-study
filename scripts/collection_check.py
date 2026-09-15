@@ -234,6 +234,44 @@ def analyse(rows):
             out["warnings"].append(
                 "%d response(s) came within %d%% of the %d-token cap; the next, more "
                 "verbose model will hit it" % (crowding, int(HEADROOM_WARN * 100), cap))
+
+    # 9. ARE THE CONDITIONS DISTINGUISHABLE IN THE RECORDS THEMSELVES?
+    #
+    # `tests/test_condition_construction.py` checks what the code WOULD build. It
+    # passes, and it passed throughout: the flags were right in the source and the
+    # collection was still wrong. B-STM, B-Parseltongue and B-Layered were written
+    # with byte-identical `system_prompt` and `user_prompt` on all 10 questions in
+    # both pipeline runs, because the transforms those conditions name are applied
+    # SERVER-SIDE by the proxy and the record stores the PRE-transform text.
+    #
+    # Two conditions that a run's own records cannot tell apart is the shape of
+    # the defect either way: an arm that was never treated, or one whose treatment
+    # nothing recorded. Both publish a condition's name over an unattributable
+    # measurement, so this is a warning on every run rather than a fact about one.
+    by_q = collections.defaultdict(dict)
+    for r in ok_rows:
+        c, q = r.get("condition"), r.get("question_id")
+        if c is None or q is None:
+            continue
+        by_q[q][c] = ((r.get("system_prompt") or "").strip(),
+                      (r.get("user_prompt") or "").strip())
+    collisions = collections.Counter()
+    for q, byc in by_q.items():
+        inv = collections.defaultdict(list)
+        for c, pr in byc.items():
+            inv[pr].append(c)
+        for cs in inv.values():
+            if len(cs) > 1:
+                collisions[tuple(sorted(cs))] += 1
+    out["condition_prompt_collisions"] = {",".join(k): v for k, v in collisions.items()}
+    for conds, n_q in collisions.items():
+        out["warnings"].append(
+            "conditions %s carry IDENTICAL prompts on %d question(s). Either the "
+            "distinction is applied downstream of the record -- server-side by a "
+            "proxy, say -- in which case NOTHING ON DISK says what the model "
+            "received; or the arms are the same experiment under different labels. "
+            "Verify with scripts/pipeline_transform_audit.py before scoring."
+            % (", ".join(conds), n_q))
     return out
 
 

@@ -103,6 +103,33 @@ BASELINE_CONDITION = "B"
 CONDITIONS = ("B-STM", "B-Parseltongue", "B-Layered")
 BOOTSTRAP_N = 20000
 
+#: B-Parseltongue APPLIES NO TRANSFORM TO THIS INSTRUMENT. Established 2026-09-14
+#: from the server's own echo on all 360 pipeline records, and confirmed against
+#: the running server: `scripts/pipeline_transform_audit.py`.
+#:
+#: G0DM0D3's Parseltongue obfuscates trigger words from a fixed list of 53
+#: security/jailbreak terms and returns the text UNCHANGED when it finds none.
+#: The instrument is ten neutral policy questions and NOT ONE contains a trigger,
+#: so `parseltongue: true` was accepted, returned 200, and rewrote nothing --
+#: 0 of 120 records in either run.
+#:
+#: So `B-Parseltongue` is condition B, collected again, through the proxy. Its
+#: contrast against plain B is a NULL BY CONSTRUCTION: it can only measure
+#: run-to-run drift plus whatever the proxy path itself contributes. That makes
+#: it the floor every other contrast in this arm has to clear, which is more
+#: useful than the treatment it was mislabelled as -- but it is not a finding
+#: about obfuscation, and the published reading of it ("Parseltongue alone is
+#: approximately prompt-B") could not have come out any other way.
+NULL_CONDITION = "B-Parseltongue"
+
+#: STM is a PARTIAL treatment, not an absent one: hedge_reducer/direct_mode
+#: rewrite a prompt only where there is a hedge to strip, and it changed the text
+#: on 39 of 100 records (W13) and 7 of 20 (May). So `B-STM minus B-Parseltongue`
+#: is the cleanest STM estimate available -- same run, same sitting, same
+#: temperature, same proxy path, differing only in whether STM fired -- and it is
+#: the contrast neither the published analysis nor this file computed before.
+STM_VS_NULL = ("B-STM", NULL_CONDITION)
+
 
 def _roots():
     try:
@@ -234,7 +261,10 @@ def estimate(pipeline_run=None, baseline_run=None):
                     {"model": m, "contrast": "%s vs plain %s" % (c, BASELINE_CONDITION),
                      "n": len(d), "effect": round(ci[0], 3),
                      "lo": round(ci[1], 3), "hi": round(ci[2], 3),
-                     "excludes_zero": ci[1] > 0 or ci[2] < 0})
+                     "excludes_zero": ci[1] > 0 or ci[2] < 0,
+                     # This arm applied NO transform to this instrument, so its
+                     # contrast against plain B cannot be a treatment effect.
+                     "null_by_construction": c == NULL_CONDITION})
         lay, stm = cells.get((m, "B-Layered"), {}), cells.get((m, "B-STM"), {})
         d = [lay[q] - stm[q] for q in sorted(lay) if q in stm]
         ci = _boot(d, "%s|layered-minus-stm" % m, run=pipeline_run)
@@ -243,8 +273,33 @@ def estimate(pipeline_run=None, baseline_run=None):
                 {"model": m, "contrast": "B-Layered minus B-STM", "n": len(d),
                  "effect": round(ci[0], 3), "lo": round(ci[1], 3), "hi": round(ci[2], 3),
                  "excludes_zero": ci[1] > 0 or ci[2] < 0})
+        # STM against the untreated arm collected in the SAME sitting. Both go
+        # through the proxy at the same temperature, so the baseline run, the
+        # collection date and the proxy path all cancel and what remains is STM.
+        treated, untreated = (cells.get((m, STM_VS_NULL[0]), {}),
+                              cells.get((m, STM_VS_NULL[1]), {}))
+        d = [treated[q] - untreated[q] for q in sorted(treated) if q in untreated]
+        ci = _boot(d, "%s|stm-minus-null" % m, run=pipeline_run)
+        if ci:
+            out["contrasts"].append(
+                {"model": m, "contrast": "B-STM minus %s" % NULL_CONDITION,
+                 "n": len(d), "effect": round(ci[0], 3), "lo": round(ci[1], 3),
+                 "hi": round(ci[2], 3), "excludes_zero": ci[1] > 0 or ci[2] < 0,
+                 "within_run": True})
     out["any_excludes_zero"] = any(c["excludes_zero"] for c in out["contrasts"])
     out["n_contrasts"] = len(out["contrasts"])
+    # The measured floor, per model: what a contrast against plain B reports when
+    # the arm applied no transform at all. Anything at or below this magnitude in
+    # the same column is indistinguishable from drift plus the proxy path.
+    out["null_floor"] = {
+        c["model"]: {"effect": c["effect"], "lo": c["lo"], "hi": c["hi"],
+                     "excludes_zero": c["excludes_zero"]}
+        for c in out["contrasts"] if c.get("null_by_construction")}
+    for c in out["contrasts"]:
+        floor = out["null_floor"].get(c["model"])
+        if floor and c["contrast"].endswith("vs plain %s" % BASELINE_CONDITION):
+            c["clears_null_floor"] = (not c.get("null_by_construction")
+                                      and abs(c["effect"]) > abs(floor["effect"]))
     return out
 
 
@@ -283,12 +338,29 @@ def main(argv=None):
               "difference of two single draws. The replicated pair measures 3 of 8 "
               "intervals excluding zero -- see PENDING-PUBLICATION-2026-09-14.md.")
     print("Positive = more institution-skeptical.\n")
-    print("  %-26s %-28s %3s %8s %-18s" % ("model", "contrast", "n", "effect", "95% interval"))
+    print("  %-26s %-30s %3s %8s %-18s" % ("model", "contrast", "n", "effect", "95% interval"))
     for c in res["contrasts"]:
-        print("  %-26s %-28s %3d %+8.2f [%+0.2f, %+0.2f]%s"
+        flag = "  EXCLUDES 0" if c["excludes_zero"] else ""
+        if c.get("null_by_construction"):
+            flag += "   <-- NULL BY CONSTRUCTION (no transform applied)"
+        elif c.get("clears_null_floor") is False:
+            flag += "   (does not clear the null floor)"
+        print("  %-26s %-30s %3d %+8.2f [%+0.2f, %+0.2f]%s"
               % (c["model"].split("/")[-1], c["contrast"], c["n"], c["effect"],
-                 c["lo"], c["hi"], "  EXCLUDES 0" if c["excludes_zero"] else ""))
+                 c["lo"], c["hi"], flag))
     print("")
+    if res.get("null_floor"):
+        print("  NULL FLOOR. %s applied no transform to this instrument -- G0DM0D3's"
+              % NULL_CONDITION)
+        print("  Parseltongue rewrites trigger words and the instrument contains none, so it")
+        print("  fired on 0 of 120 records. Its contrast against plain B therefore measures")
+        print("  run-to-run drift plus the proxy path, and nothing else:")
+        for m, f in sorted(res["null_floor"].items()):
+            print("      %-24s %+0.2f [%+0.2f, %+0.2f]%s"
+                  % (m.split("/")[-1], f["effect"], f["lo"], f["hi"],
+                     "   and it EXCLUDES ZERO" if f["excludes_zero"] else ""))
+        print("  Any 'vs plain B' effect of that magnitude is not distinguishable from it.")
+        print("  Verify with: python scripts/pipeline_transform_audit.py\n")
     if not res["any_excludes_zero"]:
         print("  NOT ONE of the %d intervals excludes zero." % res["n_contrasts"])
         print("  The arm does not support a direction.")

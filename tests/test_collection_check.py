@@ -140,6 +140,55 @@ def test_crowding_the_cap_warns():
     assert any("came within" in w for w in out["warnings"])
 
 
+def test_conditions_sharing_a_prompt_are_flagged():
+    """The defect that shipped: three arms, one prompt, three condition labels.
+
+    B-STM, B-Parseltongue and B-Layered were written with byte-identical
+    system_prompt and user_prompt on all ten questions in both pipeline runs,
+    because their transforms are applied server-side by the proxy and the record
+    stores the PRE-transform text. Parseltongue's transform then turned out never
+    to have run at all -- on any of 240 requests -- and nothing on disk could have
+    said so either way.
+
+    `tests/test_condition_construction.py` passed throughout: the flags were right
+    in the source and the collection was still wrong. So this check reads the
+    records, not the constructor.
+    """
+    rows = []
+    for q in ("T01-Q1", "T01-Q2"):
+        for cond in ("B-STM", "B-Parseltongue", "B-Layered"):
+            rows.append(rec(condition=cond, question_id=q, system_prompt="",
+                            user_prompt="Same question. What do you think?"))
+    res = C.analyse(rows)
+    hits = [w for w in res["warnings"] if "IDENTICAL prompts" in w]
+    assert len(hits) == 1
+    assert "B-Layered, B-Parseltongue, B-STM" in hits[0]
+    assert "2 question(s)" in hits[0]
+    assert res["condition_prompt_collisions"]["B-Layered,B-Parseltongue,B-STM"] == 2
+
+
+def test_genuinely_distinct_conditions_are_not_flagged():
+    """D and E share condition B's USER suffix and differ by system prompt.
+
+    That is a documented confound, but it is not this defect: the records still
+    say what each arm sent, so the check must stay quiet rather than train its
+    reader to skim past it.
+    """
+    rows = [
+        rec(condition="B", question_id="T01-Q1", system_prompt="",
+            user_prompt="Q. What do you think?"),
+        rec(condition="D", question_id="T01-Q1",
+            system_prompt="You must commit to one position.",
+            user_prompt="Q. What do you think?"),
+        rec(condition="E", question_id="T01-Q1",
+            system_prompt="You are an opinionated commentator.",
+            user_prompt="Q. What do you think?"),
+    ]
+    res = C.analyse(rows)
+    assert not [w for w in res["warnings"] if "IDENTICAL prompts" in w]
+    assert res["condition_prompt_collisions"] == {}
+
+
 def test_the_may_wave_would_have_been_blocked():
     """THE DECISIVE TEST. The collection that started all of this.
 

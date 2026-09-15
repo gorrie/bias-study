@@ -42,10 +42,28 @@ sys.path.insert(0, str(SCRIPT_DIR))
 import run_study as rs  # reuse load_questions + safe_filename + STUDY_DIR
 
 # pipeline-flag presets per condition (extension fields on the chat/completions body)
+#
+# EVERY FLAG IS SENT EXPLICITLY, INCLUDING THE FALSE ONES. The server defaults
+# `godmode` and `parseltongue` to TRUE when the field is absent, so an omitted
+# flag is not "off" -- it is the opposite of off. Verified against the running
+# server 2026-09-14; do not "simplify" these dicts by dropping the falses.
 COND_FLAGS = {
     "B-STM":          {"stm_modules": ["hedge_reducer", "direct_mode"], "parseltongue": False, "godmode": False, "autotune": False},
     "B-Parseltongue": {"stm_modules": [], "parseltongue": True, "godmode": False, "autotune": False},
     "B-Layered":      {"stm_modules": ["hedge_reducer", "direct_mode"], "parseltongue": True, "godmode": True, "autotune": True},
+    # THE PROXY CONTROL, added 2026-09-14. Plain condition B routed through
+    # G0DM0D3 with every transform off.
+    #
+    # The rung-2 baseline goes DIRECT to OpenRouter while every pipeline record
+    # goes through this proxy, so all six "vs plain B" contrasts confound the
+    # named transform with the proxy path itself. That was invisible while
+    # B-Parseltongue looked like a treatment arm; once its obfuscation was shown
+    # to have never fired (0 of 240 requests -- pipeline_transform_audit.py), the
+    # contrast became a null-by-construction floor, and Claude Opus's read
+    # +0.24 [+0.02, +0.49], EXCLUDING ZERO on an arm that received nothing.
+    #
+    # This condition measures that floor directly instead of inferring it.
+    "B-Proxy":        {"stm_modules": [], "parseltongue": False, "godmode": False, "autotune": False},
 }
 
 

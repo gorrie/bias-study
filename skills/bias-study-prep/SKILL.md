@@ -113,9 +113,20 @@ inside its own correction would keep the gate red forever.)*
      executable, and it refuses rather than warning.
 
 6. **Verify the heavier toolchain only if those rungs are in scope:**
-   - Pipeline rung: the G0DM0D3 server starts and answers a health check.
+   - Pipeline rung: the G0DM0D3 server starts and answers a health check — **and then prove
+     each condition's transform actually fires**, with
+     `python scripts/pipeline_transform_audit.py --live`. A health check says the server is
+     up, not that it is doing anything. `B-Parseltongue` sent `parseltongue: true`, got 200,
+     returned complete scorable text, and applied **no obfuscation on any of 240 requests**:
+     G0DM0D3 rewrites trigger words and this instrument contains none. The arm was condition B
+     under another label and its interval excluded zero. Note also that the server defaults
+     `godmode` and `parseltongue` to **true** when the field is absent, so every flag must be
+     sent explicitly, including the false ones.
    - Weight rung: the OBLITERATUS CLI imports inside the GPU image, the GPU is visible to
-     Docker (`docker run --rm --gpus all ... nvidia-smi`), and configs parse.
+     Docker (`docker run --rm --gpus all ... nvidia-smi`), and configs parse. **Record a weight
+     digest per record.** The May arm derived `obliteratus_applied` from whether the string
+     `ablit` appeared in the run *label*, so 220 records cannot say whether they ran on
+     abliterated weights.
 7. **Record the state.** Write a dated prep-state file containing: the repo commit hash (and
    any upstream tool commits), protocol-file checksums, the instrument's checksums and item
    count, each gate's exit code, `floors_before`, tool versions, and env-var presence flags
@@ -166,6 +177,23 @@ python scripts/splice_corpus.py --write --base <damaged>
 - `scripts/position_analysis.py --selftest` validates the mirrored-bank estimator against
   synthetic input with known answers. Its decisive check: a model that agrees with everything
   scores exactly 0, because the mirror cancels acquiescence by construction.
+
+## Was the treatment administered?
+
+A separate question from every gate above, and the one nothing asked until 2026-09-14. Those
+gates ask whether the data is complete, fit to score and reproducible. An arm can pass all of
+them while the intervention it is named after never ran.
+
+```bash
+python scripts/pipeline_transform_audit.py --live   # what the server says it actually did
+python scripts/collection_check.py <run>            # check 9: do two conditions share a prompt?
+```
+
+`studypaths.UNVERIFIED_TREATMENT` records the arms where the answer is no, or where nothing
+says, in three verdicts that are deliberately not collapsed — **DISPROVEN** (the treatment
+provably did not happen), **PARTIALLY INERT** (the arm is treated; one named ingredient is not),
+**UNRECORDED** (no evidence either way, which is itself the finding). Full write-up and what it
+does to the published rung-2 numbers: `RESULTS-2026-09-14-rung2-transform-audit.md`.
 
 Then register the pair in `studypaths.REPAIRS` so `canonical_run` resolves analyses to the
 repaired corpus, and read `studypaths.UNREPAIRABLE` for the holes no budget fixes.
