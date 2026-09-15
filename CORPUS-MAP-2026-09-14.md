@@ -103,6 +103,23 @@ two models move in **opposite directions** was never at risk.
 > `RESULTS-2026-09-14-rung2-transform-audit.md`. Verify with
 > `python scripts/pipeline_transform_audit.py`.
 
+## Controls
+
+| run | what it controls for | result |
+|---|---|---|
+| `2026-09-14-g0dm0d3-proxy-control` | the **proxy path**: plain condition B sent through G0DM0D3 with every transform off, against the same direct-to-OpenRouter baseline | the path costs **+0.06** on Opus and **−0.14** on Grok, both spanning zero |
+
+Collected because the pipeline arm goes through the proxy and its baseline does not, so all six
+`vs plain B` contrasts confounded the named transform with the path. They do not, materially —
+which relocates the problem. The control was collected in the **same sitting** as the baseline
+while the pipeline arm predates it by a day or two, so the ~+0.24 floor on Opus is
+**cross-sitting drift**, not the proxy. The outstanding control is therefore a **same-sitting
+plain-B baseline**, which nothing has yet collected.
+
+Conditions are in `run_g0dm0d3.COND_FLAGS` as `B-Proxy`. Note that every flag is sent
+explicitly, including the false ones: the server defaults `godmode` and `parseltongue` to **true**
+when the field is absent, so an omitted flag is not "off".
+
 ## Derived corpora
 
 | corpus | base | eligible before → after |
@@ -112,7 +129,12 @@ two models move in **opposite directions** was never at risk.
 | `2026-09-14-augmentation-spliced` | 2026-05-26-augmentation | 185 → **354** |
 | `2026-09-14-cn-expansion-spliced` | 2026-05-26-cn-expansion | 58 → **161** |
 | `2026-09-14-unmask-gradient-spliced` | 2026-05-26-unmask-gradient | 277 → **450 of 450** |
-| `2026-09-14-variance-spliced` | 2026-05-26-variance | pending |
+| `2026-09-14-variance-spliced` | 2026-05-26-variance | 883 → **1190** |
+| `2026-09-14-may25-spliced` | 2026-05-25 | 168 → **259** of 260 |
+
+`2026-05-25` and `2026-05-25-full` are **different runs**, one character apart. The repair is
+keyed from its own records' `recollected_from`, not from its directory name — which reads
+`recollect-may25` and would have spliced it into `-full`, a corpus it does not repair.
 
 ## What is still missing, and why
 

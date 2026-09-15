@@ -176,6 +176,11 @@ REPAIRS = {
     "2026-05-26-augmentation": "2026-09-14-augmentation-spliced",
     "2026-05-26-unmask-gradient": "2026-09-14-unmask-gradient-spliced",
     "2026-05-26-variance": "2026-09-14-variance-spliced",
+    # The EARLIER main run, one character away from "2026-05-25-full" above and a
+    # different collection. Keyed from the repair's own `recollected_from` rather
+    # than from its directory name, which says "may25" and would have pointed the
+    # splice at -full.
+    "2026-05-25": "2026-09-14-may25-spliced",
 }
 
 #: Holes no budget fixes, kept as a named record rather than quietly carried.

@@ -89,6 +89,16 @@ CORPUS_REPAIRS = {
                     "2026-09-14-recollect-gpt5-variance"),
         "out": "2026-09-14-variance-spliced",
     },
+    # `2026-05-25` is the EARLIER main run and a different directory from
+    # `2026-05-25-full` above -- one character apart, two collections. The
+    # repair's own records name it in `recollected_from`, which is the only
+    # reason this entry is keyed correctly: guessing from the repair's name
+    # ("recollect-may25") would have pointed it at the -full run and spliced a
+    # repair into a corpus it did not repair.
+    "2026-05-25": {
+        "sources": ("2026-09-14-recollect-may25",),
+        "out": "2026-09-14-may25-spliced",
+    },
 }
 
 BASE = "2026-05-25-full"
