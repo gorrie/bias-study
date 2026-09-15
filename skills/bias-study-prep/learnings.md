@@ -214,3 +214,63 @@ Run `python scripts/pipeline_transform_audit.py --live` before trusting any pipe
 It reads what the collection actually did and probes whether your server still behaves that way.
 If you are running the pipeline rung against your own G0DM0D3 checkout, a transform that is inert
 on your instrument will produce clean, scorable, plausible output and no error anywhere.
+
+## 2026-09-15 — a control is a claim too, and the last line of a collector is the riskiest
+
+Three rules, each earned the same day the rung-2 audit landed.
+
+### Check the CONTROL received nothing, not just that the arm received something
+
+`pipeline_transform_audit.py` was written to catch an arm whose named transform never fired.
+Within hours the arm gained a control, and the same question runs the other way — **did the
+baseline get treated?** That is the worse failure of the two. A treated arm that was not treated
+overstates a null and the null is visible. An untreated control that was quietly treated
+**understates every effect measured against it**, and it does so while looking exactly like a
+clean baseline.
+
+Not hypothetical on this toolchain: G0DM0D3 defaults `godmode` and `parseltongue` to **true**
+when the field is absent, so a control written the natural way — by leaving the flags out — is
+the fully-forced arm. Every flag is now sent explicitly, including the false ones, and
+`CONTROL_CONDITIONS` declares which arms must show nothing. Probed both ways before trusting it:
+green as it stands, red when a treated arm is declared the control.
+
+### A name a script never binds is a NameError waiting for a rare path
+
+`recollect_at_cap.py` used `LEGACY_SEED` and imported only `run_roots`. Python does not care
+until the line runs, and that line is the **last** one in the collector. So a repair run made
+every API call, wrote all 106 records, and died writing its manifest.
+
+That is the worst available shape: **the expensive half succeeded and the cheap half took the
+provenance with it.** What was lost doesn't announce itself — it surfaces later, in a different
+tool, as a provenance finding on a run nobody remembers collecting.
+
+It hid for a second reason worth keeping: `repair_recollect_provenance.py --manifests` had been
+backfilling the missing manifests, so **the symptom was being cleaned up faster than the cause
+could be seen.** Every other repair run reported "manifest ok" for exactly that reason. When a
+repair tool exists for a defect, check whether the defect is still being produced.
+
+`scripts/check_undefined_names.py` scans every name read against every name bound. It is
+deliberately weaker than real scope analysis — if a name is bound anywhere at all, in any scope
+or branch, it is not reported — because a linter that cries wolf in this repository gets switched
+off wholesale, which is how `validate_runs.py` came to have 44 live findings wired into no gate.
+First pass: 29 findings, **24 of them `key=lambda x:` parameters**, which is the false-positive
+class the docstring claimed it could not have. Fixed, re-run, two real findings left: the missing
+import, and a `pytest.skip()` in a file that never imported pytest — so a checkout lacking a
+local build got `NameError` where it should have got a skip.
+
+### Difference within a sitting, not across one
+
+The rung-2 null floor looked like the proxy path: the pipeline arm goes through G0DM0D3 and its
+baseline goes direct to the vendor. So it was **collected instead of argued about** — plain
+condition B through the proxy with every transform off, 100 calls. The path costs **+0.06** on
+Opus and **−0.14** on Grok, both spanning zero.
+
+Which relocated the problem rather than closing it. The control shares a sitting with the
+baseline; the arm predates both by a day. So the floor is **cross-sitting drift** — about
+**+0.18** on Opus, two identical arms a day apart, with an interval that excludes zero.
+
+The lesson generalises past this arm: **a 10-question, 5-sample cell on Opus cannot resolve an
+effect below roughly 0.25 across sittings**, which is larger than most of what that arm reports.
+Collect the baseline in the same sitting as the arm it is differenced against, and prefer a
+within-arm contrast when one exists. Rung 2's surviving finding is within-arm for exactly this
+reason, and it is the only number there that has survived every correction.

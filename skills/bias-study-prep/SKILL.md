@@ -187,7 +187,15 @@ them while the intervention it is named after never ran.
 ```bash
 python scripts/pipeline_transform_audit.py --live   # what the server says it actually did
 python scripts/collection_check.py <run>            # check 9: do two conditions share a prompt?
+python scripts/check_undefined_names.py --check     # a name no script binds is a latent NameError
 ```
+
+And once you know a transform fired, ask what the effect belongs to.
+`scripts/pipeline_decomposition.py` splits the layered arm into its ingredients against a
+**same-sitting** baseline, and reports an additivity residual so a single-arm number is not
+quoted as if it generalised to the stack. Validate it first — `--selftest` recovers a planted
+instruction effect, a planted sampling effect, and a planted interaction, and refuses an empty
+corpus.
 
 `studypaths.UNVERIFIED_TREATMENT` records the arms where the answer is no, or where nothing
 says, in three verdicts that are deliberately not collapsed — **DISPROVEN** (the treatment
