@@ -1,0 +1,18 @@
+{
+  "analysis_seed": 20260527,
+  "budget": [
+    4000
+  ],
+  "collector": "recollect_at_cap.py",
+  "models_completed": [
+    "anthropic/claude-opus-4.7",
+    "x-ai/grok-4.3"
+  ],
+  "reconstructed": true,
+  "reconstructed_note": "written from the records on 2026-09-14; the collector writes its own from that date. calls_completed is DELIBERATELY ABSENT -- derived from the same records it would check, it would compare a number to itself.",
+  "records_on_disk": 50,
+  "repairs": [
+    "2026-05-26-unmask-gradient"
+  ],
+  "run_date": "2026-09-14-recollect-gradient"
+}

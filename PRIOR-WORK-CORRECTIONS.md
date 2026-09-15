@@ -207,7 +207,7 @@ its *lean*, and a scorer can agree with a human 93% of the time while the 7% fal
 systematically one way. The lean is not reported, and the subject/scorer overlap is not
 discussed. Any criticism of this scoring layer has to be made with the validation on the table.
 
-**We failed the same control.** Scoring retained since May showed **0.2926 points between our
+**We failed the same control.** Scoring retained since May showed **0.3007 points between our
 most skeptical and most deferential judge**, against five published CI-clean effects of +0.90,
 +0.90, +0.4333, +0.3000 and +0.2333. The spread is larger than the smallest of them and lands
 within nine thousandths of the second smallest — and we had never computed it.

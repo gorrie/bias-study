@@ -73,7 +73,8 @@ from studypaths import UNVERIFIED_TREATMENT, run_roots  # noqa: E402
 # did not use the proxy carries no echo, and "no echo" would otherwise read as
 # "transform did not fire" -- the same confusion this tool exists to end.
 PIPELINE_RUNS = ("2026-09-13-g0dm0d3-replicate", "2026-05-27-g0dm0d3",
-                 "2026-09-14-g0dm0d3-proxy-control")
+                 "2026-09-14-g0dm0d3-proxy-control",
+                 "2026-09-15-g0dm0d3-decomposition")
 
 # What each condition CLAIMS, by name. The audit is the comparison between this
 # and what the server echoed back.

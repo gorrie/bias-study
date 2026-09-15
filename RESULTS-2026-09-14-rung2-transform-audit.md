@@ -234,9 +234,28 @@ confound repaired earlier today *and* to the proxy-path confound found here:
 - **claude-opus-4.7: −0.31 [−0.64, −0.01]**
 - **grok-4.3: +0.48 [+0.26, +0.70]**
 
-**The two models move in opposite directions under the same intervention.** That is rung 2's
+~~**The two models move in opposite directions under the same intervention.** That is rung 2's
 result. It has now survived every correction applied to this arm, and it is the one claim here
-worth carrying into the book.
+worth carrying into the book.~~
+
+> ### NARROWED 2026-09-15 by the decomposition
+>
+> Those two numbers are unchanged and still reproduce. What does not survive is calling them
+> *opposite directions*. The reference arm is `B-STM`, and **B-STM is not an untreated
+> control** — the proxy edits its scored text on 45 of 60 Opus records.
+>
+> Measured against an arm that received genuinely nothing (`B-Proxy`, same sitting,
+> `2026-09-15-g0dm0d3-decomposition`), **Opus is flat under every ingredient**: four cell
+> means spanning 3.44 to 3.50, and `B-Layered minus B-Proxy` at −0.04 [−0.34, +0.22]. The
+> negative half was a contrast against a treated reference, not a direction.
+>
+> The corrected finding is one-sided and smaller: **a forceful system prompt moves Grok 4.3
+> by about half a point and does not move Claude Opus 4.7 at all.** And the open attribution
+> below is now closed — it is the *instruction*, not the sampling: `B-Autotune` is null, and
+> it is the larger perturbation of the two.
+>
+> Full account: `RESULTS-2026-09-15-rung2-decomposed.md`.
+
 
 Its caveat, stated rather than buried: the intervention is a system prompt *and* a sampling
 change together, so it cannot yet say which of the two the models are responding to.

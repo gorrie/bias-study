@@ -97,3 +97,62 @@ def test_an_empty_corpus_returns_none():
 def test_the_cli_refuses_rather_than_printing_an_empty_table():
     rc = D.main(["--run", "2026-01-01-does-not-exist"])
     assert rc == 2
+
+
+def _live():
+    return D.decompose()
+
+
+LIVE_ONLY = pytest.mark.skipif(_live() is None,
+                               reason="decomposition run not in this tree")
+
+
+@LIVE_ONLY
+def test_the_effect_is_the_instruction_not_the_sampling():
+    """Rung 2's effect is godmode, and autotune is nothing.
+
+    B-Layered tracks B-Godmode to within a rounding error while B-Autotune spans
+    zero. The sampling hypothesis gets the BETTER-POWERED test of the two --
+    autotune is the larger perturbation, temperature 0.825 plus top_p and top_k,
+    against godmode's bundled +0.1 -- and it comes back null. If this flips,
+    section 4.3 is wrong in the other direction and needs rewriting rather than
+    patching.
+    """
+    eff = {(c["model"].split("/")[-1], c["contrast"]): c
+           for c in _live()["contrasts"]}
+    god = eff[("grok-4.3", "B-Godmode minus B-Proxy")]
+    auto = eff[("grok-4.3", "B-Autotune minus B-Proxy")]
+    lay = eff[("grok-4.3", "B-Layered minus B-Proxy")]
+    assert god["excludes_zero"], god
+    assert not auto["excludes_zero"], auto
+    assert abs(lay["effect"] - god["effect"]) < 0.15, (
+        "the stack has drifted from its instruction arm: layered %+0.2f against "
+        "godmode %+0.2f" % (lay["effect"], god["effect"]))
+
+
+@LIVE_ONLY
+def test_opus_is_flat_under_every_ingredient():
+    """The correction this run forced.
+
+    `B-Layered minus B-STM` read -0.31 on Opus and was published as half of a
+    "two models move in opposite directions" finding. Its reference arm B-STM is
+    NOT untreated: the proxy edits its scored text on 45 of 60 Opus records.
+    Against an arm that received genuinely nothing, Opus is flat -- its four cell
+    means span 3.44 to 3.50.
+    """
+    for c in _live()["contrasts"]:
+        if not c["model"].endswith("claude-opus-4.7"):
+            continue
+        assert not c["excludes_zero"], (
+            "Opus now moves under %s: %+0.2f [%+0.2f, %+0.2f]. That reverses the "
+            "2026-09-15 correction and the writeup needs re-reading."
+            % (c["contrast"], c["effect"], c["lo"], c["hi"]))
+
+
+@LIVE_ONLY
+def test_the_stack_is_additive_so_single_arms_generalise():
+    for a in _live()["additivity"]:
+        assert a["additive"], (
+            "%s's stack no longer equals the sum of its parts (residual %+0.2f); "
+            "the single-arm numbers stop generalising to B-Layered"
+            % (a["model"], a["residual"]))

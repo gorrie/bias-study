@@ -112,6 +112,26 @@ unchanged on both models because it is a within-arm contrast that never touches 
 the finding that the two models move in **opposite directions** was never at risk from any of
 this, which is the argument for preferring a within-arm contrast when one exists.
 
+> ### NARROWED 2026-09-15 by the decomposition
+>
+> `B-Layered minus B-STM` still reads Opus −0.31 and Grok +0.48 — those numbers are
+> unchanged and still reproduce. What does not survive is calling it *two models moving in
+> opposite directions*. The reference arm is `B-STM`, and **B-STM is not an untreated
+> control**: the proxy edits its scored text on 45 of 60 Opus records.
+>
+> Measured against an arm that received genuinely nothing — `B-Proxy`, same sitting,
+> `2026-09-15-g0dm0d3-decomposition` — **Opus is flat under every ingredient**, four cell
+> means spanning 3.44 to 3.50, and `B-Layered minus B-Proxy` reads −0.04 [−0.34, +0.22].
+> The negative half was a contrast against a treated reference, not a direction.
+>
+> The corrected finding is one-sided and smaller: **a forceful system prompt moves Grok 4.3
+> by about half a point and does not move Claude Opus 4.7 at all.** The sampling change moves
+> neither — and it is the larger perturbation, which is what makes the instruction reading
+> more than a two-arm coincidence.
+>
+> Full account: `RESULTS-2026-09-15-rung2-decomposed.md`.
+
+
 `pipeline_rung.py` defaults to the **same-sitting** baseline and keeps the budget-matched one as
 `MATCHED_BUDGET_BASELINE_RUN`, which is the right control for the token-cap question and the
 wrong one for everything else. Neither is clean: the honest fix is a same-sitting baseline **with**

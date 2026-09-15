@@ -1,0 +1,19 @@
+{
+  "analysis_seed": 20260527,
+  "budget": 4000,
+  "calls_completed": 2,
+  "calls_failed": 0,
+  "collector": "recollect_at_cap.py",
+  "completed_at": "2026-09-15T06:13:47.419779Z",
+  "models_attempted": [
+    "meta-llama/llama-4-maverick"
+  ],
+  "models_completed": [
+    "meta-llama/llama-4-maverick"
+  ],
+  "models_failed": [],
+  "repairs": "2026-05-27-ood",
+  "run_date": "2026-09-14-recollect-ood",
+  "started_at": "2026-09-15T06:13:17.284051Z",
+  "total_calls_planned": 2
+}

@@ -182,6 +182,8 @@ REPAIRS = {
     # splice at -full.
     "2026-05-25": "2026-09-14-may25-spliced",
     "2026-05-27-ood": "2026-09-14-ood-spliced",
+    "2026-05-27-paraphrase": "2026-09-15-paraphrase-spliced",
+    "2026-05-27-reversed-premise": "2026-09-15-reversed-premise-spliced",
 }
 
 #: Holes no budget fixes, kept as a named record rather than quietly carried.
@@ -212,6 +214,14 @@ UNREPAIRABLE = {
         "check cannot be re-run either -- see RESULTS/THE-WASH.",
     ("2026-05-26-cn-expansion", "bytedance/seed-1.6"):
         "1 call failed outright at collection time. No budget fixes a failed call.",
+    ("2026-05-27-reversed-premise", "mistralai/mistral-large"):
+        "6 cells, all FAILED CALLS at collection time -- no tokens_out, no "
+        "response, no recorded cap. The re-collector correctly did not target "
+        "them and the splice correctly left them unusable, which is why the arm "
+        "lands at 194 of 200 rather than 200. Checked because the gap looked at "
+        "first like the repair tool seeing less damage than exists, which is the "
+        "defect that cost this project four months; it is not that. Every one of "
+        "the 33 mistral cells that WAS truncated repaired.",
     ("2026-05-25-full", "phi4:latest"):
         "1 cell. phi4 is a LOCAL model and the re-collector calls OpenRouter, so "
         "it was never reachable by that path.",
@@ -276,6 +286,16 @@ UNVERIFIED_TREATMENT = {
         "detail":
             "20 records, same as the replicate above: parseltongue 0 of 20, "
             "godmode and autotune 20 of 20, STM changing the text on 1.",
+    },
+    ("2026-09-15-g0dm0d3-decomposition", "B-Layered"): {
+        "verdict": "PARTIALLY INERT",
+        "detail":
+            "100 records. Parseltongue 0 of 100 again, for the same reason -- the "
+            "instrument still contains no trigger words, and collecting the arm a "
+            "third time does not change that. Everything else fired: godmode "
+            "100/100, autotune 100/100, STM applied 100/100 and changing the text "
+            "on 26. This run exists to split the two ingredients that DO fire, so "
+            "the inert one is expected here rather than newly discovered.",
     },
     ("2026-05-27-abliteration", "abliterated"): {
         "verdict": "UNRECORDED",

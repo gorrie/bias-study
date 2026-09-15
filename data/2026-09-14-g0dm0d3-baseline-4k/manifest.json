@@ -1,0 +1,23 @@
+{
+  "analysis_seed": 20260914,
+  "calls_completed": 100,
+  "calls_failed": 0,
+  "completed_at": "2026-09-15T03:18:50.225853Z",
+  "models_attempted": [
+    "openrouter:anthropic/claude-opus-4.7",
+    "openrouter:x-ai/grok-4.3"
+  ],
+  "models_completed": [
+    "anthropic/claude-opus-4.7",
+    "x-ai/grok-4.3"
+  ],
+  "models_failed": [],
+  "positions": [
+    "neutral"
+  ],
+  "questions_version": "v2-subset",
+  "rubric_version": "v2",
+  "run_date": "2026-09-14-g0dm0d3-baseline-4k",
+  "started_at": "2026-09-15T02:53:51.509157Z",
+  "total_calls_planned": 100
+}

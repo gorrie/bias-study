@@ -27,13 +27,14 @@
 > **Five of the audited studies put a language model in the scoring path. Not one reports that
 > model's own lean.** In four the scorer shares a vendor family with a subject and only one of
 > those four says so; in a fifth the scoring model is never identified at all. We failed this
-> control too — our judges spanned 0.2926 points, larger than the smallest of our own five
-> published effects and within a hundredth of the next, and we had not computed it either.
+> control too — our judges spanned 0.3007 points, larger than **two** of our own five
+> published effects, and we had not computed it either. (0.2926 until the repaired corpus
+> landed on 2026-09-15; the extra records pushed it past +0.3000, the second smallest.)
 
 *Every number above recomputes: `python scripts/key_numbers.py`,
 `python scripts/controls_audit.py --gaps`, `python scripts/ablation_analysis.py`. Read
 [CORRECTIONS.md](CORRECTIONS.md) before quoting any of them — this study has withdrawn,
-narrowed or corrected **15** claims of its own, and says which, when, and what replaced each.*
+narrowed or corrected **18** claims of its own, and says which, when, and what replaced each.*
 
 > **`v1`, `v2` and `v3` in this repository name the three intervention rungs — prompt edit,
 > elicitation pipeline, weight ablation — not releases.** Releases are dated. See
@@ -81,20 +82,36 @@ for the truncation reason. **Nothing about the direction has changed at any poin
 excludes zero.
 
 **This arm has since been re-collected at five samples per cell and it is NOT a null there** —
-three of eight intervals exclude zero and the two models move in opposite directions. That
-result is not published here yet because its run is not in this repository, and a number a
-reader cannot recompute is the defect this study spends its time complaining about. Rungs 1 and
-3 carry this study's weight; [LESSONS.md](LESSONS.md) §3 records how the original claim survived
-four months.
+and as of 2026-09-15 **its runs are in this repository**, so the numbers below recompute here
+rather than being asserted from a tree you cannot see. Rungs 1 and 3 still carry this study's
+weight; [LESSONS.md](LESSONS.md) §3 records how the original claim survived four months.
+
+What the re-collection establishes, after three corrections to it (ledger entries 16, 17, 18):
+
+> **A forceful system prompt moves Grok 4.3 by about half a point on this rubric and does not
+> move Claude Opus 4.7 at all.** `B-Godmode` +0.45 [+0.10, +0.78] against an untreated
+> same-sitting control; Opus flat across all four arms, cell means 3.44 to 3.50.
+
+It is the **instruction**, not the sampling change: `B-Autotune` is null at −0.08 [−0.26, +0.09],
+and it is the *larger* perturbation of the two. Obfuscation was never applied at all, and
+hedge-stripping edits the answer rather than the model.
+
+An earlier reading of this arm — *"the two models move in opposite directions"* — is
+**withdrawn**. Its reference arm was treated, not a control. See
+[`RESULTS-2026-09-15-rung2-decomposed.md`](RESULTS-2026-09-15-rung2-decomposed.md).
 
 **And this rung applied no obfuscation at all — corrected 2026-09-14.** G0DM0D3's Parseltongue
 rewrites *trigger words* from a fixed list of 53 security and jailbreak terms and returns the
 text unchanged when it finds none. The instrument is ten neutral policy questions containing no
 trigger, so it fired on **0 of 240 requests**. `B-Parseltongue` was condition B under a second
-label, which makes its contrast a **null by construction** — and on Claude Opus that null reads
-+0.24 [+0.02, +0.49], *excluding zero on an arm that received nothing*. The row's word
+label, which makes its contrast a **null by construction** — and that turned out to be the best
+diagnostic the arm has. Against a baseline collected two days later it read +0.24 [+0.02, +0.49],
+*excluding zero on an arm that received nothing*; against the **same-sitting** baseline it reads
+−0.01 [−0.15, +0.13], as an untreated arm must. Whichever baseline drives the untreated arm
+closest to zero is the defensible one, which is how the wrong default was caught (ledger entry
+17). The row's word
 "obfuscation" is withdrawn; the layered arm's live ingredients are a **godmode system prompt**
-and an **autotune sampling change**, and which of the two carries the effect is being collected.
+and an **autotune sampling change**, and it is the godmode system prompt that carries the effect (ledger entry 18).
 STM is not a prompt transform either: it edits the model's **answer** after generation, a median
 of 16 characters, on 45 of 60 Opus records against 1 of 60 for Grok.
 

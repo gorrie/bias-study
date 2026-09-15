@@ -1,0 +1,28 @@
+{
+  "analysis_seed": 20260527,
+  "calls_completed": 100,
+  "calls_failed": 0,
+  "collector": "run_g0dm0d3.py",
+  "completed_at": "2026-09-15T05:37:10.830201Z",
+  "conditions": [
+    "B-Proxy"
+  ],
+  "max_tokens": 4000,
+  "models_attempted": [
+    "anthropic/claude-opus-4.7",
+    "x-ai/grok-4.3"
+  ],
+  "models_completed": [
+    "anthropic/claude-opus-4.7",
+    "x-ai/grok-4.3"
+  ],
+  "models_failed": [],
+  "positions": [
+    "neutral"
+  ],
+  "run_date": "2026-09-14-g0dm0d3-proxy-control",
+  "samples_per_cell": 5,
+  "started_at": "2026-09-15T05:16:10.831797Z",
+  "total_calls_planned": 100,
+  "truncated_by_text_test": 0
+}

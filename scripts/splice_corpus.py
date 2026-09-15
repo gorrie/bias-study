@@ -107,6 +107,18 @@ CORPUS_REPAIRS = {
         "sources": ("2026-09-14-recollect-ood",),
         "out": "2026-09-14-ood-spliced",
     },
+    # The instruction-paraphrase floor and the frame-following arm. Both repairs
+    # were collected on 2026-09-14 and then sat unscored for a day -- the repair
+    # sequence is collect, check, score, splice, register, and stopping after
+    # step two leaves records that cost money and are read by nothing.
+    "2026-05-27-paraphrase": {
+        "sources": ("2026-09-14-recollect-paraphrase",),
+        "out": "2026-09-15-paraphrase-spliced",
+    },
+    "2026-05-27-reversed-premise": {
+        "sources": ("2026-09-14-recollect-reversed-premise",),
+        "out": "2026-09-15-reversed-premise-spliced",
+    },
 }
 
 BASE = "2026-05-25-full"

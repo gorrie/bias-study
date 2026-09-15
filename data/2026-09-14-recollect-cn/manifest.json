@@ -1,0 +1,19 @@
+{
+  "analysis_seed": 20260527,
+  "budget": [
+    4000
+  ],
+  "collector": "recollect_at_cap.py",
+  "models_completed": [
+    "baidu/ernie-4.5-300b-a47b",
+    "moonshotai/kimi-k2.6",
+    "z-ai/glm-4.7"
+  ],
+  "reconstructed": true,
+  "reconstructed_note": "written from the records on 2026-09-14; the collector writes its own from that date. calls_completed is DELIBERATELY ABSENT -- derived from the same records it would check, it would compare a number to itself.",
+  "records_on_disk": 137,
+  "repairs": [
+    "2026-05-26-cn-expansion"
+  ],
+  "run_date": "2026-09-14-recollect-cn"
+}

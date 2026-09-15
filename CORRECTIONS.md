@@ -91,9 +91,8 @@ That is a stronger result than the one it replaces, and it was invisible at seve
 **Narrowed:** 2026-09-05.
 
 High agreement between judges was read as the absence of a judge lean. It is not. The panel's
-internal spread is **0.2926 points** — larger than the smallest of the five published effects
-(+0.2333) and just under the second smallest (+0.3000), not larger than two of them, which is
-what this file said until 2026-09-12 — and it is not constant across the arms: gemini-2.5-flash sits at +0.044 under the balance instruction and
+internal spread is **0.3007 points** — larger than the two smallest of the five published
+effects (+0.2333 and +0.3000) — and it is not constant across the arms: gemini-2.5-flash sits at +0.044 under the balance instruction and
 +0.290 under the bare question, so it does not simply subtract out of a within-model delta.
 
 Settled by re-scoring each finding under each judge alone. **The two large effects survive every
@@ -602,6 +601,64 @@ is available.
 a baseline you will ever get: whichever baseline drives it closest to zero is the defensible one,
 and that is a property of the data rather than an argument about collection parameters.
 `tests/test_pipeline_rung.py::test_the_untreated_arm_reads_zero_which_is_how_a_baseline_is_judged`.
+
+---
+
+### 18. "Two models move in opposite directions" — narrowed 2026-09-15
+
+**Published:** 2026-09-14, in `RESULTS-2026-09-13-pipeline-rung-replicate.md` and carried through
+entries 16 and 17 above as the claim that survived them.
+**Narrowed:** 2026-09-15, one day later, by the arm that was collected to answer a different
+question.
+
+The claim was that `B-Layered minus B-STM` reads **−0.31 [−0.64, −0.01]** on Claude Opus 4.7 and
+**+0.48 [+0.26, +0.70]** on Grok 4.3 — *"the two models move in opposite directions under the
+same intervention"* — and that this was rung 2's result, immune to every confound because it is
+within-arm and never reads a baseline run.
+
+**Both numbers are unchanged and still reproduce.** What does not survive is the reading.
+
+Its reference arm is `B-STM`, and **`B-STM` is not an untreated control.** Entry 16 established
+that the proxy edits `B-STM`'s scored text after generation — deleting hedging phrases — on **45
+of 60** Opus records. A contrast whose reference has been treated is not a measurement of the
+other arm alone.
+
+Measured against an arm that received *genuinely nothing* — `B-Proxy`, plain condition B through
+the same proxy with every transform explicitly off, collected in the **same sitting** as the
+arms it is differenced against:
+
+| claude-opus-4.7 | B-Proxy | B-Godmode | B-Autotune | B-Layered |
+|---|---:|---:|---:|---:|
+| cell mean | 3.48 | 3.50 | 3.44 | 3.44 |
+
+**Opus is flat under every ingredient of rung 2.** `B-Layered minus B-Proxy` reads −0.04
+[−0.34, +0.22]. The negative half of "opposite directions" was a contrast against a treated
+reference, not a direction.
+
+**Disposition.** The phrase *"two models move in opposite directions"* is **withdrawn**. The
+corrected finding is one-sided and smaller:
+
+> **A forceful system prompt moves Grok 4.3 by about half a point on this rubric and does not
+> move Claude Opus 4.7 at all.**
+
+**What the same run also settles, in the study's favour.** The attribution left open by entry 16
+is now closed: the effect is the **instruction**, not the sampling change.
+
+| grok-4.3 | effect | 95% interval |
+|---|---:|---|
+| B-Godmode minus B-Proxy | **+0.45** | [+0.10, +0.78] · excludes 0 |
+| B-Autotune minus B-Proxy | −0.08 | [−0.26, +0.09] |
+| B-Layered minus B-Proxy | **+0.44** | [+0.07, +0.79] · excludes 0 |
+
+`B-Layered` is `B-Godmode` to within a rounding error, and additivity holds on both models
+(residuals −0.02 and +0.06). The sampling hypothesis got the **better-powered** test of the two —
+`autotune` is the larger perturbation, temperature 0.825 plus top_p and top_k, against godmode's
+bundled +0.1 — and came back null. A bigger sampling change moved nothing; a smaller one carrying
+an instruction moved +0.45.
+
+Full account: `RESULTS-2026-09-15-rung2-decomposed.md`. Regressions:
+`tests/test_pipeline_decomposition.py`, which fires if Opus ever moves or if the stack drifts
+from its instruction arm.
 
 ---
 

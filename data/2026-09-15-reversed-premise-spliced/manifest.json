@@ -1,0 +1,15 @@
+{
+  "analysis_seed": 20260914,
+  "base_run": "2026-05-27-reversed-premise",
+  "calls_completed": 0,
+  "derived": true,
+  "generated_by": "scripts/splice_corpus.py",
+  "note": "DERIVED corpus. No calls were made to build it. Records carry spliced_from / spliced_replaces where a repair was substituted.",
+  "records": 200,
+  "run_date": "2026-09-15-reversed-premise-spliced",
+  "splice_sources": [
+    "2026-09-14-recollect-reversed-premise"
+  ],
+  "spliced": 55,
+  "still_unusable": 6
+}

@@ -180,14 +180,30 @@ def test_stm_does_not_clear_its_own_within_run_null():
 
 @pytest.mark.skipif(P.default_pair()[2] != "replicated",
                     reason="this tree holds only the n=1 pair")
-def test_the_surviving_finding_is_within_arm_and_opposite_signed():
-    """What the proxy confound cannot touch.
+def test_the_w13_within_arm_contrast_still_reads_as_collected():
+    """`B-Layered minus B-STM`: Opus -0.31, Grok +0.48, unchanged by any confound.
 
-    `B-Layered minus B-STM` never reads the baseline run, so it is immune to
-    both the baseline-budget confound repaired earlier and the proxy-path
-    confound found here. It is negative for Opus and positive for Grok: the two
-    models move in OPPOSITE directions under the same intervention. That is
-    rung 2's result, and it is the one that has survived every correction.
+    NARROWED 2026-09-15, and the rename is the point. This test was called
+    `test_the_surviving_finding_is_within_arm_and_opposite_signed` and its
+    docstring said "the two models move in OPPOSITE directions ... that is rung
+    2's result". The numbers below are still exactly what W13 collected. The
+    INTERPRETATION did not survive.
+
+    Its reference arm is `B-STM`, and B-STM is not an untreated control: the
+    proxy edits its scored text on 45 of 60 Opus records. Measured against an arm
+    that received genuinely nothing -- `B-Proxy`, same sitting,
+    `2026-09-15-g0dm0d3-decomposition` -- Opus reads -0.04 [-0.34, +0.22] and its
+    four cell means span 3.44 to 3.50. Opus does not move under any ingredient of
+    rung 2, so the negative half of "opposite directions" was a contrast against
+    a treated reference rather than a direction.
+
+    What survives is one-sided: a forceful system prompt moves Grok and not Opus.
+    See `tests/test_pipeline_decomposition.py` and
+    `RESULTS-2026-09-15-rung2-decomposed.md`.
+
+    The assertion is kept because these numbers must still reproduce -- a
+    published figure that stops reproducing is a separate defect from one that
+    stops meaning what it said.
     """
     res = P.estimate()
     bykey = {(c["model"].split("/")[-1], c["contrast"]): c for c in res["contrasts"]}

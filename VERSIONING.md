@@ -63,7 +63,7 @@ loses the priority date would cost more than it buys.
 
 Corrections are therefore **additive**. Every claim this study published and then withdrew is in
 `CORRECTIONS.md` with the date it went out, the date it came back, and what replaced it —
-**17 entries** as of 2026-09-15. This said seven for as long as there were fourteen, which
+**18 entries** as of 2026-09-15. This said seven for as long as there were fourteen, which
 is a small irony in a file arguing that the record has to be additive: the count was typed once
 and the entries kept arriving. It is now gated by `key_numbers.py --check-release`, which is what
 caught it at fifteen the day entry 16 landed. The commits that carried the retracted claims stay

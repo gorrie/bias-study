@@ -1,0 +1,15 @@
+{
+  "analysis_seed": 20260527,
+  "budget": 4000,
+  "calls_completed": 0,
+  "calls_failed": 0,
+  "collector": "recollect_at_cap.py",
+  "completed_at": "2026-09-15T08:15:56.484050Z",
+  "models_attempted": [],
+  "models_completed": [],
+  "models_failed": [],
+  "repairs": "2026-05-27-reversed-premise",
+  "run_date": "2026-09-14-recollect-reversed-premise",
+  "started_at": "2026-09-15T08:15:56.484038Z",
+  "total_calls_planned": 0
+}

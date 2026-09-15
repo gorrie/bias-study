@@ -1,0 +1,15 @@
+{
+  "analysis_seed": 20260914,
+  "base_run": "2026-05-25",
+  "calls_completed": 0,
+  "derived": true,
+  "generated_by": "scripts/splice_corpus.py",
+  "note": "DERIVED corpus. No calls were made to build it. Records carry spliced_from / spliced_replaces where a repair was substituted.",
+  "records": 260,
+  "run_date": "2026-09-14-may25-spliced",
+  "splice_sources": [
+    "2026-09-14-recollect-may25"
+  ],
+  "spliced": 91,
+  "still_unusable": 1
+}
