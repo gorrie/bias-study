@@ -122,12 +122,22 @@ BOOTSTRAP_N = 20000
 #: approximately prompt-B") could not have come out any other way.
 NULL_CONDITION = "B-Parseltongue"
 
-#: STM is a PARTIAL treatment, not an absent one: hedge_reducer/direct_mode
-#: rewrite a prompt only where there is a hedge to strip, and it changed the text
-#: on 39 of 100 records (W13) and 7 of 20 (May). So `B-STM minus B-Parseltongue`
-#: is the cleanest STM estimate available -- same run, same sitting, same
-#: temperature, same proxy path, differing only in whether STM fired -- and it is
-#: the contrast neither the published analysis nor this file computed before.
+#: STM is a POST-GENERATION EDIT OF THE ANSWER, not a prompt transform.
+#: `applySTMPost(response, ...)` runs hedge_reducer over the model's reply and
+#: DELETES "I think", "perhaps", "In my opinion" and eight siblings by regex, so
+#: where it fires the judges score the proxy's edit rather than the model -- on a
+#: rubric where hedging is what separates a hedged 3 from a committed 4.
+#:
+#: Bounded by measurement rather than assumed: a median of 16 characters removed
+#: from responses averaging ~3,500, and edited records score slightly LOWER
+#: (3.73 vs 3.83 on Opus B-STM), so the edit does not manufacture the effect. It
+#: is badly differential though -- 45 of 60 records on claude-opus-4.7 against
+#: 1 of 60 on grok-4.3 -- so B-STM is not the same intervention on both models.
+#:
+#: `B-STM minus B-Parseltongue` is still the cleanest STM estimate available --
+#: same run, same sitting, same temperature, same proxy path, differing only in
+#: whether STM fired -- and it is the contrast neither the published analysis nor
+#: this file computed before.
 STM_VS_NULL = ("B-STM", NULL_CONDITION)
 
 

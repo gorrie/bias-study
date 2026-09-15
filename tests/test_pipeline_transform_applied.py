@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import pipeline_rung as P  # noqa: E402
 import pipeline_transform_audit as A  # noqa: E402
-from studypaths import UNVERIFIED_TREATMENT  # noqa: E402
+from studypaths import SCORED_TEXT_MODIFIED, UNVERIFIED_TREATMENT  # noqa: E402
 
 
 def _audit():
@@ -195,6 +195,78 @@ def test_the_surviving_finding_is_within_arm_and_opposite_signed():
     grok = bykey[("grok-4.3", "B-Layered minus B-STM")]
     assert opus["effect"] < 0 < grok["effect"]
     assert opus["excludes_zero"] and grok["excludes_zero"]
+
+
+def _profile():
+    return {(p["model"], p["condition"]): p for p in A.stm_edit_profile()}
+
+
+@pytest.mark.skipif(not _profile(), reason="no scored pipeline records in this tree")
+def test_the_stm_edit_is_small_enough_not_to_carry_the_effect():
+    """STM edits the SCORED TEXT, so the artefact has to be bounded, not assumed.
+
+    `applySTMPost(response, ...)` deletes "I think", "perhaps", "In my opinion"
+    and eight siblings from the model's reply, and the judges then score that on
+    a rubric where hedging is what separates a hedged 3 from a committed 4. The
+    reason this does not invalidate the arm is a measurement, not an argument: a
+    median of ~16 characters out of responses averaging ~3,500.
+
+    If a re-collection pushes the deletion into the hundreds of characters, this
+    stops being a footnote and the arm needs re-reading.
+    """
+    for key, p in _profile().items():
+        if p["median_chars_deleted"] is None:
+            continue
+        assert p["median_chars_deleted"] < 100, (
+            "%s %s: STM now deletes a median of %d characters from the scored "
+            "text. That is no longer a rounding error on a 1-5 rubric."
+            % (key[0], key[1], p["median_chars_deleted"]))
+
+
+@pytest.mark.skipif(not _profile(), reason="no scored pipeline records in this tree")
+def test_the_edit_does_not_inflate_scores():
+    """The edit runs AGAINST the hypothesis, which is why it is survivable.
+
+    Not a causal comparison -- hedging and stance are not independent -- but if
+    edited records ever start scoring materially HIGHER than unedited ones, the
+    proxy is deleting hedges into the direction the study is measuring and the
+    arm becomes unusable rather than caveated.
+    """
+    for key, p in _profile().items():
+        hi, lo = p["mean_score_edited"], p["mean_score_unedited"]
+        if hi is None or lo is None or p["n_edited"] < 5:
+            continue
+        assert hi <= lo + 0.25, (
+            "%s %s: records STM edited score %+0.2f above unedited ones. The "
+            "apparatus may be manufacturing the effect it measures."
+            % (key[0], key[1], hi - lo))
+
+
+@pytest.mark.skipif(not _profile(), reason="no scored pipeline records in this tree")
+def test_the_stm_edit_is_differential_by_model_and_that_is_disclosed():
+    """45 of 60 on Opus, 1 of 60 on Grok. Not the same intervention.
+
+    Grok does not hedge in the phrasings the regex catches, so cross-model
+    comparison of the STM arm is not supported -- and that cuts the right way
+    for the surviving finding, because Grok's B-Layered effect cannot be an
+    editing artefact when STM touched one of its records.
+    """
+    prof = _profile()
+    rates = {k: p["edit_rate"] for k, p in prof.items() if p["condition"] == "B-STM"}
+    if len(rates) < 2:
+        pytest.skip("one model only in this tree")
+    assert max(rates.values()) - min(rates.values()) > 0.3, (
+        "the STM edit rates have converged across models (%r). That is good news "
+        "and it retires the differential caveat -- update "
+        "studypaths.SCORED_TEXT_MODIFIED and this test together." % rates)
+    # The profile pools runs and keys on (model, condition); the registry keys on
+    # (run, condition). Compare on the axis they share -- every condition that
+    # edits the scored text must be recorded as doing so.
+    recorded = {cond for _run, cond in SCORED_TEXT_MODIFIED}
+    editing = {p["condition"] for p in prof.values() if p["n_edited"]}
+    assert editing <= recorded, (
+        "condition(s) %r edit the scored text and are not recorded in "
+        "studypaths.SCORED_TEXT_MODIFIED" % sorted(editing - recorded))
 
 
 @PIPELINE_ONLY

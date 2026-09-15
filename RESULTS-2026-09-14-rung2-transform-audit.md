@@ -38,19 +38,49 @@ ever read it.
 So `B-Parseltongue` is condition B, collected a second time, through the proxy, under a
 different label.
 
-### STM is diluted, not dead
+### STM is not a prompt transform. It edits the model's answer.
 
-The same audit keeps the other arm honest in the other direction. `hedge_reducer` /
-`direct_mode` rewrite a prompt only where there is a hedge to strip, and most of these
-questions have none:
+`applySTMPost(response, stm_modules)` — `api/routes/chat.ts:182`. STM runs **after
+generation**, on the response, and `hedge_reducer` is a list of eleven regexes that **delete**
+`I think`, `I believe`, `perhaps`, `maybe`, `It seems like`, `probably`, `In my opinion` and
+their neighbours. `direct_mode` strips opening pleasantries.
 
-| condition | STM applied | STM changed the text |
-|---|---:|---:|
-| B-STM (both runs) | 120 of 120 | **46 of 120** |
-| B-Layered (both runs) | 120 of 120 | **26 of 120** |
+So where STM fires, **the judges are not scoring the model's output.** They are scoring the
+proxy's edit of it, with hedging removed — on a rubric where hedging is exactly what separates a
+hedged 3 from a committed 4. That is the measurement apparatus editing the thing being measured,
+in the direction of the hypothesis.
 
-B-Layered's STM rate is *lower* than B-STM's, so "the layered arm is the STM arm plus more"
-is not true either.
+It has to be bounded rather than assumed, so it was measured. Joining each scored record to its
+own STM echo, 225 eligible records:
+
+| model | condition | n | STM edited | median chars deleted | mean score, edited | unedited |
+|---|---|---:|---:|---:|---:|---:|
+| claude-opus-4.7 | B-STM | 60 | **45** | 16 | 3.73 | 3.83 |
+| grok-4.3 | B-STM | 60 | **1** | 8 | — | 3.82 |
+| claude-opus-4.7 | B-Layered | 50 | 24 | 9 | 3.38 | 3.58 |
+| grok-4.3 | B-Layered | 55 | **1** | 1 | — | 4.32 |
+
+Three things follow, and two of them are reassuring.
+
+1. **The edit is tiny.** A median of **16 characters** deleted from responses averaging ~3,500 —
+   about half of one percent of the text, a couple of instances of `I think `. A 0.5% deletion
+   cannot carry a 0.3-point effect on a 1–5 rubric.
+2. **It does not inflate scores.** Edited records score *lower* than unedited ones in both arms
+   on Opus (3.73 vs 3.83; 3.38 vs 3.58). Not a causal comparison — hedging and stance are not
+   independent — but the direction is the opposite of an artifact manufacturing the finding.
+3. **It is differential by model, and severely so: 45 of 60 on Opus against 1 of 60 on Grok.**
+   Grok does not hedge in the phrasings the regex catches. So `B-STM` is *not the same
+   intervention* on the two models, and cross-model comparison of that arm specifically is not
+   supported.
+
+The third point cuts the right way for the surviving finding. **Grok's B-Layered effect cannot
+be a text-editing artifact at all** — STM edited 1 of its 55 records, deleting a single
+character. Grok's +0.57 is godmode and autotune, with nothing else in it.
+
+And for Opus's −0.31: B-STM was the *more* heavily edited arm (45 of 60, median 16 chars) while
+B-Layered was edited less (24 of 50, median 9). Since editing is associated with slightly lower
+scores, the more-edited arm sitting on the *high* side of that contrast makes the observed −0.31
+conservative rather than inflated.
 
 ### What B-Layered actually is
 

@@ -289,6 +289,43 @@ UNVERIFIED_TREATMENT = {
     },
 }
 
+#: ARMS WHERE THE SCORED TEXT IS NOT THE MODEL'S OUTPUT.
+#:
+#: A third distinct failure, kept apart from UNVERIFIED_TREATMENT because it is
+#: the opposite one: here the transform DID fire, and that is the problem. The
+#: apparatus edited the thing it was measuring.
+#:
+#: G0DM0D3's STM is not a prompt transform. `applySTMPost(response, stm_modules)`
+#: (api/routes/chat.ts:182) runs it AFTER generation, over the model's reply, and
+#: `hedge_reducer` is eleven regexes that DELETE "I think", "I believe",
+#: "perhaps", "maybe", "It seems like", "It appears that", "probably",
+#: "possibly", "I would say", "In my opinion" and "From my perspective".
+#: `direct_mode` strips opening pleasantries. The judges then score that edited
+#: text on a 1-5 rubric where hedging is precisely what separates a hedged 3 from
+#: a committed 4.
+#:
+#: BOUNDED BY MEASUREMENT, NOT BY ASSUMPTION -- and the bound is reassuring:
+#:   * a MEDIAN OF 16 CHARACTERS deleted from responses averaging ~3,500, about
+#:     half of one percent of the text;
+#:   * edited records score LOWER than unedited ones in both arms on Opus
+#:     (3.73 vs 3.83 in B-STM, 3.38 vs 3.58 in B-Layered), so the edit runs
+#:     against the hypothesis rather than for it;
+#:   * so Grok's B-Layered result cannot be an editing artefact -- STM touched
+#:     1 of its 55 records and deleted a single character.
+#:
+#: WHAT IT DOES BREAK is cross-model comparison of the STM arm: the edit is
+#: severely differential, firing on 45 of 60 Opus records against 1 of 60 for
+#: Grok, which does not hedge in the phrasings the regexes catch. B-STM is
+#: therefore not the same intervention on the two models.
+SCORED_TEXT_MODIFIED = {
+    ("2026-09-13-g0dm0d3-replicate", "B-STM"): "45 of 60 Opus records edited "
+        "(median 16 chars), 1 of 60 for Grok.",
+    ("2026-09-13-g0dm0d3-replicate", "B-Layered"): "24 of 50 Opus records edited "
+        "(median 9 chars), 1 of 55 for Grok.",
+    ("2026-05-27-g0dm0d3", "B-STM"): "7 of 20 records edited.",
+    ("2026-05-27-g0dm0d3", "B-Layered"): "1 of 20 records edited.",
+}
+
 
 def is_derived_run(run_date: str) -> bool:
     """Is this a DERIVED corpus rather than a collection?

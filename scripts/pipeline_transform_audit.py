@@ -17,9 +17,19 @@ and nothing else. The published reading -- *"Parseltongue alone (3.70) is
 approximately prompt-B"* -- is not a null result about obfuscation. It is the
 null the design accidentally built, and it could not have come out any other way.
 
-STM is a PARTIAL treatment rather than an absent one, which is why this tool
-counts rather than asserts: `hedge_reducer`/`direct_mode` rewrite a prompt only
-where there is a hedge to strip, and the instrument's questions mostly have none.
+STM is a different problem, not an absent one, which is why this tool counts
+rather than asserts. It is NOT a prompt transform: `applySTMPost(response, ...)`
+runs it AFTER generation, on the model's answer, where `hedge_reducer` deletes
+"I think", "perhaps", "In my opinion" and eight siblings by regex. Where it
+fires, the judges score the proxy's edit of the response rather than the
+response -- on a rubric where hedging is what separates a hedged 3 from a
+committed 4.
+
+Measured rather than feared: a median of 16 characters deleted from ~3,500, and
+edited records score slightly LOWER, so it does not manufacture the finding. But
+it is severely differential -- 45 of 60 records on claude-opus-4.7 against 1 of
+60 on grok-4.3, which do not hedge in the phrasings the regex catches -- so the
+arm is not the same intervention on the two models.
 
 WHAT IT CHECKS
 --------------
@@ -148,6 +158,75 @@ def audit(runs=PIPELINE_RUNS):
             "records_examined": sum(totals.values())}
 
 
+def stm_edit_profile(runs=PIPELINE_RUNS):
+    """How much of the SCORED text did STM delete, and from which model?
+
+    STM edits the response after generation, so where it fires the judges score
+    the proxy's edit rather than the model. That is only worth worrying about in
+    proportion to its size and its balance, and both are measurable: join each
+    scored record to its own STM echo and report the deletion and the score on
+    either side of it.
+
+    Reported per (model, condition) rather than pooled, because the finding is
+    the IMBALANCE -- the edit fires on nearly every Opus record and almost no
+    Grok one, so the arm is not the same intervention on the two models.
+    """
+    import statistics as st
+
+    import eligibility as E
+
+    echo = {}
+    for run in runs:
+        for rec in _records(run):
+            stm = (_echo(rec) or {}).get("stm")
+            if not stm:
+                continue
+            key = (run, rec["model"], rec.get("condition"), rec.get("question_id"),
+                   rec.get("sample_idx"))
+            echo[key] = (stm.get("original_length"), stm.get("transformed_length"))
+
+    acc = collections.defaultdict(lambda: {"edited": [], "unedited": [], "cut": []})
+    for run in runs:
+        for root in run_roots():
+            pat = os.path.join(str(root), run, "scored", "**", "*.jsonl")
+            for path in glob.glob(pat, recursive=True):
+                for line in io.open(path, encoding="utf-8", errors="replace"):
+                    if not line.strip():
+                        continue
+                    try:
+                        rec = json.loads(line)
+                    except ValueError:
+                        continue
+                    if not E.is_eligible(rec):
+                        continue
+                    key = (run, rec["model"], rec.get("condition"),
+                           rec.get("question_id"), rec.get("sample_idx"))
+                    if key not in echo:
+                        continue
+                    orig, trans = echo[key]
+                    bucket = acc[(rec["model"], rec.get("condition"))]
+                    if orig != trans:
+                        bucket["edited"].append(rec["score_classifier"])
+                        bucket["cut"].append((orig or 0) - (trans or 0))
+                    else:
+                        bucket["unedited"].append(rec["score_classifier"])
+
+    out = []
+    for (model, cond), b in sorted(acc.items()):
+        n = len(b["edited"]) + len(b["unedited"])
+        out.append({
+            "model": model, "condition": cond, "n": n,
+            "n_edited": len(b["edited"]),
+            "edit_rate": round(len(b["edited"]) / n, 3) if n else None,
+            "median_chars_deleted": (int(st.median(b["cut"])) if b["cut"] else None),
+            "max_chars_deleted": (max(b["cut"]) if b["cut"] else None),
+            "mean_score_edited": (round(st.mean(b["edited"]), 2) if b["edited"] else None),
+            "mean_score_unedited": (round(st.mean(b["unedited"]), 2)
+                                    if b["unedited"] else None),
+        })
+    return out
+
+
 def live_probe(base_url, api_key, question):
     """Ask the running server what it does with each condition's flags.
 
@@ -190,6 +269,10 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     res = audit()
+    try:
+        res["stm_edit_profile"] = stm_edit_profile()
+    except Exception as exc:  # unscored tree is a normal state, not a failure
+        res["stm_edit_profile_error"] = "%s: %s" % (type(exc).__name__, exc)
 
     if args.live:
         try:
@@ -237,6 +320,22 @@ def main(argv=None):
             print("%-30s %-15s %-14s %7d %8d%s"
                   % (r["run"], r["condition"], r["transform"],
                      r["fired"], r["records"], note))
+        prof = res.get("stm_edit_profile")
+        if prof:
+            print("\nSTM edits the SCORED TEXT, not the prompt -- applySTMPost() runs")
+            print("hedge_reducer over the model's reply and DELETES \"I think\", \"perhaps\",")
+            print("\"In my opinion\" and eight siblings. How much, and from whom:\n")
+            h = ("  %-24s %-15s %5s %7s %9s %8s %9s"
+                 % ("model", "condition", "n", "edited", "med chars", "score+", "score-"))
+            print(h)
+            print("  " + "-" * (len(h) - 2))
+            for p in prof:
+                print("  %-24s %-15s %5d %7d %9s %8s %9s"
+                      % (p["model"].split("/")[-1], p["condition"], p["n"], p["n_edited"],
+                         p["median_chars_deleted"] if p["median_chars_deleted"] is not None else "-",
+                         p["mean_score_edited"] if p["mean_score_edited"] is not None else "-",
+                         p["mean_score_unedited"] if p["mean_score_unedited"] is not None else "-"))
+            print("  (score+ = mean where STM edited, score- = where it did not)")
         if res.get("live"):
             print("\nLive server probe (%s):" % args.base_url)
             for p in res["live"]:

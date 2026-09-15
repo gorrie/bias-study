@@ -86,6 +86,23 @@ two models move in **opposite directions** was never at risk.
 `pipeline_rung.py` defaults to the matched baseline and keeps the original as
 `UNMATCHED_BASELINE_RUN` so the superseded numbers reproduce.
 
+> ### Superseded later the same day: that +0.24 is not an effect
+>
+> `B-Parseltongue` applied **no transform to this instrument** — G0DM0D3's obfuscation rewrites
+> trigger words and the ten neutral policy questions contain none, so it fired on **0 of 240
+> requests** across both pipeline runs. The arm is condition B under another label, so
+> **+0.24 [+0.02, +0.49] is a null-by-construction floor that happens to exclude zero**, not a
+> repaired effect. Opus's B-STM +0.37 sits on that floor; differenced within the run it is
+> +0.13 and spans zero.
+>
+> The baseline repair described above is still correct and still needed — this is a second,
+> independent confound in the same arm, not a retraction of the first. What survives both is the
+> within-arm contrast: Opus −0.31, Grok +0.48.
+>
+> Full account, including what STM does to the scored text:
+> `RESULTS-2026-09-14-rung2-transform-audit.md`. Verify with
+> `python scripts/pipeline_transform_audit.py`.
+
 ## Derived corpora
 
 | corpus | base | eligible before → after |
