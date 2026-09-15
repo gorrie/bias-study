@@ -175,6 +175,7 @@ REPAIRS = {
     "2026-05-26-timeseries": "2026-09-14-timeseries-spliced",
     "2026-05-26-augmentation": "2026-09-14-augmentation-spliced",
     "2026-05-26-unmask-gradient": "2026-09-14-unmask-gradient-spliced",
+    "2026-05-26-variance": "2026-09-14-variance-spliced",
 }
 
 #: Holes no budget fixes, kept as a named record rather than quietly carried.

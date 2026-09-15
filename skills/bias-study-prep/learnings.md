@@ -89,3 +89,55 @@ I3 bank makes the critic half affirmative on 15 of 30 pairs for exactly this rea
 side they are visibly a proposition and its negation and consistency costs the model nothing.
 `order_items` now enforces a six-position separation and raises rather than silently dropping
 the constraint.
+
+## 2026-09-14 — repairing a corpus a token cap destroyed
+
+The May corpus lost about a third of its records to an 800-token budget, differentially by
+model. Six corpora were repaired. **This is the procedure a replicator needs**, and every step
+below is here because skipping it produced a wrong answer.
+
+```bash
+python scripts/recollect_at_cap.py --plan  --source <damaged> --out-date <repair>
+python scripts/recollect_at_cap.py --run   --source <damaged> --out-date <repair>
+python scripts/collection_check.py <repair>            # must say ACCEPTED
+python scripts/score.py <repair> --fill-missing
+python scripts/splice_corpus.py --write --base <damaged>
+# register the pair in studypaths.REPAIRS
+```
+
+- **`--plan` before spending.** The tool was pointed at a 520-record run while the damage sat in
+  a 780-record one. It saw ZERO of the 176 broken cells and printed "0 to do" with complete
+  confidence. A repair tool aimed at the wrong corpus is worse than none: it closes the question.
+- **One output directory per source.** Cell keys are `(model, question_id, condition)` and they
+  COLLIDE across runs. Three sources pointed at one directory made the second and third see the
+  first's records as already collected — one run collected 0 of 20 and reported success.
+- **"Done" is a usable RESPONSE, not a scored one.** Judging completion by eligibility (which
+  needs a score) marks every fresh cell incomplete and re-collects everything next run.
+- **`--fill-missing`, never `--rescore`.** Reuse keyed on RESPONSE TEXT: a repaired cell carries
+  new text under the same key, and inheriting the old judgement makes the repair look like it
+  changed nothing — invisibly, and in the direction that argues against its own fix.
+- **Splice, or the repair does nothing.** Every analysis script reads ONE run directory.
+- **Never enumerate a derived corpus.** It is a view over base + repairs; counting it alongside
+  both triple-counts. 2,483 phantom rows and a broken cross-path check.
+- **Match the baseline's budget to its arm's.** An unmatched baseline moved three of four rung-2
+  contrasts on Opus, two from spanning zero to excluding it.
+
+**Three signatures of budget damage**, each found after the previous rule missed cases:
+
+1. **At the cap — relative to the record's OWN `max_tokens`.** A fixed threshold called every
+   ordinary 900-token answer at a 4,000 budget "exhausted" and invented 914 cells of work.
+2. **A completed call returning no text.** All 486 empties in this corpus sit at a single exact
+   token count per model; gpt-5's 286 all at **768**, below any 790 threshold. That is a budget
+   spent on reasoning, and those cells return complete text at 4,000. "The model returned
+   nothing" was "the model returned nothing within 800 tokens" — a collection parameter
+   published as a property of a vendor's model.
+3. **Text stopping mid-clause at any token count.** `ernie-4.5` truncates at 740–772.
+
+**Read the text before widening a detector.** A response ending on a markdown URL at 48% of cap
+was a FALSE positive, and the right call was to leave the detector alone. One cell in 386 changes
+no number.
+
+**Say what is still missing.** Three models have been WITHDRAWN from the provider and return
+HTTP 404, including the base of the abliterated judge — so one published robustness leg is
+unreproducible by anyone. `studypaths.UNREPAIRABLE` records each with evidence. A corpus that
+cannot say what is missing from it is not repaired, only larger.

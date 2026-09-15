@@ -78,6 +78,28 @@ def inspect(d: Path) -> dict:
     out["layout"] = layout
     out["scored"] = (d / "scored").is_dir()
 
+    # A DERIVED CORPUS MAKES NO CALLS. splice_corpus writes calls_completed: 0
+    # because that is the truth -- it assembles existing records rather than
+    # asking a model anything. Comparing that zero to the record count reports
+    # every spliced corpus as a call-count mismatch, which is a check meant for
+    # collections applied to something that is not one.
+    try:
+        from studypaths import is_derived_run
+        derived = is_derived_run(d.name)
+    except Exception:
+        derived = False
+    if derived:
+        out["derived"] = True
+        with (d / "manifest.json").open(encoding="utf-8") as fh:
+            m = json.load(fh)
+        if not m.get("base_run") or not m.get("splice_sources"):
+            out["findings"].append({
+                "code": "derived-without-provenance",
+                "detail": "a derived corpus must name its base_run and splice_sources, "
+                          "or its records cannot be traced to the collection they came from",
+            })
+        return out
+
     mf = d / "manifest.json"
     if not mf.is_file():
         # A MISSING manifest is only a defect where a manifest was ever written.

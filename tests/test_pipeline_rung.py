@@ -67,13 +67,58 @@ def test_w13_has_landed_and_the_default_reads_it():
     run keeps publishing the n=1 answer while better data sits on disk unread.
     """
     assert P.PIPELINE_RUN == "2026-09-13-g0dm0d3-replicate"
-    assert P.BASELINE_RUN == "2026-09-13-g0dm0d3-replicate-baseline"
+    # The baseline must MATCH the arm's token budget. The original W13 baseline
+    # recorded no max_tokens at all while the arm recorded 4000, and the mismatch
+    # moved three of Opus's four contrasts -- two from spanning zero to excluding
+    # it. See the note on BASELINE_RUN.
+    assert P.BASELINE_RUN == "2026-09-14-g0dm0d3-baseline-4k"
+    assert P.UNMATCHED_BASELINE_RUN == "2026-09-13-g0dm0d3-replicate-baseline"
     res = P.estimate()
     if not res:
         return
     assert res["samples_per_cell"] != 1, (
         "the default pair is back to one sample per cell; every contrast is then a "
         "difference of two single draws")
+
+
+@REPLICATED_ONLY
+def test_the_baseline_matches_the_arm_it_is_differenced_against():
+    """A baseline capped below its arm measures truncation, not force.
+
+    Asserted on the DATA, not on the constant: both sides must record the same
+    max_tokens. The original W13 baseline recorded none, and switching to a
+    matched one moved Opus's B-STM contrast from +0.12 spanning zero to +0.37
+    excluding it.
+    """
+    import glob
+    import json
+    from studypaths import run_roots
+
+    def caps(run):
+        found = set()
+        for root in run_roots():
+            for sub in ("raw", "scored"):
+                d = root / run / sub
+                if not d.is_dir():
+                    continue
+                for p in glob.glob(str(d / "*.jsonl")):
+                    with open(p, encoding="utf-8") as fh:
+                        for line in fh:
+                            if not line.strip():
+                                continue
+                            r = json.loads(line)
+                            found.add(r.get("max_tokens")
+                                      or (r.get("study_call_metadata") or {}).get("max_tokens"))
+                break
+        return found
+
+    arm, base = caps(P.PIPELINE_RUN), caps(P.BASELINE_RUN)
+    if not arm or not base:
+        return
+    assert None not in base, (
+        "the baseline does not record its token budget, so comparability with the "
+        "arm cannot be verified -- which is how the original W13 pair shipped")
+    assert arm == base, "arm caps %s, baseline caps %s -- they must match" % (arm, base)
 
 
 def test_the_superseded_pair_is_still_reproducible():

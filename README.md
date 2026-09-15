@@ -519,6 +519,36 @@ Each links to where the argument actually lives; nothing here is a second copy.
 
 ## Reproduce it
 
+> ### Before you re-derive anything: the May corpus was collected at a cap that destroyed a third of it
+>
+> The 2026-05 runs used an 800-token budget. About a third of the records came back severed
+> mid-sentence or empty, and **the loss is differential by model** — three models ended with
+> ZERO usable A/B pairs and GPT-5 with none in any run it appears in. A mean taken over what
+> survives is a mean over whichever models happened to be terse.
+>
+> Those runs have been re-collected at 4,000 tokens and spliced into repaired corpora. **An
+> analysis that names an original run is reading the damage.** Resolve through `canonical_run`:
+>
+> ```python
+> from studypaths import canonical_run, is_derived_run, UNREPAIRABLE
+> canonical_run("2026-05-25-full")       # -> "2026-09-14-full-spliced"
+> ```
+>
+> Three rules, each learned by getting it wrong:
+>
+> - **Read a repaired corpus by name; never enumerate it.** It is a *view* over a base run plus
+>   its repairs, so counting it alongside both triple-counts every record — it added 2,483
+>   phantom rows here. `is_derived_run` is the guard.
+> - **A baseline must record the same token budget as the arm it is differenced against.** An
+>   unmatched one moved three of four rung-2 contrasts on Claude Opus.
+> - **`UNREPAIRABLE` lists the holes no budget fixes**, with evidence. Three models have been
+>   WITHDRAWN from the provider and now return HTTP 404 — including `gemma-2-9b-it`, the base of
+>   the abliterated judge, so that robustness leg cannot be re-run by anyone.
+>
+> The full map of what was repaired, from what, and what is still missing:
+> [`CORPUS-MAP-2026-09-14.md`](CORPUS-MAP-2026-09-14.md). The repair procedure itself is in
+> `skills/bias-study-prep/learnings.md`.
+
 > **Cloning on Windows: enable long paths, or the checkout silently comes up empty.**
 >
 > ```bash

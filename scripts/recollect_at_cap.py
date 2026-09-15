@@ -372,6 +372,7 @@ def main(argv=None):
     if not os.path.isdir(OUT_DIR):
         os.makedirs(OUT_DIR)
 
+    started_at = _dt.datetime.now(_dt.timezone.utc).isoformat().replace("+00:00", "Z")
     n = 0
     for (model, qid, cond) in todo:
         if args.limit and n >= args.limit:
@@ -443,6 +444,31 @@ def main(argv=None):
               % (model, qid, cond, res.get("tokens_out"), len(txt),
                  "  WAS EMPTY" if not (old.get("response_text") or "").strip() else ""))
         time.sleep(args.delay)
+
+    # WRITE A MANIFEST. Every repair run reached validate_runs as "no manifest",
+    # the same gap run_g0dm0d3.py had: a collection that cannot be checked against
+    # its own intent. A partial repair and a complete one look identical on disk
+    # without one.
+    completed = sorted({k[0] for k in todo[:n]})
+    manifest = {
+        "analysis_seed": LEGACY_SEED,
+        "budget": args.budget,
+        "calls_completed": n,
+        "calls_failed": 0,
+        "collector": "recollect_at_cap.py",
+        "completed_at": _dt.datetime.now(_dt.timezone.utc).isoformat().replace("+00:00", "Z"),
+        "models_attempted": sorted({k[0] for k in todo}),
+        "models_completed": completed,
+        "models_failed": sorted({k[0] for k in todo} - set(completed)),
+        "repairs": os.path.basename(SOURCE.rstrip("/\\")),
+        "run_date": os.path.basename(os.path.dirname(OUT_DIR)),
+        "started_at": started_at,
+        "total_calls_planned": len(todo),
+    }
+    with io.open(os.path.join(os.path.dirname(OUT_DIR), "manifest.json"), "w",
+                 encoding="utf-8", newline="\n") as fh:
+        json.dump(manifest, fh, indent=2, sort_keys=True)
+        fh.write("\n")
 
     print()
     print("re-collected %d cell(s); %d remain" % (n, len(todo) - n))

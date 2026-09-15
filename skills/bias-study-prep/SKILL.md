@@ -144,6 +144,32 @@ instrument item count, each gate's verdict and every floor's pair count, and exi
 On any failure: a console error naming the failed check, exit 1 (the run MUST NOT proceed), and
 `prep-state.json` either not written or written with `status: failed`.
 
+## Repairing a corpus a token cap destroyed
+
+The May 2026 runs used an 800-token budget and lost about a third of their records, severed or
+empty, **differentially by model**. Full procedure and the reasoning behind each step:
+`learnings.md`, 2026-09-14. Map of what was repaired: `CORPUS-MAP-2026-09-14.md`.
+
+```bash
+python scripts/recollect_at_cap.py --plan  --source <damaged> --out-date <repair>
+python scripts/recollect_at_cap.py --run   --source <damaged> --out-date <repair>
+python scripts/collection_check.py <repair>            # must say ACCEPTED
+python scripts/score.py <repair> --fill-missing
+python scripts/splice_corpus.py --write --base <damaged>
+```
+
+- `scripts/splice_holes.py` reports what a repair would recover before you run it.
+- `scripts/splice_corpus.py` writes the derived corpus the analysis reads; without it the
+  repaired records sit in their own run and nothing reads them.
+- `scripts/repair_recollect_provenance.py` fixes records written before the collector stamped
+  its own call time, and `--manifests` backfills a manifest for any repair run lacking one.
+- `scripts/position_analysis.py --selftest` validates the mirrored-bank estimator against
+  synthetic input with known answers. Its decisive check: a model that agrees with everything
+  scores exactly 0, because the mirror cancels acquiescence by construction.
+
+Then register the pair in `studypaths.REPAIRS` so `canonical_run` resolves analyses to the
+repaired corpus, and read `studypaths.UNREPAIRABLE` for the holes no budget fixes.
+
 ## Notes
 
 - **Windows / Git-Bash:** if you run Docker-based checks from Git-Bash, prefix `docker run`

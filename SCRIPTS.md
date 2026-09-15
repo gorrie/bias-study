@@ -2,13 +2,15 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-82 script(s). 0 carry no module docstring and are listed at the end.
+86 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
 - **`ablation_wave.py`** — Bring the stock/ablated arm up to the wave protocol. Local GPU, zero API spend.
 - **`extend_manipulation_floor.py`** — Extend the A->D manipulation floor, which the whole paper is measured against.
 - **`order_floor_wave.py`** — Collect a presentation-order floor UNDER THE WAVE PROTOCOL, so the paper's central comparison stops being cross-protocol.
+- **`recollect_at_cap.py`** — Re-collect the May study's truncated cells at a real token budget, PAIRED.
+- **`repair_recollect_provenance.py`** — One-shot: fix provenance on records written before recollect_at_cap was corrected.
 - **`roster_gap.py`** — Which vendors have shipped a model we have never measured, and how far behind are we.
 - **`run_compass.py`** — Administer the 62 forced-choice propositions to a model under one pressure condition.
 - **`run_g0dm0d3.py`** — run_g0dm0d3.py — PIPELINE rung of the bias-study escalation ladder.
@@ -98,6 +100,7 @@
 - **`monitor_experiment.py`** — monitor_experiment.py — the durable, cross-platform half of the experiment-monitor agent.
 - **`paired_analysis.py`** — paired_analysis.py — the estimator for a matched-pair arm study. No API calls.
 - **`pipeline_rung.py`** — Rung 2 of the escalation ladder, estimated. The arm the analysis pipeline could not see.
+- **`position_analysis.py`** — I3 Phase 4 estimator: position, consistency and acquiescence on a mirrored bank.
 - **`refusal_structure.py`** — Is whole-instrument refusal all-or-nothing, and which models do it?
 - **`refusal_suite_summary.py`** — Both model pairs of the XSTest-style refusal suite, with clustered intervals.
 - **`release_check.py`** — Run RELEASE-v2.md's release checklist instead of asserting it.
@@ -106,6 +109,7 @@
 - **`run_dose_series.py`** — The Wash — Experiment 1 dose-series driver.
 - **`run_inventory.py`** — Every run directory, what is in it, and what reads it.
 - **`run_local.py`** — run_local.py — Run the bias question set against a LOCAL transformers model (stock or OBLITERATUS-abliterated), writing raw JSONL in the study schema so `score.py` / `aggregate.py` / `ci_analysis.py` consume it unchanged.
+- **`splice_corpus.py`** — Write a repaired corpus the ANALYSIS can actually read.
 - **`splice_holes.py`** — Which cells are STILL missing after splicing existing re-collections in?
 - **`supervised_dose_series.py`** — Supervised wrapper around run_dose_series.py.
 - **`validate_runs.py`** — validate_runs.py — does each run directory say what it actually contains?

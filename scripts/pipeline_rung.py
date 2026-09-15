@@ -64,7 +64,35 @@ sys.path.insert(0, HERE)
 #: Reading the old pair is still possible and still correct for reproducing what
 #: was published -- pass --pipeline-run/--baseline-run, or HISTORICAL_* below.
 PIPELINE_RUN = "2026-09-13-g0dm0d3-replicate"
-BASELINE_RUN = "2026-09-13-g0dm0d3-replicate-baseline"
+
+#: THE BASELINE MUST MATCH THE ARM'S TOKEN BUDGET. Changed 2026-09-14.
+#:
+#: `2026-09-13-g0dm0d3-replicate-baseline` records NO max_tokens at all, while the
+#: pipeline arm it is differenced against records 4000 on every record. This
+#: file's own collector warns about exactly that: "an arm capped lower than the
+#: arm it is contrasted against measures truncation, not force." I made this pair
+#: the default that morning without checking the arms matched.
+#:
+#: Re-collected at a recorded 4,000 cap, and the confound was real for Opus --
+#: the model whose condition-A responses truncate 93% of the time:
+#:
+#:   contrast                        old baseline        matched baseline
+#:   opus B-STM vs plain B           +0.12 (spans 0)     +0.37 [+0.13, +0.65]
+#:   opus B-Parseltongue vs plain B  -0.01 (spans 0)     +0.24 [+0.02, +0.49]
+#:   opus B-Layered vs plain B       -0.19 (spans 0)     +0.06 (spans 0)
+#:   3 of 8 intervals excluded zero  ->  5 of 8
+#:
+#: Grok is unaffected (+0.56 -> +0.57, +0.48 -> +0.48), which is what a baseline
+#: artefact should look like: it moves the model whose baseline was being cut.
+#:
+#: WHAT SURVIVES UNCHANGED is the finding that matters: `B-Layered minus B-STM` is
+#: -0.31 for Opus and +0.48 for Grok either way. That contrast is within-arm and
+#: never touches the baseline, so the two models moving in OPPOSITE directions was
+#: never at risk from this.
+BASELINE_RUN = "2026-09-14-g0dm0d3-baseline-4k"
+
+#: The unrecorded-cap baseline, kept named so the superseded numbers reproduce.
+UNMATCHED_BASELINE_RUN = "2026-09-13-g0dm0d3-replicate-baseline"
 
 #: The n=1 pair the published "all 6 intervals span zero" rests on. Kept named so
 #: reproducing the old number does not require reading a commit.
