@@ -1,19 +1,27 @@
 {
   "analysis_seed": 20260527,
   "budget": 4000,
-  "calls_completed": 2,
+  "calls_completed": 0,
   "calls_failed": 0,
+  "calls_this_invocation": 0,
   "collector": "recollect_at_cap.py",
-  "completed_at": "2026-09-15T06:13:47.419779Z",
-  "models_attempted": [
-    "meta-llama/llama-4-maverick"
-  ],
-  "models_completed": [
-    "meta-llama/llama-4-maverick"
-  ],
+  "completed_at": "2026-09-15T19:52:35.917775Z",
+  "models_attempted": [],
+  "models_completed": [],
   "models_failed": [],
+  "models_on_disk": [
+    "anthropic/claude-opus-4.7",
+    "deepseek/deepseek-v3.2",
+    "google/gemini-2.5-pro",
+    "google/gemma-3-27b-it",
+    "meta-llama/llama-4-maverick",
+    "mistralai/mistral-large",
+    "x-ai/grok-4.3",
+    "z-ai/glm-4.7"
+  ],
+  "records_on_disk": 106,
   "repairs": "2026-05-27-ood",
   "run_date": "2026-09-14-recollect-ood",
-  "started_at": "2026-09-15T06:13:17.284051Z",
-  "total_calls_planned": 2
+  "started_at": "2026-09-15T19:52:35.910397Z",
+  "total_calls_planned": 0
 }

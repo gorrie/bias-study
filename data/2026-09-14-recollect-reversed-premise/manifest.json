@@ -3,13 +3,20 @@
   "budget": 4000,
   "calls_completed": 0,
   "calls_failed": 0,
+  "calls_this_invocation": 0,
   "collector": "recollect_at_cap.py",
-  "completed_at": "2026-09-15T08:15:56.484050Z",
+  "completed_at": "2026-09-15T08:53:18.900296Z",
   "models_attempted": [],
   "models_completed": [],
   "models_failed": [],
+  "models_on_disk": [
+    "anthropic/claude-opus-4.7",
+    "mistralai/mistral-large",
+    "x-ai/grok-4.3"
+  ],
+  "records_on_disk": 94,
   "repairs": "2026-05-27-reversed-premise",
   "run_date": "2026-09-14-recollect-reversed-premise",
-  "started_at": "2026-09-15T08:15:56.484038Z",
+  "started_at": "2026-09-15T08:53:18.900285Z",
   "total_calls_planned": 0
 }

@@ -27,9 +27,16 @@
 > **Five of the audited studies put a language model in the scoring path. Not one reports that
 > model's own lean.** In four the scorer shares a vendor family with a subject and only one of
 > those four says so; in a fifth the scoring model is never identified at all. We failed this
-> control too — our judges spanned 0.3007 points, larger than **two** of our own five
-> published effects, and we had not computed it either. (0.2926 until the repaired corpus
-> landed on 2026-09-15; the extra records pushed it past +0.3000, the second smallest.)
+> control too — our judges spanned 0.2994 points, **as large as the two smallest of our own five
+> published effects** (+0.20 and +0.30), and we had not computed it either. (0.2926 before the
+> repaired corpus landed on 2026-09-15; the completed repair moved it to 0.2994.)
+>
+> That sentence used to say "larger than **two**" and named a threshold the number had crossed.
+> It is written as a comparison now because it does not deserve a threshold: the spread exceeds
+> the smallest effect outright and sits **0.0006** below the next one. Which side of +0.3000 it
+> lands on is a coin-flip that the next collection will flip again, and a claim that inverts on
+> six ten-thousandths is not a claim. The count was also ungated while the value beside it was
+> gated — the twin problem this project keeps finding.
 
 *Every number above recomputes: `python scripts/key_numbers.py`,
 `python scripts/controls_audit.py --gaps`, `python scripts/ablation_analysis.py`. Read
