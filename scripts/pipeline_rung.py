@@ -65,34 +65,69 @@ sys.path.insert(0, HERE)
 #: was published -- pass --pipeline-run/--baseline-run, or HISTORICAL_* below.
 PIPELINE_RUN = "2026-09-13-g0dm0d3-replicate"
 
-#: THE BASELINE MUST MATCH THE ARM'S TOKEN BUDGET. Changed 2026-09-14.
+#: SAME SITTING BEATS MATCHED BUDGET. Reverted 2026-09-15, and the reversal is the
+#: more interesting half of the story.
 #:
-#: `2026-09-13-g0dm0d3-replicate-baseline` records NO max_tokens at all, while the
-#: pipeline arm it is differenced against records 4000 on every record. This
-#: file's own collector warns about exactly that: "an arm capped lower than the
-#: arm it is contrasted against measures truncation, not force." I made this pair
-#: the default that morning without checking the arms matched.
+#: On the morning of 2026-09-14 this default was moved to
+#: `2026-09-14-g0dm0d3-baseline-4k` because the original baseline recorded NO
+#: max_tokens while the arm records 4,000, and this file's own collector warns
+#: that "an arm capped lower than the arm it is contrasted against measures
+#: truncation, not force." The numbers moved and I reported the confound as real:
+#: Opus's B-STM went +0.12 (spanning zero) to +0.37 [+0.13, +0.65], and three of
+#: eight intervals excluding zero became five of eight.
 #:
-#: Re-collected at a recorded 4,000 cap, and the confound was real for Opus --
-#: the model whose condition-A responses truncate 93% of the time:
+#: THE MOVEMENT WAS REAL AND MY ATTRIBUTION OF IT WAS WRONG. Two measurements,
+#: neither available until the transform audit existed:
 #:
-#:   contrast                        old baseline        matched baseline
-#:   opus B-STM vs plain B           +0.12 (spans 0)     +0.37 [+0.13, +0.65]
-#:   opus B-Parseltongue vs plain B  -0.01 (spans 0)     +0.24 [+0.02, +0.49]
-#:   opus B-Layered vs plain B       -0.19 (spans 0)     +0.06 (spans 0)
-#:   3 of 8 intervals excluded zero  ->  5 of 8
+#: 1. THE UNRECORDED CAP NEVER BOUND. The original baseline's longest response is
+#:    1,295 tokens; the matched baseline's is 1,307; the arm's is 1,606 against
+#:    its 4,000. NOT ONE RECORD in either baseline is truncated by the text test.
+#:    Whatever cap the original ran at, nothing came near it.
 #:
-#: Grok is unaffected (+0.56 -> +0.57, +0.48 -> +0.48), which is what a baseline
-#: artefact should look like: it moves the model whose baseline was being cut.
+#: 2. THE REPLACEMENT IS TWO DAYS LATER. Read off `called_at`:
+#:        arm                       2026-09-13T23, 2026-09-14T00
+#:        original baseline         2026-09-13T23   <- SAME SITTING
+#:        matched baseline          2026-09-15T02-03
 #:
-#: WHAT SURVIVES UNCHANGED is the finding that matters: `B-Layered minus B-STM` is
-#: -0.31 for Opus and +0.48 for Grok either way. That contrast is within-arm and
-#: never touches the baseline, so the two models moving in OPPOSITE directions was
-#: never at risk from this.
-BASELINE_RUN = "2026-09-14-g0dm0d3-baseline-4k"
+#: So the switch fixed a confound that was not biting and introduced one that
+#: was. The proof is the arm that cannot have an effect:
+#:
+#:   B-Parseltongue vs plain B      same-sitting baseline   matched baseline
+#:   claude-opus-4.7                -0.01 [-0.15, +0.13]    +0.24 [+0.02, +0.49]
+#:   grok-4.3                       +0.09 [-0.06, +0.23]    +0.11 [-0.10, +0.29]
+#:
+#: `B-Parseltongue` APPLIES NOTHING to this instrument (see NULL_CONDITION below).
+#: An untreated arm must read zero. Against the same-sitting baseline it reads
+#: -0.01. Against the baseline collected two days later it reads +0.24 and
+#: EXCLUDES ZERO -- which is not an effect, because there is no treatment. It is
+#: the baseline being wrong, measured.
+#:
+#: That makes the accidental null the best diagnostic this arm has: whichever
+#: baseline drives it closest to zero is the defensible one. Two of the five
+#: intervals I reported as excluding zero were manufactured by drift.
+#:
+#: NEITHER BASELINE IS CLEAN and the honest fix is a same-sitting baseline WITH a
+#: recorded cap, which is what `2026-09-15-g0dm0d3-decomposition` collects --
+#: B-Proxy alongside its arms in one sitting. Until it lands, the same-sitting
+#: pair is the default because its null reads zero.
+#:
+#: WHAT SURVIVES EITHER CHOICE is the finding that matters: `B-Layered minus
+#: B-STM` is -0.31 for Opus and +0.48 for Grok under both baselines, because it is
+#: within-arm and never touches one. Grok's `B-Layered vs plain B` is +0.56 and
+#: +0.57. Both models moving in OPPOSITE directions was never at risk from any of
+#: this, which is exactly why a within-arm contrast is worth preferring.
+BASELINE_RUN = "2026-09-13-g0dm0d3-replicate-baseline"
 
-#: The unrecorded-cap baseline, kept named so the superseded numbers reproduce.
-UNMATCHED_BASELINE_RUN = "2026-09-13-g0dm0d3-replicate-baseline"
+#: The budget-matched baseline, collected two days after the arm. Kept named
+#: because it is the right control for the token-cap question and the wrong one
+#: for everything else, and because the superseded numbers must reproduce.
+MATCHED_BUDGET_BASELINE_RUN = "2026-09-14-g0dm0d3-baseline-4k"
+
+#: Retained spelling. This name meant "the unrecorded-cap baseline" when the
+#: default pointed the other way; it is now the default itself. Kept as an alias
+#: so anything still importing it resolves to the same run rather than silently
+#: to the other one.
+UNMATCHED_BASELINE_RUN = BASELINE_RUN
 
 #: The n=1 pair the published "all 6 intervals span zero" rests on. Kept named so
 #: reproducing the old number does not require reading a commit.
@@ -321,12 +356,23 @@ def estimate(pipeline_run=None, baseline_run=None):
     # untreated arm report"), and a reader should be able to see both.
     proxy = _load(PROXY_CONTROL_RUN)
     if proxy:
+        # PINNED TO ITS OWN SITTING'S BASELINE, not to whatever BASELINE_RUN is.
+        # B-Proxy was collected alongside the budget-matched baseline (both
+        # 2026-09-15), so that pair isolates the PATH. Differenced against the
+        # same-sitting-with-the-arm baseline instead, it crosses two days and
+        # measures drift again -- which it duly did, reading -0.19 and -0.16 the
+        # moment the default moved. A control that changes meaning when an
+        # unrelated default changes is not a control.
+        proxy_base_recs = _load(MATCHED_BUDGET_BASELINE_RUN)
+        pb_means, _ = _mean_replicates(proxy_base_recs, condition=BASELINE_CONDITION)
+        pbase = {(m, q): v for (m, _c, q), v in pb_means.items()}
         proxy_means, _ = _mean_replicates(proxy, condition=PROXY_CONDITION)
         pm = {(m, q): v for (m, _c, q), v in proxy_means.items()}
         out["measured_proxy_floor"] = {}
+        out["proxy_control_baseline"] = MATCHED_BUDGET_BASELINE_RUN
         for m in sorted({k[0] for k in pm}):
-            d = [pm[(m, q)] - base[(m, q)]
-                 for (mm, q) in sorted(pm) if mm == m and (m, q) in base]
+            d = [pm[(m, q)] - pbase[(m, q)]
+                 for (mm, q) in sorted(pm) if mm == m and (m, q) in pbase]
             ci = _boot(d, "%s|proxy-vs-direct" % m, run=PROXY_CONTROL_RUN)
             if ci:
                 out["measured_proxy_floor"][m] = {
@@ -413,8 +459,9 @@ def main(argv=None):
     if res.get("measured_proxy_floor"):
         print("  MEASURED PROXY FLOOR (%s). Plain condition B sent THROUGH the proxy"
               % res["proxy_control_run"])
-        print("  with every transform off, differenced against the same direct-to-OpenRouter")
-        print("  baseline. This is the path cost, measured rather than inferred:")
+        print("  with every transform off, against the direct-to-OpenRouter baseline collected")
+        print("  in ITS OWN SITTING (%s)." % res["proxy_control_baseline"])
+        print("  This is the path cost with the calendar held still:")
         for m, f in sorted(res["measured_proxy_floor"].items()):
             print("      %-24s %+0.2f [%+0.2f, %+0.2f]  n=%d%s"
                   % (m.split("/")[-1], f["effect"], f["lo"], f["hi"], f["n"],

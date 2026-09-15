@@ -134,13 +134,61 @@ The published conclusion — *"STM alone (3.60) and Parseltongue alone (3.70) ar
 turns out to be right about STM. It was not right for the reason given, and for Parseltongue it
 could not have come out any other way.
 
-### The floor, measured: it is drift, not the proxy
+### The floor is drift — and the untreated arm is how you test a baseline
+
+> **Added 2026-09-15.** The figures in the table above are computed against the budget-matched
+> baseline, which was the default when this document was written. It was the wrong default and
+> this section's own finding is what proved it.
+
+`B-Parseltongue` receives no treatment, so **it must read zero.** That makes it a test of the
+baseline rather than a measurement of the models:
+
+| `B-Parseltongue vs plain B` | same-sitting baseline | budget-matched baseline, +2 days |
+|---|---|---|
+| claude-opus-4.7 | **−0.01 [−0.15, +0.13]** | +0.24 [+0.02, +0.49] · *excludes zero* |
+| grok-4.3 | +0.09 [−0.06, +0.23] | +0.11 [−0.10, +0.29] |
+
+Against the same-sitting baseline the untreated arm reads essentially zero. Against the one
+collected two days later it excludes zero — and there is no treatment in it, so that is the
+baseline being wrong, measured.
+
+**The budget confound that prompted the switch was not biting.** The original baseline records no
+`max_tokens`, which is a real provenance gap, but its longest response is **1,295 tokens** against
+the matched baseline's 1,307 and the arm's 1,606 at a 4,000 cap — and **not one record in either
+baseline is truncated**. The cap was never approached, so it cannot have confounded anything.
+
+So the morning's report that *"the confound was real … three of eight intervals excluding zero
+became five of eight"* had the movement right and the cause wrong: **two of those five intervals
+were manufactured by two days of drift.** `pipeline_rung.py` is back on the same-sitting baseline
+and `tests/test_pipeline_rung.py` now gates on the untreated arm reading zero.
+
+Corrected figures, same-sitting baseline:
+
+| model | contrast | effect | 95% interval | |
+|---|---|---:|---|---|
+| claude-opus-4.7 | B-STM vs plain B | +0.12 | [−0.07, +0.35] | |
+| claude-opus-4.7 | B-Parseltongue vs plain B *(null)* | −0.01 | [−0.15, +0.13] | |
+| claude-opus-4.7 | B-Layered vs plain B | −0.19 | [−0.53, +0.13] | |
+| **claude-opus-4.7** | **B-Layered minus B-STM** | **−0.31** | [−0.64, −0.01] | excludes 0 |
+| grok-4.3 | B-Parseltongue vs plain B *(null)* | +0.09 | [−0.06, +0.23] | |
+| **grok-4.3** | **B-Layered vs plain B** | **+0.56** | [+0.23, +0.85] | excludes 0 |
+| **grok-4.3** | **B-Layered minus B-STM** | **+0.48** | [+0.26, +0.70] | excludes 0 |
+
+**3 of 10 intervals exclude zero, not 5.** All three are the surviving finding and its Grok half.
+
+### The proxy path, measured
 
 The obvious suspect for that +0.24 was the **proxy path** — every pipeline record goes through
 G0DM0D3 while the baseline goes direct to OpenRouter. So it was collected rather than argued
 about. `B-Proxy` is plain condition B sent **through the proxy with every transform explicitly
 off**, same questions, same 4,000-token cap, same five samples per cell, differenced against the
-same baseline. 100 calls, `collection_check` ACCEPTED on the first pass, 100 of 100 classified.
+budget-matched baseline, **which shares its sitting**. 100 calls, `collection_check` ACCEPTED on
+the first pass, 100 of 100 classified.
+
+This contrast is pinned to that baseline in code rather than following the default. Pointed at
+the same-sitting-with-the-arm baseline instead it crosses two days and reads −0.19 and −0.16 —
+measuring drift again. A control that changes meaning when an unrelated default changes is not a
+control.
 
 | model | inferred floor (B-Parseltongue) | **measured path cost (B-Proxy)** |
 |---|---|---|

@@ -549,6 +549,62 @@ is derived from whether the string `ablit` appears in the run **label**.
 
 ---
 
+### 17. A baseline swap that fixed nothing and broke something — corrected 2026-09-15
+
+**Published:** 2026-09-14, in `CORPUS-MAP-2026-09-14.md` and `pipeline_rung.py`.
+**Withdrawn:** 2026-09-15, one day later.
+
+The claim was that the rung-2 baseline had to be replaced because it recorded **no token
+budget** while the arm it is differenced against records 4,000 — *"a baseline capped below its
+arm measures truncation, not force"* — and that the swap proved the confound real: Opus's
+`B-STM vs plain B` moved from +0.12 spanning zero to **+0.37 [+0.13, +0.65]**, and *"three of
+eight intervals excluding zero became five of eight."*
+
+**The movement was real. The attribution was wrong.** Two measurements settle it, neither
+available until the transform audit (entry 16) existed:
+
+1. **The unrecorded cap never bound.** The original baseline's longest response is **1,295
+   tokens**; the replacement's is **1,307**; the arm's is **1,606** against its 4,000 cap. **Not
+   one record in either baseline is truncated.** Whatever budget the original ran at, nothing
+   came near it, so it cannot have confounded anything.
+2. **The replacement was collected two days after the arm.** From `called_at`: the arm ran
+   2026-09-13T23 and -09-14T00; the original baseline 2026-09-13T23, *the same sitting*; the
+   budget-matched replacement 2026-09-15T02–03.
+
+So an unverifiable cap was traded for a real drift confound.
+
+**What proves it is the arm that cannot have an effect.** Entry 16 established that
+`B-Parseltongue` applies no transform to this instrument — 0 of 240 requests. An untreated arm
+must measure zero, which makes it a test of the *baseline* rather than of the models:
+
+| `B-Parseltongue vs plain B` | same-sitting baseline | budget-matched, +2 days |
+|---|---|---|
+| claude-opus-4.7 | **−0.01 [−0.15, +0.13]** | +0.24 [+0.02, +0.49] — *excludes zero* |
+| grok-4.3 | +0.09 [−0.06, +0.23] | +0.11 [−0.10, +0.29] |
+
+An interval excluding zero on an arm with no treatment in it is not an effect. It is the
+baseline being wrong, measured. **Two of the five intervals reported as excluding zero were
+manufactured by drift.**
+
+**Disposition.** `pipeline_rung.py` is back on the same-sitting baseline; the budget-matched run
+is kept as `MATCHED_BUDGET_BASELINE_RUN`, being the right control for the token-cap question and
+the wrong one for everything else. The corrected count is **3 of 10 intervals excluding zero**,
+not 5 of 8. Neither baseline is clean — the honest fix is a same-sitting baseline *with* a
+recorded cap, which `2026-09-15-g0dm0d3-decomposition` collects.
+
+**What survives, again unchanged.** `B-Layered minus B-STM` is −0.31 on Opus and +0.48 on Grok
+under *both* baselines, because it is within-arm and never touches one. Grok's `B-Layered vs
+plain B` is +0.56 against +0.57. This is the third correction in two days that the same contrast
+has walked through untouched, which is the argument for preferring a within-arm contrast when one
+is available.
+
+**The generalisable rule, now a gate.** An arm known to receive no treatment is the best test of
+a baseline you will ever get: whichever baseline drives it closest to zero is the defensible one,
+and that is a property of the data rather than an argument about collection parameters.
+`tests/test_pipeline_rung.py::test_the_untreated_arm_reads_zero_which_is_how_a_baseline_is_judged`.
+
+---
+
 ## How to read this file
 
 If a number in the README, the writeup or the run data disagrees with something you have seen

@@ -24,7 +24,7 @@ it's bolted on, where force does nothing." The method *is* that ladder:
 | Rung | Force applied | Tooling | Record fields | Status |
 |------|---------------|---------|---------------|--------|
 | **1. Prompt** | remove fairness instruction; A→B→C→D→E gradient | `run_study.py` (OpenRouter / Ollama) | `condition` | DONE (8k+ records) |
-| **2. Pipeline** | hedge-strip + obfuscation (STM, Parseltongue), layered | G0DM0D3 server (WP2) | `g0dm0d3_pipeline` | **DONE** — `data/2026-05-27-g0dm0d3/`, 60 scored records; README quotes the layered result at 4.20 |
+| **2. Pipeline** | a godmode system prompt + an autotune sampling change (the named STM/Parseltongue transforms are inert here -- see RESULTS-2026-09-14-rung2-transform-audit.md) | G0DM0D3 server (WP2) | `g0dm0d3_pipeline` | **DONE** — `data/2026-05-27-g0dm0d3/`, 60 scored records; README quotes the layered result at 4.20 |
 | **3. Weights** | ablate the refusal direction | OBLITERATUS + `run_local.py` | `obliteratus_applied` | DONE (4 vendors) |
 
 Rung 3 is the moat: it requires the weights, a GPU, and the knowledge. It is **only

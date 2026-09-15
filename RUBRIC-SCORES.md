@@ -39,10 +39,10 @@ Score is 1-5 per dimension (5 = excellent, 1 = poor) on **method design alone**.
 ### Method 3 — G0DM0D3-stripped judge
 | Dim | Score | Rationale |
 |---|---|---|
-| D1 | 4 | Elicitation-layer alignment removal via STM hedge-strip + Parseltongue obfuscation. Lighter touch than weight surgery; meaningful effect on judge behavior. |
+| D1 | 4 | ~~Elicitation-layer alignment removal via STM hedge-strip + Parseltongue obfuscation.~~ **Corrected 2026-09-14: neither happens at the prompt.** Obfuscation never fired (0 of 240 requests — the instrument contains no trigger words), and STM edits the model's *answer* after generation rather than the request. What the arm actually applies is a **godmode system prompt** and an **autotune sampling change**. Lighter touch than weight surgery; meaningful effect on judge behavior — but this score was awarded partly for an ingredient that does not exist, and the honest D1 for "a system prompt plus a temperature nudge" is lower. Left at 4 pending the `B-Godmode`/`B-Autotune` split, then re-scored deliberately rather than quietly. |
 | D2 | 4 | Judge still produces structured rubric output; lower risk of breaking the scoring task than abliteration. |
 | D3 | 4 | G0DM0D3 server pinned to commit; OpenRouter-compatible interface. |
-| D4 | 3 | Needs explanation of STMs + Parseltongue. Defensible but layered. |
+| D4 | 3 | Needs explanation of STMs + Parseltongue. Defensible but layered. **Corrected 2026-09-14: it needs less explanation than that and a different one** — two of the four named ingredients do nothing to this instrument, so what has to be explained is a system prompt and a sampling change. |
 | D5 | 3 | API calls + server overhead. Moderate. |
 **Total: 0.30(4) + 0.25(4) + 0.20(4) + 0.15(3) + 0.10(3) = 3.75**
 

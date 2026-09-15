@@ -60,20 +60,25 @@ spine is that **force-escalation ladder**:
 | Rung | Force | Tooling | Result |
 |------|-------|---------|--------|
 | **1. Prompt** | remove the fairness instruction; A→E unmask gradient | OpenRouter / Ollama | the lean unmasks, dose-responsively |
-| **2. Pipeline** | hedge-strip + obfuscation, layered | G0DM0D3 server | **no effect established here** — all 6 intervals span zero at n=1 per cell |
+| **2. Pipeline** | ~~hedge-strip + obfuscation~~ **a system prompt + a sampling change** — see below | G0DM0D3 server | **no effect established here** — all 6 intervals span zero at n=1 per cell |
 | **3. Weights** | ablate the refusal direction | OBLITERATUS (fp16) | text rewrites ~70%, stance does **not** move |
 
 **Rung 2 establishes nothing, and the table says so.** `scripts/pipeline_rung.py` estimates the
-arm paired per question against plain condition B: **not one of its six intervals excludes
-zero.** The strongest is Grok 4.3's layered stack at +0.60, whose lower bound is exactly zero;
-Claude Opus 4.7's two single-technique arms measure +0.00. No ceiling was located, which three
-points on one axis cannot do at any sample size.
+arm paired per question against plain condition B: **all 8 intervals span zero.** The strongest
+is Grok 4.3's layered stack at +0.60, whose lower bound is exactly zero; Claude Opus 4.7's two
+single-technique arms measure +0.00. No ceiling was located, which three points on one axis
+cannot do at any sample size.
 
-**Six, not eight** — this paragraph said eight until 2026-09-14. Enforcing the truncation rule
-removed Claude Opus 4.7's two `B-Layered` cells from the eligible set, so two of the eight
-contrasts stopped being computable and the count in the prose was never updated. The tool has
-printed six the whole time. Nothing about the direction changes; the claim was always that none
-of them excludes zero.
+**This count has moved twice and the number is generated, not typed** — `key_numbers.py
+--check-release` fails when the sentence above disagrees with `pipeline_rung.py`, which is what
+caught it both times. It read *eight* until 2026-09-14, when enforcing the truncation rule
+removed Claude Opus 4.7's two `B-Layered` cells from the eligible set and two contrasts stopped
+being computable; the prose was corrected to *six*. It is **eight again** as of 2026-09-14, for
+an unrelated reason: the estimator gained a within-run `B-STM minus B-Parseltongue` contrast on
+each model — the cleanest available reading of STM, since it cancels the baseline run, the
+collection date and the proxy path. Opus's two `B-Layered` contrasts are still missing and still
+for the truncation reason. **Nothing about the direction has changed at any point:** none of them
+excludes zero.
 
 **This arm has since been re-collected at five samples per cell and it is NOT a null there** —
 three of eight intervals exclude zero and the two models move in opposite directions. That
@@ -81,6 +86,24 @@ result is not published here yet because its run is not in this repository, and 
 reader cannot recompute is the defect this study spends its time complaining about. Rungs 1 and
 3 carry this study's weight; [LESSONS.md](LESSONS.md) §3 records how the original claim survived
 four months.
+
+**And this rung applied no obfuscation at all — corrected 2026-09-14.** G0DM0D3's Parseltongue
+rewrites *trigger words* from a fixed list of 53 security and jailbreak terms and returns the
+text unchanged when it finds none. The instrument is ten neutral policy questions containing no
+trigger, so it fired on **0 of 240 requests**. `B-Parseltongue` was condition B under a second
+label, which makes its contrast a **null by construction** — and on Claude Opus that null reads
++0.24 [+0.02, +0.49], *excluding zero on an arm that received nothing*. The row's word
+"obfuscation" is withdrawn; the layered arm's live ingredients are a **godmode system prompt**
+and an **autotune sampling change**, and which of the two carries the effect is being collected.
+STM is not a prompt transform either: it edits the model's **answer** after generation, a median
+of 16 characters, on 45 of 60 Opus records against 1 of 60 for Grok.
+
+Every check this study runs had passed on that arm — the call succeeded, the text was complete,
+the judges scored it, the interval excluded zero. The one question nobody asked was whether the
+treatment was administered, and it is now a release gate
+([`scripts/pipeline_transform_audit.py`](scripts/pipeline_transform_audit.py)). Full account:
+[`RESULTS-2026-09-14-rung2-transform-audit.md`](RESULTS-2026-09-14-rung2-transform-audit.md);
+ledger entry 16 in [CORRECTIONS.md](CORRECTIONS.md).
 
 The result is also robust to the obvious reviewer attack on LLM-as-judge studies. The same
 data was re-scored under five materially different judging procedures, including one with

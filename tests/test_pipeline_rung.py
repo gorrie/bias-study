@@ -67,12 +67,12 @@ def test_w13_has_landed_and_the_default_reads_it():
     run keeps publishing the n=1 answer while better data sits on disk unread.
     """
     assert P.PIPELINE_RUN == "2026-09-13-g0dm0d3-replicate"
-    # The baseline must MATCH the arm's token budget. The original W13 baseline
-    # recorded no max_tokens at all while the arm recorded 4000, and the mismatch
-    # moved three of Opus's four contrasts -- two from spanning zero to excluding
-    # it. See the note on BASELINE_RUN.
-    assert P.BASELINE_RUN == "2026-09-14-g0dm0d3-baseline-4k"
-    assert P.UNMATCHED_BASELINE_RUN == "2026-09-13-g0dm0d3-replicate-baseline"
+    # SAME SITTING, not matched budget. This asserted the budget-matched baseline
+    # for one day. That baseline was collected two days after the arm, and the
+    # drift it introduced was larger than the truncation it was meant to remove --
+    # which the untreated arm proves, below. See the note on BASELINE_RUN.
+    assert P.BASELINE_RUN == "2026-09-13-g0dm0d3-replicate-baseline"
+    assert P.MATCHED_BUDGET_BASELINE_RUN == "2026-09-14-g0dm0d3-baseline-4k"
     res = P.estimate()
     if not res:
         return
@@ -85,10 +85,18 @@ def test_w13_has_landed_and_the_default_reads_it():
 def test_the_baseline_matches_the_arm_it_is_differenced_against():
     """A baseline capped below its arm measures truncation, not force.
 
-    Asserted on the DATA, not on the constant: both sides must record the same
-    max_tokens. The original W13 baseline recorded none, and switching to a
-    matched one moved Opus's B-STM contrast from +0.12 spanning zero to +0.37
-    excluding it.
+    REWRITTEN 2026-09-15. This asserted that the baseline RECORDS a max_tokens
+    equal to the arm's, which sounds right and cost a day. The original baseline
+    records none, so the assertion forced a switch to one collected two days
+    later -- trading an unverifiable cap for a real drift confound.
+
+    What matters is not whether a cap was written down but whether it BOUND.
+    Measured: the original baseline's longest response is 1,295 tokens, the
+    matched one's is 1,307, the arm's is 1,606 against its 4,000, and not one
+    record in either baseline is truncated. The unrecorded cap never bit.
+
+    So the assertion is now: an unrecorded cap is acceptable only when the data
+    shows it was never approached. A recorded cap must still match.
     """
     import glob
     import json
@@ -112,13 +120,82 @@ def test_the_baseline_matches_the_arm_it_is_differenced_against():
                 break
         return found
 
+    def longest_and_truncations(run):
+        import sys as _sys
+        _sys.path.insert(0, str(ROOT / "scripts"))
+        from eligibility import looks_truncated_text
+        longest, severed = 0, 0
+        for root in run_roots():
+            for sub in ("raw", "scored"):
+                d = root / run / sub
+                if not d.is_dir():
+                    continue
+                for p in glob.glob(str(d / "*.jsonl")):
+                    with open(p, encoding="utf-8") as fh:
+                        for line in fh:
+                            if not line.strip():
+                                continue
+                            r = json.loads(line)
+                            longest = max(longest, r.get("tokens_out")
+                                          or (r.get("usage") or {}).get("completion_tokens") or 0)
+                            severed += looks_truncated_text(r.get("response_text") or "")
+                break
+        return longest, severed
+
     arm, base = caps(P.PIPELINE_RUN), caps(P.BASELINE_RUN)
     if not arm or not base:
         return
-    assert None not in base, (
-        "the baseline does not record its token budget, so comparability with the "
-        "arm cannot be verified -- which is how the original W13 pair shipped")
-    assert arm == base, "arm caps %s, baseline caps %s -- they must match" % (arm, base)
+    real_caps = {c for c in base if c is not None}
+    if real_caps:
+        assert real_caps == {c for c in arm if c is not None}, (
+            "arm caps %s, baseline caps %s -- a recorded cap must match" % (arm, base))
+    else:
+        # No cap recorded. Acceptable ONLY if the data shows none was approached:
+        # an unrecorded budget that never bound cannot have confounded anything,
+        # and refusing it on principle is what swapped this pair for one two days
+        # adrift.
+        longest, severed = longest_and_truncations(P.BASELINE_RUN)
+        arm_cap = max(c for c in arm if c is not None)
+        assert severed == 0, (
+            "the baseline records no cap AND has %d severed response(s), so the "
+            "unrecorded budget did bind. Use a baseline with a recorded cap "
+            "collected in the same sitting." % severed)
+        assert longest < 0.5 * arm_cap, (
+            "the baseline records no cap and its longest response is %d tokens "
+            "against the arm's %d cap -- close enough that an unrecorded budget "
+            "could have bound" % (longest, arm_cap))
+
+
+@REPLICATED_ONLY
+def test_the_untreated_arm_reads_zero_which_is_how_a_baseline_is_judged():
+    """The decisive check, and the one that settled the baseline question.
+
+    `B-Parseltongue` applies NO transform to this instrument -- 0 of 240 requests.
+    An arm that received no treatment must measure no effect. So whichever
+    baseline drives that contrast closest to zero is the defensible one, and this
+    is a property of the data rather than an argument about token caps.
+
+    Measured 2026-09-15:
+
+        B-Parseltongue vs plain B   same-sitting baseline   +2-day baseline
+        claude-opus-4.7             -0.01 [-0.15, +0.13]    +0.24 [+0.02, +0.49]
+        grok-4.3                    +0.09 [-0.06, +0.23]    +0.11 [-0.10, +0.29]
+
+    The +0.24 EXCLUDES ZERO on an arm with no treatment in it. That is not an
+    effect; it is the baseline being wrong, measured. Two of the five intervals
+    reported that morning as excluding zero were manufactured by drift.
+    """
+    res = P.estimate()
+    if not res:
+        return
+    nulls = [c for c in res["contrasts"] if c.get("null_by_construction")]
+    assert nulls, "the null-by-construction contrast must be computed"
+    for c in nulls:
+        assert not c["excludes_zero"], (
+            "%s's untreated arm reads %+0.2f [%+0.2f, %+0.2f], excluding zero. An "
+            "arm that received no treatment cannot have an effect, so the baseline "
+            "is wrong -- check whether it shares a sitting with the arm."
+            % (c["model"], c["effect"], c["lo"], c["hi"]))
 
 
 def test_the_superseded_pair_is_still_reproducible():

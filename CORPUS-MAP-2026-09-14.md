@@ -73,18 +73,49 @@ variance run silently collected 0 of 20 while reporting success.
 | `2026-09-14-g0dm0d3-baseline-4k` | `2026-09-13-g0dm0d3-replicate-baseline` | the original recorded **no token budget** while the arm it is differenced against records 4,000 |
 
 A baseline capped below its arm measures truncation rather than force. The original W13 baseline
-carried no `max_tokens` field at all, so comparability could not be verified — and the confound
-was real: Opus's `B-STM vs plain B` moved from +0.12 spanning zero to **+0.37 [+0.13, +0.65]**,
-and `B-Parseltongue` from −0.01 to **+0.24 [+0.02, +0.49]**. Three of eight intervals excluding
-zero became five of eight.
+carried no `max_tokens` field at all, so comparability could not be verified, and it was replaced
+on 2026-09-14 with one re-collected at a recorded 4,000. Opus's `B-STM vs plain B` moved from
++0.12 spanning zero to +0.37 [+0.13, +0.65], `B-Parseltongue` from −0.01 to +0.24 [+0.02, +0.49],
+and three of eight intervals excluding zero became five of eight. That was published the same
+morning as evidence the confound was real.
 
-Grok is unaffected (+0.56 → +0.57), which is what a baseline artefact should look like: it moves
-the model whose baseline was being cut. `B-Layered minus B-STM` is unchanged on both models
-because it is a within-arm contrast that never touches the baseline — so the finding that the
-two models move in **opposite directions** was never at risk.
+> ### REVERTED 2026-09-15: the movement was real and the attribution was wrong
+>
+> **The unrecorded cap never bound.** The original baseline's longest response is **1,295
+> tokens**, the replacement's is **1,307**, the arm's is **1,606** against its 4,000 — and **not
+> one record in either baseline is truncated**. Whatever budget the original ran at, nothing came
+> near it.
+>
+> **The replacement is two days later.** Read off `called_at`: the arm ran 2026-09-13T23 and
+> -09-14T00, the original baseline 2026-09-13T23 — *the same sitting* — and the budget-matched
+> baseline 2026-09-15T02–03.
+>
+> So the switch fixed a confound that was not biting and introduced one that was. The proof is
+> the arm that **cannot** have an effect — `B-Parseltongue` applies no transform to this
+> instrument at all:
+>
+> | `B-Parseltongue vs plain B` | same-sitting baseline | +2-day baseline |
+> |---|---|---|
+> | claude-opus-4.7 | **−0.01 [−0.15, +0.13]** | +0.24 [+0.02, +0.49] — *excludes zero* |
+> | grok-4.3 | +0.09 [−0.06, +0.23] | +0.11 [−0.10, +0.29] |
+>
+> An untreated arm must read zero. Against the same-sitting baseline it does. Against the one
+> collected two days later it excludes zero — which is not an effect, because there is no
+> treatment. It is the baseline being wrong, measured. **Two of the five intervals reported that
+> morning as excluding zero were manufactured by drift.**
+>
+> That makes the accidental null the best diagnostic this arm has, and it is now a gate:
+> `tests/test_pipeline_rung.py::test_the_untreated_arm_reads_zero_which_is_how_a_baseline_is_judged`.
 
-`pipeline_rung.py` defaults to the matched baseline and keeps the original as
-`UNMATCHED_BASELINE_RUN` so the superseded numbers reproduce.
+Grok is unaffected by the baseline choice either way (+0.56 → +0.57). `B-Layered minus B-STM` is
+unchanged on both models because it is a within-arm contrast that never touches a baseline — so
+the finding that the two models move in **opposite directions** was never at risk from any of
+this, which is the argument for preferring a within-arm contrast when one exists.
+
+`pipeline_rung.py` defaults to the **same-sitting** baseline and keeps the budget-matched one as
+`MATCHED_BUDGET_BASELINE_RUN`, which is the right control for the token-cap question and the
+wrong one for everything else. Neither is clean: the honest fix is a same-sitting baseline **with**
+a recorded cap, which is what `2026-09-15-g0dm0d3-decomposition` collects.
 
 > ### Superseded later the same day: that +0.24 is not an effect
 >
@@ -95,9 +126,12 @@ two models move in **opposite directions** was never at risk.
 > repaired effect. Opus's B-STM +0.37 sits on that floor; differenced within the run it is
 > +0.13 and spans zero.
 >
-> The baseline repair described above is still correct and still needed — this is a second,
-> independent confound in the same arm, not a retraction of the first. What survives both is the
-> within-arm contrast: Opus −0.31, Grok +0.48.
+> This was written before the baseline question was settled, and it said the baseline repair
+> "is still correct and still needed". It is not — see the REVERTED block above, which the
+> finding in this one is what made possible: an arm known to receive no treatment is how you
+> test a baseline. Against the same-sitting baseline the number here is −0.01, not +0.24.
+>
+> What survives every version of this is the within-arm contrast: Opus −0.31, Grok +0.48.
 >
 > Full account, including what STM does to the scored text:
 > `RESULTS-2026-09-14-rung2-transform-audit.md`. Verify with
