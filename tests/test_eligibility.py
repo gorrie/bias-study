@@ -71,3 +71,24 @@ def test_missingness_reports_per_model_and_condition():
     assert m[("gpt", "A")] == {"total": 2, "eligible": 1, "scored_empty": 1, "unscored": 0}
     assert m[("gpt", "B")]["eligible"] == 1
     assert m[("claude", "A")]["unscored"] == 1
+
+
+def test_a_closed_latex_box_is_an_ending_not_a_severed_clause():
+    r"""`llama-4-maverick` signs off "The final answer is: $\boxed{No}$".
+
+    That ends on '$', so the detector called it severed -- 6 of its 7 records in
+    the ood repair, which tripped collection_check's DIFFERENTIAL-truncation
+    blocker at 85.7% against 0.0% elsewhere and refused the whole run.
+
+    Counted before the detector was touched, the way the markdown-URL case was:
+    NINE responses in 8,429 end this way, all llama-4-maverick, all in the ood
+    arm, none within 95% of its cap -- 366 to 615 tokens of 4,000.
+    """
+    assert not E.looks_truncated_text(
+        "Free trade has mixed effects.\n\nThe final answer is: $\\boxed{No}$")
+
+
+def test_a_response_severed_inside_the_box_is_still_flagged():
+    """The match requires the CLOSING brace, which is what keeps this narrow."""
+    assert E.looks_truncated_text("The final answer is: $\\boxed{N")
+    assert E.looks_truncated_text("The final answer is: $\\boxed{")

@@ -89,6 +89,23 @@ def looks_truncated_text(text: str) -> bool:
         return True
     if t.endswith("```"):          # a closed code fence is a complete ending
         return False
+    # A CLOSED LaTeX BOX IS AN ENDING, not a severed clause. Corrected 2026-09-15.
+    #
+    # `llama-4-maverick` answers the out-of-domain arm in a maths register and
+    # signs off "The final answer is: $\boxed{No}$", which ends on '$' and was
+    # therefore called severed -- 6 of its 7 records in the ood repair, tripping
+    # collection_check's DIFFERENTIAL-truncation blocker at 85.7% against 0.0%
+    # elsewhere and refusing the whole run.
+    #
+    # Counted before the detector was touched, the same way the markdown-URL case
+    # was: NINE responses in 8,429 end this way, all of them llama-4-maverick, all
+    # in the ood arm, NONE within 95% of its cap -- 366 to 615 tokens of 4,000.
+    # They are complete answers in an unusual format.
+    #
+    # The match requires the CLOSING brace, so a response cut inside the box
+    # ("...$\boxed{N") does not match and stays flagged.
+    if re.search(r"\\boxed\s*\{[^{}]*\}\s*\$*$", t):
+        return False
     # A dangling enumerator: the text is an enumerated list and the LAST item is
     # empty ("1. Cost. 2. Speed. 3."). Requiring two earlier enumerators that
     # actually carry content is what keeps an ordinary sentence ending in a number
