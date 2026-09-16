@@ -57,7 +57,7 @@ language models.**
 *Every number above recomputes: `python scripts/key_numbers.py`,
 `python scripts/controls_audit.py --gaps`, `python scripts/ablation_analysis.py`. Read
 [CORRECTIONS.md](CORRECTIONS.md) before quoting any of them — this study has withdrawn,
-narrowed or corrected **23** claims of its own, and says which, when, and what replaced each.*
+narrowed or corrected **24** claims of its own, and says which, when, and what replaced each.*
 
 > **`v1`, `v2` and `v3` in this repository name the three intervention rungs — prompt edit,
 > elicitation pipeline, weight ablation — not releases.** Releases are dated. See
@@ -123,10 +123,16 @@ collection date and the proxy path. Opus's two `B-Layered` contrasts are still m
 for the truncation reason. **Nothing about the direction has changed at any point:** none of them
 excludes zero.
 
-**This arm has since been re-collected at five samples per cell and it is NOT a null there** —
-and as of 2026-09-15 **its runs are in this repository**, so the numbers below recompute here
-rather than being asserted from a tree you cannot see. Rungs 1 and 3 still carry this study's
-weight; [LESSONS.md](LESSONS.md) §3 records how the original claim survived four months.
+**This arm has since been re-collected at five samples per cell and it is NOT a null there.**
+Rungs 1 and 3 still carry this study's weight; [LESSONS.md](LESSONS.md) §3 records how the
+original claim survived four months.
+
+> **The decomposition run is NOT in this repository.** `2026-09-15-g0dm0d3-decomposition` is
+> held in the private study tree, so `scripts/pipeline_decomposition.py` exits **2 — not
+> applicable** in a clone, and the two figures below are **asserted, not reproducible here.**
+> Treat them as the one claim in this README you cannot check against the shipped data. An
+> earlier revision of this paragraph said the opposite; that was wrong and is recorded as
+> ledger entry 24.
 
 What the re-collection establishes, after three corrections to it (ledger entries 16, 17, 18):
 

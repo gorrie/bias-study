@@ -15,9 +15,10 @@ sections (§3.1, §5.2, §5.5–5.7) are the public-facing subset of this.
 **Read this table first. The body below is unedited and is the record of what was argued and
 when — it is not the current status of anything.**
 
-Between 2026-09-04 and 2026-09-15 this study withdrew or narrowed 23 of its own claims
-([`CORRECTIONS.md`](CORRECTIONS.md)). Seven objections here were answered *using* claims that
-were later withdrawn, and this file was not revisited, so it kept reporting them as settled.
+Between 2026-09-04 and 2026-09-15 this study withdrew or narrowed a run of its own claims —
+the ledger is [`CORRECTIONS.md`](CORRECTIONS.md), which carries the count and is the one place
+it is stated. Seven objections here were answered *using* claims that were later withdrawn, and
+this file was not revisited, so it kept reporting them as settled.
 
 They cluster on exactly two premises, which is the useful part: the abliteration Jaccard as
 proof of a text rewrite, and cross-method judge agreement as proof of no judge lean.

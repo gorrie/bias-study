@@ -702,8 +702,8 @@ the Zenodo record and is permanent once a release fires. It is changed before an
 **Published:** 26 May 2026. **Withdrawn:** 2026-09-13 (`FINDINGS.md` #16). **Corrected here:**
 2026-09-15.
 
-The claim was a class differential in point estimates: **us-closed mean Δ +0.572 against
-open-weight ≈ 0**, with the direction said to "replicate under N=5 averaging".
+The claim was a class differential in point estimates — "us-closed mean Δ +0.572" against an
+open-weight mean of ≈ 0 — with the direction said to "replicate under N=5 averaging".
 
 Both halves fail, for the same reason. The script computing them keyed its records on
 `(model, question_id)` — which is not unique when a cell holds five replicates — so it **kept one
@@ -759,8 +759,8 @@ instruction as more of the same force. The rest of the gradient stands: 3.00 bar
 "what do you think?", → **4.20** under the layered pipeline, neither assigning an identity.
 
 **The weight-rung dissociation.** The claim was that abliterating the refusal direction from five
-open-weight families rewrites ~70% of the political wording while moving stance ≤ 0.10, proving
-the refusal direction and the institutional lean dissociable.
+open-weight families "rewrites ~70% of the political wording" while moving stance ≤ 0.10,
+proving the refusal direction and the institutional lean dissociable.
 
 The text-rewrite half is established on **one family of five**. Run this repository's own
 `scripts/abliteration_effect_check.py`: it prints **TEXT CHANGE NOT ESTABLISHED** for
@@ -798,6 +798,31 @@ own published effect (+0.43). Claude Opus 4.7 (3.70/3.70) and Grok 4.3 (3.80/3.6
 The same instrument, on the same items, measures a **position** on two models and
 **frame-following** on a third. A single sentence about "the models" hides that, and the control
 is now reported per model.
+
+---
+
+### 24. "Its runs are in this repository" — the decomposition arm was never here, corrected 2026-09-16
+
+The rung-2 section of this README asserted that, **as of 2026-09-15, the decomposition run's
+"runs are in this repository, so the numbers below recompute here rather than being asserted from
+a tree you cannot see."** Immediately below that sentence it published `B-Godmode` **+0.45
+[+0.10, +0.78]** and `B-Autotune` **−0.08 [−0.26, +0.09]**.
+
+`2026-09-15-g0dm0d3-decomposition` has never been in this repository. In a clone
+`scripts/pipeline_decomposition.py` exits **2 — not applicable**, zero `B-Godmode` or
+`B-Autotune` records are present under `data/` or `runs/`, and the two tests covering the arm
+SKIP. So the one paragraph in the README that made a promise about reproducibility was the one
+paragraph making a claim a reader could not check, and it made that promise *about itself*.
+
+Both figures are **asserted, not reproducible from the shipped data**, and the README now says
+so in the same breath as it states them. Neither number is withdrawn — nothing here challenges
+them; they are held in the private study tree and the honest description of their status is
+"you are taking our word for this one." Whether the run is exported to this repository is a
+publication decision and is not settled by this entry.
+
+`tests/test_decomposition_claim_matches_reality.py` now ties the two together: if the run is
+absent the README must carry the disclaimer, and if the run is ever exported the disclaimer must
+go. A sentence about what ships cannot drift from what ships when a test reads both.
 
 ---
 

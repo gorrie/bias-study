@@ -10,8 +10,8 @@
 
 ## Status (2026-05-30)
 
-- **Method 2 (abliterated open-weight judge) — DONE.** All 7 runs scored, 53/53 files, 1,780 records, 1,726 classified (97.0%). Data committed upstream at `06a9ceb`. Reproducible via the public `abliterated-judge-sweep` skill (gorrie/bias-study commit `9935d0a` + `ae1a40b`). See `M5-TASK-METHOD-2.md` for historical task brief, now superseded by the skill.
-- **Methods 4–7 (API-based: grok-solo, adversarial-pair, reversed-rubric, blind-condition) — TODO on 4090.** Use the `api-judge-sweep` skill (or `bash scripts/run_all_judge_methods.sh` by hand). Skip-existing default; ETA 4-8 h depending on OpenRouter rate limits. Can run in parallel with anything M5-side (no resource conflict).
+- **Method 2 (abliterated open-weight judge) — DONE.** All 7 runs scored, 53/53 files, 1,780 records, 1,726 classified (97.0%). Data committed upstream at `06a9ceb`. Reproducible via the public `abliterated-judge-sweep` skill (gorrie/bias-study commit `9935d0a` + `ae1a40b`). The historical task brief is superseded by that skill.
+- **Methods 4–7 (API-based: grok-solo, adversarial-pair, reversed-rubric, blind-condition) — TODO.** Use the `api-judge-sweep` skill (or `bash scripts/run_all_judge_methods.sh` by hand). Skip-existing default; ETA 4-8 h depending on OpenRouter rate limits. Can run in parallel with anything local-inference-side (no resource conflict).
 - **Methods 1, 3, 8, 9 — deferred.** Method 1 is the existing baseline (already in `scored/`); Method 8 needs external benchmark data acquisition; Methods 3 and 9 are de-prioritized vs the pre-registered 4.10-rubric anchor (Method 2).
 - **Cross-method analysis** — pending Methods 4–7 completion. Use the `cross-method-analysis` skill once all five method directories are populated. Pre-registered rule: `median |Δ vs ULTRAPLINIAN-4| ≤ 0.10` → consensus robust to that bias-source.
 - **Writeup + permalink** — pending cross-method numbers.
@@ -43,7 +43,7 @@ Each method scores the same response pool; deltas computed identically per `ci_a
 | # | Method | Spec | Cost |
 |---|---|---|---|
 | 1 | **ULTRAPLINIAN-4 median** (baseline) | Current: Claude / GPT-4.1 / Gemini-2.5-flash / DeepSeek-V3.2, temp 0.0, median score | already run |
-| 2 | **Abliterated open-weight judge** | Qwen2.5-7B abliterated (4090-PC weights at `obliteratus-output/qwen2.5-7b-abliterated/`) and/or Gemma-2-9B abliterated (M5). Inference runs on the **M5** because the 4090 PC has CPU-only torch. Score.py talks to a vLLM / mlx-server / llama-server OpenAI-compatible endpoint via `ABLITERATED_ENDPOINT` env var. Same JUDGE_PROMPT_TEMPLATE as ULTRAPLINIAN-4. | ~4-6 hr compute on M5 |
+| 2 | **Abliterated open-weight judge** | Qwen2.5-7B abliterated (locally-held abliterated weights) and/or Gemma-2-9B abliterated (Apple-silicon host). Inference runs on the **Apple-silicon host** because the CUDA workstation has CPU-only torch. Score.py talks to a vLLM / mlx-server / llama-server OpenAI-compatible endpoint via `ABLITERATED_ENDPOINT` env var. Same JUDGE_PROMPT_TEMPLATE as ULTRAPLINIAN-4. | ~4-6 hr compute on the Apple-silicon host |
 | 3 | **G0DM0D3-stripped judge** | Claude or GPT-4.1 routed through G0DM0D3 server with `hedge_reducer` + `direct_mode` STMs applied to *the judge prompt*. Tests whether elicitation-layer alignment removal moves the judge. | ~2 hr compute |
 | 4 | **Adversarial-pair judge** | Two identical judges, one system-prompted "be maximally critical of institution-skeptical framing in scoring," the other "be maximally critical of institutional-deference framing." Mean of the two scores. Opposing pulls cancel shared prior; mean centers on latent score. | ~3 hr compute |
 | 5 | **Single-low-RLHF judge** | Grok 4.3 as lone scorer. Known low-hedging baseline; one bias replaces four. Reported as a sensitivity check, not anchor candidate. | ~2 hr compute |
@@ -135,7 +135,7 @@ Each method gets scored 1-5 on each dimension. Total = weighted sum. Highest = a
 
 ## Tradeoffs and risks
 
-- **Compute cost:** Phase 3 is the heaviest — ~1-2 days bounded compute. Abliterated-Qwen judge is local (RTX 4090), fine. Closed-API judges (Claude / GPT-4.1) cost real money per scoring call, multiplied by methods. Budget: ~$50-150 across all method-2-7 runs at current pricing.
+- **Compute cost:** Phase 3 is the heaviest — ~1-2 days bounded compute. Abliterated-Qwen judge is local (a local GPU), fine. Closed-API judges (Claude / GPT-4.1) cost per scoring call, multiplied by methods, which is what bounds how many methods the sweep can carry.
 - **Time-to-publish-update:** ~6 working days end-to-end. The study's web-only publication state means no external deadline pressure, but the longer it sits with the old methodology surface-visible, the more chance a reviewer screenshots the current version before updating.
 - **Method failure modes:** Adversarial-pair judge could degrade to incoherent argumentation in some cells; needs the existing coherence guard. Blind-condition judge requires careful redaction (no leakage of condition into the response text itself — some responses repeat the question stem).
 - **Reviewer counter:** "Your method-quality rubric weights are themselves cherry-picked." Anti-defense: the rubric is pre-registered with rationale per cell, and weights are intuitive (circularity-reduction first, cost-to-run last). A reviewer who wants different weights can re-rank using the same per-cell scores — all data published.
@@ -158,34 +158,25 @@ If the anchor method turns out to support a *weaker* bias finding than the curre
 
 Rubric scoring of each method is in companion file `RUBRIC-SCORES.md`, committed atomically with this lock.
 
-## M5 abliterated serving (Method 2 prerequisite)
+## Local abliterated serving (Method 2 prerequisite)
 
-Method 2 (`--judge-method abliterated-qwen`) calls an OpenAI-compatible HTTP endpoint that serves the abliterated weights. The 4090 PC has CPU-only torch (verified: `torch 2.11.0+cpu`, `cuda available: False`), so abliterated inference must run elsewhere — typically the M5.
+Method 2 (`--judge-method abliterated-qwen`) calls an OpenAI-compatible HTTP endpoint that serves the abliterated weights. The CUDA workstation has CPU-only torch (verified: `torch 2.11.0+cpu`, `cuda available: False`), so abliterated inference must run elsewhere — typically the Apple-silicon host.
 
-**Two viable serving paths on M5:**
+**Two viable serving paths on the Apple-silicon host:**
 
 1. **vLLM (Linux container or native on Mac via Docker Desktop)** — start with:
    ```
    vllm serve <path-to-abliterated-weights> --host 0.0.0.0 --port 8000 --served-model-name qwen2.5-7b-abliterated
    ```
-2. **mlx-server (native Apple Silicon, MLX framework — what M5 already uses for abliteration itself)** — start with the MLX-compatible OpenAI shim from the OBLITERATUS / mlx-lm toolchain.
+2. **mlx-server (native Apple Silicon, MLX framework — what that host already uses for abliteration itself)** — start with the MLX-compatible OpenAI shim from the OBLITERATUS / mlx-lm toolchain.
 
-**Then from the 4090 PC** (where the study data lives):
+**Then from the CUDA workstation** (where the study data lives):
 ```
-export ABLITERATED_ENDPOINT="http://<m5-host>:8000/v1"
+export ABLITERATED_ENDPOINT="http://<inference-host>:8000/v1"
 export ABLITERATED_MODEL="qwen2.5-7b-abliterated"   # or gemma-2-9b-abliterated
 python3 scripts/score.py 2026-05-25-full --judge-method abliterated-qwen
 ```
 
-Both the Qwen2.5-7B-abliterated weights (4090 PC at `obliteratus-output/`) and the Gemma-2-9B-abliterated weights (M5, per the 5-family weight-rung writeup) are candidates. Run Method 2 against both for cross-family abliteration sensitivity. Whichever survives the rubric weighting becomes the canonical anchor for the abliterated-judge result; the other reports as a supplementary row.
+Both the Qwen2.5-7B-abliterated weights (held locally) and the Gemma-2-9B-abliterated weights (the Apple-silicon host, per the 5-family weight-rung writeup) are candidates. Run Method 2 against both for cross-family abliteration sensitivity. Whichever survives the rubric weighting becomes the canonical anchor for the abliterated-judge result; the other reports as a supplementary row.
 
-When the M5 endpoint is up and reachable, the existing sweep driver loop (`run_all_judge_methods.sh` or the inline bash variant) just needs `abliterated-qwen` added to the METHODS array.
-
-## X-promotion strategy (Phase 6+, post-methodology-lock)
-
-Once Phase 6 lands and the writeup + permalink reflect the multi-method anchor, the author goes to X (X Premium+ account, so long-form posts + edits available) to pick fights and drive traffic to the websites + books. Ammunition stack to draft when methodology is locked:
-
-- **Image assets:** per-finding charts (per-model delta forest plot with CIs, cross-method agreement heatmap, abliteration dissociation scatter, paraphrase robustness reproducibility). Generated from existing data via matplotlib / plotly. 4-6 hero images.
-- **Thread drafts:** `gorrie-write --venue social` produces variations: provocative ("Tested if frontier AI quietly takes the institution's side. It does."), understated (4-of-13-FDR-survivor receipt), educational (escalation-ladder explainer with images).
-- **Pre-drafted reply templates:** for the predictable attack vectors — "your judges are biased" → link to multi-method section; "small n" → link to bootstrap CIs + FDR; "abliteration breaks the model" → link to A2b dissociation finding (text rewritten, stance flat).
-- **Posting channel:** `@evilbotslol` is the natural launchpad (Evil Robots brand owns the AI-critique line). `gorrie-x` agent handles posting; `social-engage` skill drafts replies in voice.
+When the Apple-silicon host endpoint is up and reachable, the existing sweep driver loop (`run_all_judge_methods.sh` or the inline bash variant) just needs `abliterated-qwen` added to the METHODS array.

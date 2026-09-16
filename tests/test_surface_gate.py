@@ -42,12 +42,27 @@ def test_the_website_surfaces_are_registered():
 
 
 def test_every_registered_phrase_resolves_to_a_computed_number():
+    """A gated phrase must name a key this tree can actually produce.
+
+    ONE EXEMPTION, AND IT IS NARROW. The panel-derived keys read
+    `data/wave-panel.json`, a collection artifact that lives in the private study tree, so
+    in the public mirror they compute to `key_numbers.UNAVAILABLE` on purpose -- the
+    alternative was `len([])`, which printed a frozen panel of 0 models and read as a
+    measurement. Absent input is not the same defect as a phrase naming a key that does
+    not exist, and conflating them here would force the sentinel back out again.
+
+    Where the panel IS present the exemption does not apply, so the strict assertion still
+    runs in the tree that owns the number.
+    """
     computed = rows()
     missing = []
     for name in WEBSITE_SURFACES:
         for key in K.SURFACES[name]["phrases"]:
-            if key not in computed or computed[key] is None:
-                missing.append((name, key))
+            if key not in computed:
+                missing.append((name, key, "no such computed key"))
+            elif computed[key] is None:
+                if K.PANEL_AVAILABLE:
+                    missing.append((name, key, "None although the panel loaded"))
     assert not missing, (
         "these phrases name a key surface_numbers() cannot produce here: %r" % missing)
 

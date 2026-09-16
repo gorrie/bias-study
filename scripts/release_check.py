@@ -11,7 +11,23 @@ import sys
 
 PY = sys.executable
 STUDY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MIRROR = os.path.normpath(os.path.join(STUDY, "..", "..", "..", "bias-study-release"))
+
+#: WHICH TREE IS THE MIRROR DEPENDS ON WHICH TREE THIS RUNS IN, and hardcoding the relative
+#: path made this gate unrunnable in the thing it gates. `STUDY/../../../bias-study-release`
+#: resolves from the private study tree; run from the mirror itself it points three levels
+#: ABOVE the mirror at a directory that does not exist, and every one of the nine checks died
+#: with `[WinError 267] The directory name is invalid` -- counted as failures, so the release
+#: verdict in a public clone was NOT RELEASABLE for a reason that had nothing to do with the
+#: release. key_numbers.py carries the same resolution with the same comment; this is the
+#: third script to need it.
+_SIBLING = os.path.normpath(os.path.join(STUDY, "..", "..", "..", "bias-study-release"))
+MIRROR = _SIBLING if os.path.isdir(_SIBLING) else STUDY
+
+#: True when this IS the public mirror, so the study-tree checks have no tree to run in.
+#: They are then NOT APPLICABLE (exit 2), not failures: the mirror does not contain the
+#: private study, and reporting its absence as a defect teaches an operator to ignore the
+#: verdict. `0 pass / 1 defect / 2 not applicable` is the convention across these gates.
+RUNNING_IN_MIRROR = MIRROR == STUDY
 
 
 def run(cwd, *args, timeout=2700):
@@ -79,6 +95,18 @@ CHECKS = [
     # truncation was differential by model, which is a confound no filter repairs.
     ("3  cited runs are fit to score", STUDY,
      ["scripts/collection_check.py", "2026-09-13-g0dm0d3-replicate"]),
+    # WAS THE TREATMENT ADMINISTERED? RELEASE-v2.md has described this check since
+    # 2026-09-14 and it was never wired in -- the document promised 22 mechanical items
+    # against a list holding 20, and the two it named loudest were the ones missing.
+    #
+    # It asks what no other mechanical item asks. Every other one asks whether the data is
+    # complete, fit to score, or reproducible, and an arm can pass all of them while the
+    # intervention it is named after never ran. `B-Parseltongue` did exactly that: 200 OK,
+    # complete text, valid scores, an interval excluding zero -- and no obfuscation applied
+    # on any of 240 requests. A gate that a described-but-absent check would have caught is
+    # the most expensive kind of missing, because the checklist reads as if it is covered.
+    ("3  the treatment was actually applied", STUDY,
+     ["scripts/pipeline_transform_audit.py"]),
 ]
 
 HUMAN_CHECKS = [
@@ -110,8 +138,21 @@ def report(results):
     are outstanding work, not a pass, and folding them into a green exit is the same
     assertion-instead-of-measurement this script exists to replace.
     """
-    fails = [(label, where, rc, tail) for label, where, rc, tail in results if rc != 0]
+    # rc 2 IS NOT A FAILURE AND IS NOT A PASS. It is the convention these gates share for
+    # "this tree has no question for me to answer" -- check_no_fork, probe_budget and
+    # key_numbers --check-website all use it. Counting it as a failure is what made a public
+    # clone report NOT RELEASABLE over checks that were never meant to run there, and a
+    # verdict that is wrong in the ordinary case is a verdict operators learn to skip.
+    na = [(label, where, rc, tail) for label, where, rc, tail in results if rc == 2]
+    fails = [(label, where, rc, tail) for label, where, rc, tail in results
+             if rc not in (0, 2)]
     print("")
+    if na:
+        print("%d check(s) NOT APPLICABLE in this tree (rc=2) -- reported, not counted:"
+              % len(na))
+        for label, where, _rc, _tail in na:
+            print("  %s [%s]" % (label, where))
+        print("")
     if not fails:
         print("every mechanically verifiable checklist item passes.")
     else:
@@ -159,7 +200,8 @@ def main(argv=None, *, checks=None, runner=None):
         except Exception as exc:                    # noqa: BLE001
             rc, out = 99, "ERROR %s" % exc
         where = "mirror" if cwd == MIRROR else "study "
-        print("  [%s] %-36s %s" % (where, label, "PASS" if rc == 0 else "FAIL (rc=%d)" % rc))
+        verdict = "PASS" if rc == 0 else ("N/A (rc=2)" if rc == 2 else "FAIL (rc=%d)" % rc)
+        print("  [%s] %-36s %s" % (where, label, verdict))
         results.append((label, where, rc, out.strip().splitlines()[-6:]))
     return report(results)
 

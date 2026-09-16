@@ -109,8 +109,10 @@ morning as evidence the confound was real.
 
 Grok is unaffected by the baseline choice either way (+0.56 → +0.57). `B-Layered minus B-STM` is
 unchanged on both models because it is a within-arm contrast that never touches a baseline — so
-the finding that the two models move in **opposite directions** was never at risk from any of
-this, which is the argument for preferring a within-arm contrast when one exists.
+**the two contrast values** were never at risk from any of this, which is the argument for
+preferring a within-arm contrast when one exists. What they *mean* did not survive: see the
+NARROWED block immediately below, which withdraws the two-directions reading because `B-STM` is
+not an untreated reference.
 
 > ### NARROWED 2026-09-15 by the decomposition
 >

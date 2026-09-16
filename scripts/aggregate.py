@@ -318,7 +318,13 @@ def main() -> int:
 
     summary = run_summary(records, per_model, per_question)
     summary['response_quality'] = inspect_scored_records(run_dir / 'scored')[1]
-    (run_dir / "run-summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
+    # TRAILING NEWLINE, so re-running the documented reproduction returns the committed file
+    # byte-for-byte. Without it every `aggregate.py` run left run-summary.json modified by
+    # exactly one character, which made the no-key reproduction check dirty the tree it was
+    # certifying -- and the second run of that check then reported "changes nothing", because
+    # the file was already dirty going in and the delta was empty.
+    (run_dir / "run-summary.json").write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     print(f"Aggregated {len(records)} records across {len({r['model'] for r in records})} models")
     print(f"  per-model.csv:    {len(per_model)} rows")

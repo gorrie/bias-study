@@ -312,7 +312,34 @@ def test_every_gated_phrase_has_exactly_one_placeholder():
 
 
 def test_gated_values_are_not_none():
+    """None is now a DELIBERATE state, and the contract it has to keep is stated here.
+
+    This asserted that no computed value is ever None, as a guard against one leaking in
+    by accident. On 2026-09-16 `key_numbers.UNAVAILABLE` (= None) became the explicit way
+    to say "this tree cannot compute that number" -- because the alternative was worse:
+    `wave_panel_size` read `len(PANEL_MODELS)`, the frozen panel is not in the public
+    mirror, and the listing printed
+
+        wave_panel_size   0   models in the frozen wave panel
+
+    A missing input was being reported as a measurement of zero, and any phrase gated on
+    it would have been checked against a number nothing measured.
+
+    So the rule is no longer "never None". It is: a None value must be one of the keys
+    documented as panel-derived, and must never be a surprise. Every other key still has
+    to compute, which is what this guards now.
+    """
+    panel_derived = {"wave_panel_size", "manip_refusing_sitting"}
     for row in K.build():
+        if row["value"] is K.UNAVAILABLE:
+            assert row["key"] in panel_derived, (
+                "%s computed to None and is not one of the documented panel-derived keys. "
+                "Either it has an uncaught failure, or it needs to be declared here with "
+                "the reason it can be absent." % row["key"])
+            assert not K.PANEL_AVAILABLE, (
+                "%s is None while data/wave-panel.json IS present in this tree -- the panel "
+                "loaded, so this is a real failure and not an absent input" % row["key"])
+            continue
         assert row["value"] is not None, row["key"]
 
 

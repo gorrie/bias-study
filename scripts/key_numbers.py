@@ -217,6 +217,26 @@ def _panel_models():
 
 PANEL_MODELS = _panel_models()
 
+#: MISSING IS NOT ZERO. `_panel_models()` returns [] when the frozen panel is not in
+#: this tree, and on 2026-09-16 that absence was reaching the listing as a measurement:
+#:
+#:     wave_panel_size          0   models in the frozen wave panel
+#:     manip_refusing_sitting   0   panel models declining condition A outright
+#:
+#: Both read as findings. Both meant "the input is not here." A number derived from an
+#: absent file must refuse rather than report, or every downstream phrase gets checked
+#: against a quantity nothing measured -- the vacuous pass, arriving through arithmetic
+#: instead of through an empty loop.
+PANEL_AVAILABLE = bool(PANEL_MODELS)
+
+#: Sentinel for a number this tree cannot compute. Distinct from 0, which is a result.
+UNAVAILABLE = None
+
+
+def _panel_number(value):
+    """A panel-derived value, or UNAVAILABLE when there is no panel to derive it from."""
+    return value if PANEL_AVAILABLE else UNAVAILABLE
+
 
 def floors():
     """Every floor, from floor_table's own list rather than a second copy of it.
@@ -327,16 +347,16 @@ def build():
          "what": "model pairs behind the one-sitting manipulation floor",
          "phrase": "%d of them answer both arms"},
         {"key": "wave_panel_size",
-         "value": len(PANEL_MODELS),
+         "value": _panel_number(len(PANEL_MODELS)),
          "what": "models in the frozen wave panel",
          "phrase": "%d panel models"},
         # REFUSERS, not "models with an empty A cell". `panel - paired` is the second
         # quantity, and using it here printed 6 on the paper and the public page when 5
         # refuse and a sixth exhausts its token budget. Read from the floor's own split.
         {"key": "manip_refusing_sitting",
-         "value": len(F._split_refusals(
+         "value": _panel_number(len(F._split_refusals(
              sorted(m for m in PANEL_MODELS
-                    if m not in manip_sitting.get("paired_models", [])))[0]),
+                    if m not in manip_sitting.get("paired_models", [])))[0])),
          "what": "panel models declining condition A outright in the one-sitting arm",
          "phrase": "The other %d decline the balance instruction outright"},
         {"key": "null_median",
@@ -1478,21 +1498,121 @@ def _unquoted_occurrences(text, phrase):
     So an occurrence is allowed when a quote mark opens before it and closes after it on the
     same line, and reported otherwise. Deliberately simple: a rule a writer can predict beats
     a cleverer one they cannot.
+
+    MARKDOWN EMPHASIS IS NOT A DIFFERENT CLAIM. This matched on the raw line, so a `**` or a
+    `*` anywhere inside a retracted phrase hid it completely. On 2026-09-16 CORPUS-MAP:112
+    was found asserting
+
+        the finding that the two models move in **opposite directions** was never at risk
+
+    four lines above the NARROWED block that withdraws exactly that finding, and the gate was
+    green -- because the literal phrase has no asterisks in it and the page does. Emphasis is
+    the most likely thing for a writer to add to the sentence they care most about, which
+    makes this the blind spot aimed straight at the claims that matter. The search now runs
+    over a copy with inline emphasis markers removed; the ORIGINAL line is what gets reported,
+    so the operator sees the text as it is written.
     """
     out = []
+    seen = set()
+    # CASE IS NOT MEANING. This matched case-sensitively, so `the lean is in the weights`
+    # found nothing in a document that opened a sentence with "The lean is in the weights."
+    # -- and sentence-initial capitals, title case and bold headline capitals are the LIKELIEST
+    # forms for a claim someone believes. Verified 2026-09-16 by planting the capitalised
+    # sentence in DEVELOPER.md and watching --check-release exit 0.
+    needle = phrase.lower()
+    # Strikethrough state carried ACROSS lines. A struck sentence in a hand-wrapped source
+    # file routinely opens on one line and closes on the next, so a per-line parity check
+    # sees an unterminated `~~` and calls the withdrawal an assertion. Verified against
+    # RESULTS-2026-09-14-rung2-transform-audit.md, which strikes the rung-2 reading across
+    # a wrap and was reported twice as a live claim.
+    open_strike = False
+    # Quote state, carried across lines but RESET AT EVERY BLANK LINE. A retraction quoting
+    # the claim it withdraws routinely wraps:
+    #
+    #     `WRITEUP-2026-05-26.md:350` publishes *"The vendor-class direction replicates
+    #     under N=5 averaging: us-closed mean ..."*, and lists it among the load-bearing
+    #
+    # The opening quote is on one line and the phrase on the next, so a per-line parity test
+    # calls a quotation an assertion -- and blockquoted excerpts, the commonest way this
+    # study records what a document used to say, fail the same way.
+    #
+    # Paragraph scope is the safety rail. An unbalanced quote mark anywhere would otherwise
+    # exempt the whole rest of the file, which is how an escape hatch becomes a hole; a blank
+    # line closes it, so the damage from a stray quote stops at the paragraph.
+    open_quote = False
     for line in text.split("\n"):
-        start = 0
-        while True:
-            i = line.find(phrase, start)
-            if i < 0:
-                break
-            start = i + 1
-            before, after = line[:i], line[i + len(phrase):]
-            quoted = any(before.count(q) % 2 == 1 for q in ('"', "“")) or (
-                "“" in before and "”" in after)
-            if not quoted:
-                out.append(line.strip()[:110])
+        if not line.strip():
+            open_quote = False
+        line_opens_strike = line.count("~~") % 2 == 1
+        line_opens_quote = (line.count('"') % 2 == 1)
+        flat = _strip_inline_emphasis(line)
+        # Scan the raw line too: stripping emphasis can only ever join characters, so a
+        # phrase visible in the raw line is visible in the flat one -- but keeping both
+        # costs nothing and means a future change to the stripper cannot lose a hit.
+        for hay in (flat, line) if flat != line else (line,):
+            lowered = hay.lower()
+            start = 0
+            while True:
+                i = lowered.find(needle, start)
+                if i < 0:
+                    break
+                start = i + 1
+                before, after = hay[:i], hay[i + len(phrase):]
+                quoted = (open_quote != (before.count('"') % 2 == 1)) or (
+                    before.count("“") % 2 == 1) or ("“" in before and "”" in after)
+                # STRIKETHROUGH IS A WITHDRAWAL, and a plainer one than a quote mark.
+                # `~~The two models move in opposite directions~~` is an author striking a
+                # claim out in place, which is the most legible retraction a markdown
+                # document can make -- a reader sees the old sentence AND sees that it is
+                # dead. Reporting it as an assertion punishes the clearest way of doing the
+                # right thing, and teaches people to delete the history instead.
+                struck = open_strike != (before.count("~~") % 2 == 1)
+                if not (quoted or struck):
+                    # SHOW THE MATCH, NOT THE HEAD OF THE LINE. This reported
+                    # `line.strip()[:110]`, and a 2,786-character paragraph in
+                    # WRITEUP-2026-05-26.md made every hit in it print the same opening
+                    # clause -- which had nothing to do with the retracted phrase and read
+                    # as a false positive. An operator who cannot see what matched cannot
+                    # act on the finding, and a finding nobody can act on gets ignored.
+                    excerpt = _excerpt(hay, i, len(phrase))
+                    # Dedupe on the EMPHASIS-STRIPPED form: the same sentence is scanned
+                    # once flat and once raw, and reporting it twice -- identical but for a
+                    # pair of asterisks -- doubles the apparent defect count.
+                    key = _strip_inline_emphasis(excerpt)
+                    if key not in seen:
+                        seen.add(key)
+                        out.append(excerpt)
+        # Update once per line, from the raw line: `flat` and `line` carry identical `~~`
+        # counts (the emphasis stripper does not touch them), and toggling twice would
+        # invert the state on every emphasised line.
+        if line_opens_strike:
+            open_strike = not open_strike
+        if line_opens_quote:
+            open_quote = not open_quote
     return out
+
+
+def _excerpt(line, at, length, window=45):
+    """The matched text with a little context either side, marked so it is visible."""
+    lo, hi = max(0, at - window), min(len(line), at + length + window)
+    return "%s%s%s" % ("..." if lo else "", line[lo:hi].strip(),
+                       "..." if hi < len(line) else "")
+
+
+#: Inline emphasis markers, longest first so `**` is consumed before `*`.
+_EMPHASIS = ("***", "**", "__", "*", "_", "`")
+
+
+def _strip_inline_emphasis(line):
+    """`the two models move in **opposite directions**` -> the phrase the gate looks for.
+
+    Only the delimiters are removed, never other characters, so the result stays a faithful
+    reading of the sentence. The retracted phrases are plain English with spaces in them, so
+    joining `foo_bar` into `foobar` cannot manufacture a match against one.
+    """
+    for marker in _EMPHASIS:
+        line = line.replace(marker, "")
+    return line
 
 
 def check_retracted_in_data():
@@ -1665,6 +1785,12 @@ def check_surface(name, rows):
         if row is None:
             bad.append((key, "no such computed number", ""))
             continue
+        # A PHRASE WHOSE NUMBER CANNOT BE COMPUTED IS NOT A PHRASE THAT PASSED. An
+        # UNAVAILABLE value falls through to the `phrase % row["value"]` below, which
+        # raises TypeError and is reported as `<uncomputable: ...>` -- the handler that
+        # already exists for exactly this, and the one test_surface_gate.py pins. Do not
+        # add a second branch here: the first version of this did, shadowed that handler,
+        # and broke the test that guards it.
         checked += 1
         # A PHRASE MAY REFERENCE OTHER COMPUTED NUMBERS BY NAME, and the ones that pin a pair
         # must. These templates cross-reference on purpose -- `"%d refusals in 499 runs"` pins
@@ -1743,8 +1869,114 @@ def check_surface(name, rows):
     return bad
 
 
+def scan_every_document_for_retractions():
+    """A withdrawn claim must not be ASSERTED anywhere in this repository.
+
+    WHY THIS IS NOT THE SURFACE MECHANISM
+    -------------------------------------
+    `SURFACES` exists to gate NUMBERS: each entry pairs a document with the phrases whose
+    figures must still agree with runs/. It is a hand-written list of nine files, which is
+    correct for numbers -- only a few documents restate them.
+
+    Retractions are the opposite shape. A claim this study withdrew is wrong in EVERY file
+    that asserts it, including the ones nobody thought to list. Riding the retraction scan on
+    the nine named surfaces meant CORPUS-MAP, DEVELOPER.md, LESSONS.md, FINDINGS.md,
+    PRIOR-WORK-CORRECTIONS.md and every RESULTS-* document were never scanned at all. On
+    2026-09-16 CORPUS-MAP:112 was found asserting a finding withdrawn the previous day, four
+    lines above the block withdrawing it.
+
+    So this walks every markdown file in the repository. Discovery, not a list -- a list is
+    what failed, and a new document must be covered the day it is added rather than the day
+    someone remembers to name it.
+    """
+    findings = []
+    archived = []
+    scanned = 0
+    for base, dirs, files in os.walk(STUDY):
+        # Skip machinery and history; scan what a reader can open.
+        dirs[:] = [d for d in sorted(dirs)
+                   if d not in (".git", "__pycache__", ".pytest_cache", "node_modules",
+                                ".venv", "venv", "htmlcov", ".mypy_cache")]
+        for fn in sorted(files):
+            if not fn.lower().endswith(".md"):
+                continue
+            path = os.path.join(base, fn)
+            rel = os.path.relpath(path, STUDY).replace("\\", "/")
+            try:
+                text = io.open(path, encoding="utf-8", newline="").read().replace("\r\n", "\n")
+            except (IOError, OSError, UnicodeDecodeError) as exc:
+                # A FILE LISTED FOR SCANNING THAT IS NOT SCANNED MUST SAY SO. The silent
+                # `continue` is the exact bug that let a markdown file sit in a JSON-only
+                # scanner for a day reporting success.
+                findings.append((rel, "COULD NOT BE READ, so it was not scanned: %s" % exc, ""))
+                continue
+            scanned += 1
+            bucket = archived if _is_marked_superseded(text) else findings
+            for phrase, why in RETRACTED:
+                for occurrence in _unquoted_occurrences(text, phrase):
+                    bucket.append((rel, why, occurrence))
+    return scanned, findings, archived
+
+
+#: How far into a document the supersession notice has to appear. A banner below the fold is
+#: a banner the reader meets after the withdrawn claim, which is no banner at all.
+_SUPERSEDED_WITHIN_LINES = 30
+
+
+def _is_marked_superseded(text):
+    """Is this document declared a historical record at the top of itself?
+
+    AN ARCHIVE IS ALLOWED TO CONTAIN ITS OWN WITHDRAWN CLAIMS -- that is what makes it an
+    archive. `results/WRITEUP-2026-05-26.md` opens with "SUPERSEDED -- this is the May 2026
+    record, kept as history. Do not cite it." and is then preserved unedited on purpose,
+    because rewriting it would destroy the evidence of what was claimed and when.
+
+    What is NOT allowed is a live document asserting a withdrawn claim, and the difference
+    between the two is a notice the reader meets FIRST. So the marker must sit in the opening
+    lines, not anywhere in the file: a "superseded" mentioned in passing on line 400 would
+    otherwise exempt the whole document.
+    """
+    head = "\n".join(text.split("\n")[:_SUPERSEDED_WITHIN_LINES]).upper()
+    return "SUPERSEDED" in head
+
+
+def check_retractions_everywhere():
+    """Print the repo-wide retraction scan. Returns an exit code: 0 clean, 1 defect."""
+    scanned, findings, archived = scan_every_document_for_retractions()
+    if not scanned:
+        # A SCAN THAT OPENED NOTHING MUST NEVER REPORT CLEAN.
+        print("RETRACTION SCAN EXAMINED 0 FILES -- this is a defect in the scan, not a pass")
+        return 1
+    if archived:
+        # Reported, never silent: an operator should be able to see that the exemption is
+        # doing work and on which files, so a wrongly-bannered live document is visible.
+        by_file = sorted({rel for rel, _, _ in archived})
+        print("%d occurrence(s) in %d document(s) marked SUPERSEDED at the top, which is what "
+              "an archive is for: %s" % (len(archived), len(by_file), ", ".join(by_file)))
+    if not findings:
+        print("retractions: no withdrawn claim is asserted in any of %d markdown files"
+              % scanned)
+        return 0
+    print("WITHDRAWN CLAIMS ASSERTED -- %d occurrence(s) across %d markdown files"
+          % (len(findings), scanned))
+    print("A claim this study withdrew is wrong in every file that states it, not just the")
+    print("gated ones. Quote it if you are describing the withdrawal; do not assert it.")
+    print()
+    last = None
+    for rel, why, occurrence in findings:
+        if rel != last:
+            print("  %s" % rel)
+            last = rel
+        print("    %s" % occurrence)
+        print("      WHY: %s" % why)
+    return 1
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--check-retractions", action="store_true",
+                    help="scan EVERY markdown file for withdrawn claims, not just the nine "
+                         "named surfaces. A retraction is repo-wide by nature.")
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--check-website", action="store_true",
                     help="do the public research page's numbers still match runs/?")
@@ -1758,6 +1990,11 @@ def main(argv=None):
                     help="rewrite the controls audit's 'ours' scale from runs/ instead of "
                          "retyping it. --check still gates the result.")
     args = ap.parse_args(argv)
+
+    if args.check_retractions:
+        # Deliberately before build(): this scan reads prose, not runs/, so it stays usable
+        # in a tree where the run data is absent or mid-collection.
+        return check_retractions_everywhere()
 
     rows = build()
 
@@ -1790,6 +2027,20 @@ def main(argv=None):
                 present += os.path.exists(SURFACES[name]["path"])
                 failures += [(name,) + f for f in check_surface(name, rows)]
 
+        # THE RELEASE GATE OWNS THE REPO-WIDE RETRACTION SCAN.
+        #
+        # The per-surface scan above covers nine hand-named documents. A withdrawn claim is
+        # wrong in all 93, and on 2026-09-16 one stood in CORPUS-MAP -- not a surface, so
+        # never scanned -- four lines above the block withdrawing it. Hanging the sweep off
+        # --check-release means the gate that decides whether this repository may be pushed
+        # is the gate that reads every document in it, instead of a flag someone has to
+        # remember. --check-website does not run it: the website lives in another repository
+        # and this walk would examine the wrong tree.
+        retraction_code = 0
+        if args.check_release:
+            print("")
+            retraction_code = check_retractions_everywhere()
+
         # Absent surfaces are the ordinary state in whichever tree does not hold them, and
         # check_surface says so rather than failing. But ALL of them absent means this ran
         # somewhere it cannot check anything, and a green there is the vacuous pass this file
@@ -1812,7 +2063,10 @@ def main(argv=None):
             # gates disagree about what a code means teaches nobody anything.
             return 2
         if not failures:
-            return 0
+            return retraction_code
+        if retraction_code:
+            # Both kinds of defect are reported; the exit code says "defect" either way.
+            pass
         print("")
         print("CROSS-SURFACE DRIFT -- %d statement(s) disagree with runs/" % len(failures))
         print("These are hand-typed copies of generated numbers, living in a different repo")
@@ -1832,6 +2086,13 @@ def main(argv=None):
             # %s, not %d: one entry carries a thousands-formatted string ("1,657"), and %d
             # crashed on it -- so the file's own documented no-argument usage was broken while
             # --check kept working, because --check formats through each entry's own phrase.
+            if r["value"] is UNAVAILABLE:
+                # Printing the phrase here would render "0 panel models" and read as a
+                # measurement of an empty panel. Say what is actually true instead.
+                print("  %-14s %5s   %s" % (r["key"], "n/a", r["what"]))
+                print("  %-14s       NOT COMPUTABLE IN THIS TREE -- "
+                      "data/wave-panel.json is absent" % "")
+                continue
             print("  %-14s %5s   %s" % (r["key"], r["value"], r["what"]))
             print("  %-14s       \"%s\"" % ("", r["phrase"] % r["value"]))
         print()
