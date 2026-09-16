@@ -57,7 +57,26 @@ TIER_RE = re.compile(r"\b(luna|sol|terra|pro|mini|nano|flash|lite|max|plus|air|f
 
 
 def parse(model_id):
-    """Split a model id into (stem, version, size, mode, snapshot, tier)."""
+    """Split a model id into (stem, version, size, mode, snapshot, tier).
+
+    A LOCAL ID HAS NO VENDOR PREFIX and this raised ValueError on every one of them --
+    `gemma2:latest`, `llama3.1:8b`, `mistral:latest`, `phi4:latest`, `qwen2.5:14b`. It never
+    surfaced because the only collection this was ever run over held hosted models alone.
+    Point it at a panel with six local models, as the same-version arm now does, and it dies
+    on the sixth.
+
+    A local build genuinely has no lineage here: nothing in the panel is the same model at a
+    different snapshot or tier, so the honest result is "no sibling relationship", not a
+    crash and not a fabricated vendor.
+    """
+    if "/" not in model_id:
+        # SAME SHAPE AS THE NORMAL RETURN. The docstring above says this returns a tuple; it
+        # returns a dict, and the first version of this guard believed the docstring. `vendor`
+        # is the local id itself so two different local models never compare equal, and the
+        # lineage fields are None so no local pair can be classified as a sibling.
+        stem = re.sub(r"[^a-z]+", " ", re.sub(r"[\d.]+", " ", model_id.lower())).strip()
+        return {"id": model_id, "vendor": model_id.lower(), "stem": stem, "version": None,
+                "size": None, "mode": None, "snapshot": None, "tier": None}
     vendor, name = model_id.split("/", 1)
     n = name.lower()
 
@@ -78,8 +97,14 @@ def parse(model_id):
     mode = modes[0].lower() if modes else None
     n = MODE_RE.sub(" ", n)
 
-    tiers = TIER_RE.findall(n)
-    tier = tiers[0].lower() if tiers else None
+    # EVERY TIER TOKEN, NOT THE FIRST. This took `tiers[0]`, so `gpt-5.6-luna-pro` parsed as
+    # tier `luna` -- identical to `gpt-5.6-luna` -- and the pair came back IDENTICAL and was
+    # dropped from the same-version null. Those are the CLEANEST pairs available: the same
+    # model at two tiers, nothing else varying. Three of them (luna, sol, terra against their
+    # -pro siblings) were silently discarded, on an arm whose whole complaint is that nobody
+    # reports this null.
+    tiers = tuple(sorted(t.lower() for t in TIER_RE.findall(n)))
+    tier = tiers or None
     n = TIER_RE.sub(" ", n)
 
     # version = the numeric token still attached to the remaining name
@@ -120,6 +145,12 @@ def classify(a, b):
         return "tier sibling (null)", False
     if not same("snapshot"):
         return "date snapshot (null)", False
+    # TWO DIFFERENT IDS ARE NEVER IDENTICAL. Reaching here with distinct ids means the parser
+    # could not tell them apart, and returning IDENTICAL drops the pair from the null set --
+    # which is exactly how three luna/sol/terra tier pairs disappeared. A parse that cannot
+    # distinguish two real models must say so rather than assert they are the same model.
+    if a["id"] != b["id"]:
+        return "UNKNOWN (ids differ but parse identically -- parser gap)", False
     return "IDENTICAL", False
 
 

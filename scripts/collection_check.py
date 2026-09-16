@@ -199,11 +199,27 @@ def analyse_sheets(rows):
     else:
         out["shuffle_seeds"] = sorted({r.get("shuffle_seed") for r in sheets})
 
-    out["instruments"] = sorted({(r.get("instrument") or "?")[:40] for r in sheets})
-    if len(out["instruments"]) > 1:
+    # CANONICAL IDS, NOT RAW STRINGS. This compared the recorded `instrument` verbatim, so a
+    # bank whose id changed mid-collection read as TWO instruments and blocked the run -- the
+    # acceptance gate rejecting a collection for a rename rather than for a defect. The 167
+    # sheets collected before the 2026-09-16 rename carry `ratchet-battery-v3` and every sheet
+    # after carries `ratchet-battery`; `floor_table._canonical` resolves both to one id and
+    # pools them correctly, so the gate and the analysis disagreed about the same corpus.
+    #
+    # The RAW strings are still reported, because "which spellings are present" is a fact an
+    # operator wants; the BLOCK is on canonical identity.
+    raw = sorted({(r.get("instrument") or "?")[:40] for r in sheets})
+    out["instruments"] = raw
+    try:
+        import floor_table as _F
+        canon = sorted({_F._canonical(r.get("instrument") or "?") for r in sheets})
+    except ImportError:
+        canon = raw
+    out["instruments_canonical"] = canon
+    if len(canon) > 1:
         out["problems"].append(
             "this run mixes %d instruments: %s. They are never pooled."
-            % (len(out["instruments"]), out["instruments"]))
+            % (len(canon), canon))
 
     # ONE PROVIDER PER CELL, or a replicate is not a replicate.
     #
@@ -243,6 +259,28 @@ def analyse_sheets(rows):
     #
     # Sheets with no `provider_pinned` are the unpinned ones -- the first sheet of each
     # cell, which is what the pin is learned FROM -- and are not evidence either way.
+    # ONE BACKEND PER MODEL, across all four conditions -- not merely within a cell.
+    #
+    # The check above is per (model, condition), which is the scope the pin used to have, so
+    # a model whose arms each sat on a different backend passed cleanly. Verified in the 167
+    # sheets: deepseek-v4-flash answered A on Reka, D on Together, N on CoreWeave, P on
+    # OpenInference. Its A->D contrast is then one backend against another, and serving path
+    # is a same-version variant this study measures -- so the condition contrast and the
+    # routing are confounded, and the gate said nothing because it was not looking that wide.
+    by_model = collections.defaultdict(set)
+    for r in sheets:
+        if r.get("provider"):
+            by_model[r.get("model")].add(r["provider"])
+    split_models = {m: sorted(v) for m, v in by_model.items() if len(v) > 1}
+    out["models_split_across_providers"] = len(split_models)
+    if split_models:
+        worst = max(split_models.items(), key=lambda kv: len(kv[1]))
+        out["problems"].append(
+            "%d model(s) were served by MORE THAN ONE backend across their conditions -- "
+            "worst %s across %d (%s). The condition contrast for those models is confounded "
+            "with the routing, because serving path is a same-version variant here."
+            % (len(split_models), worst[0], len(worst[1]), ", ".join(worst[1])))
+
     broken = [(r.get("model"), r.get("condition"), r.get("provider_pinned"),
                r.get("provider"))
               for r in sheets

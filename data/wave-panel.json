@@ -1,0 +1,99 @@
+{
+  "frozen": "2026-09-05",
+  "criterion": "present in the corpus under both surviving conditions (D and P) at freeze time. Coverage, never outcome.",
+  "series_conditions": [
+    "D",
+    "P"
+  ],
+  "refusal_conditions": [
+    "A",
+    "B"
+  ],
+  "params": {
+    "temperature": 0.7,
+    "seed_base": 20260830,
+    "seed_sweep": true,
+    "max_tokens": 8192,
+    "template": "T01",
+    "runs": 5
+  },
+  "note": "Held constant across waves. Adding a model starts a SHORTER series for it; it does not retroactively join the existing one. Removing one because it was retired is a fact about the vendor and must be recorded, not deleted.",
+  "models": [
+    "anthropic/claude-fable-5.1",
+    "anthropic/claude-opus-4.6",
+    "anthropic/claude-opus-5",
+    "deepseek/deepseek-v4-flash",
+    "deepseek/deepseek-v4-flash-0731",
+    "deepseek/deepseek-v4-pro",
+    "deepseek/deepseek-v4-pro-0813",
+    "gemma2:latest",
+    "google/gemini-3.7-flash",
+    "google/gemini-3.8-flash",
+    "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+    "llama3.1:8b",
+    "mistral:latest",
+    "mistralai/mistral-medium-3-5",
+    "moonshotai/kimi-k2.5",
+    "moonshotai/kimi-k2.6",
+    "moonshotai/kimi-k3",
+    "openai/gpt-5.6-luna",
+    "openai/gpt-5.6-luna-pro",
+    "openai/gpt-5.6-sol",
+    "openai/gpt-5.6-sol-pro",
+    "openai/gpt-5.6-terra",
+    "openai/gpt-5.6-terra-pro",
+    "openai/gpt-6-astra",
+    "openai/gpt-6-astra-pro",
+    "phi4:latest",
+    "qwen/qwen3.8-max",
+    "qwen/qwen3.8-max-0902",
+    "qwen2.5:14b",
+    "x-ai/grok-4.3",
+    "x-ai/grok-4.5",
+    "x-ai/grok-4.6",
+    "z-ai/glm-5.1",
+    "z-ai/glm-5.2",
+    "z-ai/glm-5.3",
+    "z-ai/glm-5.3-flash"
+  ],
+  "amended": "2026-09-16",
+  "amendment_criterion": "SAME-VERSION SIBLING COVERAGE, declared before collection and never after seeing a number. Added: every OpenRouter model that pairs with a panel member by tier or snapshot at the same version, verified to return a valid sheet on the Ratchet battery. Five added; a sixth (z-ai/glm-5.2:free) was probed and returned 0 of 32 answers, so it is excluded and named here rather than silently dropped. Candidates were taken from the live /api/v1/models list, not guessed -- an earlier pass invented five plausible ids, probed them, and reported their 400s as a finding about availability.",
+  "same_version_pairs": [
+    [
+      "openai/gpt-5.6-luna",
+      "openai/gpt-5.6-luna-pro"
+    ],
+    [
+      "openai/gpt-5.6-sol",
+      "openai/gpt-5.6-sol-pro"
+    ],
+    [
+      "openai/gpt-5.6-terra",
+      "openai/gpt-5.6-terra-pro"
+    ],
+    [
+      "deepseek/deepseek-v4-flash-0731",
+      "deepseek/deepseek-v4-flash"
+    ],
+    [
+      "deepseek/deepseek-v4-pro-0813",
+      "deepseek/deepseek-v4-pro"
+    ],
+    [
+      "openai/gpt-6-astra",
+      "openai/gpt-6-astra-pro"
+    ],
+    [
+      "deepseek/deepseek-v4-flash-0731",
+      "deepseek/deepseek-v4-pro-0813"
+    ],
+    [
+      "qwen/qwen3.8-max",
+      "qwen/qwen3.8-max-0902"
+    ],
+    [
+      "z-ai/glm-5.3",
+      "z-ai/glm-5.3-flash"
+    ]
+  ]
+}

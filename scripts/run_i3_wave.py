@@ -166,7 +166,10 @@ def budget_precondition(models):
 
     Returns a list of reasons to refuse. Empty means go.
     """
-    probe = os.path.join(STUDY, "runs", "2026-09-16-i3-budget-probe")
+    # THE PROBE DIR AND ITS INSTRUMENT, both derived. This named a literal directory that
+    # held 60-item sheets of the withdrawn bank; moving that directory back would have
+    # satisfied this gate silently, which is the modal-noise defect in a second place.
+    probe = os.path.join(STUDY, "runs", RUN_DATE + "-budget-probe")
     if not os.path.isdir(probe):
         return ["no budget probe on disk. Run: python scripts/probe_budget.py --run"]
 
@@ -205,6 +208,24 @@ def main(argv=None):
     ap.add_argument("--out-date", default=RUN_DATE)
     ap.add_argument("--models", default="", help="comma-separated filter")
     ap.add_argument("--delay", type=float, default=1.0)
+    #: THE REPLICATE PASS, which had no way to be issued.
+    #:
+    #: done_cells skips any (model, condition, shuffle_seed) already on disk, so "two more
+    #: runs at seed 11" through this driver collected ZERO sheets. The plan budgeted 124
+    #: sheets for a replicate floor that the driver could not produce and the floor arm could
+    #: not have read.
+    #:
+    #: A replicate holds the ORDER fixed and varies only the draw, so this sweeps the
+    #: SAMPLING seed at one shuffle seed. Without --seed-sweep run_compass reuses the same
+    #: sampling seed on every run, and on seed-honouring backends the repeats come back
+    #: near-identical -- a replicate floor of ~0, which is worse than not measuring it.
+    ap.add_argument("--replicate", type=int, default=0, metavar="K",
+                    help="collect K extra runs per cell at a fixed item order, sweeping the "
+                         "sampling seed. Measures run-to-run, not order.")
+    ap.add_argument("--replicate-seed", type=int, default=SEEDS[0],
+                    help="the shuffle seed held fixed during a replicate pass")
+    ap.add_argument("--conditions", default=",".join(CONDITIONS),
+                    help="comma-separated conditions to collect")
     args = ap.parse_args(argv)
 
     out_dir = os.path.join(STUDY, "runs", args.out_date)
@@ -215,19 +236,44 @@ def main(argv=None):
 
     os.makedirs(out_dir, exist_ok=True)
     have = done_cells(out_dir)
-    todo = [(m, c, s) for m in models for c in CONDITIONS for s in SEEDS
-            if (m, c, s) not in have]
+    # WHAT --run WOULD ACTUALLY DO, not the default shape. This computed against CONDITIONS
+    # and SEEDS regardless of --conditions and --replicate, so a replicate pass printed the
+    # full-wave plan -- "12 sheets, conditions N A P D" for a run that would collect 4. A
+    # plan that does not describe the run it precedes is worse than no plan.
+    plan_conds = [c.strip() for c in args.conditions.split(",") if c.strip()]
+    if args.replicate:
+        plan_seeds = [args.replicate_seed]
+        per_cell = args.replicate
+        todo = [(m, c, args.replicate_seed) for m in models for c in plan_conds]
+    else:
+        plan_seeds = list(SEEDS)
+        per_cell = 1
+        todo = [(m, c, s) for m in models for c in plan_conds for s in plan_seeds
+                if (m, c, s) not in have]
 
     if args.plan or not args.run:
-        print("I3 PHASE 4 -- %s" % args.out_date)
+        print("I3 PHASE 4 -- %s%s" % (args.out_date,
+                                      "  [REPLICATE x%d]" % args.replicate if args.replicate
+                                      else ""))
         print("  models      %d (%d local, %d hosted)"
               % (len(models), sum(1 for m in models if is_local(m)),
                  sum(1 for m in models if not is_local(m))))
-        print("  conditions  %s" % ", ".join(CONDITIONS))
-        print("  seeds       %s" % ", ".join(str(s) for s in SEEDS))
-        print("  sheets      %d planned, %d already on disk, %d to collect"
-              % (len(models) * len(CONDITIONS) * len(SEEDS), len(have), len(todo)))
+        print("  conditions  %s" % ", ".join(plan_conds))
+        print("  seeds       %s" % ", ".join(str(s) for s in plan_seeds))
+        print("  sheets      %d to collect (%d already on disk)"
+              % (len(todo) * per_cell, len(have)))
         print("  max_tokens  %d (2x the roster's measured maximum, probe_budget.py)" % MAX_TOKENS)
+        # GATE STATUS IN THE PLAN. --plan returned before both preconditions, so it reported
+        # a collection that --run then refused, and the operator learned that only by running.
+        try:
+            import check_instrument_approved as _A
+            ok, _ = _A.audit(os.path.join(STUDY, ITEMS))
+            print("  instrument  %s" % ("APPROVED" if ok else "NOT APPROVED -- --run refuses"))
+        except ImportError:
+            print("  instrument  UNKNOWN -- approval gate not importable")
+        refusals = budget_precondition(models)
+        print("  budget      %s" % ("measured" if not refusals
+                                    else "NOT MEASURED -- --run refuses: " + refusals[0][:60]))
         return 0
 
     # THE INSTRUMENT MUST BE ONE THE AUTHOR HAS READ AND SIGNED.
@@ -250,8 +296,12 @@ def main(argv=None):
             print("  python scripts/render_item_read.py --items %s > ITEM-READ-<date>-<name>.md"
                   % ITEMS)
             return 2
-    except ImportError:
-        pass
+    except ImportError as exc:
+        # FAIL CLOSED. This was : if the approval module could not be imported the
+        # spend proceeded against an unapproved instrument, which is the failure this gate
+        # exists to prevent, reachable by a typo in an import.
+        print("REFUSING TO COLLECT -- the approval gate could not be loaded: %s" % exc)
+        return 2
 
     # THE PRECONDITION, in front of the spend. Never a warning: a wave collected
     # at an unmeasured budget is not cheaper to discard than it was to collect.
@@ -276,7 +326,14 @@ def main(argv=None):
     _ = _served_provider  # named here so a refactor cannot drop the helper silently
     # Grouped by model so a model's twelve sheets are contiguous in time.
     for model in models:
-        cells = [(c, s) for c in CONDITIONS for s in SEEDS if (model, c, s) not in have]
+        conds = [c.strip() for c in args.conditions.split(",") if c.strip()]
+        if args.replicate:
+            # A REPLICATE PASS RE-VISITS CELLS THAT ARE ALREADY ON DISK. That is the whole
+            # point of it, and it is why `have` cannot gate here: the ordinary resume logic
+            # would skip every one of them and collect nothing.
+            cells = [(c, args.replicate_seed) for c in conds]
+        else:
+            cells = [(c, s) for c in conds for s in SEEDS if (model, c, s) not in have]
         if not cells:
             continue
         print("=== %s  (%d sheet(s))" % (model, len(cells)), flush=True)
@@ -294,17 +351,29 @@ def main(argv=None):
         # --provider` sends allow_fallbacks=False, so a pin that cannot be honoured
         # FAILS the sheet instead of quietly routing elsewhere and recording the
         # substitute -- which is the behaviour this replaces.
-        pinned = {}
+        # ONE BACKEND PER MODEL, not per condition. This was keyed by condition, so a
+        # model's four arms could each sit on a different backend -- verified in the 167
+        # sheets: deepseek-v4-flash answered A on Reka, D on Together, N on CoreWeave and
+        # P on OpenInference. The A->D contrast for that model is then Reka against
+        # Together, and serving path is a same-version variant this study MEASURES. The
+        # per-cell check in collection_check passed it, because per-cell was the scope.
+        pinned = None
         for cond, seed in cells:
             cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
                    "--model", model, "--items", ITEMS, "--condition", cond,
-                   "--runs", "1", "--shuffle-seed", str(seed),
+                   "--runs", str(args.replicate or 1), "--shuffle-seed", str(seed),
                    "--temperature", str(TEMPERATURE), "--seed", str(BASE_SEED + seed),
                    "--max-tokens", str(MAX_TOKENS), "--out", os.path.join("runs", args.out_date)]
+            if args.replicate:
+                # SWEEP THE SAMPLING SEED, or the repeats are not repeats. Without this
+                # run_compass reuses one seed for every run in the call, and a backend that
+                # honours seeds returns near-identical sheets -- a replicate floor of ~0,
+                # which understates the floor under every other floor in the table.
+                cmd += ["--seed-sweep"]
             if is_local(model):
                 cmd += ["--channel", "ollama", "--no-think"]
-            elif pinned.get(cond):
-                cmd += ["--provider", pinned[cond]]
+            elif pinned:
+                cmd += ["--provider", pinned]
             r = subprocess.run(cmd, cwd=STUDY, capture_output=True, text=True,
                                encoding="utf-8", errors="replace")
             tail = [l for l in (r.stdout or "").splitlines() if "runs valid" in l]
@@ -313,12 +382,12 @@ def main(argv=None):
                 # Learn the cell's backend from the sheet that just landed, so the rest
                 # of the cell is held to it. Read from the RECORD rather than guessed:
                 # the served provider is the only thing that can pin the next call.
-                if not is_local(model) and not pinned.get(cond):
+                if not is_local(model) and not pinned:
                     served = _served_provider(args.out_date, model, cond)
                     if served:
-                        pinned[cond] = served
-                        print("    %s pinned to %s for the rest of this cell"
-                              % (cond, served), flush=True)
+                        pinned = served
+                        print("    pinned to %s for all of this model's sheets"
+                              % served, flush=True)
                 print("    %s seed %-3s %s" % (cond, seed, tail[-1].split(": ")[-1]), flush=True)
             else:
                 n_fail += 1

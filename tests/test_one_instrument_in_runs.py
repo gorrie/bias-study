@@ -37,8 +37,18 @@ def instruments_present():
                 continue
             name = rec.get("instrument")
             if name:
-                seen[name] = seen.get(name, 0) + 1
+                # CANONICAL, NOT RAW. Keyed on the recorded string, this went red the moment
+                # a bank's id changed -- `ratchet-battery-v3` and `ratchet-battery` are one
+                # instrument, and counting them as two makes a rename look like pooling.
+                seen[_canon(name)] = seen.get(_canon(name), 0) + 1
     return seen
+
+
+def _canon(name):
+    import sys as _sys
+    _sys.path.insert(0, os.path.join(ROOT, "scripts"))
+    import floor_table as _F
+    return _F._canonical(name)
 
 
 def test_runs_holds_at_most_one_forced_choice_instrument():

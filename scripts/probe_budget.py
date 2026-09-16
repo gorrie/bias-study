@@ -51,7 +51,14 @@ STUDY = os.path.dirname(HERE)
 #: Generous on purpose. This is a measurement, not a collection: if a sheet lands
 #: at this ceiling the number is a floor rather than a length, and the report says so.
 PROBE_CEILING = 65536
-OUT = "runs/2026-09-16-i3-budget-probe"
+#: THE INSTRUMENT AND THE OUT-DIR COME FROM THE WAVE DRIVER, not from literals here.
+#: Both were hardcoded to the WITHDRAWN 60-item bank and its run directory. Running this
+#: as the refusal message instructs would have administered 36 sheets of a retired
+#: instrument into runs/ -- the probe that gates the collection, collecting on the wrong
+#: instrument, with no check that it had.
+import run_i3_wave as _W
+ITEMS = _W.ITEMS
+OUT = "runs/" + _W.RUN_DATE + "-budget-probe"
 
 
 PANEL_FILE = os.path.join(STUDY, "data", "wave-panel.json")
@@ -140,7 +147,7 @@ def main(argv=None):
 
     for m in todo:
         cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
-               "--model", m, "--items", "data/ratchet-propositions-i3.json",
+               "--model", m, "--items", ITEMS,
                "--condition", args.condition, "--runs", "1", "--shuffle-seed", "11",
                "--temperature", "0.7", "--seed", "20260926",
                "--max-tokens", str(PROBE_CEILING), "--out", OUT]

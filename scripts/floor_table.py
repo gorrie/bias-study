@@ -754,8 +754,25 @@ def floor_order_by_class():
     return out
 
 
+#: Where the same-version null is measured. The wave dirs, not a single retired collection.
+#:
+#: THIS ARM READ ONE HARDCODED DIRECTORY -- `runs/2026-08-31-lineage/**` -- which held the
+#: retired external instrument and moved to `withdrawn/` on 2026-09-16. The consequence was
+#: not a wrong number but NO number: the paper's headline row vanished, `key_numbers` raised
+#: `KeyError: 'same-version variants'`, and nine tests went red. Collecting 372 fresh sheets
+#: into the wave directory would have changed none of it, because this arm would still have
+#: been looking somewhere else. A hostile review caught it before the spend.
+#:
+#: Condition N, not A. A is the balance instruction and is the arm models REFUSE -- on this
+#: battery gemini-3.7-flash declines all four conditions and gemini-3.8-flash declines A and
+#: N, so keying the null to A silently drops the refusers from the pair set. N is the
+#: pre-registered baseline and is what a same-version comparison should hold fixed.
+SAME_VERSION_GLOB = "runs/*-wave/*.jsonl"
+SAME_VERSION_CONDITION = "N"
+
+
 def floor_same_version():
-    cells = load("runs/2026-08-31-lineage/**/*.jsonl", "A")
+    cells = load(SAME_VERSION_GLOB, SAME_VERSION_CONDITION)
     by = collections.defaultdict(list)
     for (m, c, o), runs in cells.items():
         by[m].extend(runs)
@@ -828,16 +845,32 @@ def floor_replicate():
     Pairs are RUN AGAINST RUN inside one (model, template) cell -- no modal collapse, because
     the modal is what hid this. See floor_template.
     """
-    cells = _template_cells()
+    # TWO SOURCES, because the paraphrase arm is a retired collection and the wave is where
+    # replicates land now. This read ONLY `runs/2026-09-04-template-floor/**` -- withdrawn on
+    # 2026-09-16 -- so replicate sheets collected into the wave directory were invisible to
+    # the arm that exists to read them, and the floor under every other floor would have come
+    # back empty no matter how many were collected.
+    #
+    # The wave key is (model, condition, shuffle_seed): a replicate holds the ORDER fixed and
+    # varies only the draw. Pairing across shuffle seeds would measure order, which is the
+    # neighbouring arm's job and the confound this one exists to separate out.
+    cells = dict(_template_cells())
+    for key, runs in load(SAME_VERSION_GLOB, None,
+                          key=lambda r: (r.get("model"), r.get("condition"),
+                                         r.get("shuffle_seed"))).items():
+        if len(runs) > 1:
+            cells[key] = runs
+
     pairs, clusters = [], []
-    for (m, c, tpl), runs in sorted(cells.items()):
+    for key, runs in sorted(cells.items(), key=lambda kv: str(kv[0])):
+        m = key[0]
         for i in range(len(runs)):
             for j in range(i + 1, len(runs)):
                 pairs.append(both_stats(runs[i], runs[j]))
                 clusters.append(m)
     return summarise("run-to-run replicate", pairs,
-                     "same model, same template, temperature 0 -- the floor under the floors; "
-                     "interval is a CLUSTER bootstrap over models",
+                     "same model, same condition, same item order -- run against run, the "
+                     "floor under the floors; interval is a CLUSTER bootstrap over models",
                      clusters=clusters)
 
 
@@ -1589,7 +1622,12 @@ def floor_conditions_wave_by_class():
     return out
 
 
-def _split_refusals(models, pattern="runs/2026-09-05-wave/*.jsonl", condition="A"):
+def _split_refusals(models, pattern="runs/*-wave/*.jsonl", condition="A"):
+    # THE WAVE DIRS, NOT ONE RETIRED COLLECTION. This defaulted to `runs/2026-09-05-wave/`,
+    # which held the external instrument and moved to `withdrawn/` on 2026-09-16 -- so the
+    # published refusal count printed ZERO while gemini-3.7-flash was refusing 12 of 12 on
+    # the battery and gemini-3.8-flash was refusing both A and N. `key_numbers` publishes
+    # this figure, so the paper's refusal sentence would have read "0 panel models decline".
     """Of the models with no usable sheet, which actually REFUSED and which failed otherwise.
 
     A model that declines the balance instruction and a model that runs out of tokens on it
