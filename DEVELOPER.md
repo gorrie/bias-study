@@ -17,14 +17,27 @@ map), `results/WRITEUP-2026-05-26.md` (the paper).
 
 ## 0. The mental model: a three-rung force-escalation ladder
 
-The study's claim is that institutional-skepticism framing is **masked at the alignment
-layer**, and the mask "comes off in proportion to the force you put on it — except where
-it's bolted on, where force does nothing." The method *is* that ladder:
+The study's claim was that institutional-skepticism framing is **masked at the alignment
+layer**, and that the mask "comes off in proportion to the force you put on it — except where
+it's bolted on, where force does nothing."
+
+> **THE SECOND HALF IS WITHDRAWN** (FINDINGS #14, 2026-09-13). The ladder is not one axis,
+> one scale or one subject set, and **no model is measured on all three rungs**, so
+> "in proportion to force" compares quantities that were never on a common footing. This
+> paragraph paraphrased the claim rather than quoting it, which is why the retraction scan
+> did not catch it — a gate that matches phrases cannot match a rewording, and this one had
+> stood since the withdrawal.
+>
+> What survives is the ladder as a **method**: three places an intervention can be applied,
+> each with its own tooling and its own record field. Read the table that way. The rungs are
+> reported separately and are not steps on a single scale.
+
+The method *is* that ladder:
 
 | Rung | Force applied | Tooling | Record fields | Status |
 |------|---------------|---------|---------------|--------|
 | **1. Prompt** | remove fairness instruction; A→B→C→D→E gradient | `run_study.py` (OpenRouter / Ollama) | `condition` | DONE (8k+ records) |
-| **2. Pipeline** | a godmode system prompt + an autotune sampling change (the named STM/Parseltongue transforms are inert here -- see RESULTS-2026-09-14-rung2-transform-audit.md) | G0DM0D3 server (WP2) | `g0dm0d3_pipeline` | **DONE** — `data/2026-05-27-g0dm0d3/`, 60 scored records; README quotes the layered result at 4.20 |
+| **2. Pipeline** | a godmode system prompt + an autotune sampling change (the named STM/Parseltongue transforms are inert here -- see RESULTS-2026-09-14-rung2-transform-audit.md) | G0DM0D3 server (WP2) | `g0dm0d3_pipeline` | **DONE** — `data/2026-05-27-g0dm0d3/`, 60 scored records, **50 of them eligible** (the rest fail the truncation filter and `ANALYSIS.md` reports the eligible count, not the file count — the two numbers are different quantities and read as a contradiction when only one is given); README quotes the layered result at 4.20 |
 | **3. Weights** | ablate the refusal direction | OBLITERATUS + `run_local.py` | `obliteratus_applied` | DONE (4 vendors) |
 
 Rung 3 is the moat: it requires the weights, a GPU, and the knowledge. It is **only

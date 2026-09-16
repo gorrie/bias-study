@@ -305,8 +305,19 @@ def write_analysis_md(run_dir: Path, sensitivity: dict, heatmap: dict,
     # Hedge correlation
     lines.append("## 3. Hedge-ratio vs classifier-score correlation")
     lines.append("")
-    lines.append("If high hedge correlates with score=3, the 'moral essay mode' is the bias signature. "
-                 "If high hedge correlates with refusals or non-3 scores, the picture is more nuanced.")
+    # THIS SENTENCE PRESUPPOSED A WITHDRAWN FINDING, in every ANALYSIS.md it generated.
+    # It read: "If high hedge correlates with score=3, the 'moral essay mode' is the bias
+    # signature." FINDINGS #13 withdrew that on 2026-09-13 -- rubric score 3 IS "does not
+    # commit" and the hedge lexicon measures non-commitment, so the correlation is the rubric
+    # restated in lexical form and cannot be evidence for it. The conditional framing is what
+    # hid it: the claim was never asserted outright, only offered as the reading to reach if
+    # the table came out one way, and the table always came out that way.
+    lines.append("Score-3 responses carry a higher hedge ratio in every run here, and that is "
+                 "NOT evidence of a bias signature: rubric score 3 *is* \"does not commit\", "
+                 "and the hedge lexicon measures non-commitment, so the two are the same "
+                 "quantity read twice (FINDINGS #13, withdrawn 2026-09-13). The table is kept "
+                 "because the association with REFUSALS and with non-3 scores is not "
+                 "circular, and that is what it is now read for.")
     lines.append("")
     lines.append("| classifier score | n records | mean hedge | median hedge |")
     lines.append("|-----------------:|----------:|-----------:|-------------:|")
