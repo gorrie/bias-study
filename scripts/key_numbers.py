@@ -1752,7 +1752,14 @@ def main(argv=None):
             print("This is not a pass. Run it from the tree that holds the website and")
             print("dispatch sources; the numbers live in a different repository from the")
             print("paper, which is the whole reason this gate exists.")
-            return 1
+            # 2 = NOT APPLICABLE, not 1 = FAILED. Both are non-zero, so nothing
+            # is being waved through, and the distinction is what stops an
+            # operator learning to ignore the exit code: "this tree has no
+            # website surfaces" is a correct answer to the question, whereas "a
+            # number disagrees with runs/" is a defect. check_no_fork and
+            # probe_budget use 2 for the same situation, and a repository whose
+            # gates disagree about what a code means teaches nobody anything.
+            return 2
         if not failures:
             return 0
         print("")

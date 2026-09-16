@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-92 script(s). 0 carry no module docstring and are listed at the end.
+93 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -85,6 +85,7 @@
 - **`check_doc_links.py`** — Gate: every relative markdown link in this tree's documents resolves to a real file.
 - **`check_no_key_repro.py`** — Checklist item 10, made mechanical: can a reader re-derive the numbers with no API key?
 - **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
+- **`check_skill_procedures.py`** — Do the skills' documented commands actually RUN, not just exist?
 - **`check_undefined_names.py`** — Names a script uses and never binds -- the NameError that waits for a rare path.
 - **`collection_check.py`** — Is this collection fit to score? Run it BEFORE spending judge calls on a run.
 - **`constrained_probe.py`** — Score the instrument by CONSTRAINED DECODING: make an invalid answer ungenerable.

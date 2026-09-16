@@ -54,8 +54,11 @@ PROBE_CEILING = 65536
 OUT = "runs/2026-09-16-i3-budget-probe"
 
 
+PANEL_FILE = os.path.join(STUDY, "data", "wave-panel.json")
+
+
 def panel():
-    with io.open(os.path.join(STUDY, "data", "wave-panel.json"), encoding="utf-8") as fh:
+    with io.open(PANEL_FILE, encoding="utf-8") as fh:
         return json.load(fh)["models"]
 
 
@@ -83,6 +86,26 @@ def main(argv=None):
     ap.add_argument("--condition", default="N",
                     help="N is the bare baseline and the longest answer in practice")
     args = ap.parse_args(argv)
+
+    # NO PANEL, NO QUESTION TO ANSWER.
+    #
+    # This is a pre-run gate in bias-study-prep, and the prep skill runs from
+    # whichever tree you are in. The public mirror has no `data/wave-panel.json`
+    # -- the frozen panel is a collection artifact of the working study -- so
+    # this crashed with FileNotFoundError on a clean clone.
+    #
+    # Found 2026-09-15 by check_skill_procedures.py, on the same day this script
+    # was written, and it is the SAME defect check_no_fork had had for its whole
+    # life: a private-tree gate shipped into the public one, dying on an input
+    # that was never going to be there. Exit 2 = NOT APPLICABLE, never 0.
+    if not os.path.exists(PANEL_FILE):
+        print("NOT APPLICABLE -- no frozen panel at %s."
+              % os.path.relpath(PANEL_FILE, STUDY))
+        print("The panel is a collection artifact of the working study tree, so there")
+        print("is no roster here whose budget could be measured.")
+        print("")
+        print("This is NOT a pass. A gate that cannot run has not run.")
+        return 2
 
     models = panel()
     have = collected()

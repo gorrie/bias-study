@@ -122,6 +122,18 @@ inside its own correction would keep the gate red forever.)*
    - `check_no_fork.py` — no script exists in two trees with different content. **Private
      working tree only**: it compares this mirror against the working study, so it lives on
      the side that can see both and is not shipped here. Skip it when prepping from a clone.
+   - `scripts/check_skill_procedures.py` — **the documented commands actually run.**
+     `check_skill_docs.py` verifies that a path a skill names exists and a flag it names is
+     real; it cannot see a command that resolves and then fails. This executes the read-only
+     ones from a fixed allowlist — never a collector, never a generator without `--check`,
+     never anything carrying a key — and reports how many it could NOT test rather than
+     treating them as passed. Its first run found five broken documented steps, including a
+     script written the same morning that crashed on a clean clone.
+
+   **On exit codes:** `0` is a pass, `1` is a defect, and **`2` is NOT APPLICABLE** — a gate
+   that had no question to answer in this tree, such as `check_no_fork` or `probe_budget` in a
+   public clone. Two is never a pass and never a failure, and treating it as either is how an
+   operator learns to stop reading exit codes.
 5. **Snapshot every noise floor's pair count, before the run.** This is the check this skill
    most needed and did not have. Twice — 27 runs on 2026-09-01 and 14 on 2026-09-02 — runs
    were collected specifically to extend a floor and contributed **nothing** to it, because
