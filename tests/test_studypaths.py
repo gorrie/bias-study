@@ -109,10 +109,19 @@ def test_external_codes_are_configuration_not_a_second_corpus(tmp_path):
 
 
 def test_compass_entry_point_uses_each_requested_instrument(tmp_path):
+    """STUDY_ROOT is honoured per tree -- the default instrument is just the vehicle.
+
+    The fixture wrote `compass-propositions.json` because that used to be the default.
+    On 2026-09-16 the default became the authored I3 bank: the compass was retired on
+    2026-09-15 and a retired instrument still reachable by omission is not retired.
+    The property under test is unchanged -- two roots, two files, no caching between
+    them -- so the fixture follows the default rather than the default being held back
+    to suit the fixture.
+    """
     for index in range(2):
         root = tmp_path/str(index)
         (root/'data').mkdir(parents=True)
-        (root/'data/compass-propositions.json').write_text(json.dumps(
+        (root/'data/ratchet-propositions-i3.json').write_text(json.dumps(
             {'items':[{'id':1, 'text':f'fixture instrument {index}'}]}))
         result = invoke(root, 'run_compass.py', '--model', 'fixture', '--channel', 'ollama', '--dry-run')
         assert result.returncode == 0, result.stderr

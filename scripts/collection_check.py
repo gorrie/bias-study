@@ -233,6 +233,29 @@ def analyse_sheets(rows):
             "%s/%s across %d backends (%s). Serving path is a same-version variant in this "
             "study, so those replicates differ by backend as well as by draw."
             % (len(split), worst[0][0], worst[0][1], len(worst[1]), ", ".join(worst[1])))
+
+    # A PIN THAT DID NOT HOLD IS WORSE THAN NO PIN, because the run looks controlled.
+    #
+    # `run_compass --provider` sends `allow_fallbacks: false`, so OpenRouter should fail
+    # the call rather than route past the pin. Should is not did: this compares what was
+    # REQUESTED against what SERVED on every sheet that asked for one, so a reroute is a
+    # blocker instead of a row that merely records a different backend than intended.
+    #
+    # Sheets with no `provider_pinned` are the unpinned ones -- the first sheet of each
+    # cell, which is what the pin is learned FROM -- and are not evidence either way.
+    broken = [(r.get("model"), r.get("condition"), r.get("provider_pinned"),
+               r.get("provider"))
+              for r in sheets
+              if r.get("provider_pinned") and r.get("provider")
+              and r["provider_pinned"] != r["provider"]]
+    out["provider_pin_broken"] = len(broken)
+    if broken:
+        m, c, want, got = broken[0]
+        out["problems"].append(
+            "%d sheet(s) were PINNED to one backend and served by another -- e.g. %s/%s "
+            "asked for %s and got %s. allow_fallbacks is false, so this should be "
+            "impossible; until it is explained the cell is not a controlled replicate set."
+            % (len(broken), m, c, want, got))
     return out
 
 

@@ -80,7 +80,17 @@ def _client():
 
 SCRIPT_DIR = Path(__file__).parent
 from studypaths import STUDY_DIR
-ITEMS_PATH = STUDY_DIR / "data" / "compass-propositions.json"
+#: THE LIVE INSTRUMENT, and the default because a default is what an unattended or
+#: hand-typed run gets. This pointed at `compass-propositions.json` -- the 62 external
+#: propositions the study RETIRED on 2026-09-15 for being unpublishable. The wave driver
+#: always passed `--items` explicitly so the retirement looked complete, and a smoke test
+#: run by hand on 2026-09-16 quietly collected 62 compass answers instead of 60 I3 ones.
+#: A retired instrument reachable by omission is not retired.
+ITEMS_PATH = STUDY_DIR / "data" / "ratchet-propositions-i3.json"
+
+#: Kept named so an explicit `--items` can still reach the archived compass runs for
+#: provenance work. Nothing defaults to it.
+COMPASS_ITEMS_PATH = STUDY_DIR / "data" / "compass-propositions.json"
 
 #: Version of the failure classifier below, stamped onto every record it labels.
 #:
@@ -458,7 +468,7 @@ def parse_answers(text, expected_ids):
 
 def one_run(channel, model, items, condition, api_key, run_no, temperature, timeout,
             seed=None, think=None, instrument="politicalcompass.org 62 propositions",
-            shuffle_seed=None, max_tokens=8192, template="T01"):
+            shuffle_seed=None, max_tokens=8192, template="T01", provider=None):
     """One administration.
 
     `seed` matters more than it looks. Measured 2026-08-30: at temperature 0 with no seed,
@@ -481,8 +491,14 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
                              temperature=temperature, max_tokens=max_tokens, seed=seed,
                              think=think)
     else:
+        # PINNED WHEN ASKED FOR. Replicates in one cell must differ by the draw and
+        # nothing else; the 2026-09-16 wave returned 36 cells whose three replicates
+        # were served by different backends, so their contrasts confound condition
+        # with routing. The record has carried `provider` all along -- recording is
+        # not controlling.
         result = call_openrouter(model, messages, api_key, timeout=timeout,
-                                 temperature=temperature, max_tokens=max_tokens, seed=seed)
+                                 temperature=temperature, max_tokens=max_tokens,
+                                 seed=seed, provider=provider)
     record = {
         "schema": "compass-run/1",
         "model": model,
@@ -518,6 +534,10 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
         # counts serving path as a same-version variant, so a floor computed
         # across an unrecorded provider change is measuring two things.
         "provider": result.get("provider"),
+        # What was REQUESTED, beside what served it. Equal-or-None is the healthy
+        # state; different means the pin did not hold and the row says so instead
+        # of looking like a deliberate choice.
+        "provider_pinned": provider,
     }
     if not result.get("ok"):
         # A transport failure is not a measurement. Recorded 2026-08-31: 66 such rows across
@@ -571,9 +591,18 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--model", required=True)
     ap.add_argument("--items", default=None,
-                    help="instrument JSON (default: the 62 external propositions). Use "
-                         "data/ratchet-propositions-v3.json for the domain battery")
+                    help="instrument JSON. Default: the authored I3 bank "
+                         "(data/ratchet-propositions-i3.json), 60 items in 30 mirrored "
+                         "pairs, which is the study's live instrument. Pass an explicit "
+                         "path for any other.")
     ap.add_argument("--channel", choices=["openrouter", "ollama"], default="openrouter")
+    ap.add_argument("--provider", default=None,
+                    help="pin the OpenRouter backend for this cell (fallbacks OFF). "
+                         "Replicates in one cell must differ by the draw and nothing "
+                         "else; the 2026-09-16 wave returned 36 cells whose replicates "
+                         "were served by different backends, so their contrasts confound "
+                         "condition with routing. The record has carried `provider` since "
+                         "the arm was designed -- recording is not controlling.")
     ap.add_argument("--condition", choices=list(CONDITION_SYSTEM), default="A")
     ap.add_argument("--runs", type=int, default=5,
                     help="prereg floor is 5; n=1 per cell was the May study's largest defect")
@@ -722,6 +751,7 @@ def main(argv=None):
                              api_key, run_no, args.temperature, args.timeout, seed=seed,
                              think=args.think, shuffle_seed=args.shuffle_seed,
                              max_tokens=args.max_tokens, template=args.template,
+                             provider=args.provider,
                              instrument=data.get("instrument") or data.get("source", "?"))
             if record.get("transient"):
                 # Never persist a transport failure. It is not data about the model, and

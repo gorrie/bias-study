@@ -91,6 +91,41 @@ def safe(name):
     return "".join(c if c.isalnum() or c in "-._" else "_" for c in name)
 
 
+def _served_provider(out_date, model, cond):
+    """Which backend actually served this cell's most recent sheet, or None.
+
+    Read from the record rather than from the request, because the request did not
+    name one -- the first sheet of a cell is collected unpinned and the router
+    decides. Every later sheet in that cell is then held to whatever came back, so
+    the study fixes a backend without choosing one.
+
+    Returns None on the local channel (no routing) and when the field is absent, and
+    the caller simply does not pin. A missing provider must not become a pin of
+    `None`, which `run_compass --provider` would reject as a literal backend name.
+
+    MATCH ON THE RECORD, NOT ON A FILENAME. The first version built the path from this
+    module's `safe()`, which maps `z-ai/glm-5.3` to `z-ai_glm-5.3` while run_compass's
+    own `safe_filename` writes `z-ai__glm-5.3`. Two functions for one fact, and the
+    helper silently found nothing and pinned nothing -- a second copy of a naming rule
+    behaving exactly like the second copies of numbers this study keeps correcting.
+    `done_cells` already reads the records rather than the names; so does this.
+    """
+    out_dir = os.path.join(STUDY, "runs", out_date)
+    served = None
+    for path in sorted(glob.glob(os.path.join(out_dir, "*.jsonl"))):
+        for line in io.open(path, encoding="utf-8", errors="replace"):
+            if not line.strip():
+                continue
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            if rec.get("model") == model and rec.get("condition") == cond \
+                    and rec.get("provider"):
+                served = rec["provider"]
+    return served
+
+
 def done_cells(out_dir):
     """(model, condition, shuffle_seed) already on disk."""
     got = set()
@@ -215,12 +250,28 @@ def main(argv=None):
 
     started = time.time()
     n_ok = n_fail = 0
+    _ = _served_provider  # named here so a refactor cannot drop the helper silently
     # Grouped by model so a model's twelve sheets are contiguous in time.
     for model in models:
         cells = [(c, s) for c in CONDITIONS for s in SEEDS if (model, c, s) not in have]
         if not cells:
             continue
         print("=== %s  (%d sheet(s))" % (model, len(cells)), flush=True)
+        # ONE BACKEND PER CELL, decided by the cell's first sheet and held for the rest.
+        #
+        # The 2026-09-16 wave returned 36 cells whose three replicates were served by
+        # different providers -- worst, deepseek-v4-flash-0731/A across OpenInference,
+        # Relace and Sail Research. Replicates in a cell are supposed to differ by the
+        # draw and nothing else. Serving path is one of the same-version variants this
+        # study MEASURES, so a cell straddling two backends confounds the condition
+        # contrast with the routing, and collection_check refuses the run for it.
+        #
+        # The pin is not chosen in advance: it is whatever served sheet 1, so the study
+        # is not picking backends, only holding one fixed within a cell. `run_compass
+        # --provider` sends allow_fallbacks=False, so a pin that cannot be honoured
+        # FAILS the sheet instead of quietly routing elsewhere and recording the
+        # substitute -- which is the behaviour this replaces.
+        pinned = {}
         for cond, seed in cells:
             cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
                    "--model", model, "--items", ITEMS, "--condition", cond,
@@ -229,11 +280,22 @@ def main(argv=None):
                    "--max-tokens", str(MAX_TOKENS), "--out", os.path.join("runs", args.out_date)]
             if is_local(model):
                 cmd += ["--channel", "ollama", "--no-think"]
+            elif pinned.get(cond):
+                cmd += ["--provider", pinned[cond]]
             r = subprocess.run(cmd, cwd=STUDY, capture_output=True, text=True,
                                encoding="utf-8", errors="replace")
             tail = [l for l in (r.stdout or "").splitlines() if "runs valid" in l]
             if r.returncode == 0 and tail:
                 n_ok += 1
+                # Learn the cell's backend from the sheet that just landed, so the rest
+                # of the cell is held to it. Read from the RECORD rather than guessed:
+                # the served provider is the only thing that can pin the next call.
+                if not is_local(model) and not pinned.get(cond):
+                    served = _served_provider(args.out_date, model, cond)
+                    if served:
+                        pinned[cond] = served
+                        print("    %s pinned to %s for the rest of this cell"
+                              % (cond, served), flush=True)
                 print("    %s seed %-3s %s" % (cond, seed, tail[-1].split(": ")[-1]), flush=True)
             else:
                 n_fail += 1

@@ -228,7 +228,8 @@ def load_pairs(path: Path) -> list[dict]:
 
 def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int = 60,
                     temperature: float = 0.7, max_tokens: int = 800,
-                    seed: int | None = None, attempts: int = 4) -> dict:
+                    seed: int | None = None, attempts: int = 4,
+                    provider: str | None = None) -> dict:
     """Retrying front door. Transient transport failures are NOT model behaviour.
 
     Measured 2026-08-31 in the working study: 66 rows across 11 models were recorded as model
@@ -247,7 +248,7 @@ def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int
     for attempt in range(1, attempts + 1):
         r = _call_openrouter_once(model, messages, api_key, timeout=timeout,
                                   temperature=temperature, max_tokens=max_tokens,
-                                  seed=seed)
+                                  seed=seed, provider=provider)
         if r.get("ok"):
             return r
         last = r
@@ -272,12 +273,29 @@ def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int
 def _call_openrouter_once(model: str, messages: list[dict], api_key: str,
                           timeout: int = 60, temperature: float = 0.7,
                           max_tokens: int = 800,
-                          seed: int | None = None) -> dict:
+                          seed: int | None = None,
+                          provider: str | None = None) -> dict:
     """Returns {ok, response_text, raw, latency_ms, tokens_in, tokens_out, error?}.
 
     temperature/max_tokens default to the v2 prompt-rung settings so existing runs are
     unchanged. run_compass.py overrides both: forced choice needs temperature 0 (the
     prereg noise-floor-first rule) and a short completion, and passes a seed.
+
+    `provider` PINS THE BACKEND, and the study needs it because serving path is one of
+    the same-version variants being measured. One model id can be routed to different
+    backends inside a single sitting: the 2026-09-16 I3 wave came back with **36 cells
+    whose three replicates were served by more than one provider**, worst case
+    `deepseek-v4-flash-0731/A` across three (OpenInference, Relace, Sail Research).
+    Replicates in one cell are supposed to differ by nothing but the draw; those
+    differed by backend as well, so any contrast computed from them confounds the
+    condition with the routing.
+
+    The record already carried `provider` and a comment naming this hazard. Recording is
+    not controlling -- nothing acted on it, and the run that proved it cost 385 minutes.
+
+    `allow_fallbacks: false` is the point: without it OpenRouter silently routes past the
+    pin under load and the field records the substitute, which is the current behaviour
+    wearing a promise.
     """
     start = time.time()
     try:
@@ -297,6 +315,12 @@ def _call_openrouter_once(model: str, messages: list[dict], api_key: str,
                 # Only sent when asked for. An unconditional null seed is not the same
                 # request as no seed field, and the forced-choice rung depends on it.
                 **({"seed": seed} if seed is not None else {}),
+                # Same rule for the pin: sending `provider` unconditionally would change
+                # the request for every existing arm. When asked for, fallbacks are OFF --
+                # a pin that silently routes elsewhere is the unpinned behaviour with a
+                # field attached, which is exactly what the wave recorded.
+                **({"provider": {"order": [provider], "allow_fallbacks": False}}
+                   if provider else {}),
             },
             timeout=timeout,
         )
