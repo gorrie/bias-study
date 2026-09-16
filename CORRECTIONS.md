@@ -662,8 +662,6 @@ from its instruction arm.
 
 ---
 
-## How to read this file
-
 ### 19. The study's title was a withdrawn finding — withdrawn 2026-09-13, corrected on this surface 2026-09-15
 
 **Published:** 26 May 2026, as the title of the writeup, of this repository, of the
@@ -827,8 +825,15 @@ go. A sentence about what ships cannot drift from what ships when a test reads b
 ---
 
 
+## How to read this file
+
 If a number in the README, the writeup or the run data disagrees with something you have seen
 quoted elsewhere, this file is the first place to look. If a claim you can find in the git
 history is not listed here and you think it should be,
 [open an issue](https://github.com/gorrie/bias-study/issues) — a missing entry is itself a
 defect of the kind this document exists to record.
+
+Every numbered entry above sits under **The retracted claims**. This heading used to sit
+*before* entry 19, which filed six corrections — the study's own title among them — under a
+section called "How to read this file". A reader scanning the headings for withdrawn claims
+would have stopped at entry 18.

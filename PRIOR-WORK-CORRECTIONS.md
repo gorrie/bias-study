@@ -41,9 +41,18 @@ in our own data, each with the diagnostic and what it cost us — see
 ## 1. The same-version null: absent from all twelve studies audited
 
 **Artifact:** twelve external studies of political position in language models, audited against
-thirteen controls. **All twelve are now read in full rather than from a summary** — the last
-three were re-read on 2026-09-11, which is also when `--strict` stopped being able to reject any
-verdict here for thin provenance.
+thirteen controls. **Eleven of the twelve are read in full rather than from a summary** — the
+last three were re-read on 2026-09-11, which is also when `--strict` stopped being able to
+reject any verdict here for thin provenance.
+
+The twelfth is **`sclar2024`**, and its record has said `provenance: partial` throughout: the
+abstract and PDF were consulted on 2026-09-11, the full text was not read end to end, and the
+record says so. It is in the table as a methodological reference on prompt-format sensitivity,
+not as a political-position study; the columns that would need a full read to score fairly are
+marked `n/a` with the reason given, and **its numbers must never be quoted as if they bound
+this instrument.** This sentence said "all twelve" until 2026-09-16 — a hand-typed count
+disagreeing with the generated record two files away, which is the defect this document exists
+to catalogue in other people's work. `tests/test_prior_work_counts.py` now reads both.
 **Reproduce:** `python scripts/controls_audit.py` (matrix), `--gaps` (tallies and per-study text).
 
 A **same-version null** asks what two measurements differ by when *nothing about the model has

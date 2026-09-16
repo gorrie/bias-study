@@ -122,17 +122,26 @@ def main(argv=None):
     ap.add_argument("--check", action="store_true")
     args = ap.parse_args(argv)
 
-    want = render()
+    # EXACTLY ONE TRAILING NEWLINE, and the same text --check compares against.
+    #
+    # This wrote `want + "\n"` while render() already ended in one, so every run left
+    # SCRIPTS.md ending "\n\n" -- and the pre-commit `end-of-file-fixer` trimmed it back
+    # on every single commit. Meanwhile `--check` compared with .strip() on both sides,
+    # so it was blind to the difference and reported the file current. Two checkers with
+    # different opinions about the same file, one of them rewriting it behind the other:
+    # the generator said clean, the hook said dirty, and the commit failed three times
+    # before anyone looked at why.
+    want = render().rstrip("\n") + "\n"
     have = io.open(OUT, encoding="utf-8").read() if os.path.exists(OUT) else ""
     if args.check:
-        if have.replace("\r\n", "\n").strip() != want.strip():
+        if have.replace("\r\n", "\n") != want:
             print("SCRIPTS.md is stale. Run: python scripts/gen_script_inventory.py")
             return 1
         print("SCRIPTS.md matches the scripts on disk.")
         return 0
 
     with io.open(OUT, "w", encoding="utf-8", newline="\n") as fh:
-        fh.write(want + "\n")
+        fh.write(want)
     n = want.count("\n- **`")
     # STDERR, NOT STDOUT. This script WRITES the file itself, so anything on
     # stdout is a confirmation message and never content -- and on 2026-09-15

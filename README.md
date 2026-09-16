@@ -219,6 +219,28 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 
 ## Update, 2026-08-31 — re-measured on a forced-choice instrument
 
+> ### The instrument below is the PREVIOUS generation. Read this first.
+>
+> Everything in this section was measured on politicalcompass.org's 62 propositions. **That
+> instrument has been retired from the study** (2026-09-15). It could not be republished, which
+> forced an id-only data export, required a `fetch_items.py` step of every replicator, and
+> produced a leak incident when its text briefly entered two commits. A study whose argument is
+> that a field should publish what it measures cannot be built on an instrument it is not
+> allowed to show you.
+>
+> **The instrument now is `data/ratchet-propositions-i3.json`, and it ships here in full** — 60
+> items in 30 mirrored pairs, each pair differing by exactly one inserted "not", authored for
+> this study and licensed CC BY 4.0. Build and verify it with `scripts/build_item_bank.py`. No
+> fetch step, no carve-out, and the item text and the response text both ship.
+>
+> **The floors below are compass floors and they do not transfer.** The same-version, order and
+> replicate floors are being re-measured on the published instrument across a frozen 31-model
+> panel; until that lands, every number in this section is a measurement of an instrument this
+> study no longer uses, kept because it is what the published claims rest on. Nothing here is
+> withdrawn — it is superseded in scope, and this paragraph is where you find that out rather
+> than inferring it. The paragraphs below still say "never will be" about publishing an
+> instrument; that was true of the compass and is the opposite of the position now.
+
 > **The instrument's own limits, stated rather than discovered.** This arm runs on the
 > politicalcompass.org 62-proposition test, and that choice bought the property the whole
 > re-measurement exists for: **no language model anywhere in the scoring path.** It is why this

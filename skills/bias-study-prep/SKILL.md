@@ -1,6 +1,6 @@
 ---
 name: bias-study-prep
-description: Pre-run refresh and sanity check for the LLM bias study. Validates the live forced-choice instrument (the authored 30-pair mirrored bank — contiguous ids, every pair one inserted "not", counts matching its own declaration, one sentence each), runs the five pre-run gates, and snapshots every noise floor's pair count so a collection that lands nowhere is detectable. Also pulls the repo, checks the legacy judge-scored protocol files, verifies the OpenRouter key is reachable and — for the heavier rungs — the OBLITERATUS / G0DM0D3 toolchain, then records a dated prep-state file. Run before every study run to guarantee reproducibility against a known-good state.
+description: Pre-run refresh and sanity check for the LLM bias study. Validates the live forced-choice instrument (the authored 30-pair mirrored bank — contiguous ids, every pair one inserted "not", counts matching its own declaration, one sentence each), runs the seven pre-run gates, and snapshots every noise floor's pair count so a collection that lands nowhere is detectable. Also pulls the repo, checks the legacy judge-scored protocol files, verifies the OpenRouter key is reachable and — for the heavier rungs — the OBLITERATUS / G0DM0D3 toolchain, then records a dated prep-state file. Run before every study run to guarantee reproducibility against a known-good state.
 ---
 
 # bias-study-prep
@@ -102,7 +102,7 @@ inside its own correction would keep the gate red forever.)*
 
    If the retired third-party file is still on disk it is reported as a warning, not an error:
    it is gitignored, and `check_corpus.py` is the gate that actually matters.
-4. **Run the six pre-run gates.** All must *already* pass before new runs land: if the paper
+4. **Run the seven pre-run gates.** All must *already* pass before new runs land: if the paper
    disagrees with the data now, adding runs makes the disagreement harder to attribute rather
    than easier.
    - `scripts/gen_paper.py --check` — every generated table matches `runs/`
@@ -129,6 +129,14 @@ inside its own correction would keep the gate red forever.)*
      never anything carrying a key — and reports how many it could NOT test rather than
      treating them as passed. Its first run found five broken documented steps, including a
      script written the same morning that crashed on a clean clone.
+   - `scripts/check_named_scripts.py` — **every script named in a shipped document exists in
+     the shipped repository.** `check_doc_links.py` resolves markdown links and calls 94 of
+     them clean; this study names its tooling in *backticks*, which that gate cannot see.
+     Seven references pointed at nothing, and four of those named scripts that existed in the
+     private working tree only — so anyone checking from inside that tree found them and
+     concluded the references were fine. Two of the four were cited by published RESULTS
+     documents as their reproduction path. Run it from the **mirror**, because the tree that
+     has everything is the tree that cannot see the hole.
 
    **On exit codes:** `0` is a pass, `1` is a defect, and **`2` is NOT APPLICABLE** — a gate
    that had no question to answer in this tree, such as `check_no_fork` or `probe_budget` in a

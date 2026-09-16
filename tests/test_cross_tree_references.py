@@ -76,6 +76,22 @@ def test_binding_both_roots_without_scoping_entries_is_not_enough():
     assert not C._is_cross_tree_driver(text)
 
 
+def test_the_registry_form_is_recognised_too():
+    """The driver stopped holding literal (label, STUDY, [...]) tuples on 2026-09-16.
+
+    Its checklist became a derivation from `gates.py`, which declares each gate's tree,
+    and every `, STUDY,` literal the detector counted disappeared with it. Keying a
+    structural property to one spelling fails the moment the code improves.
+    """
+    text = 'STUDY = "/a"\nMIRROR = "/b"\nimport gates as G\nCHECKS = _checks()\n'
+    assert C._is_cross_tree_driver(text)
+
+
+def test_importing_gates_alone_is_not_enough():
+    """The registry marker still requires both roots, so it cannot over-exempt."""
+    assert not C._is_cross_tree_driver('import gates as G\nx = 1\n')
+
+
 def test_the_real_release_check_is_recognised():
     path = os.path.join(ROOT, "scripts", "release_check.py")
     if not os.path.exists(path):
@@ -96,17 +112,25 @@ def test_a_script_named_by_the_driver_really_exists_somewhere():
     Only the working tree can run this: the mirror has no pointer back, which is
     precisely why the exemption exists there. It SKIPS rather than passing, so
     "the mirror cannot check this" never reads as "the mirror checked it".
+
+    READ THE DERIVED CHECKLIST, NOT THE SOURCE TEXT. This scanned release_check.py
+    for `scripts/*.py` literals. On 2026-09-16 its checklist became a derivation from
+    the gates registry and every one of those literals went away, so the regex found
+    nothing -- and the guard below caught it as "checked nothing" rather than passing
+    silently, which is the only reason it surfaced. The references still exist; they
+    are just computed now, so ask the object rather than the file.
     """
-    import re
     import pytest
     path = os.path.join(ROOT, "scripts", "release_check.py")
     if not os.path.exists(path):
         return
     if not _sibling_tree_reachable():
         pytest.skip("no paired tree reachable from here; the working study verifies this")
-    text = io.open(path, encoding="utf-8", errors="replace").read()
-    refs = sorted(set(re.findall(r"scripts/[a-z0-9_]+\.py", text)))
-    assert refs, "found no script references in release_check.py -- checked nothing"
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
+    import release_check as R
+    refs = sorted({a for _label, _cwd, args in R.CHECKS for a in args
+                   if a.startswith("scripts/") and a.endswith(".py")})
+    assert refs, "found no script references in release_check.CHECKS -- checked nothing"
     unresolved = [r for r in refs
                   if not os.path.exists(os.path.join(ROOT, r))
                   and not C._resolves_in_sibling_tree(r)]

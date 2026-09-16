@@ -387,12 +387,25 @@ def _is_cross_tree_driver(text):
     Such a file names scripts that live in whichever tree each entry targets, so
     roughly half its references cannot resolve from inside either one. The marker
     is that it binds both roots AND scopes entries to them.
+
+    TWO FORMS, because the second one broke this. The original driver held a literal
+    list of `(label, STUDY, [...])` tuples, so counting `, STUDY,` identified it. On
+    2026-09-16 that list became a derivation from `gates.py` -- the registry that
+    declares each gate's tree -- and every one of those literals disappeared. The
+    detector stopped recognising the file it was written for, which would have
+    reported its study-scoped references as dead from the mirror.
+
+    Keying a structural property to one spelling of it is the same defect as keying a
+    claim to one phrasing; both fail the moment someone improves the code. So the
+    registry form counts too: a file that binds both roots and dispatches through
+    `gates` IS a cross-tree driver, whatever its entries look like.
     """
     import re as _re
     has_both_roots = bool(_re.search(r"^\s*STUDY\s*=", text, _re.M)) and \
         bool(_re.search(r"^\s*MIRROR\s*=", text, _re.M))
     scopes_entries = text.count(", STUDY,") + text.count(", MIRROR,") >= 2
-    return has_both_roots and scopes_entries
+    via_registry = bool(_re.search(r"^\s*import\s+gates\b", text, _re.M))
+    return has_both_roots and (scopes_entries or via_registry)
 
 
 def _resolves_in_sibling_tree(ref):

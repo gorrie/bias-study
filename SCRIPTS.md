@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-93 script(s). 0 carry no module docstring and are listed at the end.
+99 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -33,6 +33,7 @@
 
 - **`ci_analysis.py`** — ci_analysis.py — Bootstrap confidence intervals + inter-judge agreement over already-scored bias-study runs. No API calls; reads runs/<date>/scored/*.jsonl.
 - **`cross_method_report.py`** — Cross-method judge-effectiveness analysis.
+- **`evidence_concordance.py`** — Score an answer set on evidence-concordance: an axis-free political-position readout.
 - **`judge_lean.py`** — Do the judges lean, and by how much? The floor nobody computed for the scoring layer.
 - **`judge_methods.py`** — Multi-method judge framework for the bias study.
 - **`score.py`** — Score raw bias study responses against the rubric.
@@ -80,9 +81,11 @@
 - **`aggregate.py`** — Aggregate scored bias study records per aggregation-rules.md.
 - **`analysis.py`** — Enhanced analysis pass for a bias study run.
 - **`audit_response_quality.py`** — Inventory every scored record whose response was empty — DATA-EMPTY-SCORES-001 / -002.
+- **`build_item_bank.py`** — Build the I3 mirrored item bank -- complementarity BY CONSTRUCTION.
 - **`calibration_study.py`** — STATS-BOOTSTRAP-CALIBRATION-001 — does this study's inference actually control its errors?
 - **`chart_intervention_budget.py`** — One scale: how far does an intervention have to move a model before it means anything?
 - **`check_doc_links.py`** — Gate: every relative markdown link in this tree's documents resolves to a real file.
+- **`check_named_scripts.py`** — Every script named in a shipped document must exist in this repository.
 - **`check_no_key_repro.py`** — Checklist item 10, made mechanical: can a reader re-derive the numbers with no API key?
 - **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
 - **`check_skill_procedures.py`** — Do the skills' documented commands actually RUN, not just exist?
@@ -98,7 +101,9 @@
 - **`floor_resolution.py`** — What a modal-vs-modal floor can actually resolve, and which factor is bigger ON THE SAME MODELS.
 - **`frame_gap.py`** — Does the judged instrument measure a POSITION, or agreement with the FRAME?
 - **`frontier_extend.py`** — Extend the one-sitting arms onto the CURRENT frontier, which the frozen panel excludes.
+- **`gates.py`** — The one registry of every gate this study has, and where each one runs.
 - **`gen_readme.py`** — Fill the README's generated blocks from the run data. Nothing in them is hand-written.
+- **`lineage_exchangeability.py`** — STATS-LINEAGE-NULL-001 — are the four same-version sub-classes exchangeable?
 - **`logit_probe.py`** — Score the forced-choice instrument by LOGPROB instead of parsing prose, and test whether the two agree.
 - **`model_cards.py`** — One card per model: can this model carry a claim at all, and on what evidence?
 - **`monitor_experiment.py`** — monitor_experiment.py — the durable, cross-platform half of the experiment-monitor agent.
@@ -119,4 +124,5 @@
 - **`splice_corpus.py`** — Write a repaired corpus the ANALYSIS can actually read.
 - **`splice_holes.py`** — Which cells are STILL missing after splicing existing re-collections in?
 - **`supervised_dose_series.py`** — Supervised wrapper around run_dose_series.py.
+- **`validate_claim.py`** — Pre-publication gate. Refuses a claim until the data behind it passes every check.
 - **`validate_runs.py`** — validate_runs.py — does each run directory say what it actually contains?

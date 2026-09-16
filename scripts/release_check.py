@@ -9,6 +9,9 @@ import os
 import subprocess
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import gates as G  # noqa: E402
+
 PY = sys.executable
 STUDY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -31,83 +34,40 @@ RUNNING_IN_MIRROR = MIRROR == STUDY
 
 
 def run(cwd, *args, timeout=2700):
+    if cwd is None:
+        # THE TREE THIS GATE NEEDS IS NOT HERE, so it does not run -- it reports.
+        # The previous version fell back to "the mirror is this tree", which meant the
+        # study-side checks re-ran the mirror's own suite and the checklist printed
+        # "gates green (study suite)" from a tree that has no study in it. A gate that
+        # reports on something it did not read is worse than one that refuses.
+        return 2, ("NOT APPLICABLE: this gate needs the other tree, which is not present "
+                   "here. Run it from the tree that holds it.")
     r = subprocess.run([PY] + list(args), cwd=cwd, capture_output=True, text=True,
                        encoding="utf-8", errors="replace", timeout=timeout)
     return r.returncode, (r.stdout or "") + (r.stderr or "")
 
 
-CHECKS = [
-    # `tests/` IS RUN, and was not until 2026-09-12. Both trees keep tests in scripts/ (beside
-    # the module) AND in tests/, and the gate only ever invoked scripts/. Four mirror tests
-    # and one study test -- eligibility, power, two-corpus routing, sweep status, release
-    # exit codes -- were therefore never executed by the release gate that certified them.
-    ("1  gates green (mirror suite)", MIRROR, ["-m", "pytest", "scripts/", "tests/", "-q"]),
-    ("1  gates green (study suite)", STUDY, ["-m", "pytest", "scripts/", "tests/", "-q"]),
-    ("2  check_no_fork == 0 forks", STUDY, ["scripts/check_no_fork.py"]),
-    ("5  no retracted phrase (release)", MIRROR, ["scripts/key_numbers.py", "--check-release"]),
-    ("5  no retracted phrase (paper)", STUDY, ["scripts/key_numbers.py", "--check"]),
-    ("5  no retracted phrase (website)", STUDY, ["scripts/key_numbers.py", "--check-website"]),
-    ("8  instrument absent from mirror", MIRROR, ["scripts/check_corpus.py", "--all"]),
-    # The ten analysis gates were never in this checklist, though VERIFICATION-2026-09-08 cites
-    # them as release evidence. They reproduce the published WRITEUP numbers from the corpus --
-    # thirteen rows, five intervals excluding zero, the BH survivors, the agreement figures --
-    # which is precisely what a release must not get wrong. Mirror only: they check the
-    # PUBLISHED layout and exit 2 as not-applicable anywhere else.
-    ("9  analysis gates reproduce the writeup", MIRROR, ["scripts/selftest_analysis.py"]),
-    ("9  README numbers match runs/", MIRROR, ["scripts/gen_readme.py", "--check"]),
-    ("9  SCRIPTS.md matches disk", MIRROR, ["scripts/gen_script_inventory.py", "--check"]),
-    ("9  skill docs have no dead paths", MIRROR, ["scripts/check_skill_docs.py", "--strict"]),
-    # BOTH TREES, because the two failure modes are on opposite sides. The mirror is where a
-    # dead link is read by someone who cannot see the private tree -- it shipped
-    # `../../../bias-study-release/CORRECTIONS.md`, a path only correct from the private side,
-    # until 2026-09-07. The study tree is where a rename happens: a results document gets a new
-    # name when its conclusion is superseded, and every reference to the old one then points at
-    # a retracted finding.
-    ("9  markdown links resolve (mirror)", MIRROR, ["scripts/check_doc_links.py"]),
-    ("9  markdown links resolve (study)", STUDY, ["scripts/check_doc_links.py"]),
-    ("3  paper generated blocks fresh", STUDY, ["scripts/gen_paper.py", "--check"]),
-    # The arm inventory calls itself "the whole basis of the release" and was hand-typed on an
-    # ungated surface. One row was stale on 2026-09-12 and nothing was looking.
-    ("2  RELEASE-v2 arm inventory matches runs/", STUDY,
-     ["scripts/check_release_table.py", "--quiet"]),
-    # Sixteen run directories holding 1,460 records were named in no document on 2026-09-12 and
-    # it took a manual triage to establish they were inputs rather than orphans. This makes the
-    # question answerable by running something.
-    ("3  every run directory accounted for", STUDY, ["scripts/run_inventory.py", "--check"]),
-    # Item 10 was a human-read item until 2026-09-12. It is a claim about what a READER can do
-    # without a key, and the failure it guards is invisible to us: a script reaching for a key
-    # it does not need fails only for the person who lacks one, and we always have one. So it
-    # runs the documented no-key path in a stripped env instead of being read.
-    ("10 no-key reproduction (mirror)", MIRROR, ["scripts/check_no_key_repro.py", "--quiet"]),
-    # Item 7 was also listed as needing a human read while being a command that returns an exit
-    # code. --strict fails unless every "no" verdict in the controls matrix is sourced from a
-    # paper actually read or retrieved, which is the property the item asks about.
-    ("7  external claims rest on the paper", STUDY, ["scripts/controls_audit.py", "--strict"]),
-    # THE RUN DATA ITSELF. validate_runs.py existed, worked, and was wired into NOTHING --
-    # not this checklist, not either CI. Run on 2026-09-13 it exited 1 with 44 live findings
-    # across 58 runs: manifests missing, manifests disagreeing with disk, runs with no
-    # declared analysis seed silently inheriting 20260527. Every published number rests on
-    # that data, and the one script that inspects it was the one nobody ran.
-    ("3  run data validates", STUDY, ["scripts/validate_runs.py"]),
-    # THE COLLECTION ACCEPTANCE GATE, over the runs a release actually cites. A run that
-    # cannot pass collection_check has no business behind a published number: 21.5% of the
-    # May corpus was severed mid-argument at an 800-token cap and scored anyway, and the
-    # truncation was differential by model, which is a confound no filter repairs.
-    ("3  cited runs are fit to score", STUDY,
-     ["scripts/collection_check.py", "2026-09-13-g0dm0d3-replicate"]),
-    # WAS THE TREATMENT ADMINISTERED? RELEASE-v2.md has described this check since
-    # 2026-09-14 and it was never wired in -- the document promised 22 mechanical items
-    # against a list holding 20, and the two it named loudest were the ones missing.
-    #
-    # It asks what no other mechanical item asks. Every other one asks whether the data is
-    # complete, fit to score, or reproducible, and an arm can pass all of them while the
-    # intervention it is named after never ran. `B-Parseltongue` did exactly that: 200 OK,
-    # complete text, valid scores, an interval excluding zero -- and no obfuscation applied
-    # on any of 240 requests. A gate that a described-but-absent check would have caught is
-    # the most expensive kind of missing, because the checklist reads as if it is covered.
-    ("3  the treatment was actually applied", STUDY,
-     ["scripts/pipeline_transform_audit.py"]),
-]
+#: THE CHECKLIST IS DERIVED, NOT TYPED. It was a literal list beside `gates.py`'s
+#: registry, which is two copies of the same fact -- the shape this repository has
+#: corrected in its prose four times. A gate declared in the registry at stage
+#: "release" is in this checklist by construction, and one that is not cannot be
+#: silently left out of it.
+#:
+#: `None` as the cwd means the tree that gate needs is not present here. `run()`
+#: returns 2 (NOT APPLICABLE) rather than running it somewhere else -- which is what
+#: the previous version did, printing "gates green (study suite)" from a mirror that
+#: had just re-run its own suite under a study label.
+def _checks():
+    out = []
+    for g in G.for_stage("release"):
+        argv = ["-m", "pytest", "scripts/", "tests/", "-q"] if g.script == "pytest" \
+            else g.argv()
+        out.append((g.label, g.cwd(), argv))
+    return out
+
+
+CHECKS = _checks()
+
 
 HUMAN_CHECKS = [
     "3  every arm at final n or cut  -- ablation arm now n=5; wave 0 has 12 short cells,",
@@ -199,7 +159,12 @@ def main(argv=None, *, checks=None, runner=None):
             rc, out = runner(cwd, *args, timeout=args_ns.timeout)
         except Exception as exc:                    # noqa: BLE001
             rc, out = 99, "ERROR %s" % exc
-        where = "mirror" if cwd == MIRROR else "study "
+        # The label names the tree the gate ACTUALLY ran in, and "absent" when it did
+        # not run at all. Labelling by intent rather than by fact is how "study suite"
+        # came to sit beside a mirror-suite result.
+        where = ("absent" if cwd is None
+                 else "mirror" if G.THIS_IS_MIRROR and cwd == STUDY
+                 else "mirror" if cwd == MIRROR else "study ")
         verdict = "PASS" if rc == 0 else ("N/A (rc=2)" if rc == 2 else "FAIL (rc=%d)" % rc)
         print("  [%s] %-36s %s" % (where, label, verdict))
         results.append((label, where, rc, out.strip().splitlines()[-6:]))

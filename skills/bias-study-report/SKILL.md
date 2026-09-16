@@ -116,6 +116,20 @@ not a hard dependency: any reasonable local instruct model works.
 
 ## Before anything ships
 
+**Start with `python scripts/gates.py`.** It prints the one registry of every gate this study
+has — what each covers, which tree it can run in, and which stage runs it. Read it before
+reaching for an individual checker, and read `gates.py --ungated` for the gates nothing runs
+automatically together with the written reason each one is manual.
+
+That registry exists because the checks were a pile. On 2026-09-16 there were 13 scripts named
+`check_*` / `validate_*` / `audit_*` / `selftest_*`, 16 more carrying a `--check` flag, and a
+release checklist invoking 17 of them — with nothing recording where the rest belonged. Two
+(`check_arm_match.py`, `check_undefined_names.py`) turned out to be oversights and the others
+were deliberate, and from outside there was no way to tell which was which. The checklist below
+is now **derived** from the registry rather than typed beside it, and
+`tests/test_gate_registry.py` fails if a checker exists on disk and is declared nowhere. A new
+gate cannot be added without saying where it belongs.
+
 `python scripts/release_check.py` runs the whole release checklist across BOTH trees and is the
 only thing that does — the working study and the public mirror each hold checks the other
 cannot run. It exits non-zero and prints every failing item; treat NOT RELEASABLE as the answer,
@@ -130,3 +144,21 @@ not as an obstacle to route around. Its companions, each also runnable alone:
   line as well as the findings: a layout with no manifest discipline is not a clean run.
 - `scripts/gen_script_inventory.py --check` and `scripts/check_skill_docs.py --strict` — the
   generated inventory and the skill docs against what is actually on disk.
+- `scripts/check_named_scripts.py` — every script a shipped document names in backticks exists
+  in the shipped repository. `check_doc_links.py` only resolves markdown links; it called 94
+  clean while seven backticked references pointed at nothing, four of them naming scripts that
+  existed in the private tree only. Two of those four were cited by published RESULTS documents
+  as their reproduction path. **Run it from the mirror** — the tree that has every script is
+  the tree that cannot see the hole.
+- `scripts/validate_claim.py <claim>` — **the pre-publication gate for a single claim.** It
+  refuses a claim until the data behind it passes every check: enough distinct seeds, the arm
+  actually treated, the interval computed from replicates rather than from one run. Run it on
+  anything about to be stated as a finding, before the sentence is written rather than after
+  it has been quoted somewhere.
+
+For the evidence-concordance readout specifically:
+
+- `scripts/evidence_concordance.py` — scores an answer set on evidence-concordance, the
+  axis-free position readout behind `results/RESULTS-2026-08-29-evidence-concordance.md`. It
+  shipped to this repository on 2026-09-16; until then that published result named a script a
+  reader could not run.

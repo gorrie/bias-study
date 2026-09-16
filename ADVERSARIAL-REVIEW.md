@@ -1,5 +1,13 @@
 # Adversarial Review — Bias Study (institutional-skepticism / force-escalation ladder)
 
+> **Two scripts named below do not ship and never did.** target_asymmetry.py (F3) and
+> single_vs_juxtaposed.py (F-UPDATE) were written for the May 2026 Wash analysis and were
+> never committed to this repository or to the working tree behind it. The dispositions that
+> cite them therefore **cannot be re-derived from anything published here** — treat them as
+> recorded history rather than as verifiable results, which is what the rest of this file's
+> supersession banner already says about its 2026-05-30 body. Noted 2026-09-16, after a sweep
+> for backticked filenames that resolve to nothing.
+
 Self-imposed hostile peer review. Each objection is the *strongest* version a
 skeptical expert would raise, not a strawman. Status is one of:
 **FIXED** (addressed with data/code now) · **FIX QUEUED** (concrete action scheduled) ·
@@ -267,7 +275,7 @@ documented-exposure: Gemma-2-27B 1.00, Llama-3.3-70B 1.00, **Qwen-2.5-72B 0.20**
 **Disposition: VALID.** Drop "generalizes across families"; report "observed in Gemma-2-27B and Llama-3.3-70B; NOT in Qwen-2.5-72B." Forces R3 (more, out-of-lineage families).
 
 ### F3 — `sd 0.00` is a modal-vote-collapse artifact; per-sample variance is discarded. **KILLSHOT.**
-`target_asymmetry.py` collapses the 5 samples to one modal verdict per cell BEFORE recording, so the reported `sd 0.00` is across-target consistency of modes, not measurement precision. The sampling dispersion that samples=5 was meant to buy is never written to disk. "Zero variance / single most reproducible cell" is a category error about what the number is.
+target_asymmetry.py (not in this repository) collapses the 5 samples to one modal verdict per cell BEFORE recording, so the reported `sd 0.00` is across-target consistency of modes, not measurement precision. The sampling dispersion that samples=5 was meant to buy is never written to disk. "Zero variance / single most reproducible cell" is a category error about what the number is.
 **Disposition: VALID.** Strike all "sd 0.00 / zero variance." Forces harness fix R2 (preserve raw per-sample votes → Wilson/Jeffreys CIs).
 
 ### F4 — The spine's 0.00 is a definition, not a measurement (circularity). **KILLSHOT (deep).**
@@ -342,7 +350,7 @@ R1 (multi-template battery, `pairs.v3.jsonl`, 16 templates incl. the single-vs-j
 
 ### F-UPDATE-2 (2026-06-11, same day) — CORRECTION: the flinch is CONFIRMED, not withdrawn
 
-F-UPDATE above called the headline "withdrawn." That was a hasty read of the per-item *modal* table (single facts looked ~0.00). Pooling the R2 per-sample votes with Wilson 95% CIs (`single_vs_juxtaposed.py`) corrects it — the flinch is **real and significant**:
+F-UPDATE above called the headline "withdrawn." That was a hasty read of the per-item *modal* table (single facts looked ~0.00). Pooling the R2 per-sample votes with Wilson 95% CIs (single_vs_juxtaposed.py (not in this repository)) corrects it — the flinch is **real and significant**:
 
 | subtype | spine [95% CI] | controlled (5 families pooled) [95% CI] | gap |
 |---|---|---|---|
