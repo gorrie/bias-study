@@ -4,7 +4,7 @@
   "version": "I3",
   "created": "2026-09-14",
   "generated_by": "scripts/build_item_bank.py",
-  "source": "Authored for this study. NOT the politicalcompass 62, and NOT poolable with ratchet-battery-v3 -- see design_notes.separation.",
+  "source": "Authored for this study. NOT the politicalcompass 62, and NOT poolable with ratchet-battery -- see design_notes.separation.",
   "position_scale": "0=Strongly Disagree, 1=Disagree, 2=Agree, 3=Strongly Agree",
   "design_notes": {
     "mirroring_rule": "Both halves of every pair are authored, and build_item_bank.verify_negation() asserts they are the same token sequence except for one inserted 'not'. The halves therefore differ by the negation and by nothing else, so no coherent respondent can agree with both. This replaces v3's rule, which asked an author to write two opposed questions and said the result 'is checked rather than asserted' while nothing checked it; ITEM-AUDIT-2026-09-14 found six of ten pairs were not complements.",
@@ -12,7 +12,7 @@
     "acquiescence_control": "The affirmative half is the CRITIC side on 15 of 30 pairs and the DEFENDER side on the other 15, so a model that simply agrees more than it disagrees cannot produce a frame gap.",
     "presentation": "Order is shuffled per run by presentation_order(seed) with the seed recorded, and the halves of a pair are never within 6 positions of each other. v3 placed them adjacent with the critic half always first.",
     "single_barrelled": "No item may contain 'and' or 'or'. A respondent cannot agree with half a claim, and the bank does not try to distinguish a noun list from two joined claims.",
-    "separation": "A THIRD instrument. Never merged with data/compass-propositions.json (which defines the 57-model public baseline) nor with ratchet-propositions-v3.json (whose pairs are known non-complementary). Run separately, pool never.",
+    "separation": "A THIRD instrument. Never merged with data/compass-propositions.json (which defines the 57-model public baseline) nor with ratchet-battery.json (whose pairs are known non-complementary). Run separately, pool never.",
     "scope_limit": "Thirty civil-liberties topics. Any result generalises to civil-liberties questions and to nothing else. The out-of-domain arm is the evidence for why: Grok moves +0.00 [-0.62, +0.50] on economic and foreign-policy items."
   },
   "counts": {
@@ -841,5 +841,7 @@
       "polarity": "negated",
       "text": "China's health-code infrastructure has not been used to suppress lawful protest."
     }
-  ]
+  ],
+  "status": "WITHDRAWN 2026-09-16",
+  "withdrawn_reason": "Written by an assistant session on 2026-09-14 and never read or approved by the author; the ITEM-READ sign-off box is empty. Not an instrument of this study. The instrument is data/ratchet-battery.json. Records collected on this bank are under withdrawn/."
 }

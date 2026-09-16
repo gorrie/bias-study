@@ -80,17 +80,14 @@ def _client():
 
 SCRIPT_DIR = Path(__file__).parent
 from studypaths import STUDY_DIR
-#: THE LIVE INSTRUMENT, and the default because a default is what an unattended or
-#: hand-typed run gets. This pointed at `compass-propositions.json` -- the 62 external
-#: propositions the study RETIRED on 2026-09-15 for being unpublishable. The wave driver
-#: always passed `--items` explicitly so the retirement looked complete, and a smoke test
-#: run by hand on 2026-09-16 quietly collected 62 compass answers instead of 60 I3 ones.
-#: A retired instrument reachable by omission is not retired.
-ITEMS_PATH = STUDY_DIR / "data" / "ratchet-propositions-i3.json"
-
-#: Kept named so an explicit `--items` can still reach the archived compass runs for
-#: provenance work. Nothing defaults to it.
-COMPASS_ITEMS_PATH = STUDY_DIR / "data" / "compass-propositions.json"
+#: THE STUDY'S INSTRUMENT, and the default because a default is what an unattended or
+#: hand-typed run gets. 32 items, 16 mirrored pairs, authored 2026-08-30, every item
+#: carrying `mirror_of` and `frame`.
+#:
+#: This pointed first at the external 62-proposition instrument and then, briefly, at a
+#: 60-item bank an assistant session wrote on 2026-09-14 and nobody signed off. Both are
+#: reachable only by an explicit `--items`; nothing defaults to either.
+ITEMS_PATH = STUDY_DIR / "data" / "ratchet-battery.json"
 
 #: Version of the failure classifier below, stamped onto every record it labels.
 #:
@@ -312,7 +309,7 @@ assert CONDITION_SYSTEM['F111'] == CONDITION_SYSTEM['A'], (
 def load_items(path=None):
     """Load an instrument. Defaults to the 62 external propositions.
 
-    The ratchet battery (data/ratchet-propositions-v3.json) uses the same schema on
+    The ratchet battery (data/ratchet-battery.json) uses the same schema on
     purpose, so one runner, one parser and one set of metrics serve both. They are run in
     parallel and NEVER pooled -- merging them would break comparability with the public
     57-model baseline and surrender the external authorship that answers the asymmetry

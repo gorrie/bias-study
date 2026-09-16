@@ -200,6 +200,14 @@ GATES = [
              "with the other pre-run gates"),
 
     # ---- the instrument ----------------------------------------------------------
+    Gate("check_instrument_approved.py", tree="either", stage="prerun",
+         label="the instrument is read and signed",
+         covers="the live bank has a sign-off sheet that names it with every pair "
+                "ticked. render_item_read.py wrote such a sheet on 2026-09-15, every box "
+                "was left empty, and 372 sheets were collected against it anyway -- "
+                "nothing read the checklist back, so the gate was a document",
+         why="it is a precondition of collecting, not of releasing; run_i3_wave calls it "
+             "in front of the spend"),
     Gate("build_item_bank.py", ["--check"], tree="either", stage="prerun",
          label="the I3 item bank matches a fresh build",
          covers="data/ratchet-propositions-i3.json against rebuilding it -- contiguous "

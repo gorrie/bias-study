@@ -83,9 +83,26 @@ def _load_from(tmp_path, instrument):
         F._DROPPED_SEEN.clear()
 
 
-def test_the_default_instrument_is_the_compass(tmp_path):
-    """Changing the default is a deliberate act that moves published pair counts."""
-    assert F.INSTRUMENT_DEFAULT == F.COMPASS_INSTRUMENT
+def test_the_default_instrument_is_the_studys_own_battery(tmp_path):
+    """The floors read the instrument this study wrote. Moved 2026-09-16.
+
+    This asserted the external questionnaire, with the reason beside the constant: the
+    default moves in the same commit as CI's expected pair counts, so it is one reviewable
+    diff rather than a drift nobody chose. That commit is this one.
+    """
+    assert F.INSTRUMENT_DEFAULT == F.RATCHET_INSTRUMENT
+    assert F.INSTRUMENT_ITEMS[F.RATCHET_INSTRUMENT] == 32
+
+
+def test_a_retired_instrument_is_reachable_only_by_asking_for_it(tmp_path):
+    """Retired, not forgotten — but nothing reaches it by omission.
+
+    Both retired banks keep an entry in INSTRUMENT_ITEMS so their archived records can
+    still be loaded deliberately for provenance. Neither is the default.
+    """
+    assert F.INSTRUMENT_DEFAULT not in (F.COMPASS_INSTRUMENT, F.I3_INSTRUMENT)
+    assert F.COMPASS_INSTRUMENT in F.INSTRUMENT_ITEMS
+    assert F.I3_INSTRUMENT in F.INSTRUMENT_ITEMS
 
 
 def test_an_i3_sheet_is_not_loaded_into_a_compass_floor(tmp_path):
@@ -149,17 +166,31 @@ def test_a_sheet_with_no_instrument_field_falls_back_to_its_item_count(tmp_path)
     assert len(sheets) == 1 and len(sheets[0]) == 62
 
 
-def test_the_item_count_fallback_still_cannot_pool_the_two_instruments(tmp_path):
-    """60 != 62, so the fallback is narrower than it looks."""
+def test_the_item_count_fallback_applies_only_where_the_field_predates_it(tmp_path):
+    """The fallback is narrower than it looks, and narrower than it was.
+
+    It ran for every instrument, which made item count an identity: a sheet carrying no
+    instrument name was claimed by whichever bank had that many items. That is a guess
+    dressed as a match, and with three banks in the tree it is a guess that can be wrong.
+
+    Only the external questionnaire predates the `instrument` field, so only it may be
+    recognised by count. The derived bank and this study's battery have both written the
+    field on every sheet they ever produced; for them an absent field means the record is
+    from something else, and it is dropped.
+    """
     a, b = _sheet(COMPASS, 62, seed=11), _sheet(I3, 60, seed=22)
     del a["instrument"]
     del b["instrument"]
     _plant(tmp_path, [a, b])
-    for instrument, n in ((F.COMPASS_INSTRUMENT, 62), (F.I3_INSTRUMENT, 60)):
-        cells = _load_from(tmp_path, instrument)
-        sheets = [sheet for runs in cells.values() for sheet in runs]
-        assert len(sheets) == 1, instrument
-        assert len(sheets[0]) == n, instrument
+
+    cells = _load_from(tmp_path, F.COMPASS_INSTRUMENT)
+    sheets = [sheet for runs in cells.values() for sheet in runs]
+    assert len(sheets) == 1 and len(sheets[0]) == 62, "the legacy instrument still falls back"
+
+    cells = _load_from(tmp_path, F.I3_INSTRUMENT)
+    assert not [s for runs in cells.values() for s in runs], (
+        "a 60-item sheet with no instrument field was claimed for a bank that has always "
+        "written one")
 
 
 def test_a_sheet_matching_neither_a_name_nor_a_count_is_still_dropped(tmp_path):
@@ -171,10 +202,65 @@ def test_a_sheet_matching_neither_a_name_nor_a_count_is_still_dropped(tmp_path):
     assert not [sheet for runs in cells.values() for sheet in runs]
 
 
-def test_matching_is_substring_and_case_insensitive():
-    """The compass string's tail has changed before; the discriminating part is the head."""
-    assert F._instrument_matches({"instrument": COMPASS}) is True
-    assert F._instrument_matches({"instrument": "PoliticalCompass.org, 62 items"}) is True
+def test_matching_is_exact_and_case_insensitive():
+    """The discriminator is an identity, not a substring.
+
+    It WAS a substring: `_INSTRUMENT.lower() in got.lower()`. The two banks in this tree
+    are `ratchet-battery-i3` and `ratchet-battery` -- **one character apart, inside an
+    `in` test**, deciding which instrument a published floor is computed from. Names built
+    to be confusable, matched by a rule that cannot tell them apart reliably.
+
+    Case and trailing description still fold, because a record's descriptive tail has
+    changed before and must not change which instrument it belongs to.
+    """
+    assert F._instrument_matches({"instrument": "ratchet-battery"}) is True
+    assert F._instrument_matches({"instrument": "Ratchet-Battery-V3, 32 items"}) is True
+    assert F._instrument_matches({"instrument": "ratchet-battery; authored"}) is True
     assert F._instrument_matches({"instrument": I3}) is False
+    assert F._instrument_matches({"instrument": COMPASS}) is False
     assert F._instrument_matches({"instrument": None}) is False
     assert F._instrument_matches({}) is False
+
+
+def test_a_confusably_named_bank_cannot_take_this_ones_floors():
+    """A prefix is not an identity, and the specific alias beats the family.
+
+    Three versions of this got it wrong in the same direction. A bare `startswith` matched
+    a bank named one digit longer. A family alias claimed every bank beginning with it,
+    including the withdrawn one. And after the bank was renamed, `ratchet-battery` became a
+    prefix of `ratchet-battery-i3` — so the canonical id would have claimed the withdrawn
+    bank's records, held off by nothing but the order the aliases happened to be declared
+    in. Longest prefix wins now, so declaration order cannot decide it.
+    """
+    # Near-misses: same stem, different bank.
+    for near in ("ratchet-battery0", "ratchet-batteryx", "ratchet-battery-i3"):
+        assert F._instrument_matches({"instrument": near}) is False, near
+    # The canonical id and the id the first 167 sheets were collected under both resolve.
+    for ours in ("ratchet-battery", "ratchet-battery-v3"):
+        assert F._instrument_matches({"instrument": ours}) is True, ours
+
+
+def test_declaration_order_cannot_change_which_bank_a_record_belongs_to():
+    """The specific alias must beat the family whatever order the dict is written in."""
+    import collections
+    original = F.INSTRUMENT_ALIASES
+    try:
+        F.INSTRUMENT_ALIASES = collections.OrderedDict(
+            reversed(list(original.items())))
+        assert F._instrument_matches({"instrument": "ratchet-battery-i3"}) is False
+        assert F._instrument_matches({"instrument": "ratchet-battery"}) is True
+    finally:
+        F.INSTRUMENT_ALIASES = original
+
+
+def test_a_record_with_no_instrument_field_is_not_claimed_by_item_count():
+    """The fallback is for instruments that PREDATE the field, and this one does not.
+
+    It was an unconditional item-count match, so any 32-item sheet carrying no instrument
+    name was counted into this study's battery -- including, in principle, a different
+    32-item bank entirely. The tree already holds 59 no-instrument records at 62 items
+    from the constrained-decoding arm, claimed by exactly this route under the old default.
+    """
+    assert F.INSTRUMENT_DEFAULT not in F.PREDATES_INSTRUMENT_FIELD
+    assert F._instrument_matches({"n_items": 32}) is False
+    assert F._instrument_matches({"n_items": 62}) is False

@@ -46,8 +46,8 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
 
-RUN_DATE = "2026-09-16-i3-phase4"
-ITEMS = "data/ratchet-propositions-i3.json"
+RUN_DATE = "2026-09-16-ratchet-v3-wave"
+ITEMS = "data/ratchet-battery.json"
 CONDITIONS = ("N", "A", "P", "D")
 SEEDS = (11, 22, 33)
 TEMPERATURE = 0.7
@@ -229,6 +229,29 @@ def main(argv=None):
               % (len(models) * len(CONDITIONS) * len(SEEDS), len(have), len(todo)))
         print("  max_tokens  %d (2x the roster's measured maximum, probe_budget.py)" % MAX_TOKENS)
         return 0
+
+    # THE INSTRUMENT MUST BE ONE THE AUTHOR HAS READ AND SIGNED.
+    #
+    # On 2026-09-14 a bank written by an assistant session became the study's instrument.
+    # `render_item_read.py` produced its sign-off sheet, every box was left empty, and 372
+    # sheets were collected against it anyway -- while the author's own battery had zero
+    # records. The renderer existed; nothing read the checklist back, so the gate was a
+    # document. This reads it back, in front of the spend.
+    try:
+        import check_instrument_approved as _A
+        _ok, _findings = _A.audit(os.path.join(STUDY, ITEMS))
+        if _ok is False:
+            print("REFUSING TO COLLECT -- the instrument is not approved.")
+            for f in _findings:
+                print("  * %s" % f)
+            print("")
+            print("A bank is collectable when its author has read every pair and said so.")
+            print("Render the sheet, read it, tick the boxes:")
+            print("  python scripts/render_item_read.py --items %s > ITEM-READ-<date>-<name>.md"
+                  % ITEMS)
+            return 2
+    except ImportError:
+        pass
 
     # THE PRECONDITION, in front of the spend. Never a warning: a wave collected
     # at an unmeasured budget is not cheaper to discard than it was to collect.

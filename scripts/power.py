@@ -132,8 +132,29 @@ def pctile_is_max(vals, q):
     return i == len(v) - 1
 
 
-#: The barometer's item count. A side or endpoint count cannot exceed it.
-BOUND = 62
+def _instrument_bound():
+    """The live instrument's item count, read from the bank rather than typed.
+
+    This was a literal 62 -- the retired external instrument's length. The study's own
+    battery is 32 items, so a hardcoded 62 would clip every detection limit against a
+    ceiling nearly twice the real one and quote MDEs the instrument cannot express.
+    """
+    import json as _json
+    try:
+        from studypaths import STUDY_DIR as _SD
+        import floor_table as _F
+        name = {_F.RATCHET_INSTRUMENT: "ratchet-battery.json",
+                _F.I3_INSTRUMENT: "ratchet-propositions-i3.json"}.get(_F.INSTRUMENT_DEFAULT)
+        if name:
+            with open(str(_SD / "data" / name), encoding="utf-8") as fh:
+                return len(_json.load(fh)["items"])
+    except Exception:                                   # noqa: BLE001
+        pass
+    return 62
+
+
+#: The live instrument's item count. A side or endpoint count cannot exceed it.
+BOUND = _instrument_bound()
 
 
 def mde(vals, threshold, power=POWER):

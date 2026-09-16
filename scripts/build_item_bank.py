@@ -3,7 +3,7 @@
 
 WHY THIS FILE EXISTS
 --------------------
-`ratchet-propositions-v3.json` was built by writing two questions that SOUND
+`ratchet-battery.json` was built by writing two questions that SOUND
 opposed, and its own `design_notes.mirroring_rule` says the build "is checked
 rather than asserted". Nothing checked it. ITEM-AUDIT-2026-09-14 then found six
 of ten pairs are not complements, which cut I3 Phase 0's frame gap down to four
@@ -399,7 +399,7 @@ def build_document(pairs=None):
         "created": "2026-09-14",
         "generated_by": "scripts/build_item_bank.py",
         "source": "Authored for this study. NOT the politicalcompass 62, and NOT poolable with "
-                  "ratchet-battery-v3 -- see design_notes.separation.",
+                  "ratchet-battery -- see design_notes.separation.",
         "position_scale": "0=Strongly Disagree, 1=Disagree, 2=Agree, 3=Strongly Agree",
         "design_notes": {
             "mirroring_rule":
@@ -428,7 +428,7 @@ def build_document(pairs=None):
                 "and the bank does not try to distinguish a noun list from two joined claims.",
             "separation":
                 "A THIRD instrument. Never merged with data/compass-propositions.json (which "
-                "defines the 57-model public baseline) nor with ratchet-propositions-v3.json "
+                "defines the 57-model public baseline) nor with ratchet-battery.json "
                 "(whose pairs are known non-complementary). Run separately, pool never.",
             "scope_limit":
                 "Thirty civil-liberties topics. Any result generalises to civil-liberties "

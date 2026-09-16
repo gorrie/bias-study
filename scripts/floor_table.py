@@ -200,7 +200,10 @@ _DROPPED_SEEN = set()
 #: drift the day the first I3 run lands.
 COMPASS_INSTRUMENT = "politicalcompass"
 I3_INSTRUMENT = "ratchet-battery-i3"
-INSTRUMENT_DEFAULT = COMPASS_INSTRUMENT
+RATCHET_INSTRUMENT = "ratchet-battery"
+
+#: The study's own instrument. 32 items, 16 mirrored pairs, authored 2026-08-30.
+INSTRUMENT_DEFAULT = RATCHET_INSTRUMENT
 
 #: Item count per instrument, used ONLY when a record does not name its own.
 #:
@@ -220,7 +223,62 @@ INSTRUMENT_DEFAULT = COMPASS_INSTRUMENT
 #: still cannot pool the two instruments, because 60 != 62. It is narrower than
 #: it looks -- a record with neither a name nor a matching count is still
 #: dropped.
-INSTRUMENT_ITEMS = {COMPASS_INSTRUMENT: 62, I3_INSTRUMENT: 60}
+INSTRUMENT_ITEMS = {COMPASS_INSTRUMENT: 62, I3_INSTRUMENT: 60, RATCHET_INSTRUMENT: 32}
+
+#: Every string a record may carry for a given instrument, mapped to its canonical id.
+#:
+#: MATCHING IS EXACT, NOT SUBSTRING. It was `_INSTRUMENT.lower() in got.lower()`, and the
+#: two banks in this tree are `ratchet-battery-i3` and `ratchet-battery` -- ONE CHARACTER
+#: apart, inside an `in` test, deciding which instrument a floor is computed from. A name
+#: that happened to contain another's is a silent pooling, and these two were built to be
+#: confusable.
+#:
+#: Descriptive strings are declared here rather than matched loosely. The external
+#: questionnaire's record string is a sentence whose tail has changed before; that is an
+#: argument for listing its prefixes, not for substring-matching every instrument.
+INSTRUMENT_ALIASES = {
+    COMPASS_INSTRUMENT: ("politicalcompass",),
+    I3_INSTRUMENT: ("ratchet-battery-i3",),
+    # NO BARE "ratchet-battery" ALIAS. It was here and it claimed every string beginning
+    # `ratchet-battery-` -- including `ratchet-battery-i3`, the bank this instrument
+    # replaced. A family prefix is not an identity.
+    RATCHET_INSTRUMENT: ("ratchet-battery",),
+}
+
+#: Instruments collected BEFORE `instrument` was written onto every record. Only these may
+#: be identified by item count when the field is absent -- see `_instrument_matches`.
+#: The battery has carried the field from its first sheet, so it is deliberately absent.
+PREDATES_INSTRUMENT_FIELD = (COMPASS_INSTRUMENT,)
+
+
+def _canonical(name):
+    """A recorded instrument string -> its canonical id, or the string itself.
+
+    Anchored at the START of the recorded string. The external questionnaire records
+    "politicalcompass.org 62-proposition test; texts and ..." and the discriminating part
+    is the head; a tail edit must not change which instrument a record belongs to.
+    """
+    got = (name or "").strip().lower()
+
+    # LONGEST PREFIX WINS, not the first one declared. `ratchet-battery` is a prefix of
+    # `ratchet-battery-i3`, so with first-match the canonical battery would claim the
+    # withdrawn bank's records the moment someone reordered this dict -- a pooling defect
+    # sitting behind nothing but the order keys happen to be written in. Sorting by length
+    # makes the specific alias beat the family every time, whatever the order.
+    candidates = sorted(
+        ((prefix, canon) for canon, prefixes in INSTRUMENT_ALIASES.items()
+         for prefix in prefixes),
+        key=lambda pc: -len(pc[0]))
+    for prefix, canon in candidates:
+        if got == prefix:
+            return canon
+        # THE PREFIX MUST END AT A BOUNDARY. A bare `startswith` matched
+        # `ratchet-battery0` as `ratchet-battery` -- a future bank could take this one's
+        # floors simply by being named next to it, which is the same one-character hazard
+        # the substring match had, moved one place along.
+        if got.startswith(prefix) and not got[len(prefix)].isalnum():
+            return canon
+    return got
 
 #: Set by the CLI; `load()` reads it. A module global rather than a parameter
 #: threaded through ~15 call sites, because every one of them wants the same
@@ -251,7 +309,18 @@ def _instrument_matches(rec):
     """
     got = rec.get("instrument")
     if isinstance(got, str):
-        return _INSTRUMENT.lower() in got.lower()
+        return _canonical(got) == _INSTRUMENT
+
+    # NO INSTRUMENT FIELD. The fallback is allowed ONLY for instruments declared to have
+    # predated the field, and never for one that has always written it.
+    #
+    # It was an unconditional item-count match, which is a claim on every record that
+    # never named an instrument: any 32-item sheet from any future bank would have been
+    # counted into this study's own battery, silently, because 32 == 32. The tree already
+    # holds 59 no-instrument records at 62 items from the constrained-decoding arm, which
+    # the previous default claimed by exactly this route.
+    if _INSTRUMENT not in PREDATES_INSTRUMENT_FIELD:
+        return False
     want_items = INSTRUMENT_ITEMS.get(_INSTRUMENT)
     if want_items is None:
         return False
@@ -1379,6 +1448,24 @@ def floor_modal_noise():
         return None
     med, p90v, mx = rec.get("median"), rec.get("p90"), rec.get("max")
     if med is None or p90v is None:
+        return None
+
+    # A CACHED FLOOR MUST NAME THE INSTRUMENT IT WAS MEASURED ON.
+    #
+    # This row is read from `data/modal-noise.json` rather than recomputed, because it is
+    # 2000 resamples over 110 cells and four gates read it. That is a good reason to cache
+    # and no reason at all to trust the cache across an instrument change -- and on
+    # 2026-09-16 it did exactly that: the study's instrument moved, every other row went
+    # empty for want of data, and this one kept printing a median and a p90 measured on the
+    # retired questionnaire. The denominator under every floor in the table, stale, and
+    # silent about it.
+    #
+    # The cache had a `signature` of cell and run counts and no instrument field at all, so
+    # nothing could have caught it. An unnamed provenance is not provenance.
+    cached_on = rec.get("instrument")
+    if cached_on is None or _canonical(cached_on) != _INSTRUMENT:
+        _count_drop("modal-noise cache measured on %s, not %s"
+                    % (cached_on or "an unrecorded instrument", _INSTRUMENT), rec)
         return None
     # THE ENDPOINT FLOOR IS ITS OWN NUMBER. This row printed the side-flip triple in both
     # columns, which understated the endpoint estimator by nearly a factor of three -- p90 3

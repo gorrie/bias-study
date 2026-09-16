@@ -327,6 +327,12 @@ def write_cache(boot=BOOT, seed=SEED):
                   "regenerate with scripts/floor_resolution.py --write."),
         "boot": boot,
         "seed": seed,
+        # THE INSTRUMENT IS PART OF THE PROVENANCE, and its absence let this cache outlive
+        # the instrument it was measured on. When the study changed instruments every other
+        # floor row went empty for want of data and this one kept printing -- the estimator
+        # under the whole table, measured on a retired questionnaire, with a `signature` of
+        # cell and run counts that could not possibly have caught it.
+        "instrument": F.INSTRUMENT_DEFAULT,
         "signature": corpus_signature(),
         "median": mn["median"],
         "p90": mn["p90"],
