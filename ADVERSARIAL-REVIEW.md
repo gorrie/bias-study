@@ -10,6 +10,40 @@ sections (§3.1, §5.2, §5.5–5.7) are the public-facing subset of this.
 
 ---
 
+## ⚠ THE VERDICTS BELOW ARE AS OF 2026-05-30. SEVEN HAVE BEEN SUPERSEDED.
+
+**Read this table first. The body below is unedited and is the record of what was argued and
+when — it is not the current status of anything.**
+
+Between 2026-09-04 and 2026-09-15 this study withdrew or narrowed 23 of its own claims
+([`CORRECTIONS.md`](CORRECTIONS.md)). Seven objections here were answered *using* claims that
+were later withdrawn, and this file was not revisited, so it kept reporting them as settled.
+
+They cluster on exactly two premises, which is the useful part: the abliteration Jaccard as
+proof of a text rewrite, and cross-method judge agreement as proof of no judge lean.
+
+| item | 2026-05-30 | now | why |
+|---|---|---|---|
+| **A2** | ANSWERED with data | **SUPERSEDED** | The answer was "word-set Jaccard 0.28–0.34 … the ablation unmistakably rewrote the political responses." Text change is established on **1 of 5 families** (qwen2.5-7b, 0.276). llama-3.1-8b at **0.339** and mistral-7b at **0.333** sit *inside* the **0.303–0.392** band one model produces resampled against itself. `abliteration_effect_check.py` prints TEXT CHANGE NOT ESTABLISHED for both. |
+| **A2b** | DONE | **UNDERCUT** | Its point was that Jaccard **0.306** at temperature 0 proves the divergence is the ablation, not sampling. 0.306 is at the bottom edge of the self-resample band. The control meant to rule out resampling returns a value inside the resampling distribution. |
+| **A4** | DONE (dose-response) | **NOT ESTABLISHED** | Two independent abliterations of one base disagree **8/9/9 against 0/2/0**, so movement belongs to *which third-party build was downloaded*, not to ablation strength. A dose-response across builds that differ by ablator is not a dose-response. |
+| **C2** ← *logged TOP KILLSHOT* | DONE — "killshot answered" | **PARTIALLY ANSWERED** | The answer was that all five framing gaps stay under 0.40, so the unmask is a lean and not agreeableness. On the same control **GPT-4.1 tracks the frame**: neutral **3.10** against reversed **2.75**, 5 of 20 reversed answers scored 2 and none scored 4 — a gap about the size of its own published effect (+0.43). Holds for Opus 4.7 and Grok 4.3. Same instrument, same items, a *position* on two models and *frame-following* on a third. |
+| **C3** | FIXED via multi-method sweep | **SUPERSEDED** | 84–91% cross-method agreement is not absence of lean. The panel's spread is **0.29** and it **interacts with condition** — one judge sits at +0.044 under the balance instruction and **+0.290** under the treatment — so it does not subtract out of a within-model delta. **Two of five published effects are not robust to judge choice.** |
+| **E1** | FIXED | **SUPERSEDED** | E1 *is* the objection that names this: a lean shared by all four judges is invisible to every check run. The method that could catch it anchors outside the panel, ranked first in the project's own pre-registered rubric, and was never run. |
+| **E5** | FIXED | **SUPERSEDED** | Answered by the abliterated-judge's 86.8% agreement. That anchor assumes the refusal direction is separable from the lean — which is A2, unestablished. The answer and its premise fall together. |
+| **A3**, **E6** | OPEN | **still OPEN** | A3 is sharpened: the weight rung ran only on models that sit at 3.00 under prompt force too, so "force does nothing at the weights" was established where force does nothing at all. E6's mitigation ("every script is published") is *factually* stale until the mirror is pushed. |
+
+Items **B1, B2, C1, D1, D2, E2, E3, E4 stand as written**, with D1/D2's numbers now read from
+the repaired corpus.
+
+**Why this sat for three months.** Nothing gated it. `key_numbers.RETRACTED` fails a build when
+a withdrawn phrase is asserted on a public surface, and this file is not one of its surfaces —
+so a claim could be withdrawn in `FINDINGS.md`, corrected in the README, and still stand here
+as the reason an objection was closed. A hostile reader's first stop is the document that says
+which objections were answered.
+
+---
+
 ## A. The weight rung (OBLITERATUS abliteration)
 
 ### A1 — "The abliteration null is underpowered; you can't tell 'no effect' from 'an effect you can't see.'"

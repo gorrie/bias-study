@@ -663,6 +663,24 @@ SURFACES = {
             "corrections_entries": "**%d entries**",
         },
     },
+    # THE DOCUMENT THAT SAYS WHY THE OBJECTIONS FAIL, which is a reviewer's first
+    # stop and was the last surface any retraction reached.
+    #
+    # ADVERSARIAL-REVIEW.md answered seven objections USING claims this study
+    # later withdrew -- the abliteration Jaccard as proof of a text rewrite, and
+    # cross-method judge agreement as proof of no judge lean. It was last edited
+    # 2026-05-30 and carried no banner, so from 2026-09-13 it stood as the reason
+    # an objection was closed while FINDINGS.md had already reopened it.
+    #
+    # It gates NO numbers on purpose: every figure in it is quoted from a result
+    # document that has its own gate, and duplicating those here would be the
+    # second copy this file exists to prevent. What it gets is the RETRACTED
+    # scan, which runs per surface -- so a withdrawn claim cannot stand in the
+    # file whose whole job is saying which claims survived.
+    "adversarial_review": {
+        "path": os.path.join(STUDY, "ADVERSARIAL-REVIEW.md"),
+        "phrases": {},
+    },
     "release": {
         "path": _find_surface("bias-study-release", "README.md"),
         # THIS SURFACE GATED TWO PHRASES WHILE THE WEBSITE GATED FIFTEEN, AND IT SHOWED.
@@ -1431,6 +1449,19 @@ RETRACTED = [
 #: to the public repository, and until 2026-09-06 NOTHING checked it -- so a claim withdrawn on
 #: the 5th was still asserted inside it on the 6th. A retraction that only reaches the sentences
 #: a human happens to re-read is not a retraction.
+#: `ADVERSARIAL-REVIEW.md` added 2026-09-15, and it is the surface where a
+#: withdrawn claim does the most damage.
+#:
+#: That file records which objections a hostile reader's strongest arguments were
+#: ANSWERED by, and it answered seven of them USING claims this study later
+#: withdrew -- the abliteration Jaccard as proof of a text rewrite, and
+#: cross-method judge agreement as proof of no judge lean. It was last edited
+#: 2026-05-30 and carried no staleness banner, so from 2026-09-13 it stood as the
+#: reason an objection was closed while `FINDINGS.md` had already reopened it.
+#:
+#: Nothing caught that, because this list held one file. A retraction that reaches
+#: the README and not the document titled "here is why the objections fail" has
+#: reached the wrong surface: a reviewer's first stop is the second one.
 RETRACTED_ALSO_SCAN = ("data/controls-audit.json",)
 
 
@@ -1486,6 +1517,19 @@ def check_retracted_in_data():
         try:
             blob = json.load(io.open(path, encoding="utf-8"))
         except ValueError:
+            # A FILE LISTED FOR SCANNING THAT IS NOT SCANNED MUST SAY SO.
+            #
+            # This was a bare `continue`. On 2026-09-15 ADVERSARIAL-REVIEW.md was
+            # added to this list -- markdown, in a JSON-only scanner -- and was
+            # skipped in complete silence while the gate reported success. The
+            # planted test that should have caught it passed, which is how the
+            # mistake was found: by not trusting the green.
+            #
+            # Prose surfaces belong in SURFACES, which is where that file went.
+            # This list is for data that ships.
+            out.append(("RETRACTED scan", "%s is listed in RETRACTED_ALSO_SCAN but is not "
+                                          "JSON, so it was NOT scanned. Prose belongs in "
+                                          "SURFACES." % rel, rel))
             continue
 
         def strings(node, trail=""):
@@ -1731,7 +1775,14 @@ def main(argv=None):
         for name, wanted in ([(n, args.check_website) for n in SURFACES
                               if n.startswith("website") or n.startswith("dispatch-")]
                              + [("release", args.check_release),
-                                ("versioning", args.check_release)]
+                                ("versioning", args.check_release),
+                                # Declared 2026-09-15 and immediately demonstrated the
+                                # hazard the comment above describes: the surface was
+                                # added to SURFACES, a withdrawn claim was planted in
+                                # it to check the gate, and the gate passed -- because
+                                # nothing listed it here. Declared and unchecked is the
+                                # same silence as not declared.
+                                ("adversarial_review", args.check_release)]
                              + [(n, args.check_books) for n in SURFACES
                                 if n.startswith("book-")]):
             if wanted:
