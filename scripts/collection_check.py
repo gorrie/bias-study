@@ -204,6 +204,35 @@ def analyse_sheets(rows):
         out["problems"].append(
             "this run mixes %d instruments: %s. They are never pooled."
             % (len(out["instruments"]), out["instruments"]))
+
+    # ONE PROVIDER PER CELL, or a replicate is not a replicate.
+    #
+    # OpenRouter routes one model id across several backends and can route two
+    # calls in the same sitting differently. Measured 2026-09-15 on the first I3
+    # wave: SIX of sixteen hosted models were served by more than one provider,
+    # kimi-k2.6 by EIGHT (Baidu, Chutes, Decart, DeepInfra, DigitalOcean, Novita,
+    # Parasail, StreamLake).
+    #
+    # It is not cosmetic. The backends do not honour the requested ceiling the
+    # same way, so the same model at the same cap splits clean:
+    #     kimi-k2.5  SiliconFlow  6/7 valid, median 7,942 tokens
+    #                AtlasCloud   0/4 valid, median 4,096 -- exactly the cap
+    #
+    # This study counts serving mode as a SAME-VERSION VARIANT, so a cell whose
+    # replicates crossed backends measured the backend as well as the model.
+    by_cell = collections.defaultdict(set)
+    for r in sheets:
+        if r.get("provider"):
+            by_cell[(r.get("model"), r.get("condition"))].add(r["provider"])
+    split = {k: sorted(v) for k, v in by_cell.items() if len(v) > 1}
+    out["cells_split_across_providers"] = len(split)
+    if split:
+        worst = max(split.items(), key=lambda kv: len(kv[1]))
+        out["problems"].append(
+            "%d cell(s) had their replicates served by MORE THAN ONE provider -- worst "
+            "%s/%s across %d backends (%s). Serving path is a same-version variant in this "
+            "study, so those replicates differ by backend as well as by draw."
+            % (len(split), worst[0][0], worst[0][1], len(worst[1]), ", ".join(worst[1])))
     return out
 
 

@@ -31,6 +31,34 @@ description: Run and verify a forced-choice barometer wave end-to-end — the fi
 >   instrument administered in id order defeats its own design. Pass `--shuffle-seed` and record
 >   it.
 >
+> ### The I3 wave has its own driver, and a gate in front of it
+>
+> `scripts/run_i3_wave.py` collects the frozen panel against the authored bank — 31 models × 4
+> conditions (`N, A, P, D`) × 3 shuffle seeds = 372 whole-sheet calls, one model's twelve
+> back-to-back so no contrast crosses a sitting, resumable by cell.
+>
+> ```bash
+> python scripts/probe_budget.py --run     # FIRST. Measures the budget across the roster.
+> python scripts/run_i3_wave.py --plan
+> python scripts/run_i3_wave.py --run
+> python scripts/collection_check.py 2026-09-16-i3-phase4
+> ```
+>
+> **It refuses to start — exit 2 — unless every panel model has been probed and `MAX_TOKENS`
+> is at least double the measured maximum.** That gate exists because the first attempt did not
+> have it: a cap of 4,096 taken from one non-reasoning model, 372 sheets launched, and deepseek
+> back at 95.8% invalid against openai's 7.7%. The instruction to size the budget from the
+> longest model was written in three places and did not hold; a non-zero exit did.
+>
+> `--models` narrows the check to the models you name. That is deliberate for a scoped
+> re-collection and is also the way past the gate, so do not reach for it to make the message
+> go away.
+>
+> `collection_check` now reads this layout (it globbed `raw/**` only, and returned zero rows
+> for every forced-choice run ever collected) and blocks on three things it could not see
+> before: sheets under 95% parse, **cells whose replicates were served by more than one
+> provider**, and the empty-response rate.
+>
 > This banner is deliberately not a rewrite. The body is revised when the I3 wave is actually
 > collected, so the procedure describes what was done rather than what was intended.
 

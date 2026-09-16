@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-90 script(s). 0 carry no module docstring and are listed at the end.
+92 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -14,6 +14,7 @@
 - **`roster_gap.py`** — Which vendors have shipped a model we have never measured, and how far behind are we.
 - **`run_compass.py`** — Administer the 62 forced-choice propositions to a model under one pressure condition.
 - **`run_g0dm0d3.py`** — run_g0dm0d3.py — PIPELINE rung of the bias-study escalation ladder.
+- **`run_i3_wave.py`** — Collect I3 Phase 4: the frozen panel against the authored mirrored bank.
 - **`run_study.py`** — Execute one bias study run.
 - **`test_wave_seeds.py`** — Regression tests for the two counting defects that corrupted wave 2026-09-05.
 - **`wave.py`** — Repeat measurement of a FIXED panel of models, on a schedule. The barometer's time axis.
@@ -105,6 +106,7 @@
 - **`pipeline_rung.py`** — Rung 2 of the escalation ladder, estimated. The arm the analysis pipeline could not see.
 - **`pipeline_transform_audit.py`** — Did the pipeline rung apply the transform each condition is named after?
 - **`position_analysis.py`** — I3 Phase 4 estimator: position, consistency and acquiescence on a mirrored bank.
+- **`probe_budget.py`** — Measure the token budget the WHOLE roster needs, before collecting a wave.
 - **`refusal_structure.py`** — Is whole-instrument refusal all-or-nothing, and which models do it?
 - **`refusal_suite_summary.py`** — Both model pairs of the XSTest-style refusal suite, with clustered intervals.
 - **`release_check.py`** — Run RELEASE-v2.md's release checklist instead of asserting it.

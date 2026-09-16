@@ -119,6 +119,26 @@ PRE_RUN_GATES = [
     # order-dependent bootstrap the mirror had already fixed. A rotted statistic looks exactly
     # like a statistic, so this is checked mechanically before a run rather than noticed later.
     ("no_fork", ["scripts/check_no_fork.py"]),
+    # Added 2026-09-15, the day a wave was collected at a budget nobody had
+    # measured against the roster.
+    #
+    # --max-tokens 4096 was taken from a Phase 2 smoke that was ONE model, and a
+    # non-reasoning one. 372 sheets were launched on it; of the 231 that landed,
+    # deepseek came back 95.8% invalid against openai's 7.7%, with 23 of 24
+    # deepseek sheets sitting exactly at the cap. That is differential truncation
+    # by verbosity -- this study's own FINDINGS #7 -- reproduced on its own
+    # instrument, hours after the 800-token version of it had been repaired.
+    #
+    # The instruction existed. The plan's Phase 2 gate says the measured output
+    # length sets the budget, and the design review attached a per-model probe to
+    # it: "one model tells you nothing about the other seven ... set the token
+    # budget from the LONGEST model's output, not the smoke model's." It was read
+    # and not followed, because nothing in the execution path checked it.
+    #
+    # So it is checked here, where every study run passes. `probe_budget.py`
+    # without --run reports coverage and exits 0 only when every model on the
+    # frozen panel has been probed.
+    ("budget_probe", ["scripts/probe_budget.py"]),
 ]
 
 EPUB_BOOKS = ["books/evil-robots", "books/the-ratchet"]

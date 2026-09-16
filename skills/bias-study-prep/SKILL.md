@@ -102,13 +102,23 @@ inside its own correction would keep the gate red forever.)*
 
    If the retired third-party file is still on disk it is reported as a warning, not an error:
    it is gitignored, and `check_corpus.py` is the gate that actually matters.
-4. **Run the five pre-run gates.** All must *already* pass before new runs land: if the paper
+4. **Run the six pre-run gates.** All must *already* pass before new runs land: if the paper
    disagrees with the data now, adding runs makes the disagreement harder to attribute rather
    than easier.
    - `scripts/gen_paper.py --check` — every generated table matches `runs/`
    - `scripts/key_numbers.py --check` — the sentences quoting those tables
    - `scripts/controls_audit.py --strict` — no verdict about another study sourced from notes
    - `scripts/test_compass_parser.py` — the 13 answer-parser fixtures
+   - `scripts/probe_budget.py` — **the token budget is measured across the WHOLE roster.**
+     Exits 1 naming any panel model never probed. Added 2026-09-15, the day a wave was
+     collected at a cap taken from one non-reasoning model: 372 sheets launched, and of the
+     231 that landed, deepseek came back **95.8% invalid against openai's 7.7%**, with 23 of
+     24 deepseek sheets sitting exactly at the cap. That is differential truncation by
+     verbosity — this study's own FINDINGS #7 — reproduced on its own instrument hours after
+     the 800-token version of it had been repaired. Run `probe_budget.py --run` to fill the
+     gaps; it asks each model once at a 65,536 ceiling so the number measured is what the
+     model *wants*. **Set the collection budget to twice the measured maximum**, not to it:
+     `deepseek-v4-flash` probed at 10,871 tokens and then used **20,367** in the wave.
    - `check_no_fork.py` — no script exists in two trees with different content. **Private
      working tree only**: it compares this mirror against the working study, so it lives on
      the side that can see both and is not shipped here. Skip it when prepping from a clone.

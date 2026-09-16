@@ -525,8 +525,22 @@ def main(argv=None):
         for m in missing:
             print("   %s" % m)
         print("Either name it in a skill, or add it to NOT_A_PROCEDURE with the reason.")
-        if args.strict:
-            return 1
+        # FATAL, NOT ADVISORY, SINCE 2026-09-15.
+        #
+        # This printed the list and returned 0 unless --strict was passed, and
+        # nothing passes --strict: not CI, not the prep skill, not release_check.
+        # So the check ran everywhere, found undocumented scripts, said so, and
+        # reported success -- which is the vacuous pass this repository has now
+        # found in six separate tools, in its own coverage checker.
+        #
+        # It surfaced when probe_budget.py and run_i3_wave.py were added: both
+        # were listed as named by no skill, and the gate exited 0 over them. An
+        # undocumented entry point is exactly what this file exists to catch, and
+        # a collector nobody can find the runbook for is how a wave gets launched
+        # on a budget nobody measured.
+        #
+        # --strict is kept as a no-op alias so existing invocations do not break.
+        return 1
     else:
         print("every entry point is either named by a skill or declared a non-procedure.")
 
