@@ -35,6 +35,7 @@ them collects a corpus that looks complete:
 from __future__ import annotations
 
 import argparse
+import collections
 import glob
 import io
 import json
@@ -126,9 +127,28 @@ def _served_provider(out_date, model, cond):
     return served
 
 
-def done_cells(out_dir):
-    """(model, condition, shuffle_seed) already on disk."""
-    got = set()
+#: Failures worth another call, and the cap on how many.
+#:
+#: A CELL IS NOT DONE BECAUSE SOMETHING LANDED IN IT. This counted any record as collected,
+#: valid or not, so the prereg's own rule -- "a run that does not yield exactly N clean
+#: answers is discarded whole and rerun" -- was executed by nothing. `gemma-4-12B` sits at
+#: 8 invalid of 12 and would have entered the order floor on four sheets.
+#:
+#: A REFUSAL IS NOT RETRIED. It is a measurement, and this study reports refusal rates; a
+#: retry loop over refusals would manufacture answers from models that declined. Only
+#: mechanical failures are re-rolled.
+RETRYABLE = ("other", "truncated", "budget-exhausted", "transport")
+RETRY_CAP = 2
+
+
+def done_cells(out_dir, retry_failures=True):
+    """(model, condition, shuffle_seed) already collected.
+
+    A cell counts as done when it holds a VALID sheet, a refusal, or has been attempted
+    `RETRY_CAP` times. Anything else is left for another call.
+    """
+    attempts = collections.Counter()
+    good = set()
     for p in glob.glob(os.path.join(out_dir, "*.jsonl")):
         for line in io.open(p, encoding="utf-8", errors="replace"):
             if not line.strip():
@@ -137,8 +157,16 @@ def done_cells(out_dir):
                 r = json.loads(line)
             except ValueError:
                 continue
-            got.add((r.get("model"), r.get("condition"), r.get("shuffle_seed")))
-    return got
+            key = (r.get("model"), r.get("condition"), r.get("shuffle_seed"))
+            attempts[key] += 1
+            if not retry_failures:
+                good.add(key)
+                continue
+            if r.get("valid") or (r.get("failure_mode") or "") not in RETRYABLE:
+                good.add(key)
+    if retry_failures:
+        good |= {k for k, n in attempts.items() if n >= RETRY_CAP}
+    return good
 
 
 def budget_precondition(models):

@@ -388,6 +388,23 @@ def build_prompt(items, condition, shuffle_seed=None, template="T01"):
 # asterisks and underscores around the number and the option. Alternation order is
 # load-bearing -- "strongly disagree" must be tried before "disagree" or every Strongly
 # Disagree silently becomes a Disagree and the scale quietly compresses.
+#: `12. <proposition text>\n<option>` -> `12. <option>`, so a sheet that puts the answer on
+#: the line below its number parses. Anchored on a NUMBERED line whose remainder is not
+#: itself an option, followed by a line that is ONLY an option (with optional markdown
+#: decoration). Anything else is left exactly as written -- this rewrites the shape of a
+#: match, never its content, and a line that already carries its option is untouched.
+_NEXT_LINE_RE = re.compile(
+    r"^([\s*_>#-]*\d{1,2}[\s*_]*[.):\-])[^\n]*\n[\s*_>#-]*"
+    r"(strongly\s+disagree|strongly\s+agree|disagree|agree)[\s*_.]*$",
+    re.IGNORECASE | re.MULTILINE,
+)
+
+
+def _join_number_then_option(text):
+    """Fold `N. <proposition>` + `<option>` onto one line. See parse_answers."""
+    return _NEXT_LINE_RE.sub(lambda m: "%s %s" % (m.group(1), m.group(2)), text)
+
+
 LINE_RE = re.compile(
     r"^[\s*_>#-]*(\d{1,2})[\s*_]*[.):\-][\s*_]*"
     r"(strongly\s+disagree|strongly\s+agree|disagree|agree)(?![a-z])",
@@ -442,7 +459,22 @@ def parse_answers(text, expected_ids):
     token wins, otherwise every Strongly Disagree silently becomes a Disagree.
     """
     found, dupes = {}, []
-    for match in LINE_RE.finditer(text or ""):
+    # THE OPTION MAY SIT ON THE NEXT LINE. `LINE_RE` requires the number and the option on
+    # one line. `llama3.1:8b` answers the whole sheet as
+    #
+    #     1. Government funding of organisations that flag lawful speech ...
+    #     Agree
+    #
+    # -- every item answered, nothing truncated, nothing refused -- and this parsed ZERO of
+    # them. `classify_failure` then saw a non-empty, non-capped body with no answers and
+    # called it a REFUSAL. Four of that model's six recorded refusals are this shape, and the
+    # refusal-by-vendor result publishes them as declining the instrument.
+    #
+    # Folding the break is the narrowest fix that keeps the parser strict: the number must
+    # still be followed by the proposition and then an option token, with nothing else
+    # between them but the line break and the proposition's own text.
+    text = _join_number_then_option(text or "")
+    for match in LINE_RE.finditer(text):
         qid = int(match.group(1))
         token = re.sub(r"\s+", " ", match.group(2).strip().lower())
         if qid in found:
