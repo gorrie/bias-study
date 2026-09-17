@@ -192,8 +192,15 @@ _DROPPED_SEEN = set()
 #: The records already carry the discriminator: `instrument` is written straight
 #: from the bank's own field, so a sheet names the bank it was collected on.
 #:
-#: ONE INSTRUMENT LIVES HERE. 2026-09-17: `runs/` holds 702 records and every one
-#: of them names the author's battery. The two retired banks and every record
+#: ONE INSTRUMENT LIVES HERE -- one instrument among the records this loader ACCEPTS, which is
+#: what the sentence meant and not what it said. It read "`runs/` holds 702 records and every
+#: one of them names the author's battery"; `runs/` in fact holds tens of thousands across
+#: dozens of directories -- the May judged corpus, g0dm0d3, recollect, spliced -- which carry no
+#: `schema` and are excluded by the `compass-run/1` test below, not by their instrument. The
+#: filter is right and the sentence was wrong, which is the more dangerous way round: a reader
+#: checking the claim finds it false and stops trusting the filter.
+#:
+#: The two retired banks and every record
 #: collected on them are in `withdrawn/`, and the constants that existed to
 #: RECOGNISE them are gone with them -- a discriminator for a bank no record
 #: carries is a name kept alive for nothing, and this one kept being read as the
