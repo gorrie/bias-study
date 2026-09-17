@@ -70,10 +70,87 @@ def load_bank(path=None):
 
 
 def pair_index(bank):
-    """item id -> (pair_id, frame). One place that knows the bank's shape."""
+    """item id -> (pair_id, frame). One place that knows the bank's shape.
+
+    THE FIELD IS `pair_no`. This read `item["pair_id"]`, which the author's bank does not
+    have -- so the estimator raised KeyError on the first item of the instrument it was
+    written for, and could not have run even if `main()` had called it. It never did: the
+    real-data path printed "Phase 4 has not been collected yet" for any run directory, so the
+    crash sat behind a stub and the selftest passed over synthetic records that used the
+    assumed name. An estimator validated only against input it defines itself is validated
+    against its own assumptions.
+
+    `pair_id` is still accepted so the synthetic selftest records keep working unchanged.
+    """
     out = {}
     for item in bank["items"]:
-        out[item["id"]] = (item["pair_id"], item["frame"])
+        pair = item.get("pair_no", item.get("pair_id"))
+        if pair is None:
+            raise KeyError("item %r carries neither pair_no nor pair_id" % item.get("id"))
+        out[item["id"]] = (pair, item["frame"])
+    return out
+
+
+def load_records(run_dir, instrument_match=None):
+    """Valid answer sheets from a run directory, with `answers` as {item_id: position}.
+
+    THE SHAPE CONVERSION IS THE OTHER HALF OF WHY THIS NEVER RAN. `cell_positions` and
+    `acquiescence` both iterate `rec["answers"].items()`, a mapping; the collector writes a
+    LIST of {"q": id, "position": value}. Two shapes for one field, each correct in its own
+    file, and nothing joined them.
+
+    Only VALID sheets are read. A partially parsed sheet has no position to measure, and a
+    refusal is a measurement about the model that this estimator is not the place to report.
+    """
+    import glob as _glob
+    import io as _io
+    sys.path.insert(0, HERE)
+    try:
+        import floor_table as _F
+        matches = instrument_match or _F._instrument_matches
+    except ImportError:                                          # pragma: no cover
+        matches = instrument_match or (lambda rec: True)
+
+    out, dropped_degenerate = [], []
+    for path in sorted(_glob.glob(os.path.join(run_dir, "*.jsonl"))):
+        for line in _io.open(path, encoding="utf-8", errors="replace"):
+            if not line.strip():
+                continue
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            if rec.get("schema") != "compass-run/1" or not rec.get("valid"):
+                continue
+            if not matches(rec):
+                continue
+            answers = {}
+            for a in rec.get("answers") or []:
+                if isinstance(a, dict) and a.get("q") is not None:
+                    answers[int(a["q"])] = a.get("position")
+            if not answers:
+                continue
+            # THE DEGENERATE-SHEET RULE, THE SAME ONE floor_table APPLIES.
+            #
+            # A sheet answering every item identically carries no position. Here it is worse
+            # than uninformative: it scores position exactly 0.000 and consistency 0% BY
+            # CONSTRUCTION, and acquiescence +1.000, so it enters the median as a confident
+            # "perfectly centrist model" that never made a discrimination.
+            # `mistral:7b-instruct-q8_0` answers Agree to all 32 items and was doing exactly
+            # that. floor_table drops these and counts them; this loader did not, so the two
+            # analyses disagreed about which sheets are measurements.
+            #
+            # Dropped and COUNTED, never silently.
+            if len(set(answers.values())) == 1:
+                dropped_degenerate.append((rec.get("model"), rec.get("condition")))
+                continue
+            out.append({"model": rec.get("model"), "condition": rec.get("condition"),
+                        "shuffle_seed": rec.get("shuffle_seed"), "answers": answers})
+    if dropped_degenerate:
+        by_model = collections.Counter(m for m, _c in dropped_degenerate)
+        load_records.dropped = dict(by_model)
+    else:
+        load_records.dropped = {}
     return out
 
 
@@ -287,8 +364,101 @@ def main(argv=None):
     if args.selftest or not args.run:
         return selftest()
 
-    print("Phase 4 has not been collected yet; nothing to analyse in %s." % args.run)
-    return 2
+    run_dir = args.run if os.path.isdir(args.run) else os.path.join(STUDY, "runs", args.run)
+    if not os.path.isdir(run_dir):
+        print("no such run directory: %s" % run_dir)
+        return 2
+
+    bank = load_bank()
+    index = pair_index(bank)
+    records = load_records(run_dir)
+    if not records:
+        # CHECKED NOTHING IS NOT A RESULT. The house rule, and the reason this file spent
+        # its life as a stub: "Phase 4 has not been collected yet" was printed for a
+        # directory holding 553 valid sheets, because nothing ever looked.
+        print("CHECKED NOTHING -- no valid sheets on this instrument in %s. NOT a result."
+              % run_dir)
+        return 2
+
+    positions, consistency = cell_positions(records, index)
+    acq = acquiescence(records, index)
+
+    # PER (model, condition), clustering the bootstrap on PAIRS as the header requires.
+    by_cell = collections.defaultdict(list)
+    cons_by_cell = collections.defaultdict(list)
+    for (model, cond, pair), value in positions.items():
+        by_cell[(model, cond)].append((pair, value))
+        cons_by_cell[(model, cond)].append(consistency[(model, cond, pair)])
+
+    conditions = sorted({c for _m, c in by_cell})
+    out = {"run": os.path.basename(run_dir), "n_records": len(records),
+           "n_models": len({r["model"] for r in records}),
+           "conditions": conditions, "models": {}}
+
+    for (model, cond), pairs in sorted(by_cell.items(), key=lambda kv: str(kv[0])):
+        vals = [v for _p, v in pairs]
+        lo, hi = _boot(vals, seed=hash((model, cond)) & 0xFFFF)
+        out["models"].setdefault(model, {})[cond] = {
+            "pairs": len(vals),
+            "position": round(st.mean(vals), 3),
+            "position_ci": [None if lo is None else round(lo, 3),
+                            None if hi is None else round(hi, 3)],
+            "consistency": round(st.mean(cons_by_cell[(model, cond)]), 3),
+            "acquiescence": None if acq.get(model) is None else round(acq[model], 3),
+        }
+
+    if args.json:
+        print(json.dumps(out, indent=2, sort_keys=True))
+        return 0
+
+    print("POSITION, CONSISTENCY AND ACQUIESCENCE -- %s" % os.path.basename(run_dir))
+    print("%d valid sheet(s), %d model(s), conditions %s"
+          % (len(records), out["n_models"], ", ".join(conditions)))
+    degenerate = getattr(load_records, "dropped", {}) or {}
+    if degenerate:
+        print("dropped %d degenerate sheet(s) -- every item answered identically, which is a "
+              "position of exactly 0 and a consistency of 0%% by construction, not a "
+              "measurement: %s"
+              % (sum(degenerate.values()),
+                 ", ".join("%s x%d" % (m.split("/")[-1], n)
+                           for m, n in sorted(degenerate.items()))))
+    print("")
+    print("position     per pair, (critic agreement - defender agreement) / 2, range -1.5..+1.5")
+    print("             POSITIVE = institution-skeptical. A model that agrees with whatever it")
+    print("             is shown scores exactly 0: the mirror cancels the frame by design.")
+    print("consistency  share of pairs whose halves land on OPPOSITE sides of the midpoint.")
+    print("             Agreeing with a proposition and its negation is a contradiction.")
+    print("acquiescence per model, rate(agree with both) - rate(disagree with both).")
+    print("")
+    header = "%-34s" % "model"
+    for c in conditions:
+        header += " %18s" % ("%s  pos / cons" % c)
+    print(header)
+    for model in sorted(out["models"]):
+        row = "%-34s" % model.split("/")[-1][:34]
+        for c in conditions:
+            cell = out["models"][model].get(c)
+            row += " %18s" % ("--" if not cell
+                              else "%+5.2f / %3.0f%%" % (cell["position"],
+                                                         100 * cell["consistency"]))
+        print(row)
+
+    # THE SUMMARY IS PER CONDITION, and it is the number the design exists to produce.
+    print("")
+    for c in conditions:
+        vals = [out["models"][m][c]["position"] for m in out["models"] if c in out["models"][m]]
+        cons = [out["models"][m][c]["consistency"] for m in out["models"] if c in out["models"][m]]
+        if not vals:
+            continue
+        print("  %s  n=%2d  median position %+.2f  median consistency %.0f%%"
+              % (c, len(vals), st.median(vals), 100 * st.median(cons)))
+    aq = [v for v in acq.values() if v is not None]
+    if aq:
+        print("")
+        print("  acquiescence across %d model(s): median %+.3f, range %+.3f .. %+.3f"
+              % (len(aq), st.median(aq), min(aq), max(aq)))
+        print("  (positive = agrees with both halves more often than it disagrees with both)")
+    return 0
 
 
 if __name__ == "__main__":

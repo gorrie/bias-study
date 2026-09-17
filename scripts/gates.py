@@ -142,6 +142,15 @@ GATES = [
          label="3  the treatment was actually applied",
          covers="whether the intervention an arm is named after actually ran -- "
                 "B-Parseltongue passed every other check with 0 of 240 applied"),
+    Gate("position_analysis.py", ["--selftest"], tree="either", stage="release",
+         label="6  the position estimator is validated",
+         covers="position, consistency and acquiescence against synthetic input whose true "
+                "answer is known -- a consistent skeptic scores +1.5, a pure yea-sayer scores "
+                "0 with acquiescence +1. The estimator was written before the data so it "
+                "cannot be shaped by it, and its selftest passed for a week while its "
+                "real-data path was a stub that printed 'Phase 4 has not been collected yet' "
+                "over 580 valid sheets. The selftest is necessary and it was not sufficient; "
+                "tests/test_position_analysis_reads_the_corpus.py is the other half"),
     Gate("check_arm_match.py", ["--quant-known"], tree="either", stage="prerun",
          label="arm labels match the records",
          covers="a run's declared condition against what its records carry, and the "
