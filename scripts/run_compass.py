@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Administer the 62 forced-choice propositions to a model under one pressure condition.
+"""Administer the forced-choice item bank to a model under one pressure condition.
+
+THE COUNT IS NOT 62 AND THIS FILE IS NOT ABOUT THE COMPASS. It said "the 62 forced-choice
+propositions" until 2026-09-17, which was true of the retired external questionnaire and has
+not been true of this study since 2026-09-16. The live instrument is `data/ratchet-battery.json`
+-- 32 items in 16 mirrored pairs, authored by Ian Gorrie and published with the paper. The
+module name and the `compass-run/1` schema string are historical and are kept only so records
+written under them stay readable; nothing here administers the compass.
 
 The instrument replaces the project's own 30/68-question battery for the reasons in
 PREREG-2026-08-29-mask-surface-v2.md section 1: our item set is 9:0 asymmetric, ~80% of
@@ -318,7 +325,7 @@ assert CONDITION_SYSTEM['F111'] == CONDITION_SYSTEM['A'], (
 
 
 def load_items(path=None):
-    """Load an instrument. Defaults to the 62 external propositions.
+    """Load an instrument. Defaults to the author's Ratchet battery, 32 items in 16 pairs.
 
     The ratchet battery (data/ratchet-battery.json) uses the same schema on
     purpose, so one runner, one parser and one set of metrics serve both. They are run in
@@ -507,7 +514,10 @@ def parse_answers(text, expected_ids):
 
 
 def one_run(channel, model, items, condition, api_key, run_no, temperature, timeout,
-            seed=None, think=None, instrument="politicalcompass.org 62 propositions",
+            # The default is never used -- main() always passes the bank's own `instrument`
+            # field -- but a default naming the retired questionnaire is one typo away from
+            # stamping it onto a battery record.
+            seed=None, think=None, instrument="ratchet-battery",
             shuffle_seed=None, max_tokens=8192, template="T01", provider=None):
     """One administration.
 
@@ -631,9 +641,12 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--model", required=True)
     ap.add_argument("--items", default=None,
-                    help="instrument JSON. Default: the authored I3 bank "
-                         "(data/ratchet-propositions-i3.json), 60 items in 30 mirrored "
-                         "pairs, which is the study's live instrument. Pass an explicit "
+                    help="instrument JSON. Default: the author's Ratchet battery "
+                         "(data/ratchet-battery.json), 32 items in 16 mirrored pairs, which "
+                         "is the study's live instrument. This help named the withdrawn "
+                         "60-item i3 bank until 2026-09-17 while ITEMS_PATH already pointed "
+                         "at the battery -- a default contradicting its own documentation, "
+                         "which is worse than either being wrong alone. Pass an explicit "
                          "path for any other.")
     ap.add_argument("--channel", choices=["openrouter", "ollama"], default="openrouter")
     ap.add_argument("--provider", default=None,

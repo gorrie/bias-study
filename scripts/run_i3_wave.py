@@ -7,9 +7,13 @@ THE SHAPE, and every part of it is pre-registered in
     31 models  x  4 conditions (N, A, P, D)  x  3 shuffle seeds (11, 22, 33)
     = 372 whole-sheet calls
 
-`run_compass.py` is whole-sheet -- one call returns all 60 answers -- which is
-why this is 372 calls and not the "5,760" the prereg body said before the
-amendment. That figure counted item-answers.
+`run_compass.py` is whole-sheet -- ONE CALL RETURNS ALL 32 ANSWERS -- which is
+why this is a count of sheets and not the "5,760" the prereg body said before
+the amendment. That figure counted item-answers.
+
+(This said "all 60 answers" until 2026-09-17, carried over from the withdrawn
+60-item bank. The live instrument is the author's 32-item Ratchet battery, and
+the roster is 36 models, not the 31 the shape below still describes.)
 
 WHY A DRIVER AND NOT A SHELL LOOP
 ---------------------------------

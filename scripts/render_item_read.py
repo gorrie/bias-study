@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
-"""Render the I3 bank as 30 pairs for the human read that gates Phase 2.
+"""Render the live item bank as mirrored pairs for the human read that gates collection.
 
-`PLAN-2026-09-13-I3.md` Phase 1 gates on two things: the item-bank test passes,
-and A HUMAN HAS READ ALL 60 ITEMS ONCE. The test passes. This exists so the read
-is a ten-minute job rather than a JSON crawl, because a gate that is tedious to
-clear is a gate that gets waved through -- and the last time these pairs were
+THE BANK IS THE AUTHOR'S, AND ITS PAIRS ARE NOT NEGATIONS. This said "the I3 bank as 30 pairs"
+and "A HUMAN HAS READ ALL 60 ITEMS", describing the 60-item bank an assistant generated on
+2026-09-14 and which is withdrawn. The live instrument is `data/ratchet-battery.json` -- 32
+items in 16 pairs, where each half states a claim and its opposing framing in the author's own
+words. The question the sheet asks is therefore "can I agree with BOTH halves without
+contradicting myself?", not "is this the same sentence with a 'not' in it".
+
+The item count and pair count are read from the bank, so this text is the only place they
+could go stale, and they are not repeated below.
+
+This exists so the read is a ten-minute job rather than a JSON crawl, because a gate that is
+tedious to clear is a gate that gets waved through -- and the last time generated pairs were
 read by a human, SIX OF TEN WERE BROKEN (`ITEM-AUDIT-2026-09-14-mirror-pairs.md`).
 
 The reader applies ONE test, the fourth rule from that audit, which is the rule

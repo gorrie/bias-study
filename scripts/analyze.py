@@ -320,7 +320,11 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     here = os.path.dirname(os.path.abspath(__file__))
-    items_path = args.items or os.path.join(here, "..", "data", "compass-propositions.json")
+    # THE LIVE INSTRUMENT. This defaulted to `data/compass-propositions.json`, the retired
+    # external questionnaire, which left `data/` on 2026-09-17 -- so an invocation without
+    # `--items` would now raise FileNotFoundError, and before that it silently interpreted
+    # battery sheets against a 62-item bank they were never collected on.
+    items_path = args.items or os.path.join(here, "..", "data", "ratchet-battery.json")
     data, items, group, direction = load_instrument(items_path)
     runs = load_runs(args.root)
     if not runs:
