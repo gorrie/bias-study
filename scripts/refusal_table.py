@@ -55,6 +55,9 @@ CONDITIONS = ["A", "B", "C", "D", "E", "P"]
 # cannot say which. So it is imported, not retyped.
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from run_compass import CLASSIFIER_VERSION, classify_failure  # noqa: E402
+# The instrument guard belongs to ONE module. A second copy of "is this our instrument" is how
+# this file spent the instrument change reading a substring of the retired questionnaire's name.
+import floor_table as _FT  # noqa: E402
 
 # The collector's default before it was measured, and after. A row that predates the
 # max_tokens field was collected under one of these; the smaller one is the conservative
@@ -201,7 +204,20 @@ def load(exclude=None):
                 row = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            if "compass" not in str(row.get("instrument")):
+            # THE INSTRUMENT GUARD, SHARED WITH EVERY OTHER READER.
+            #
+            # This was `if "compass" not in str(row.get("instrument")): continue` -- a
+            # substring test for the retired external questionnaire. Every record collected
+            # on the author's battery carries `ratchet-battery`, so this dropped ALL of them,
+            # and `--audit` then printed "0 row(s) labelled by the current classifier",
+            # "refusal = declined all 62 items", "D and P pooled: 0 refusals in 0 runs" and
+            # EXITED 0. The refusal deliverable, which key_numbers imports, reported a clean
+            # result over 436 records it had discarded. This project's signature defect --
+            # clean output over nothing examined -- in the one table that reports which models
+            # decline the instrument.
+            #
+            # One definition of "is this our instrument", in floor_table, used by everyone.
+            if not _FT._instrument_matches(row):
                 continue
             if (row.get("model") or "").startswith(BROKEN_BUILDS):
                 continue
@@ -345,7 +361,10 @@ def main():
                                          for c in CONDITIONS if counted[(v, c)][1]), v))
 
     print("REFUSAL RATE BY VENDOR AND CONDITION -- recomputed from runs/")
-    print("refusal = declined all 62 items: prose returned, zero answers, budget intact")
+    # DERIVED FROM THE LIVE BANK. Typed as 62 -- the retired questionnaire's length -- and
+    # printed above a table computed from 32-item sheets.
+    print("refusal = declined all %d items: prose returned, zero answers, budget intact"
+          % _FT.INSTRUMENT_ITEMS.get(_FT.INSTRUMENT_DEFAULT, 0))
     if args.exclude:
         print("excluding: " + ", ".join(sorted(args.exclude)))
     print()

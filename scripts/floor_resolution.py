@@ -145,8 +145,22 @@ def p90(v):
 
 def wave_cells(condition=None):
     """(model, condition) -> list of answer sheets, from the wave at n=5."""
+    # THE ITEM ORDER IS PART OF THE CELL.
+    #
+    # This keyed on (model, condition) alone. Under the ORIGINAL wave design that was a cell:
+    # one item order, five swept SAMPLING seeds. The current design collects THREE item
+    # orders per (model, condition) -- shuffle seeds 11/22/33 -- so the same key pooled them,
+    # and measured on 2026-09-17, 32 of 33 condition-D groups spanned more than one order.
+    #
+    # This arm is the estimator's own spread: two bootstrap modals OF THE SAME CELL, where
+    # every item that differs differs because the modal moved and nothing else did. Pooling
+    # orders puts presentation-order variance inside it -- and this number is the denominator
+    # every other floor in the table is judged against, so inflating it makes every real
+    # effect look smaller than it is. Pass 2 would have collected 148 sheets into a
+    # contaminated floor.
     got = F.load(WAVE, condition=condition,
-                 key=lambda r: (r["model"], r["condition"]), dedupe_by_seed=True)
+                 key=lambda r: (r["model"], r["condition"], r.get("shuffle_seed")),
+                 dedupe_by_seed=True)
     return {k: v for k, v in got.items() if len(v) >= 4}
 
 
@@ -197,14 +211,28 @@ def between_vs_within(condition="D", min_runs=4):
     The pooled same-cell modal bootstrap is a descriptive reference, not a calibrated
     null for a particular between-model contrast or a test of scorer validity.
     """
-    raw = F.load(WAVE, key=lambda r: (r["model"], r["condition"]), dedupe_by_seed=True)
-    cells = {k: v for k, v in raw.items() if len(v) >= min_runs}
-    models = sorted(m for (m, c) in cells if c == condition)
-    modal = {m: F.modal(cells[(m, condition)]) for m in models}
+    # ONE ORDER PER MODEL, for the same reason as wave_cells above: the WITHIN distances here
+    # are run-against-run inside a cell, and a cell that pools three item orders reports
+    # order variance as run-to-run variance. Where a model has more than one qualifying
+    # order, take the deepest -- that is the replicate cell, the one collected to measure
+    # exactly this -- and break ties on the seed so the choice cannot depend on glob order.
+    raw = F.load(WAVE, key=lambda r: (r["model"], r["condition"], r.get("shuffle_seed")),
+                 dedupe_by_seed=True)
+    qualifying = {k: v for k, v in raw.items() if len(v) >= min_runs}
+    best = {}
+    for (m, c, s), runs in sorted(qualifying.items(), key=lambda kv: str(kv[0])):
+        if c != condition:
+            continue
+        cur = best.get(m)
+        if cur is None or (len(runs), -(s or 0)) > (len(cur[1]), -(cur[0] or 0)):
+            best[m] = (s, runs)
+    cells = {m: runs for m, (s, runs) in best.items()}
+    models = sorted(cells)
+    modal = {m: F.modal(cells[m]) for m in models}
 
     within = []
     for m in models:
-        r = cells[(m, condition)]
+        r = cells[m]
         within += [F.both_stats(r[i], r[j])[0]
                    for i in range(len(r)) for j in range(i + 1, len(r))]
 

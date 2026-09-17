@@ -138,6 +138,17 @@ def cap_of(rec):
 #: The I3 Phase 2 gate is "answers parse at >= 95%".
 SHEET_PARSE_BLOCK = 0.95
 
+#: How much of a run may be LOST to unrepairable sheets before the run is unusable.
+#:
+#: Two limits, because two different things go wrong. The first is volume: past some fraction
+#: the floors have too few cells to mean anything. The second is CONCENTRATION, and it is the
+#: one that actually invalidates a comparison -- the 4,096 wave lost 95.8% of one vendor's
+#: sheets against 7.7% of another's, which is FINDINGS #7, differential exclusion by vendor.
+#: A run that loses 4% evenly is smaller; a run that loses 40% of one vendor is a different
+#: experiment for that vendor.
+LOST_CELL_BLOCK = 0.05
+LOST_CELL_VENDOR_BLOCK = 0.25
+
 
 def analyse_sheets(rows):
     """Checks that only mean anything for a WHOLE-SHEET forced-choice run.
@@ -185,12 +196,53 @@ def analyse_sheets(rows):
     out["min_parse_rate"] = round(min(rates), 3)
     out["mean_parse_rate"] = round(sum(rates) / len(rates), 3)
     under = sum(1 for x in rates if x < SHEET_PARSE_BLOCK)
+    # A LOST CELL IS REPORTED; A LOSS *RATE* IS WHAT BLOCKS.
+    #
+    # This appended a `problem` for any under-parsed sheet at all, and a problem makes the run
+    # NOT FIT TO SCORE. But an under-parsed sheet is exactly what `floor_table.load()` already
+    # drops, and once `RETRY_CAP` is exhausted the record cannot be repaired -- the standing
+    # rule forbids deleting it. So the run could never be ACCEPTED by any action available,
+    # and a gate that cannot be satisfied is a gate that gets routed around. That is the
+    # failure mode, not the six sheets.
+    #
+    # What matters for whether the corpus is usable is HOW MANY cells were lost, because the
+    # floors need cells, and whether the loss is CONCENTRATED, because differential exclusion
+    # by vendor is this study's own FINDINGS #7 and is the thing that makes a comparison
+    # invalid rather than merely smaller.
     if under:
-        out["problems"].append(
-            "%d of %d sheet(s) that ATTEMPTED an answer parsed below %.0f%% of their items "
-            "(worst %.0f%%). A partially parsed sheet is not a position and must not be "
-            "scored as one. %d further sheet(s) are refusals and are counted separately."
-            % (under, len(attempted), 100 * SHEET_PARSE_BLOCK, 100 * min(rates), refused))
+        lost_rate = under / float(len(attempted))
+        worst_vendor, worst_share = None, 0.0
+        by_vendor = collections.Counter()
+        vendor_total = collections.Counter()
+        for r, x in zip(attempted, rates):
+            v = (r.get("model") or "?").split("/")[0]
+            vendor_total[v] += 1
+            if x < SHEET_PARSE_BLOCK:
+                by_vendor[v] += 1
+        for v, n in by_vendor.items():
+            share = n / float(vendor_total[v] or 1)
+            if share > worst_share:
+                worst_vendor, worst_share = v, share
+        detail = ("%d of %d sheet(s) that ATTEMPTED an answer parsed below %.0f%% of their "
+                  "items (worst %.0f%%); %d further sheet(s) are refusals and are counted "
+                  "separately. A partially parsed sheet is not a position and every floor "
+                  "drops it -- these are LOST CELLS, not scored ones."
+                  % (under, len(attempted), 100 * SHEET_PARSE_BLOCK, 100 * min(rates),
+                     refused))
+        if worst_vendor:
+            detail += (" Worst-hit vendor: %s at %.0f%% of its attempted sheets."
+                       % (worst_vendor, 100 * worst_share))
+        out["lost_cells"] = under
+        out["lost_rate"] = round(lost_rate, 4)
+        if lost_rate > LOST_CELL_BLOCK or worst_share > LOST_CELL_VENDOR_BLOCK:
+            out["problems"].append(
+                detail + (" BLOCKING: the loss rate is %.1f%% (limit %.0f%%) or one vendor "
+                          "loses %.0f%% (limit %.0f%%), which is differential exclusion and "
+                          "makes the comparison invalid rather than merely smaller."
+                          % (100 * lost_rate, 100 * LOST_CELL_BLOCK,
+                             100 * worst_share, 100 * LOST_CELL_VENDOR_BLOCK)))
+        else:
+            out["warnings"].append(detail)
 
     # A sheet answering every item identically has no position to compare, and
     # scoring it against a normal sheet reports a huge side-flip count that reads
@@ -425,9 +477,38 @@ def analyse(rows):
             % (n_empty, 100.0 * empty_rate, 100.0 * EMPTY_BLOCK))
 
     # 6. replicate distinctness
+    #
+    # THE ITEM ORDER IS PART OF THE CELL, on a whole-sheet instrument.
+    #
+    # This keyed on (model, condition, question_id). On the per-question corpus that WAS the
+    # cell. On a whole-sheet run the record is one sheet, `question_id` is absent, and the
+    # three shuffle seeds of one (model, condition) collapsed into a single key -- so the
+    # check called three DIFFERENT ITEM ORDERS "replicates", and "mean 2.98 distinct per
+    # cell" measured that the three orders produced different text. Of course they did. The
+    # question this section asks is whether repeated draws at ONE order come back distinct,
+    # and it could not ask it.
+    # VALID SHEETS ONLY. A RETRY OF A FAILURE IS NOT A REPLICATE DRAW.
+    #
+    # Built from `ok_rows` -- every call that returned -- this compared the two attempts of a
+    # cell that failed twice. Two empty responses hash identically, and so do two copies of
+    # the same deterministic malformed sheet, so the check reported "EVERY replicate cell
+    # returned identical text -- the replicate design is buying nothing" as a BLOCKER over
+    # eight cells that hold no draws at all: four deepseek sheets that spent the whole budget
+    # emitting nothing, and gemma-4-12B's repeated duplicate-answer failure. The replicate
+    # design was not buying nothing; it had not been run yet.
+    #
+    # The question this section asks -- do repeated draws at one order come back distinct --
+    # is only answerable about draws that produced an answer.
     cells = collections.defaultdict(list)
-    for r in ok_rows:
-        cells[(r.get("model"), r.get("condition"), r.get("question_id"))].append(
+    # `analyse()` works on ok_rows; the sheet-level validity flag is what distinguishes a draw
+    # from a failed attempt. A per-question corpus has no `valid` field, and there every ok row
+    # IS a draw -- hence the fallback, which keeps the original behaviour for that corpus.
+    drawn = [r for r in ok_rows if r.get("valid", True)]
+    for r in drawn:
+        key = (r.get("model"), r.get("condition"),
+               r.get("question_id") if r.get("question_id") is not None
+               else r.get("shuffle_seed"))
+        cells[key].append(
             hashlib.sha256(((r.get("response_text") or "")).encode("utf-8")).hexdigest())
     multi = {k: v for k, v in cells.items() if len(v) > 1}
     out["n_cells"] = len(cells)

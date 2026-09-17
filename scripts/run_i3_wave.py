@@ -88,9 +88,29 @@ BASE_SEED = 20260915
 MAX_TOKENS = 40960
 
 
-def panel():
+def panel(include_siblings=False):
+    """The frozen panel, optionally plus the declared requantisation siblings.
+
+    THE SIBLINGS ARE NOT THE PANEL. They are the second arm of a same-version null -- the same
+    base weights at a different quantisation -- declared in `wave-panel.json` under
+    `requant_siblings` with a date and a criterion, before collection, exactly as the
+    same-version siblings were. They do not join the panel series and no panel-derived count
+    includes them.
+
+    WITHOUT THIS THERE IS NO PASS 4. `floor_quant` reads the wave directory and pairs through
+    `check_arm_match.QUANT_PAIRS`, and NOTHING WROTE THOSE MODELS THERE: `--models` filters
+    the panel and cannot add to it, and the old `run_quant_floor.sh` writes to a retired
+    directory, at temperature 0, with no `--shuffle-seed` at all -- which on a mirrored
+    instrument presents every pair adjacent, the one arrangement the bank exists to avoid.
+    """
     with io.open(os.path.join(STUDY, "data", "wave-panel.json"), encoding="utf-8") as fh:
-        return json.load(fh)["models"]
+        payload = json.load(fh)
+    models = list(payload["models"])
+    if include_siblings:
+        for m in payload.get("requant_siblings") or []:
+            if m not in models:
+                models.append(m)
+    return models
 
 
 def is_local(model):
@@ -102,7 +122,7 @@ def safe(name):
     return "".join(c if c.isalnum() or c in "-._" else "_" for c in name)
 
 
-def _served_provider(out_date, model, cond):
+def _served_provider(out_date, model, cond=None):
     """Which backend actually served this cell's most recent sheet, or None.
 
     Read from the record rather than from the request, because the request did not
@@ -131,9 +151,14 @@ def _served_provider(out_date, model, cond):
                 rec = json.loads(line)
             except ValueError:
                 continue
-            if rec.get("model") == model and rec.get("condition") == cond \
-                    and rec.get("provider"):
-                served = rec["provider"]
+            if rec.get("model") != model or not rec.get("provider"):
+                continue
+            # `cond=None` asks "which backend has served this MODEL at all", which is the
+            # question a per-model pin actually has. Passing a condition is kept for callers
+            # that want one arm's backend.
+            if cond is not None and rec.get("condition") != cond:
+                continue
+            served = rec["provider"]
     return served
 
 
@@ -149,6 +174,52 @@ def _served_provider(out_date, model, cond):
 #: mechanical failures are re-rolled.
 RETRYABLE = ("other", "truncated", "budget-exhausted", "transport")
 RETRY_CAP = 2
+
+
+def probe_max():
+    """Longest VALID probe sheet across the roster, or 0 when the probe has not run.
+
+    VALID only: six of the thirty-six probe records are refusals, 160 to 214 tokens, and a
+    refusal is not a measurement of how long a 32-answer sheet is. The docstring above
+    MAX_TOKENS said "2x the roster's measured maximum" while the value is 2.37x of 17,268 --
+    a stated rule that did not match the number beside it. Derive it and the two cannot
+    disagree.
+    """
+    probe = os.path.join(STUDY, "runs", RUN_DATE + "-budget-probe")
+    if not os.path.isdir(probe):
+        return 0
+    longest = 0
+    for p in sorted(glob.glob(os.path.join(probe, "*.jsonl"))):
+        for line in io.open(p, encoding="utf-8", errors="replace"):
+            if not line.strip():
+                continue
+            try:
+                r = json.loads(line)
+            except ValueError:
+                continue
+            if r.get("valid"):
+                longest = max(longest, r.get("tokens_out") or 0)
+    return longest
+
+
+def valid_counts(out_dir):
+    """{(model, condition, shuffle_seed): VALID records on disk}.
+
+    What `run_compass --runs K` measures a cell against, so `--plan` can report the sheets a
+    replicate pass will actually write instead of assuming every cell starts empty.
+    """
+    seen = collections.Counter()
+    for p in sorted(glob.glob(os.path.join(out_dir, "*.jsonl"))):
+        for line in io.open(p, encoding="utf-8", errors="replace"):
+            if not line.strip():
+                continue
+            try:
+                r = json.loads(line)
+            except ValueError:
+                continue
+            if r.get("valid"):
+                seen[(r.get("model"), r.get("condition"), r.get("shuffle_seed"))] += 1
+    return seen
 
 
 def done_cells(out_dir, retry_failures=True):
@@ -257,17 +328,34 @@ def main(argv=None):
     #: SAMPLING seed at one shuffle seed. Without --seed-sweep run_compass reuses the same
     #: sampling seed on every run, and on seed-honouring backends the repeats come back
     #: near-identical -- a replicate floor of ~0, which is worse than not measuring it.
+    #: K IS THE CELL'S TOTAL, NOT AN INCREMENT. `run_compass --runs K` counts the valid
+    #: records already in the cell and collects `K - have`, so `--replicate 4` on a cell that
+    #: already holds one wave sheet collects THREE. The help here said "K extra runs" and the
+    #: prereg says "four extra runs on D ... five runs at one order is what makes
+    #: floor_modal_noise computable" -- three documents, two meanings, and `--plan` printed
+    #: 144 for a pass that would have written about 108.
+    #:
+    #: Settled as TOTAL, because that is what the code does and what the floor needs: the
+    #: modal-noise arm requires >= 4 valid sheets in a cell, so the number that matters is
+    #: how many the cell ENDS with. Use 5 -- the prereg's figure, and one failure of headroom
+    #: above the >= 4 rule, which matters because a single refusal or format failure in the
+    #: cell otherwise drops that model out of the floor entirely.
     ap.add_argument("--replicate", type=int, default=0, metavar="K",
-                    help="collect K extra runs per cell at a fixed item order, sweeping the "
-                         "sampling seed. Measures run-to-run, not order.")
+                    help="collect until each cell holds K runs TOTAL at a fixed item order, "
+                         "sweeping the sampling seed. Measures run-to-run, not order. The "
+                         "prereg's pass 2 is K=5.")
     ap.add_argument("--replicate-seed", type=int, default=SEEDS[0],
                     help="the shuffle seed held fixed during a replicate pass")
     ap.add_argument("--conditions", default=",".join(CONDITIONS),
                     help="comma-separated conditions to collect")
+    ap.add_argument("--siblings", action="store_true",
+                    help="include the declared requantisation siblings from wave-panel.json "
+                         "(pass 4). Local builds only, so the pass costs time and no money. "
+                         "They are a same-version null's second arm, not panel members.")
     args = ap.parse_args(argv)
 
     out_dir = os.path.join(STUDY, "runs", args.out_date)
-    models = panel()
+    models = panel(include_siblings=args.siblings)
     if args.models:
         want = {m.strip() for m in args.models.split(",")}
         models = [m for m in models if m in want]
@@ -298,9 +386,23 @@ def main(argv=None):
                  sum(1 for m in models if not is_local(m))))
         print("  conditions  %s" % ", ".join(plan_conds))
         print("  seeds       %s" % ", ".join(str(s) for s in plan_seeds))
-        print("  sheets      %d to collect (%d already on disk)"
-              % (len(todo) * per_cell, len(have)))
-        print("  max_tokens  %d (2x the roster's measured maximum, probe_budget.py)" % MAX_TOKENS)
+        # THE SHEETS THIS RUN WILL ACTUALLY WRITE. `len(todo) * per_cell` assumed every cell
+        # starts empty, so a replicate pass over cells that already hold a wave sheet
+        # over-reported by one sheet per cell -- 144 printed for about 108 written. K is the
+        # cell's TOTAL, so the new sheets are K minus what is valid there now.
+        if args.replicate:
+            _valid = valid_counts(out_dir)
+            to_write = sum(max(0, args.replicate - _valid.get(cell, 0)) for cell in todo)
+            print("  sheets      %d to collect across %d cell(s) -- each cell taken to %d "
+                  "run(s) total" % (to_write, len(todo), args.replicate))
+        else:
+            to_write = len(todo) * per_cell
+            print("  sheets      %d to collect (%d already on disk)" % (to_write, len(have)))
+        _pmax = probe_max()
+        print("  max_tokens  %d (%s, probe_budget.py)"
+              % (MAX_TOKENS,
+                 ("%.2fx the roster's measured maximum of %d" % (MAX_TOKENS / _pmax, _pmax))
+                 if _pmax else "roster maximum not measured"))
         # GATE STATUS IN THE PLAN. --plan returned before both preconditions, so it reported
         # a collection that --run then refused, and the operator learned that only by running.
         try:
@@ -359,6 +461,34 @@ def main(argv=None):
         print("Run: python scripts/probe_budget.py --run")
         return 2
 
+    # THE REGISTRY, ACTUALLY EXECUTED. `gates.py` has carried a `prerun` stage since it was
+    # written and NOTHING RAN IT: `release_check.py` was its only importer and it runs the
+    # release stage. This function hand-wired the two gates above -- each added the day after
+    # the defect it catches -- and the other eight sat in the registry, named, described, and
+    # never called in front of a spend. Two collection passes ran with three of them red,
+    # including the leak gate that guards the public repository.
+    #
+    # `gates.py` itself claimed "this is what run_i3_wave --run calls before it spends
+    # anything", which was false when it was written. An independent review found it. This is
+    # the line that makes the sentence true.
+    try:
+        import gates as _G
+        _failed = _G.preflight("prerun")
+    except ImportError as exc:
+        # FAIL CLOSED, for the same reason the approval gate does.
+        print("REFUSING TO COLLECT -- the gate registry could not be loaded: %s" % exc)
+        return 2
+    if _failed:
+        print("")
+        print("REFUSING TO COLLECT -- %d pre-collection gate(s) failed." % len(_failed))
+        for g, rc, line in _failed:
+            print("  * %s (exit %d): %s" % (g.label, rc, line[:100]))
+        print("")
+        print("These are the questions that must be answered BEFORE money is spent, not")
+        print("after the corpus is on disk. Fix them or move the gate out of `prerun` with")
+        print("a reason -- do not route around this.")
+        return 2
+
     started = time.time()
     n_ok = n_fail = 0
     _ = _served_provider  # named here so a refactor cannot drop the helper silently
@@ -395,7 +525,22 @@ def main(argv=None):
         # P on OpenInference. The A->D contrast for that model is then Reka against
         # Together, and serving path is a same-version variant this study MEASURES. The
         # per-cell check in collection_check passed it, because per-cell was the scope.
-        pinned = None
+        # SEEDED FROM DISK BEFORE THE FIRST CALL, not learned after it.
+        #
+        # This was `pinned = None`, learned from the first sheet this invocation returned.
+        # That works for a fresh model with twelve cells. It DOES NOT WORK FOR A REPLICATE
+        # PASS: replicate mode builds exactly one cell per model, so the pin is learned from
+        # a sheet that has already been sent, and every replicate goes out unpinned in a
+        # single `run_compass --runs K` call. The router is then free to serve the repeats
+        # from a different backend than the wave sheets they are measured against -- and
+        # serving path is a same-version variant this study MEASURES, so the replicate floor,
+        # the floor under every other floor, would be confounded with routing. That is
+        # precisely the defect pass 3 was run to undo.
+        #
+        # The model's existing sheets already name the backend that served them. Read it.
+        pinned = None if is_local(model) else _served_provider(args.out_date, model)
+        if pinned:
+            print("    pinned to %s from this model's existing sheets" % pinned, flush=True)
         for cond, seed in cells:
             cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
                    "--model", model, "--items", ITEMS, "--condition", cond,

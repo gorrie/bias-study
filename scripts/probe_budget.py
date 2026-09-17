@@ -65,8 +65,21 @@ PANEL_FILE = os.path.join(STUDY, "data", "wave-panel.json")
 
 
 def panel():
+    """The frozen panel PLUS the declared requantisation siblings.
+
+    ONE ROSTER, DERIVED FROM ONE FILE. The budget gate in `run_i3_wave` refuses to collect any
+    model this probe has not measured, so a roster the collector can reach and the probe
+    cannot is a pass that can never start -- which is exactly what pass 4 was until the
+    siblings were declared. Both readers take the same definition from
+    `wave-panel.json` rather than each keeping its own idea of who is on the roster.
+    """
     with io.open(PANEL_FILE, encoding="utf-8") as fh:
-        return json.load(fh)["models"]
+        payload = json.load(fh)
+    models = list(payload["models"])
+    for m in payload.get("requant_siblings") or []:
+        if m not in models:
+            models.append(m)
+    return models
 
 
 def is_local(m):

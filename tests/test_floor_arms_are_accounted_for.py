@@ -105,8 +105,8 @@ def test_a_wave_in_the_tree_removes_the_pre_collection_exemption():
     """
     _computed, missing = _run()
     excused = [arm for arm, kind, why in missing
-               if kind == "data" and "holds no wave directory at all" in why]
-    if F._tree_has_a_wave():
+               if kind == "data" and "no run data at all" in why]
+    if F._tree_has_run_data():
         assert not excused, ("this tree has a wave directory, so nothing may be excused as "
                              "pre-collection: %s" % ", ".join(excused))
 
@@ -127,4 +127,9 @@ def test_sources_are_recorded_from_the_read():
     F.all_floors()
     assert F.ARM_SOURCES, "no arm recorded a source read -- the recorder is not firing"
     total = sum(n for reads in F.ARM_SOURCES.values() for _p, n in reads)
-    assert total > 0, "every recorded source matched zero files, corpus-wide"
+    # ONLY WHERE THERE IS DATA TO MATCH. The public mirror carries no run export -- `runs/`
+    # is empty until a scrubbed export lands -- so every pattern correctly matches zero files
+    # there. Asserting a non-zero total unconditionally made this test fail in the tree whose
+    # emptiness is the expected state, which teaches the reader to ignore it.
+    if F._tree_has_run_data():
+        assert total > 0, "runs/ holds records but every recorded source matched zero files"

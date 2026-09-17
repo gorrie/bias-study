@@ -143,8 +143,9 @@ def _instrument_bound():
     try:
         from studypaths import STUDY_DIR as _SD
         import floor_table as _F
-        name = {_F.RATCHET_INSTRUMENT: "ratchet-battery.json",
-                _F.I3_INSTRUMENT: "ratchet-propositions-i3.json"}.get(_F.INSTRUMENT_DEFAULT)
+        # The withdrawn i3 bank's filename was here too; it left data/ on 2026-09-17 and a
+        # mapping entry pointing outside data/ can only resolve to a missing file.
+        name = {_F.RATCHET_INSTRUMENT: "ratchet-battery.json"}.get(_F.INSTRUMENT_DEFAULT)
         if name:
             with open(str(_SD / "data" / name), encoding="utf-8") as fh:
                 return len(_json.load(fh)["items"])

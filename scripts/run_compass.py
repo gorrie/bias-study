@@ -103,7 +103,18 @@ ITEMS_PATH = STUDY_DIR / "data" / "ratchet-battery.json"
 #:   lexical/0     pre-2026-08-31, refusal detected by phrase matching. Undercounted (5ecf8a1).
 #:   structural/0  2026-08-30 to 08-31, before the token cap was measured, so truncation was
 #:                 read as refusal (96e5fa5).
-CLASSIFIER_VERSION = "structural/1"
+#:   structural/1  2026-08-31 to 2026-09-17. Required each answer's number and option on ONE
+#:                 line, so a model answering "N. <proposition>" with the option on the next
+#:                 line parsed to zero answers and was then classified REFUSED. Four
+#:                 llama3.1:8b sheets in the 2026-09-16 wave are complete 32-of-32 answer
+#:                 sheets stored as refusals under this version.
+#:
+#: BUMPED 2026-09-17 BECAUSE THE RULE'S OUTCOME CHANGED, not its wording. The next-line join
+#: landed in parse_answers and nothing re-derived the records, so the audit's version partition
+#: could not see that stored labels and current code disagreed -- it compares rows labelled by
+#: the CURRENT version, and every affected row still claimed to be current. A fix that changes
+#: what a rule decides is a new version of the rule or the audit is blind to it.
+CLASSIFIER_VERSION = "structural/2"
 
 # Theirs, so the scales are directly comparable.
 POSITIONS = ["Strongly Disagree", "Disagree", "Agree", "Strongly Agree"]
@@ -678,10 +689,21 @@ def main(argv=None):
         # adjacent -- the one arrangement the bank is built to avoid.
         messages = build_prompt(items, args.condition, shuffle_seed=args.shuffle_seed,
                                 template=args.template)
+        # PRINT THE WHOLE PROMPT. This was `m["content"][:1500]`, which on the external
+        # 62-proposition bank happened to show most of the short items and on the Ratchet
+        # battery's full sentences shows NINE OF THIRTY-TWO -- under a footer that says
+        # "[32 items]". A preview that truncates silently and then states the count it did not
+        # show is the exact failure this block's own comment was written about: the step taken
+        # because money is about to be spent, disagreeing with what will be sent.
         for m in messages:
             print("--- %s ---" % m["role"])
-            print(m["content"][:1500])
+            print(m["content"])
             print()
+        shown = sum(1 for line in messages[-1]["content"].split("\n")
+                    if line[:1].isdigit() and ". " in line)
+        if shown != len(items):
+            print("[PREVIEW IS INCOMPLETE: %d of %d items rendered above]"
+                  % (shown, len(items)))
         print("[%d items, condition %s: %s]"
               % (len(items), args.condition, CONDITION_NOTE[args.condition]))
         print("[presentation: %s]"

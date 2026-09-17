@@ -2219,10 +2219,30 @@ def main(argv=None):
 
     text = io.open(PAPER, encoding="utf-8", newline="").read().replace("\r\n", "\n")
     bad = []
+    # A NUMBER THIS TREE CANNOT COMPUTE IS NAMED, NOT FORMATTED INTO A CRASH.
+    #
+    # This did `r["phrase"] % r["value"]` over every row, and a row whose value is
+    # UNAVAILABLE (None) raised `TypeError: %d format: a real number is required` out of
+    # main() -- so `--check`, the gate on the paper's prose, DIED rather than reporting.
+    # It died on `order_p90_frontier_sitting`, whose sentence quotes the modal sampling
+    # error, because `floor_modal_noise` correctly refuses a cache measured on the retired
+    # instrument. The right behaviour when an input is absent is to say which input, the
+    # way MISSING_FLOORS already does above -- a gate that cannot name what it failed to
+    # resolve is worse than one that fails.
+    unresolved = []
     for r in rows:
+        if r.get("value") is UNAVAILABLE:
+            unresolved.append(r)
+            continue
         expected = r["phrase"] % r["value"]
         if expected not in text:
             bad.append(r)
+    if unresolved:
+        print("NOT GATED -- %d number(s) this checkout cannot compute:" % len(unresolved))
+        for r in unresolved:
+            why = r.get("why_unavailable") or "no value produced in this tree"
+            print("  %-28s %s" % (r["key"], why[:96]))
+        print("")
 
     ours_bad = check_ours_row(rows)
 

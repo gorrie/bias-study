@@ -388,6 +388,11 @@ RETIRED_SOURCES = {
     "runs/*temp0*/**/*.jsonl":
         "the 2026-08-30 temperature-0 condition corpus, withdrawn 2026-09-16 and superseded "
         "by floor_conditions_wave, which reads the wave.",
+    "runs/*-constrained/*.jsonl":
+        "the constrained-decoding elicitation arm, collected on the retired external "
+        "questionnaire. Withdrawn from the private tree 2026-09-16 and from the public "
+        "mirror 2026-09-17. This design has no constrained-decoding arm, so the elicitation "
+        "row is gone unless it is designed in and collected on the live instrument.",
     "runs/*-wave-orders/*.jsonl":
         "the supplementary order sweep beside wave 0, on the retired external instrument, "
         "withdrawn 2026-09-16. This design sweeps three shuffle seeds inside the wave itself, "
@@ -434,7 +439,8 @@ def _diagnose(arm):
                         "measured anything")
     dead = sorted({p for p, n in reads if n == 0})
     live = [(p, n) for p, n in reads if n]
-    pre_collection = [] if _tree_has_a_wave() else [p for p in dead if p in COLLECTION_SOURCES]
+    pre_collection = [] if _tree_has_run_data() else [p for p in dead
+                                                      if p in COLLECTION_SOURCES]
     unexpected = [p for p in dead if p not in RETIRED_SOURCES and p not in pre_collection]
     if unexpected:
         return ("path", "no file matches %s%s"
@@ -453,7 +459,7 @@ def _diagnose(arm):
                            ("; also reads %d absent source(s): %s"
                             % (len(dead), ", ".join("`%s`" % p for p in dead))) if dead else ""))
     if pre_collection:
-        return ("data", "%s matches no file and this tree holds no wave directory at all -- "
+        return ("data", "%s matches no file and this tree holds no run data at all -- "
                         "nothing has been collected here, or exported here, yet"
                         % ", ".join("`%s`" % p for p in pre_collection))
     return ("retired", "; ".join("`%s` %s" % (p, RETIRED_SOURCES[p]) for p in dead))
@@ -473,7 +479,24 @@ _KIND_LABEL = {"path": "BROKEN", "retired": "retired", "data": "no data"}
 #: sitting right there -- and it stays BROKEN.
 #: The literal, not a reference to SAME_VERSION_GLOB, which is defined further down beside the
 #: arm that owns it. `test_floor_arms_are_accounted_for` asserts the two agree.
-COLLECTION_SOURCES = ("runs/*-wave/*.jsonl",)
+COLLECTION_SOURCES = ("runs/*-wave/*.jsonl", "runs/**/*.jsonl")
+
+
+def _tree_has_run_data():
+    """True when `runs/` holds ANY record at all.
+
+    THE CONDITION IS "THIS TREE HAS NO DATA", NOT "THIS TREE HAS NO WAVE. The first version
+    asked only whether a `runs/*-wave` directory existed, which excused the wave glob in the
+    public mirror but not the corpus-wide one -- and on 2026-09-17, when the last retired run
+    directory left the mirror's `runs/`, `floor_order`'s `runs/**/*.jsonl` matched nothing and
+    was reported BROKEN in a tree that simply has no export yet.
+
+    Stricter as well as more accurate: in the private tree `runs/` is full, so NOTHING is
+    excused there and a collection source that matches no file stays BROKEN -- which is the
+    case this whole report exists for.
+    """
+    return bool(sorted(glob.glob(os.path.join(STUDY, "runs", "**", "*.jsonl"),
+                                 recursive=True)))
 
 
 def _tree_has_a_wave():
@@ -828,7 +851,13 @@ def _order_cells(with_sources=False):
     """
     cells = collections.defaultdict(list)
     sources = collections.Counter()
-    for path in sorted(glob.glob(os.path.join(STUDY, "runs", "**", "*.jsonl"), recursive=True)):
+    _all_runs = sorted(glob.glob(os.path.join(STUDY, "runs", "**", "*.jsonl"), recursive=True))
+    # RECORDED LIKE EVERY OTHER SOURCE. This arm walks the whole of runs/ rather than calling
+    # load() with a pattern, so it registered nothing and `--uncomputed` could only say "read
+    # no source at all" -- which reads as a broken arm when the truth is an empty tree. That is
+    # what it said in the public mirror, where runs/ holds no wave export yet.
+    _record_source("runs/**/*.jsonl", len(_all_runs))
+    for path in _all_runs:
         rel = os.path.relpath(path, os.path.join(STUDY, "runs")).replace("\\", "/")
         if rel.split("/")[0] in ORDER_EXCLUDE:
             continue

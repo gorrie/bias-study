@@ -142,16 +142,27 @@ GATES = [
          label="3  the treatment was actually applied",
          covers="whether the intervention an arm is named after actually ran -- "
                 "B-Parseltongue passed every other check with 0 of 240 applied"),
-    Gate("check_arm_match.py", tree="either", stage="prerun",
+    Gate("check_arm_match.py", ["--quant-known"], tree="either", stage="prerun",
          label="arm labels match the records",
-         covers="a run's declared condition against what its records carry",
+         covers="a run's declared condition against what its records carry, and the "
+                "requantisation pair list against the builds actually installed",
          why="a collection-time check: it answers a question about a run being "
-             "written, not about the repository being released"),
-    Gate("audit_response_quality.py", ["--check"], tree="either", stage="prerun",
-         label="response quality",
-         covers="truncation, blanks and degenerate responses in a fresh corpus",
-         why="run against a collection as it lands; the release gate covers the "
-             "same corpus through validate_runs and collection_check"),
+             "written, not about the repository being released. REGISTERED WITH NO "
+             "ARGUMENTS UNTIL 2026-09-17, so it exited 2 on its own usage message and "
+             "the preflight read that as NOT APPLICABLE -- a gate that has never once "
+             "run, reported as one that did not need to"),
+    # MOVED OUT OF prerun 2026-09-17. `audit_response_quality --check` audits the MAY judged
+    # corpus -- 23,032 scored records, 547 empty-with-score -- which is PRESERVED, so the
+    # check properly fails and cannot be made to pass by any pre-collection action. A gate
+    # that is red before every collection forever is a gate whose red is ignored, and it was
+    # one of the three red when the registry was executed for the first time. It belongs
+    # where a preserved corpus is examined, not in front of a spend.
+    Gate("audit_response_quality.py", ["--check"], tree="either", stage="manual",
+         label="response quality (May judged corpus)",
+         covers="truncation, blanks and degenerate responses in the preserved May corpus",
+         why="its subject is a preserved corpus whose known defects are recorded rather "
+             "than repaired, so it reports them every time by design; run it when "
+             "auditing that corpus, not before collecting a new one"),
 
     # ---- the analysis -----------------------------------------------------------
     Gate("selftest_analysis.py", tree="mirror", stage="release",
@@ -219,24 +230,37 @@ GATES = [
                 "nothing read the checklist back, so the gate was a document",
          why="it is a precondition of collecting, not of releasing; run_i3_wave calls it "
              "in front of the spend"),
-    Gate("build_item_bank.py", ["--check"], tree="either", stage="prerun",
-         label="the I3 item bank matches a fresh build",
-         covers="data/ratchet-propositions-i3.json against rebuilding it -- contiguous "
-                "ids, every pair one inserted 'not', counts matching its declaration",
-         why="the instrument must be right BEFORE a collection, not after one"),
-    Gate("three_axis_score.py", ["--check"], tree="mirror", stage="prerun",
+    # RETIRED 2026-09-17 with the bank it checked. `build_item_bank.py --check` verified
+    # `data/ratchet-propositions-i3.json` -- the 60-item bank an assistant generated and
+    # substituted for the author's instrument -- against a fresh build. Its central rule,
+    # "every pair is the same sentence with one inserted 'not'", CANNOT be applied to the
+    # live instrument: the Ratchet battery's mirrored halves are re-worded opposing framings,
+    # authored, not derived. A generator and its gate travel with the bank they serve, and
+    # both are in `withdrawn/i3/`. See LEARNINGS #19 -- verify the mirror, never generate it.
+    # MOVED OUT OF prerun 2026-09-17. It validates `protocol/three-axis-items-DRAFT.json` in
+    # the mirror -- a THIRD assistant-drafted item set whose own header reads "DRAFT -- NOT
+    # FROZEN. Collection must not begin against this file." A gate in front of a collection
+    # that passes on a file collection must not begin against is answering a question nobody
+    # asked, and its green contributed to a preflight that was otherwise red. The author has
+    # not ruled on whether that draft stays; until he does it is not a precondition of
+    # anything.
+    Gate("three_axis_score.py", ["--check"], tree="mirror", stage="manual",
          label="three-axis item set validates",
-         covers="the three-axis item set's own structure",
-         why="an instrument check, run with the others before a collection"),
+         covers="the three-axis DRAFT item set's own structure",
+         why="its subject is a draft the author has not ruled on, and which says in its own "
+             "header that collection must not begin against it"),
     Gate("build_corpus_fingerprint.py", ["--check"], tree="study", stage="prerun",
          label="corpus fingerprint matches",
          covers="the .corpus-fingerprint files against the item text on disk",
          why="a collection-time check against material that does not ship"),
-    Gate("build_experiment.py", ["--check"], tree="study", stage="prerun",
+    # MOVED OUT OF prerun 2026-09-17: it regenerates the WEBSITE's payload from the May
+    # corpus. Nothing about it changes what a new collection will produce, and a gate in
+    # front of a spend should answer "will this spend buy usable data".
+    Gate("build_experiment.py", ["--check"], tree="study", stage="manual",
          label="the experiment payload is current",
          covers="the website's generated experiment JSON against runs/",
-         why="it regenerates a website payload, so it runs where the website "
-             "sources are, not in the release gate for the repository"),
+         why="it regenerates a website payload from the preserved corpus, so it runs when "
+             "the website is published, not before a collection"),
 
     # ---- analysis scripts whose --check verifies their own output -----------------
     Gate("calibration_study.py", ["--check"], tree="mirror", stage="manual",
@@ -271,12 +295,101 @@ def runnable(gate):
     return gate.cwd() is not None
 
 
+def execute(gate, timeout=900):
+    """Run one gate. Returns (rc, first_line_of_output).
+
+    rc 0 pass, 1 defect, 2 NOT APPLICABLE -- the project's convention, honoured here so a
+    gate that cannot apply in this tree is never counted as a pass.
+    """
+    import subprocess
+    cwd = gate.cwd()
+    if cwd is None:
+        return 2, "NOT APPLICABLE: needs the %s tree, which is not here" % gate.tree
+    argv = ([sys.executable, "-m", "pytest", "-q"] if gate.script == "pytest"
+            else [sys.executable] + gate.argv())
+    env = dict(os.environ, PYTHONIOENCODING="utf-8")
+    try:
+        r = subprocess.run(argv, cwd=cwd, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=timeout, env=env)
+    except Exception as exc:                                    # noqa: BLE001
+        return 1, "did not run: %s" % exc
+    blob = ((r.stdout or "") + (r.stderr or "")).strip()
+    out = blob.splitlines()
+    last = out[-1] if out else ""
+    # AN ARGPARSE USAGE ERROR IS NOT "NOT APPLICABLE". argparse exits 2 on a bad command
+    # line, and 2 is this project's NOT APPLICABLE code -- so a gate registered with
+    # arguments it rejects reported `n/a` forever and was counted as "did not need to run".
+    # `check_arm_match.py` is registered with no arguments and requires them; it has read as
+    # n/a since the registry was written. A gate that cannot be invoked is a FAILED gate.
+    if r.returncode == 2 and "usage:" in blob and "error:" in blob:
+        return 1, ("registered with a command line it rejects -- %s"
+                   % next((l for l in out if "error:" in l), last))
+    return r.returncode, last
+
+
+def preflight(stage="prerun", timeout=900, echo=print):
+    """RUN every gate at a stage. Returns the list of (gate, rc, line) that did not pass.
+
+    WHY THIS FUNCTION EXISTS
+    ------------------------
+    The registry below has had a `prerun` stage since it was written, and until 2026-09-17
+    NOTHING EXECUTED IT. `release_check.py` was the only importer, and it runs the release
+    stage. The pre-collection gates were a list, and a list is checked by whoever remembers it.
+
+    What the collection runner actually did was hand-wire two of them -- the instrument
+    sign-off and the budget probe -- directly into its own `main()`. Both were added the day
+    after the defect they catch. Every other prerun gate sat in the registry, named, described,
+    and never called in front of a spend.
+
+    That is this project's signature failure pointed at its own process: the knowledge was
+    written down, the checklist was derived, and the execution path checked two of nine items.
+    A pattern that is not executable is not a pattern, it is a memoir.
+
+    rc 2 is NOT a failure -- it is a gate that does not apply in this tree, and it is reported
+    as such rather than silently counted green.
+    """
+    failed, passed, na = [], 0, 0
+    rows = for_stage(stage)
+    if not rows:
+        # A PREFLIGHT OVER NOTHING MUST NOT READ AS CLEAN. Same rule as every other gate here.
+        raise AssertionError("no gates registered at stage %r -- preflight checked nothing"
+                             % stage)
+    echo("PREFLIGHT -- %d gate(s) at stage %s, in the %s tree"
+         % (len(rows), stage, "MIRROR" if THIS_IS_MIRROR else "private study"))
+    for g in rows:
+        rc, line = execute(g, timeout=timeout)
+        mark = {0: "pass", 2: "n/a "}.get(rc, "FAIL")
+        echo("  %s  %-44s %s" % (mark, g.label[:44], line[:88]))
+        if rc == 0:
+            passed += 1
+        elif rc == 2:
+            na += 1
+        else:
+            failed.append((g, rc, line))
+    echo("  %d passed, %d not applicable, %d FAILED" % (passed, na, len(failed)))
+    return failed
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--stage", choices=STAGES, help="only gates at this stage")
     ap.add_argument("--ungated", action="store_true",
                     help="only gates nothing runs automatically, with the reason")
+    ap.add_argument("--run", action="store_true",
+                    help="EXECUTE the gates at --stage (default prerun) instead of listing "
+                         "them. Exit 1 if any fails. This is what run_i3_wave --run calls "
+                         "before it spends anything.")
     a = ap.parse_args(argv)
+
+    if a.run:
+        failed = preflight(a.stage or "prerun")
+        if failed:
+            print()
+            print("COLLECTION IS NOT SAFE TO START. %d gate(s) failed:" % len(failed))
+            for g, rc, line in failed:
+                print("  %s (exit %d) -- %s" % (g.label, rc, g.covers))
+            return 1
+        return 0
 
     if a.ungated:
         rows = for_stage("manual")

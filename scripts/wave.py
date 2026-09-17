@@ -532,6 +532,30 @@ def main(argv=None):
     ap.add_argument("--limit", type=int, default=0, help="stop after N cells")
     args = ap.parse_args(argv)
 
+    # THIS COLLECTOR IS SUPERSEDED. Its verification, panel and series helpers are imported by
+    # four other scripts and stay; its COLLECTION path must not run.
+    #
+    # It writes to `runs/<date>-wave/`, which is the live `runs/*-wave/*.jsonl` glob that every
+    # floor arm reads, under the 2026-09-05 protocol: 5 runs per cell, an 8,192 token cap, one
+    # item order. The current design is 4 conditions x 3 shuffle seeds at 40,960, collected by
+    # `run_i3_wave.py`. Invoking this would drop sheets of a DIFFERENT PROTOCOL, on the same
+    # instrument, into the same directory the arms pool from -- and nothing downstream carries
+    # a protocol column, so the two would be indistinguishable once written.
+    #
+    # It also predates every pre-collection gate: no instrument sign-off, no budget
+    # precondition, no gate registry.
+    if args.run:
+        print("REFUSING TO COLLECT -- wave.py's collector is superseded.")
+        print("")
+        print("It writes the 2026-09-05 protocol (5 runs/cell, 8,192 tokens, one item order)")
+        print("into runs/<date>-wave/, which is the glob every floor arm reads. The current")
+        print("design is N/A/P/D x shuffle seeds 11/22/33 at 40,960 tokens, and the two are")
+        print("indistinguishable once they are in the same directory.")
+        print("")
+        print("Collect with:  python scripts/run_i3_wave.py --run")
+        print("This file's panel, series and verification helpers are unaffected.")
+        return 2
+
     if args.freeze_panel:
         freeze_panel(force=args.force)
         return 0
