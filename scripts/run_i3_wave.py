@@ -73,9 +73,19 @@ BASE_SEED = 20260915
 #: lesson was already written down in recollect_at_cap.py's docstring: 800 was not
 #: a neutral default for a 2026 line-up, and neither is 4,096.
 #:
-#: 32,768 is sized from the measured maximum across the roster: kimi-k2.5 emitted
-#: 16,226 tokens on a sheet where it had room. Double it.
-MAX_TOKENS = 32768
+#: 40,960 = 2x the roster's measured maximum, rounded up to a round number.
+#:
+#: MEASURED ON THIS INSTRUMENT AND THIS ROSTER, 2026-09-16: 36 models probed at a 65,536
+#: ceiling, longest sheet **17,268 tokens**, so the minimum safe budget is 34,536.
+#:
+#: The value here was 32,768, carried over from a probe of the 60-item bank on 31 models --
+#: and 32,768 is BELOW the 34,536 this roster needs. A shorter instrument did not make the
+#: budget smaller, because the five models added to the roster are reasoning models that
+#: spend the budget before they answer. The gate caught it: `--run` refused rather than
+#: collecting 273 sheets under a cap two thousand tokens short of what the longest model
+#: needs, which is how the 4,096 wave produced 95.8% invalid for one vendor against 7.7%
+#: for another.
+MAX_TOKENS = 40960
 
 
 def panel():
@@ -405,17 +415,23 @@ def main(argv=None):
             r = subprocess.run(cmd, cwd=STUDY, capture_output=True, text=True,
                                encoding="utf-8", errors="replace")
             tail = [l for l in (r.stdout or "").splitlines() if "runs valid" in l]
+            # LEARN THE PIN FROM ANY SHEET THAT RECORDED A BACKEND, not only a valid one.
+            #
+            # This sat inside the success branch, so a model whose first sheet was refused
+            # or malformed learned no pin -- and every later sheet went out unpinned. That
+            # is how `glm-5.1` came back on two backends AFTER the per-model pin landed: its
+            # opening sheet failed, nothing was learned, and the router chose freely.
+            #
+            # A refusal still names the backend that refused, which is exactly the fact
+            # needed to hold the rest of the model to it.
+            if not is_local(model) and not pinned:
+                served = _served_provider(args.out_date, model, cond)
+                if served:
+                    pinned = served
+                    print("    pinned to %s for all of this model's sheets"
+                          % served, flush=True)
             if r.returncode == 0 and tail:
                 n_ok += 1
-                # Learn the cell's backend from the sheet that just landed, so the rest
-                # of the cell is held to it. Read from the RECORD rather than guessed:
-                # the served provider is the only thing that can pin the next call.
-                if not is_local(model) and not pinned:
-                    served = _served_provider(args.out_date, model, cond)
-                    if served:
-                        pinned = served
-                        print("    pinned to %s for all of this model's sheets"
-                              % served, flush=True)
                 print("    %s seed %-3s %s" % (cond, seed, tail[-1].split(": ")[-1]), flush=True)
             else:
                 n_fail += 1

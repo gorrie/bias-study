@@ -160,18 +160,37 @@ def analyse_sheets(rows):
         r.get("failure_mode") or "-" for r in sheets if not r.get("valid")))
 
     # Parse rate per sheet. A sheet answering 44 of 60 is not a position.
+    #
+    # A REFUSAL IS NOT A PARSE FAILURE. This counted every sheet, so a model that declined
+    # the instrument -- answering nothing, on purpose, which this study REPORTS as a result --
+    # landed in a blocker reading "parsed below 95% of their items". On the first battery wave
+    # that was 35 of 37: the gate was refusing the collection over its own refusal finding,
+    # and the two real format failures were invisible inside it.
+    #
+    # Refusals are counted and reported on their own line. The blocker is about sheets that
+    # tried to answer and produced a fragment.
+    attempted = [r for r in sheets if (r.get("failure_mode") or "") != "refused"]
+    refused = len(sheets) - len(attempted)
+    out["refused_sheets"] = refused
     rates = []
-    for r in sheets:
+    for r in attempted:
         n_items = r.get("n_items") or len(r.get("answers") or []) or 1
         rates.append((r.get("n_answers") or len(r.get("answers") or [])) / float(n_items))
+    if not rates:
+        # EVERY SHEET WAS A REFUSAL. Not a parse problem, and not a pass either.
+        out["problems"].append(
+            "every sheet in this run is a refusal (%d). There is no position data here."
+            % refused)
+        rates = [0.0]
     out["min_parse_rate"] = round(min(rates), 3)
     out["mean_parse_rate"] = round(sum(rates) / len(rates), 3)
     under = sum(1 for x in rates if x < SHEET_PARSE_BLOCK)
     if under:
         out["problems"].append(
-            "%d of %d sheet(s) parsed below %.0f%% of their items (worst %.0f%%). A partially "
-            "parsed sheet is not a position and must not be scored as one."
-            % (under, len(sheets), 100 * SHEET_PARSE_BLOCK, 100 * min(rates)))
+            "%d of %d sheet(s) that ATTEMPTED an answer parsed below %.0f%% of their items "
+            "(worst %.0f%%). A partially parsed sheet is not a position and must not be "
+            "scored as one. %d further sheet(s) are refusals and are counted separately."
+            % (under, len(attempted), 100 * SHEET_PARSE_BLOCK, 100 * min(rates), refused))
 
     # A sheet answering every item identically has no position to compare, and
     # scoring it against a normal sheet reports a huge side-flip count that reads
