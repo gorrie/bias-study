@@ -341,7 +341,15 @@ def build():
         return rec
 
     order = _floor(f, "presentation order")
-    manip = _floor(f, "prompt condition A->D")
+    # THE MANIPULATION ROW THIS DESIGN PRODUCES.
+    #
+    # `prompt condition A->D` is `floor_conditions`, which reads `runs/*temp0*` -- the
+    # 2026-08-30 temperature-0 corpus on the retired external instrument, withdrawn
+    # 2026-09-16 and RETIRED by a dated ruling. It will never compute again, so a gate
+    # pointed at it is a number the paper can never have. The live arm is
+    # `floor_conditions_wave`, which reads the wave at temperature 0.7 in one sitting and is
+    # the contrast this study actually collected: 32 pairs, side p90 4, endpoint p90 25.
+    manip = _floor(f, "prompt condition A->D, one sitting")
     manip_sitting = _floor(f, "prompt condition A->D, one sitting")
     order_sitting = _floor(f, "presentation order, one sitting")
     order_frontier = _floor(f, "presentation order, one sitting, frontier API")
@@ -1334,7 +1342,9 @@ def surface_numbers():
         ("order_max_all", "presentation order", 2, "worst case under reordering alone"),
         ("same_version_max", "same-version variants", 2,
          "worst case between two variants of one release"),
-        ("manipulation_p90", "prompt condition A->D", 1,
+        # Repointed 2026-09-17 from `prompt condition A->D`, whose arm reads the retired
+        # temperature-0 corpus and is itself retired by a dated ruling.
+        ("manipulation_p90", "prompt condition A->D, one sitting", 1,
          "the deliberate manipulation's p90 -- the bar the nuisance factors clear"),
         # The same-version floor as the README states it IN PROSE: its p90 and its pair count.
         # `idx=None` means the row's pair count rather than a side-flip percentile.

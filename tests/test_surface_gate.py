@@ -54,6 +54,16 @@ def test_every_registered_phrase_resolves_to_a_computed_number():
     Where the panel IS present the exemption does not apply, so the strict assertion still
     runs in the tree that owns the number.
     """
+    # A SECOND NARROW EXEMPTION, on the same principle as the panel one above: a tree with no
+    # `runs/` corpus cannot produce any floor-derived key either. The public mirror is in that
+    # state until a scrubbed export is staged, and a red suite there says nothing about the
+    # study to a stranger who clones it to check the work. Guarded on the tree genuinely
+    # holding no records, so it cannot silence a failure where the data exists.
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import floor_table as _F
+    if not _F._tree_has_run_data():
+        import pytest
+        pytest.skip("no runs/ corpus in this tree -- NOT APPLICABLE, not a pass")
     computed = rows()
     missing = []
     for name in WEBSITE_SURFACES:

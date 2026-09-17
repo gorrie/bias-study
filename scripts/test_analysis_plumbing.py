@@ -264,11 +264,55 @@ def test_order_exclude_is_actually_applied():
 
 
 def test_order_sources_reports_what_contributed():
-    """"The floor reads everything" has to be checkable, not asserted."""
+    """"The floor reads everything" has to be checkable, not asserted.
+
+    THE ASSERTION WAS ">4 DIRECTORIES", AND IT FIRED ON 2026-09-17 FOR THE RIGHT REASON.
+    It was written against a corpus spread over many dated collections, where reading one
+    directory meant the floor had lost the others. This design collects the whole wave into a
+    single directory, so "more than four" is now a property of a corpus that no longer exists
+    rather than of the floor's coverage -- and a test that demands it can only be satisfied by
+    fragmenting the collection.
+
+    Loosening it to `> 0` would have thrown the guarantee away. What the test is FOR is that
+    the floor reads every directory holding sheets it is entitled to read, so that is what it
+    now checks: the set the floor reports against the set on disk, derived independently.
+    """
+    if not F._tree_has_run_data():
+        import pytest
+        pytest.skip("no runs/ corpus in this tree -- NOT APPLICABLE, not a pass")
     sources = F.order_sources()
     assert sources, "no run directory contributed a condition-A sheet"
-    assert len(sources) > 4, (
-        "only %d directories contributed; the floor is reading a narrow slice" % len(sources))
+
+    # Independently derived: every run directory under runs/ holding a valid condition-A
+    # sheet on the live instrument. If one of these is missing from `sources`, the floor is
+    # skipping a directory it should be reading -- which is the defect, at any count.
+    import collections as _c
+    import glob as _g
+    import io as _io
+    import json as _j
+    import os as _os
+    on_disk = _c.Counter()
+    for path in sorted(_g.glob(_os.path.join(F.STUDY, "runs", "**", "*.jsonl"),
+                               recursive=True)):
+        rel = _os.path.relpath(path, _os.path.join(F.STUDY, "runs")).replace("\\", "/")
+        top = rel.split("/")[0]
+        if top in F.ORDER_EXCLUDE:
+            continue
+        for line in _io.open(path, encoding="utf-8", errors="replace"):
+            if not line.strip():
+                continue
+            try:
+                rec = _j.loads(line)
+            except ValueError:
+                continue
+            if (rec.get("schema") == "compass-run/1" and rec.get("valid")
+                    and rec.get("condition") == "A" and F._instrument_matches(rec)):
+                on_disk[top] += 1
+
+    missing = sorted(set(on_disk) - set(sources))
+    assert not missing, (
+        "%d run directory(ies) hold valid condition-A sheets on this instrument and did not "
+        "reach the order floor: %s" % (len(missing), ", ".join(missing)))
 
 
 # ----------------------------------------------------------- 3. gate self-consistency
@@ -329,6 +373,13 @@ def test_gated_values_are_not_none():
     documented as panel-derived, and must never be a surprise. Every other key still has
     to compute, which is what this guards now.
     """
+    # AND A TREE WITH NO CORPUS CANNOT COMPUTE ANY OF THEM. Every floor-derived key is
+    # UNAVAILABLE in the public mirror until a scrubbed export lands, which is an absent
+    # input and not an uncaught failure -- the same distinction this test already draws for
+    # the panel-derived keys, one level up.
+    if not F._tree_has_run_data():
+        import pytest
+        pytest.skip("no runs/ corpus in this tree -- NOT APPLICABLE, not a pass")
     panel_derived = {"wave_panel_size", "manip_refusing_sitting"}
     for row in K.build():
         if row["value"] is K.UNAVAILABLE:
@@ -385,14 +436,32 @@ def test_floors_survive_a_reordered_corpus():
     """End to end: shuffle what glob returns and every floor must be byte-identical."""
     import glob as _glob
     import random as _random
-    floors = [F.floor_conditions, F.floor_same_version, F.floor_order, F.floor_ablation,
-              F.floor_template, F.floor_quant, F.floor_replicate]
+    # EVERY ARM IN THE REGISTRY, not a hand-typed subset -- adding a floor to ALL_FLOORS
+    # without adding it here left the new arm untested for exactly this defect, and the
+    # determinism bug this test exists for (glob order reaching modal()'s tie-break, a
+    # published percentile that differed between CI and the author's machine) is one any
+    # arm can have.
+    floors = list(F.ALL_FLOORS)
 
     def snapshot():
         F.DROPPED.clear()
         F._DROPPED_SEEN.clear()
-        return [(r["name"], r["n"], r["side"], r["endpoint"], r["side_ci"]) for r in
-                (f() for f in floors)]
+        out = []
+        for fn in floors:
+            r = fn()
+            # AN ARM THAT COMPUTES NOTHING IS RECORDED AS SUCH, not skipped and not
+            # subscripted. Several arms are retired by dated ruling or awaiting collection,
+            # and this test used to index their None straight into a TypeError -- so a suite
+            # that should have said "the floors are order-independent" said nothing at all.
+            # Its emptiness is itself order-independent and worth asserting.
+            if not r:
+                out.append((fn.__name__, None))
+                continue
+            rows = list(r.values()) if isinstance(r, dict) and "name" not in r else [r]
+            for rec in sorted((x for x in rows if x), key=lambda x: x["name"]):
+                out.append((rec["name"], rec["n"], rec["side"], rec["endpoint"],
+                            rec["side_ci"]))
+        return out
 
     base = snapshot()
     real = _glob.glob

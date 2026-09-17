@@ -280,7 +280,11 @@ def main(argv=None):
             rows.append((name, stat, len(vals), thr, mde(vals, thr),
                          pctile_is_max(vals, 1 - ALPHA)))
 
-    print("DETECTION LIMITS -- what this instrument can resolve, per null, of 62 items")
+    # DERIVED. Typed as 62 -- the retired questionnaire's length -- above a table of limits
+    # computed from 32-item sheets, where every threshold is a count of items out of that
+    # bound. BOUND already reads the live bank; the header did not.
+    print("DETECTION LIMITS -- what this instrument can resolve, per null, of %d items"
+          % BOUND)
     print("threshold = reference p95, an order statistic; NOT an alpha=0.05 rejection region")
     print("MDE       = smallest shift with 80% of mass above p95; a design sensitivity,")
     print("            NOT achieved power, and NOT a cutoff for reading an observation")
