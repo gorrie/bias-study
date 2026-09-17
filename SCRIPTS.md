@@ -2,17 +2,18 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-103 script(s). 0 carry no module docstring and are listed at the end.
+106 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
 - **`ablation_wave.py`** — Bring the stock/ablated arm up to the wave protocol. Local GPU, zero API spend.
 - **`extend_manipulation_floor.py`** — Extend the A->D manipulation floor, which the whole paper is measured against.
+- **`ingest_agent_answers.py`** — Ingest an answer sheet produced by an in-harness agent into the standard run format.
 - **`order_floor_wave.py`** — Collect a presentation-order floor UNDER THE WAVE PROTOCOL, so the paper's central comparison stops being cross-protocol.
 - **`recollect_at_cap.py`** — Re-collect the May study's truncated cells at a real token budget, PAIRED.
 - **`repair_recollect_provenance.py`** — One-shot: fix provenance on records written before recollect_at_cap was corrected.
 - **`roster_gap.py`** — Which vendors have shipped a model we have never measured, and how far behind are we.
-- **`run_compass.py`** — Administer the 62 forced-choice propositions to a model under one pressure condition.
+- **`run_compass.py`** — Administer the forced-choice item bank to a model under one pressure condition.
 - **`run_g0dm0d3.py`** — run_g0dm0d3.py — PIPELINE rung of the bias-study escalation ladder.
 - **`run_i3_wave.py`** — Collect I3 Phase 4: the frozen panel against the authored mirrored bank.
 - **`run_study.py`** — Execute one bias study run.
@@ -55,18 +56,21 @@
 
 ## Replicating other people's studies
 
+- **`rederive_labels.py`** — Re-derive stored validity and failure labels from the CURRENT parser, in place.
 - **`replicate_rottger.py`** — Our floor statistic, run on somebody else's published data.
 
 ## Release and provenance
 
+- **`build_corpus_fingerprint.py`** — Generate the hashed instrument fingerprint that guards the public repository.
 - **`check_corpus.py`** — Refuse any commit that would publish third-party instrument text.
-- **`fetch_items.py`** — Retrieve the 62 forced-choice propositions at YOUR end, then prove you have the right ones.
+- **`export_scrubbed.py`** — Export the forced-choice runs for publication, with any third-party text removed.
 - **`studypaths.py`** — Shared run-directory resolution and deterministic RNG streams.
 - **`sweep_status.py`** — Single source of truth for judgement-tool sweep state.
 
 ## Tests and development
 
 - **`check_no_fork.py`** — Fail if any script exists in both trees with different content.
+- **`check_retired_instrument.py`** — Refuse a tree that has readopted a retired instrument, anywhere, under any name.
 - **`selftest_analysis.py`** — selftest_analysis.py — ten assertions over the committed May data. Zero API cost.
 - **`test_ablation_slugs.py`** — Two independent abliterations of one base must never share a directory.
 - **`test_analysis_plumbing.py`** — Regression tests for the analysis plumbing: encoding, run discovery, gate templates.
@@ -83,13 +87,13 @@
 - **`aggregate.py`** — Aggregate scored bias study records per aggregation-rules.md.
 - **`analysis.py`** — Enhanced analysis pass for a bias study run.
 - **`audit_response_quality.py`** — Inventory every scored record whose response was empty — DATA-EMPTY-SCORES-001 / -002.
-- **`build_item_bank.py`** — Build the I3 mirrored item bank -- complementarity BY CONSTRUCTION.
 - **`calibration_study.py`** — STATS-BOOTSTRAP-CALIBRATION-001 — does this study's inference actually control its errors?
 - **`chart_intervention_budget.py`** — One scale: how far does an intervention have to move a model before it means anything?
 - **`check_doc_links.py`** — Gate: every relative markdown link in this tree's documents resolves to a real file.
 - **`check_instrument_approved.py`** — Refuse to collect against an instrument the author has not read and signed.
 - **`check_named_scripts.py`** — Every script named in a shipped document must exist in this repository.
 - **`check_no_key_repro.py`** — Checklist item 10, made mechanical: can a reader re-derive the numbers with no API key?
+- **`check_outcomes_computable.py`** — Refuse to collect until every pre-registered outcome can be COMPUTED from a run directory.
 - **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
 - **`check_skill_procedures.py`** — Do the skills' documented commands actually RUN, not just exist?
 - **`check_undefined_names.py`** — Names a script uses and never binds -- the NameError that waits for a rare path.
@@ -107,7 +111,6 @@
 - **`gates.py`** — The one registry of every gate this study has, and where each one runs.
 - **`gen_readme.py`** — Fill the README's generated blocks from the run data. Nothing in them is hand-written.
 - **`lineage_exchangeability.py`** — STATS-LINEAGE-NULL-001 — are the four same-version sub-classes exchangeable?
-- **`logit_probe.py`** — Score the forced-choice instrument by LOGPROB instead of parsing prose, and test whether the two agree.
 - **`model_cards.py`** — One card per model: can this model carry a claim at all, and on what evidence?
 - **`monitor_experiment.py`** — monitor_experiment.py — the durable, cross-platform half of the experiment-monitor agent.
 - **`paired_analysis.py`** — paired_analysis.py — the estimator for a matched-pair arm study. No API calls.
@@ -119,7 +122,7 @@
 - **`refusal_structure.py`** — Is whole-instrument refusal all-or-nothing, and which models do it?
 - **`refusal_suite_summary.py`** — Both model pairs of the XSTest-style refusal suite, with clustered intervals.
 - **`release_check.py`** — Run RELEASE-v2.md's release checklist instead of asserting it.
-- **`render_item_read.py`** — Render the I3 bank as 30 pairs for the human read that gates Phase 2.
+- **`render_item_read.py`** — Render the live item bank as mirrored pairs for the human read that gates collection.
 - **`replicates.py`** — One implementation of "average the replicates in a cell", for every consumer.
 - **`robustness_checks.py`** — robustness_checks.py — Two reviewer-requested robustness analyses over already- scored runs. No API calls.
 - **`run_dose_series.py`** — The Wash — Experiment 1 dose-series driver.

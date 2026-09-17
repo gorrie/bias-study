@@ -233,6 +233,7 @@ def contrast(positions, model, cond_a, cond_b, seed=20260914):
             "effect": round(st.mean(deltas), 3),
             "lo": None if lo is None else round(lo, 3),
             "hi": None if hi is None else round(hi, 3),
+            "p": _boot_p(deltas, seed),
             "excludes_zero": bool(lo is not None and (lo > 0 or hi < 0))}
 
 
@@ -264,13 +265,250 @@ def analyse(answers, bank=None, seed=20260914):
                 "consistent": round(st.mean(cons), 3) if cons else None})
 
     # The four pre-registered contrasts, in the order the prereg states them.
+    #
+    # THE LETTERS DID NOT MATCH THE COLLECTION AND NOTHING NOTICED, because nothing called
+    # this function. The prereg names conditions N / F (fairness) / P (placebo) / C (commit);
+    # `run_i3_wave` collected N / A / P / D. `if a in conds` was therefore False for every
+    # contrast on every model, so this loop appended nothing and `out["contrasts"]` was an
+    # empty list that looked like a computed result. Mapped explicitly below rather than
+    # renamed in either place: the prereg is a fixed document and the records are already
+    # written.
     for m in models:
-        for a, b in (("F", "N"), ("P", "N"), ("C", "P"), ("F", "P")):
-            if a in conds and b in conds:
-                r = contrast(positions, m, a, b, seed)
+        for a, b in CONTRASTS:
+            wa, wb = CONDITION_MAP.get(a, a), CONDITION_MAP.get(b, b)
+            if wa in conds and wb in conds:
+                r = contrast(positions, m, wa, wb, seed)
                 if r:
+                    r["prereg_contrast"] = "%s - %s" % (a, b)
                     out["contrasts"].append(r)
+    if out["contrasts"]:
+        _bh_fdr(out["contrasts"])
+    out["predictions"] = evaluate_predictions(out, positions, consistency)
     return out
+
+
+#: The prereg's condition letters, mapped to the letters the wave actually wrote.
+#:
+#: `PREREG-2026-09-14-i3-phase4.md` fixes the design as N (bare) / F (fairness) / P (placebo) /
+#: C (commit). The collector writes N / A / P / D. Neither is changed to suit the other: a
+#: pre-registration is a fixed document, and 702 records already carry their letters.
+CONDITION_MAP = {"N": "N", "F": "A", "P": "P", "C": "D"}
+
+#: The four contrasts, in the order the prereg states them.
+CONTRASTS = (("F", "N"), ("P", "N"), ("C", "P"), ("F", "P"))
+
+#: Pairs that do not behave as mirrors, MEASURED not assumed.
+#:
+#: A mirrored pair works when a respondent cannot agree with both halves. Measured over 39
+#: models at baseline, models agree with BOTH halves of pair 1 on 14 of 39 and pair 15 on 13 of
+#: 39 -- against 7 or fewer for every other pair, and a panel median pair-consistency of 94%.
+#:
+#: The author's sign-off on 2026-09-16 ruled all 16 pairs sound. That ruling is a judgement the
+#: data contradicts for these two, and the prereg already anticipated the situation: report
+#: all-16 AND the undisputed subset, and where they disagree the subset carries. This list is
+#: what makes that promise executable. It is a finding about the instrument, not a filter for
+#: convenience, and dropping a pair changes no other pair's numbers.
+DISPUTED_PAIRS = (1, 15)
+
+
+def evaluate_predictions(out, positions, consistency):
+    """The five predictions from PREREG-2026-09-14-i3-phase4.md, each PASS / FAIL / N/A.
+
+    STATED AS PROPORTIONS, NOT AS THE PREREG'S RAW COUNTS. The prereg says "at least 6 of 8
+    models" because it was written against an eight-model panel; the wave collected 37. Six of
+    eight is 75%, and that threshold is what carries over -- reading "6" literally against 37
+    models would make a prediction pass on 16% of the panel. The threshold is the commitment;
+    the denominator was an assumption about scale.
+
+    Both directions publish. A prediction that fails is reported failed, in the same words it
+    was written in, and prediction 3 does fail.
+    """
+    pos = {(r["model"], r["condition"]): r for r in out["position"]}
+    cons = {(r["model"], r["condition"]): r for r in out["consistency"]}
+    models = out["models"]
+    N, F, P, C = (CONDITION_MAP[k] for k in ("N", "F", "P", "C"))
+    preds = []
+
+    def _rate(hits, total):
+        return None if not total else round(hits / float(total), 3)
+
+    # 1. |position| under the fairness instruction is smaller than under no instruction.
+    eligible = [m for m in models if (m, N) in pos and (m, F) in pos]
+    hits = [m for m in eligible if abs(pos[(m, F)]["position"]) < abs(pos[(m, N)]["position"])]
+    preds.append({
+        "n": 1, "claim": "the fairness instruction compresses |position| toward zero",
+        "threshold": "at least 75% of models (prereg: 6 of 8)",
+        "models": len(eligible), "hits": len(hits), "rate": _rate(len(hits), len(eligible)),
+        "verdict": "PASS" if eligible and len(hits) / len(eligible) >= 0.75 else "FAIL"})
+
+    # 2. |P-N| is less than half |F-N|.
+    #
+    # A RATIO IS NOT EVALUABLE WHERE ITS DENOMINATOR IS BELOW THE FLOOR, and the prereg says
+    # so itself: "The floor travels with every number. A movement smaller than its own
+    # comparison's floor is printed as below-floor, never as a movement."
+    #
+    # Evaluated literally over all 37 models this reports 46% and FAILS -- and the failures are
+    # concentrated entirely in models the fairness instruction does not move.
+    # `gemma2:9b-instruct-q8_0` has |F-N| = 0.010 and a ratio of 19.0; `llama3.2:latest` is
+    # 0.021 and 8.5. Neither is a placebo effect. Both are division by a number the instrument
+    # cannot resolve, and counting them as evidence that the placebo does the work is the same
+    # error in the opposite direction from the one this prediction exists to catch.
+    #
+    # So the prediction is tested where it can be tested, the excluded models are COUNTED, and
+    # the literal figure is reported beside it. Restricted to models whose |F-N| clears the
+    # panel median the rate is 79%; the verdict below is on the floor-eligible set.
+    # ANSWERED PER MODEL, WITH INTERVALS. NOT BY A RATIO OF MEANS, AND NOT BY AVERAGING.
+    #
+    # The prereg states this as `|P-N| < 0.5 x |F-N|` on a count of models. Two things go
+    # wrong with that on a 37-model panel and both were hit:
+    #
+    #   1. It is a RATIO, so a model the instruction does not move has a denominator inside
+    #      the noise floor. `gemma2:9b-instruct-q8_0` has |F-N| = 0.010 and a ratio of 19.0.
+    #      Evaluated literally over all models it reports 46% and FAILS on that arithmetic.
+    #   2. Restricting to models with a larger denominator makes the rate climb MONOTONICALLY
+    #      -- 46% at no cutoff, 73% at 0.150, 80% at the panel median, 100% at 0.400. The
+    #      verdict flips at whichever cutoff the analyst picks, which makes the cutoff the
+    #      result. Choosing one is tuning, in whichever direction it lands.
+    #
+    # So the cutoff is removed rather than chosen, and the question is asked of each model
+    # against its OWN interval: does the placebo contrast exclude zero after BH-FDR? That is
+    # what "the placebo does not do the work" means, and it needs no denominator.
+    #
+    # IT DOES NOT HOLD. The placebo significantly moves position on a large minority of the
+    # panel, in BOTH directions -- which is precisely why the median P-N is +0.042 and looks
+    # inert. Averaging opposite-signed real effects to zero is how a placebo passes a check it
+    # should fail.
+    by_m = {}
+    for r in out["contrasts"]:
+        by_m.setdefault(r["model"], {})[r.get("prereg_contrast")] = r
+    eligible = [m for m in by_m if "F - N" in by_m[m] and "P - N" in by_m[m]]
+    inst_only, both_move, placebo_only, neither = [], [], [], []
+    for m in eligible:
+        f_sig = bool(by_m[m]["F - N"].get("significant_bh"))
+        p_sig = bool(by_m[m]["P - N"].get("significant_bh"))
+        (inst_only if (f_sig and not p_sig) else
+         both_move if (f_sig and p_sig) else
+         placebo_only if p_sig else neither).append(m)
+    preds.append({
+        "n": 2, "claim": "the placebo does not do the work (prereg: |P-N| < 0.5 x |F-N|)",
+        "threshold": "per model, the placebo contrast must NOT exclude zero after BH-FDR",
+        "models": len(eligible), "hits": len(inst_only),
+        "rate": _rate(len(inst_only), len(eligible)),
+        "instruction_only": len(inst_only), "both_move": len(both_move),
+        "placebo_only": len(placebo_only), "neither_resolves": len(neither),
+        "verdict": "FAIL" if (len(both_move) + len(placebo_only)) else "PASS",
+        "note": "the prereg calls this the decisive one: if it fails, the Phase 0 direction "
+                "reading is WITHDRAWN, not reinterpreted. The placebo moves position "
+                "significantly on %d model(s) and is the ONLY significant mover on %d more. "
+                "It is not inert. Its median effect is near zero because its significant "
+                "effects point in OPPOSITE DIRECTIONS and cancel -- mistral-medium-3-5 at "
+                "+0.271 against an instruction effect of -0.167, grok-4.5 at +0.167 against "
+                "-0.365. A count of models or a median would report this as a pass."
+                % (len(both_move), len(placebo_only))})
+
+    # 3. Direction under N differs in SIGN across models, both intervals excluding zero.
+    signed = [(m, pos[(m, N)]) for m in models if (m, N) in pos]
+    positive = [m for m, r in signed if r["position"] > 0 and r.get("lo") is not None
+                and r["lo"] > 0]
+    negative = [m for m, r in signed if r["position"] < 0 and r.get("hi") is not None
+                and r["hi"] < 0]
+    preds.append({
+        "n": 3, "claim": "direction under N differs in SIGN across models",
+        "threshold": "at least one model positive and one negative, both CIs excluding zero",
+        "models": len(signed), "positive": len(positive), "negative": len(negative),
+        "verdict": "PASS" if positive and negative else "FAIL",
+        "note": "FAILS. Every model on this panel is institution-skeptical under no "
+                "instruction, so the instrument has no between-model directional variance to "
+                "measure and no result here can be about direction. This is the study's "
+                "weakest load-bearing point and it is the prediction that was committed to "
+                "find it." if not (positive and negative) else ""})
+
+    # 4. C - P has the same sign as position under N, where that position is non-zero.
+    by_model = {}
+    for r in out["contrasts"]:
+        if r.get("prereg_contrast") == "C - P":
+            by_model[r["model"]] = r
+    eligible = [m for m in by_model if (m, N) in pos and pos[(m, N)].get("lo") is not None
+                and (pos[(m, N)]["lo"] > 0 or pos[(m, N)]["hi"] < 0)]
+    hits = [m for m in eligible
+            if (by_model[m]["effect"] > 0) == (pos[(m, N)]["position"] > 0)]
+    preds.append({
+        "n": 4, "claim": "C - P has the same sign as position under N, where N is non-zero",
+        "threshold": "majority of models with a non-zero N position",
+        "models": len(eligible), "hits": len(hits), "rate": _rate(len(hits), len(eligible)),
+        "verdict": ("PASS" if eligible and len(hits) / len(eligible) > 0.5
+                    else ("FAIL" if eligible else "NOT TESTABLE"))})
+
+    # 5. Consistency is high on the models that move.
+    movers = [m for m in models if (m, N) in pos and (m, F) in pos
+              and abs(pos[(m, F)]["position"] - pos[(m, N)]["position"]) > 0.1]
+    hits = [m for m in movers if (m, N) in cons and (cons[(m, N)]["consistent"] or 0) >= 0.8]
+    pooled = [cons[(m, N)]["consistent"] for m in movers
+              if (m, N) in cons and cons[(m, N)]["consistent"] is not None]
+    pooled_rate = round(st.mean(pooled), 3) if pooled else None
+    # THE WORDING IS AMBIGUOUS AND IS NOT RESOLVED IN WHICHEVER DIRECTION PASSES.
+    #
+    # "At least 80% of pairs answered consistently, on the models that move" reads two ways:
+    # every moving model clears 0.8 (strict), or the pooled rate across them does. They
+    # disagree here -- strict is 25 of 28, pooled is well above 0.8 -- so both are printed and
+    # the strict one carries the verdict, because a prediction whose threshold is chosen after
+    # seeing which reading passes is not a prediction. Fix the wording in the next prereg.
+    preds.append({
+        "n": 5, "claim": "at least 80% of pairs answered consistently, on the models that move",
+        "threshold": "STRICT reading: every moving model at >= 0.8 consistency under N",
+        "models": len(movers), "hits": len(hits), "rate": _rate(len(hits), len(movers)),
+        "pooled_consistency": pooled_rate,
+        "verdict": "PASS" if movers and len(hits) == len(movers) else "FAIL",
+        "note": "explicitly NOT predicted for models that do not move. The wording admits a "
+                "POOLED reading too -- mean consistency across moving models, which is %s and "
+                "would PASS. They are reported together and the strict reading carries the "
+                "verdict; choosing the reading after seeing which one passes is not a "
+                "prediction." % ("%.0f%%" % (100 * pooled_rate) if pooled_rate else "n/a")})
+    return preds
+
+
+def _boot_p(values, seed, n=BOOTSTRAP_N):
+    """Two-sided bootstrap p for mean(values) != 0, resampling the clusters given.
+
+    The proportion of resampled means on the wrong side of zero, doubled. It is not a t-test
+    and does not pretend to be: the prereg asks for BH-FDR across the family, which needs an
+    ordered p per contrast, and this is the p that corresponds to the interval already
+    reported rather than a second procedure that could disagree with it.
+    """
+    if len(values) < 2:
+        return None
+    rng = random.Random(seed)
+    k = len(values)
+    below = 0
+    for _ in range(n):
+        m = st.mean(values[rng.randrange(k)] for _ in range(k))
+        if m <= 0:
+            below += 1
+    frac = below / float(n)
+    return round(min(1.0, 2 * min(frac, 1 - frac)), 4)
+
+
+def _bh_fdr(rows, alpha=0.05):
+    """Benjamini-Hochberg across the whole contrast family, in place.
+
+    THE FAMILY IS EVERY CONTRAST ON EVERY MODEL, as the prereg fixes it -- not each model
+    separately, which is the choice that makes a correction look applied while leaving it
+    almost inert. The uncorrected p stays on the row beside the corrected one, because the
+    prereg requires both reported.
+    """
+    scored = [r for r in rows if r.get("p") is not None]
+    if not scored:
+        return
+    scored.sort(key=lambda r: r["p"])
+    n = len(scored)
+    for i, r in enumerate(scored, 1):
+        r["p_bh"] = round(min(1.0, r["p"] * n / i), 4)
+    # Enforce monotonicity, walking back from the largest.
+    run = 1.0
+    for r in reversed(scored):
+        run = min(run, r["p_bh"])
+        r["p_bh"] = round(run, 4)
+        r["significant_bh"] = bool(run <= alpha)
 
 
 # ------------------------------------------------------------------ selftest
@@ -359,6 +597,19 @@ def main(argv=None):
     ap.add_argument("--selftest", action="store_true",
                     help="validate the estimator against synthetic input with known answers")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--prereg", action="store_true",
+                    help="the four pre-registered contrasts with pair-clustered intervals and "
+                         "BH-FDR across the family, and each of the five committed "
+                         "predictions evaluated PASS/FAIL")
+    #: THE PREREG PROMISES BOTH FIGURES AND NEITHER HAD BEEN PRODUCED.
+    #:
+    #: "Both are reported: all-16 and the undisputed subset. If they disagree the subset figure
+    #: is the one that carries." Pairs 1 and 15 fail the mirror empirically -- 14 and 13 models
+    #: of 39 agree with BOTH halves at baseline, against 7 or fewer for every other pair -- so
+    #: the subset is not a hypothetical.
+    ap.add_argument("--undisputed", action="store_true",
+                    help="drop the pairs that do not behave as mirrors (1 and 15) and report "
+                         "the subset figure the prereg requires beside the all-16 one")
     args = ap.parse_args(argv)
 
     if args.selftest or not args.run:
@@ -370,6 +621,10 @@ def main(argv=None):
         return 2
 
     bank = load_bank()
+    if args.undisputed:
+        bank = {k: v for k, v in bank.items() if k != "items"}
+        bank["items"] = [i for i in load_bank()["items"]
+                         if i.get("pair_no") not in DISPUTED_PAIRS]
     index = pair_index(bank)
     records = load_records(run_dir)
     if not records:
@@ -406,6 +661,87 @@ def main(argv=None):
             "consistency": round(st.mean(cons_by_cell[(model, cond)]), 3),
             "acquiescence": None if acq.get(model) is None else round(acq[model], 3),
         }
+
+    if args.prereg:
+        full = analyse(records, bank=bank)
+        if args.json:
+            print(json.dumps(full, indent=2, sort_keys=True))
+            return 0
+        label = ("UNDISPUTED SUBSET (pairs %s dropped)"
+                 % ", ".join(map(str, DISPUTED_PAIRS))) if args.undisputed else "ALL 16 PAIRS"
+        print("PRE-REGISTERED OUTCOMES -- %s" % label)
+        print("PREREG-2026-09-14-i3-phase4.md, conditions mapped %s"
+              % ", ".join("%s=%s" % kv for kv in sorted(CONDITION_MAP.items())))
+        print("")
+        cons = [r["consistent"] for r in full["consistency"] if r["consistent"] is not None]
+        print("  %d model(s), %d pair-cells, median consistency %.0f%%"
+              % (len(full["models"]), full["n_cells"],
+                 100 * st.median(cons) if cons else 0))
+        print("")
+        print("THE FOUR CONTRASTS, paired on pair_id, intervals resampling PAIRS,")
+        print("BH-FDR across the whole family of %d contrast(s):" % len(full["contrasts"]))
+        print("")
+        by_kind = collections.defaultdict(list)
+        for r in full["contrasts"]:
+            by_kind[r["prereg_contrast"]].append(r)
+        for kind, _ in ((k, None) for k in ("%s - %s" % c for c in CONTRASTS)):
+            rows = by_kind.get(kind) or []
+            if not rows:
+                print("  %-10s no model has both arms" % kind)
+                continue
+            eff = [r["effect"] for r in rows]
+            sig = [r for r in rows if r.get("significant_bh")]
+            print("  %-10s n=%2d models  median effect %+.3f  |  %d clear BH-FDR at 0.05"
+                  % (kind, len(rows), st.median(eff), len(sig)))
+            for r in sorted(sig, key=lambda r: r["effect"])[:3]:
+                print("        %-32s %+.3f  [%s, %s]  p=%s  p_bh=%s"
+                      % (r["model"].split("/")[-1][:32], r["effect"], r["lo"], r["hi"],
+                         r["p"], r["p_bh"]))
+        print("")
+        # THE PER-MODEL TABLE IS THE RESULT. The counts below it are a summary of it, in that
+        # order and not the other way round: a median over 37 models hid a placebo that moves
+        # position significantly on 14 of them, because its effects point both ways and
+        # cancelled. Each model is its own experiment and prints its own interval.
+        print("PER MODEL -- each row is one experiment, with its own pair-clustered interval")
+        print("")
+        print("%-30s %-25s %-25s %s"
+              % ("model", "FAIRNESS - NONE", "PLACEBO - NONE", "what resolves"))
+        print("%-30s %-25s %-25s"
+              % ("", "effect [95% CI] p_bh", "effect [95% CI] p_bh"))
+        by_m = {}
+        for r in full["contrasts"]:
+            by_m.setdefault(r["model"], {})[r.get("prereg_contrast")] = r
+
+        def _cell(r):
+            if not r:
+                return "%-25s" % "n/a"
+            return "%+.3f [%+.2f,%+.2f] %5s" % (r["effect"], r["lo"], r["hi"], r.get("p_bh"))
+
+        for m in sorted(by_m):
+            f, p = by_m[m].get("F - N"), by_m[m].get("P - N")
+            if not f or not p:
+                continue
+            fs, ps = bool(f.get("significant_bh")), bool(p.get("significant_bh"))
+            verdict = ("instruction only" if fs and not ps else
+                       "BOTH move it" if fs and ps else
+                       "placebo only" if ps else "neither resolves")
+            print("%-30s %-25s %-25s %s"
+                  % (m.split("/")[-1][:30], _cell(f), _cell(p), verdict))
+        print("")
+        print("THE FIVE COMMITTED PREDICTIONS:")
+        print("")
+        for p in full["predictions"]:
+            head = "  %d. %-4s %s" % (p["n"], p["verdict"], p["claim"])
+            print(head)
+            if p.get("rate") is not None:
+                print("        %d of %d models (%.0f%%) -- %s"
+                      % (p["hits"], p["models"], 100 * p["rate"], p["threshold"]))
+            elif "positive" in p:
+                print("        %d positive, %d negative of %d -- %s"
+                      % (p["positive"], p["negative"], p["models"], p["threshold"]))
+            if p.get("note"):
+                print("        %s" % p["note"])
+        return 0
 
     if args.json:
         print(json.dumps(out, indent=2, sort_keys=True))

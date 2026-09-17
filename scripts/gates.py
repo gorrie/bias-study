@@ -151,6 +151,18 @@ GATES = [
                 "real-data path was a stub that printed 'Phase 4 has not been collected yet' "
                 "over 580 valid sheets. The selftest is necessary and it was not sufficient; "
                 "tests/test_position_analysis_reads_the_corpus.py is the other half"),
+    Gate("check_outcomes_computable.py", tree="either", stage="prerun",
+         label="every pre-registered outcome computes",
+         covers="runs the real estimator against the real corpus and requires a value out: "
+                "position/consistency/acquiescence, the four pre-registered contrasts, the "
+                "five committed predictions, and the floors. THE JOIN NOTHING MADE -- "
+                "collection was gated and analysis was gated and nothing asked whether the "
+                "analysis can read what the collection produces, so the primary estimator "
+                "spent four passes and 702 records broken in four independent ways behind a "
+                "green selftest. A FAILING PREDICTION DOES NOT FAIL THIS GATE: it asks "
+                "whether an outcome can be computed, never whether it was confirmed",
+         why="collecting more data cannot fix an analysis that cannot read it, so this belongs "
+             "in front of the spend and nowhere else"),
     Gate("check_retired_instrument.py", tree="either", stage="prerun",
          label="no retired instrument is named in the live tree",
          covers="every .py/.md/.json in the tree except withdrawn/, export/ and runs/, for "
