@@ -61,6 +61,58 @@ def corpus_scale():
             "vendor_list": vendors}
 
 
+def collection_scale():
+    """The wave's shape, every figure derived. ONE place, because there were five.
+
+    WHY THIS EXISTS. On 2026-09-17 a completion review found "702 records" attributed to one
+    directory (it is 660 in the wave plus 42 in the budget probe), and "37 models" used
+    everywhere for a collection of 42 -- with 37, 39 and 40 all separately true of different
+    contrasts, because a contrast needs BOTH arms and different models refuse different
+    conditions. Five model counts and two record counts, all correct somewhere, none of them
+    labelled.
+
+    A number that is true of one scope and printed without it is the defect this paper
+    convicts other studies of. So each count here carries its scope in its name, and the
+    prose keys below are generated from these rather than typed beside them.
+    """
+    import collections as _c
+    import glob as _g
+    import io as _io
+    import json as _j
+    wave_dir = os.path.join(STUDY, "runs", "2026-09-16-ratchet-v3-wave")
+    probe_dir = wave_dir + "-budget-probe"
+
+    def _read(d):
+        out = []
+        for p in sorted(_g.glob(os.path.join(d, "*.jsonl"))):
+            for line in _io.open(p, encoding="utf-8", errors="replace"):
+                if line.strip():
+                    try:
+                        out.append(_j.loads(line))
+                    except ValueError:
+                        pass
+        return out
+
+    wave, probe = _read(wave_dir), _read(probe_dir)
+    labels = _c.Counter(r.get("instrument") for r in wave)
+    valid = [r for r in wave if r.get("valid")]
+    by_cond = _c.defaultdict(set)
+    for r in valid:
+        by_cond[r.get("condition")].add(r.get("model"))
+    # A contrast resolves only where a model has BOTH arms.
+    pairs = {"F-N": ("A", "N"), "P-N": ("P", "N"), "C-P": ("D", "P")}
+    resolving = {k: len(by_cond[a] & by_cond[b]) for k, (a, b) in pairs.items()}
+    return {
+        "records_total": len(wave) + len(probe),
+        "records_wave": len(wave),
+        "records_probe": len(probe),
+        "records_valid": len(valid),
+        "models_collected": len({r.get("model") for r in wave}),
+        "models_resolving": resolving,
+        "instrument_labels": dict(labels),
+    }
+
+
 def matched_arms():
     """Section 1's claim, on the matched subset it describes: models present in BOTH arms.
 
@@ -2086,6 +2138,11 @@ def main(argv=None):
                     help="do the printed book numbers still match runs/? A printed number "
                          "cannot be corrected after the fact, so this is the surface where "
                          "drift costs most -- and it was the one nothing checked.")
+    ap.add_argument("--counts", action="store_true",
+                    help="the collection's shape, every figure derived and scoped. Quote THIS "
+                         "rather than retyping: five model counts and two record counts were "
+                         "in circulation across the paper, FINDINGS and the README, each true "
+                         "of a scope none of them named.")
     ap.add_argument("--sync-ours", action="store_true",
                     help="rewrite the controls audit's 'ours' scale from runs/ instead of "
                          "retyping it. --check still gates the result.")
@@ -2097,6 +2154,26 @@ def main(argv=None):
         return check_retractions_everywhere()
 
     rows = build()
+
+    if args.counts:
+        c = collection_scale()
+        lab = ", ".join("%d %s" % (n, k) for k, n in sorted(c["instrument_labels"].items(),
+                                                            key=lambda kv: -kv[1]))
+        res = ", ".join("%s on %d" % (k, v) for k, v in sorted(c["models_resolving"].items()))
+        print("THE COLLECTION, every figure derived and scoped")
+        print("")
+        print("  %d records on this instrument: %d in the wave (%d valid, %.0f%%) and %d in"
+              % (c["records_total"], c["records_wave"], c["records_valid"],
+                 100.0 * c["records_valid"] / max(c["records_wave"], 1), c["records_probe"]))
+        print("  the budget probe. %d models were COLLECTED -- the 36-model frozen panel plus"
+              % c["models_collected"])
+        print("  6 declared requantisation siblings. Contrasts resolve on fewer, because a")
+        print("  contrast needs both arms and models refuse different conditions: %s." % res)
+        print("  Two instrument labels are present and are one instrument: %s." % lab)
+        print("")
+        print("  Every number above moves when more data lands. Quote the command, not the")
+        print("  digits: `key_numbers.py --counts`.")
+        return 0
 
     if args.sync_ours:
         print(sync_ours_row(rows))

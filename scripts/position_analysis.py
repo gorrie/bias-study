@@ -612,8 +612,23 @@ def main(argv=None):
                          "the subset figure the prereg requires beside the all-16 one")
     args = ap.parse_args(argv)
 
-    if args.selftest or not args.run:
+    if args.selftest:
         return selftest()
+    # A REQUEST FOR RESULTS MUST NOT BE ANSWERED WITH A SELFTEST. This read
+    # `if args.selftest or not args.run`, so `position_analysis.py --prereg` with no run
+    # directory printed "11 check(s), 0 failed" having read zero sheets and exited 0 -- the
+    # same shape as refusal_table reporting "0 refusals in 0 runs", and on the command PLAN.md
+    # cites as the source of the study's model counts. Asking for the scorecard and being
+    # handed a green selftest is how a number with no corpus behind it gets quoted.
+    if not args.run:
+        print("no run directory given, and --prereg is a request for RESULTS.")
+        print("")
+        print("  position_analysis.py 2026-09-16-ratchet-v3-wave --prereg")
+        print("  position_analysis.py --selftest        # the checks, against synthetic input")
+        print("")
+        print("Refusing to answer a request for results with a selftest: it would print a")
+        print("green scorecard having read no sheets.")
+        return 2
 
     run_dir = args.run if os.path.isdir(args.run) else os.path.join(STUDY, "runs", args.run)
     if not os.path.isdir(run_dir):

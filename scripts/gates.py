@@ -265,6 +265,16 @@ GATES = [
                 "nothing read the checklist back, so the gate was a document",
          why="it is a precondition of collecting, not of releasing; run_i3_wave calls it "
              "in front of the spend"),
+    Gate("instantiate_stems.py", ["--stems", "data/faction-stems.json", "--check"],
+         tree="study", stage="prerun",
+         label="the factions bank still matches its stems",
+         covers="data/ratchet-factions.json is re-derived from the authored stems and diffed "
+                "field by field against the file on disk, so a hand edit to the instrument "
+                "models are actually shown is caught. The first version never opened the "
+                "bank -- it rebuilt the items in memory and verified the rebuild, which is a "
+                "function checked against its own inverse",
+         why="NOT APPLICABLE (exit 2) until the author has written the stems and built the "
+             "bank; it reports that rather than passing silently"),
     # RETIRED 2026-09-17 with the bank it checked. `build_item_bank.py --check` verified
     # a 60-item bank an assistant generated and
     # substituted for the author's instrument -- against a fresh build. Its central rule,

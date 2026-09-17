@@ -47,7 +47,18 @@ import sys
 #: where nothing read it, `check_corpus` passed, and the only symptom was that
 #: `key_numbers --check` went on reporting 1,657 runs against a README that says 1,689.
 RUNS = pathlib.Path(__file__).resolve().parent.parent / "runs"
-CONDITIONS = ["A", "B", "C", "D", "E", "P"]
+#: THE BASELINE COLUMN WAS MISSING, so the refusal deliverable could not be computed against
+#: the condition this study measures everything else against.
+#:
+#: `N` is the bare baseline of the live instrument -- no system prompt, no user suffix -- and
+#: it is where "which models decline the instrument WITHOUT a directive" is answered. That is
+#: the interesting refusal question and the table could not ask it: A instructs balance, D
+#: instructs commitment, P is a placebo, and every one of them is a treatment.
+#:
+#: B, C and E are from the retired judged design and print `-` on this corpus. They stay
+#: because the archived runs still carry them and a column that vanishes takes its history
+#: with it -- but N leads, because it is the baseline.
+CONDITIONS = ["N", "A", "B", "C", "D", "E", "P"]
 
 # The RULE below is a deliberate hand-mirror of the collector's -- that independence is what
 # the audit tests. The VERSION NUMBER is not mirrored: both implementations must agree about

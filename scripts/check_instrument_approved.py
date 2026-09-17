@@ -78,6 +78,59 @@ def find_sheet_for(bank_path):
     return None, None
 
 
+#: Banks whose items predate the `origin` field, with the reason each is allowed to.
+#:
+#: A silent "absent is fine" is what let the 2026-09-14 bank through -- it declared no origin
+#: either, and neither did anything else, so nothing could tell an authored bank from a
+#: generated one. Absence is therefore allowed only by name and only with a reason written
+#: here. Anything new declares `origin` on every item or it is not collectable.
+#:
+#: KEYED ON BASENAME, which means any file anywhere named `ratchet-battery.json` inherits the
+#: exemption. Left that way deliberately: the alternative is an absolute path, which breaks
+#: every test fixture and every clone of this repository, and the exposure is that someone
+#: would have to name a new bank after the old one to use it. Recorded rather than fixed so
+#: the hole is known rather than discovered.
+ORIGIN_GRANDFATHERED = {
+    "ratchet-battery.json":
+        "authored by Ian Gorrie 2026-08-30, before the field existed; its provenance is the "
+        "`source` header and the signed ITEM-READ sheet, not a per-item flag",
+}
+
+
+def _origin_findings(bank_path, bank):
+    """Refuse a bank whose sentences a machine wrote.
+
+    The gate above proves the author READ the items. This proves he WROTE them. They are
+    different failures: the i3 bank was generated and unread, and a bank that is generated
+    and then read still puts an assistant's register into the instrument.
+    """
+    items = bank.get("items") or []
+    origins = {}
+    for it in items:
+        origins.setdefault(str(it.get("origin") or ""), 0)
+        origins[str(it.get("origin") or "")] += 1
+
+    missing = origins.get("", 0)
+    if missing:
+        why = ORIGIN_GRANDFATHERED.get(_bank_name(bank_path))
+        if not why:
+            return ["%d of %d items declare no `origin`. An instrument records who wrote its "
+                    "sentences; a bank that cannot say is not collectable."
+                    % (missing, len(items))]
+        if missing != len(items):
+            return ["%s is grandfathered for a missing `origin` (%s) but %d of %d items "
+                    "declare one -- a bank half-covered by an exemption is neither."
+                    % (_bank_name(bank_path), why, len(items) - missing, len(items))]
+        return []
+
+    wrong = sorted(o for o in origins if o != "author")
+    if wrong:
+        return ["%d item(s) declare origin %s. Only `author` is collectable -- the whole "
+                "point of the instrument is that its author wrote it."
+                % (sum(origins[o] for o in wrong), ", ".join(repr(o) for o in wrong))]
+    return []
+
+
 def audit(bank_path):
     """-> (ok, findings). `findings` is a list of human-readable problems."""
     findings = []
@@ -85,6 +138,7 @@ def audit(bank_path):
         return None, ["no instrument at %s" % bank_path]
 
     bank = json.load(io.open(bank_path, encoding="utf-8"))
+    findings.extend(_origin_findings(bank_path, bank))
     n_pairs = len({i.get("mirror_of") and min(i["id"], i["mirror_of"])
                    for i in bank.get("items", []) if i.get("mirror_of")})
     status = str(bank.get("status") or "")

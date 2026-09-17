@@ -25,6 +25,16 @@ import pytest  # noqa: E402
 
 
 def _wave():
+    """Skip where there is no corpus. EVERY test here needs one.
+
+    Six of these failed in the public mirror on 2026-09-17 because only one of them called
+    this. The mirror carries no `runs/` until a scrubbed export lands, so `G.main([])` returns
+    2 (NOT APPLICABLE) and every `== 0` or `== 1` assertion fails -- and the failure says
+    nothing about the gate, which is behaving exactly as designed there.
+
+    A test that cannot run in a tree must SKIP with a reason, not fail. The same mistake made
+    the whole mirror suite red while this session reported it green.
+    """
     run = G._latest_wave()
     if not run:
         pytest.skip("no wave corpus in this tree -- NOT APPLICABLE, not a pass")
@@ -33,11 +43,13 @@ def _wave():
 
 def test_the_gate_passes_on_the_live_corpus():
     """The baseline. Without this the red tests below prove nothing."""
+    _wave()
     assert G.main([]) == 0
 
 
 def test_a_stubbed_estimator_is_caught(monkeypatch):
     """Defect 1: a real-data path that returns nothing."""
+    _wave()
     monkeypatch.setattr(P, "load_records", lambda *a, **k: [])
     assert G.main([]) == 1
 
@@ -48,6 +60,8 @@ def test_the_wrong_pair_field_is_caught(monkeypatch):
     The original raised KeyError; the gate must report it rather than let it escape, which is
     why every outcome is called inside a try.
     """
+    _wave()
+
     def broken(bank):
         return {i["id"]: (i["pair_id"], i["frame"]) for i in bank["items"]}
     monkeypatch.setattr(P, "pair_index", broken)
@@ -56,6 +70,7 @@ def test_the_wrong_pair_field_is_caught(monkeypatch):
 
 def test_the_wrong_answers_shape_is_caught(monkeypatch):
     """Defect 3: a mapping expected where the collector writes a list of {q, position}."""
+    _wave()
     real = P.load_records
 
     def as_written(run_dir, *a, **k):
@@ -75,6 +90,7 @@ def test_condition_letters_that_do_not_match_the_collection_are_caught(monkeypat
     contrast list simply came back empty and looked computed. The gate names the mismatch and
     says where to fix it.
     """
+    _wave()
     monkeypatch.setattr(P, "CONDITION_MAP", {"N": "N", "F": "F", "P": "P", "C": "C"})
     assert G.main([]) == 1
 
@@ -95,6 +111,7 @@ def test_a_failing_prediction_does_NOT_fail_the_gate():
 
 def test_a_broken_floor_arm_is_caught(monkeypatch):
     """The floors are an outcome too, and a dead source glob is how one goes missing."""
+    _wave()
     import floor_table as F
     monkeypatch.setattr(F, "uncomputed_report",
                         lambda: [("floor_planted", "path", "no file matches `runs/nope/*`")])

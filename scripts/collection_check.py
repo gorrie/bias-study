@@ -183,10 +183,20 @@ def analyse_sheets(rows):
     attempted = [r for r in sheets if (r.get("failure_mode") or "") != "refused"]
     refused = len(sheets) - len(attempted)
     out["refused_sheets"] = refused
+    # COUNT ITEMS ANSWERED, NOT ANSWERS RETURNED.
+    #
+    # This was `n_answers / n_items`, so a sheet returning 32 answers all carrying q=1..12 with
+    # repeats scored 1.0 and was fine by this gate -- while `floor_table.load` dropped it as
+    # invalid, because there is no position for the twenty items it never reached. The gate
+    # blocked the wave over `mistral:latest` at 37% and said nothing about
+    # `gemma-4-12B`, whose 33 of 39 sheets were invalid and 26 of those for exactly this
+    # reason. The acceptance criterion has to measure what the analysis keeps.
     rates = []
     for r in attempted:
-        n_items = r.get("n_items") or len(r.get("answers") or []) or 1
-        rates.append((r.get("n_answers") or len(r.get("answers") or [])) / float(n_items))
+        answers = r.get("answers") or []
+        n_items = r.get("n_items") or len(answers) or 1
+        distinct = len({a.get("q") for a in answers if isinstance(a, dict)})
+        rates.append(min(distinct, n_items) / float(n_items))
     if not rates:
         # EVERY SHEET WAS A REFUSAL. Not a parse problem, and not a pass either.
         out["problems"].append(
@@ -243,6 +253,37 @@ def analyse_sheets(rows):
                              100 * worst_share, 100 * LOST_CELL_VENDOR_BLOCK)))
         else:
             out["warnings"].append(detail)
+
+    # WHAT THE ANALYSIS ACTUALLY DROPS, not just what parsed short.
+    #
+    # The parse-rate check above measures one way a sheet fails. `floor_table.load()` drops a
+    # sheet for ANY invalidity, and a model can lose almost everything without a single short
+    # parse: `gemma-4-12B` returned 33 invalid sheets of 39 -- full-length, fully parsed,
+    # alternating 2,1,2,1 down the page, caught by the structural classifier -- and the gate
+    # above reported its parse rate as 100% and named a different vendor as worst-hit. It
+    # blocked the wave over the smaller problem while the larger one was invisible.
+    #
+    # Refusals stay out of the denominator; a refusal is a measurement and is reported on its
+    # own line.
+    model_total, model_bad = collections.Counter(), collections.Counter()
+    for r in attempted:
+        model_total[r.get("model") or "?"] += 1
+        if not r.get("valid"):
+            model_bad[r.get("model") or "?"] += 1
+    losers = sorted(((model_bad[m] / float(model_total[m]), m, model_bad[m], model_total[m])
+                     for m in model_total if model_total[m]),
+                    reverse=True)
+    concentrated = [row for row in losers if row[0] > LOST_CELL_VENDOR_BLOCK]
+    if concentrated:
+        out["invalid_by_model"] = {m: [b, t] for _s, m, b, t in losers if b}
+        out["problems"].append(
+            "%d model(s) lose more than %.0f%% of their ATTEMPTED sheets to invalidity, "
+            "whatever the cause: %s. Every floor drops these, so the comparison is run on a "
+            "different number of sheets per model -- differential exclusion, which is this "
+            "study's own FINDINGS #7."
+            % (len(concentrated), 100 * LOST_CELL_VENDOR_BLOCK,
+               "; ".join("%s %d/%d (%.0f%%)" % (m.split("/")[-1], b, t, 100 * s)
+                         for s, m, b, t in concentrated)))
 
     # A sheet answering every item identically has no position to compare, and
     # scoring it against a normal sheet reports a huge side-flip count that reads

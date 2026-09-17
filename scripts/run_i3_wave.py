@@ -226,6 +226,25 @@ def valid_counts(out_dir):
     return seen
 
 
+def attempt_counts(out_dir):
+    """{(model, condition, shuffle_seed): records on disk, valid or not}.
+
+    The denominator `valid_counts` does not have. A replicate pass needs both: how many sheets
+    a cell has produced, and how many of them were worth anything.
+    """
+    seen = collections.Counter()
+    for p in sorted(glob.glob(os.path.join(out_dir, "*.jsonl"))):
+        for line in io.open(p, encoding="utf-8", errors="replace"):
+            if not line.strip():
+                continue
+            try:
+                r = json.loads(line)
+            except ValueError:
+                continue
+            seen[(r.get("model"), r.get("condition"), r.get("shuffle_seed"))] += 1
+    return seen
+
+
 def done_cells(out_dir, retry_failures=True):
     """(model, condition, shuffle_seed) already collected.
 
@@ -496,6 +515,11 @@ def main(argv=None):
     started = time.time()
     n_ok = n_fail = 0
     _ = _served_provider  # named here so a refactor cannot drop the helper silently
+    # Read once, before the loop: a replicate pass decides per cell whether that cell has ever
+    # produced a valid sheet, and re-globbing the run directory per model would also pick up
+    # the sheets this pass is writing as it goes.
+    rep_attempts = attempt_counts(out_dir) if args.replicate else {}
+    rep_valid = valid_counts(out_dir) if args.replicate else {}
     # Grouped by model so a model's twelve sheets are contiguous in time.
     for model in models:
         conds = [c.strip() for c in args.conditions.split(",") if c.strip()]
@@ -504,6 +528,27 @@ def main(argv=None):
             # point of it, and it is why `have` cannot gate here: the ordinary resume logic
             # would skip every one of them and collect nothing.
             cells = [(c, args.replicate_seed) for c in conds]
+            # BUT A CELL THAT HAS NEVER PRODUCED A VALID SHEET IS NOT A REPLICATE TARGET.
+            #
+            # Bypassing `done_cells` also bypassed the rule it implements -- a refusal is not
+            # retried -- so a cell with zero valid sheets was billed K fresh calls on every
+            # invocation and again on every resume. `gemini-3.7-flash` has 32 records and 32
+            # refusals; `gemini-3.8-flash` N and A each took five more. It is small money and
+            # a real distortion: refusal denominators end up depending on how many times the
+            # pass was resumed, so one model's refusal rate is measured over 32 attempts and
+            # another's over 28.
+            #
+            # A replicate of nothing is not a replicate. The existing records stay -- they are
+            # measurements, and deleting a refusal is forbidden -- they simply stop being
+            # re-purchased.
+            skip = [(c, s) for (c, s) in cells
+                    if rep_attempts.get((model, c, s), 0) >= RETRY_CAP
+                    and not rep_valid.get((model, c, s))]
+            for c, s in skip:
+                print("    %s seed %s  SKIPPED -- %d attempt(s), no valid sheet yet; a "
+                      "replicate pass does not re-buy a cell that has never produced one"
+                      % (c, s, rep_attempts.get((model, c, s), 0)), flush=True)
+            cells = [cell for cell in cells if cell not in skip]
         else:
             cells = [(c, s) for c in conds for s in SEEDS if (model, c, s) not in have]
         if not cells:

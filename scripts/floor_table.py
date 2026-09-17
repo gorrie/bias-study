@@ -354,6 +354,8 @@ def load_report():
 #: fact, and this project has been bitten by every one of those it has written. Recording the
 #: pattern at the moment it is globbed cannot drift from the pattern that was globbed.
 ARM_SOURCES = collections.defaultdict(list)
+#: cell key -> the set of collection days its runs came from. Populated by load(); see there.
+CELL_DAYS = collections.defaultdict(set)
 DECLINED = {}
 UNCOMPUTED = []
 _ACTIVE_ARM = None
@@ -430,8 +432,13 @@ def _diagnose(arm):
     filters, which is an arm waiting on collection and not a defect at all. Conflating the
     three is what let the first one hide for a day inside an expected-looking absence.
     """
+    # AN ARM'S OWN ACCOUNT OUTRANKS THE PATH SCAN, and it is not "waiting on collection".
+    # This returned "data", which prints as `no data` and reads as an arm whose corpus is
+    # simply not in yet -- so an arm that CANNOT be filled by collecting sat in the waiting
+    # list forever, holding `--uncomputed` at exit 2 permanently. A check that is always red is
+    # a check that gets ignored, and then a genuinely broken path hides inside it.
     if arm in DECLINED:
-        return ("data", DECLINED[arm])
+        return ("declined", DECLINED[arm])
     reads = ARM_SOURCES.get(arm) or []
     if not reads:
         return ("path", "read no source at all -- the arm globbed nothing, so it cannot have "
@@ -465,7 +472,8 @@ def _diagnose(arm):
 
 
 #: How each kind prints. "BROKEN" is shouted because it is the only one that is a defect.
-_KIND_LABEL = {"path": "BROKEN", "retired": "retired", "data": "no data"}
+_KIND_LABEL = {"path": "BROKEN", "retired": "retired", "data": "no data",
+               "declined": "declined"}
 
 #: Patterns that read THE CURRENT COLLECTION, which is legitimately absent in two states: the
 #: study tree before the wave is collected, and the public mirror before the scrubbed export
@@ -527,6 +535,15 @@ def load(pattern, condition=None, key=None, dedupe_by_seed=False):
     """
     key = key or _default_key
     cells = collections.defaultdict(list)
+    # WHICH DAYS EACH CELL WAS COLLECTED ON, as metadata rather than as part of the key.
+    #
+    # `_condition_pairs` needed to DISCLOSE that a model's two arms came from different days,
+    # and got there by putting the day IN the cell key -- which silently made each day a
+    # separate cell and kept only the last. Thirty-seven (model, condition) cells spanned two
+    # days and were reduced to the later one, discarding the wave-order sheets from the
+    # earlier. A disclosure that costs you the data it is disclosing about is not a
+    # disclosure. Reflects the most recent load(); read it immediately after.
+    CELL_DAYS.clear()
     # ONE SEED, ONE SAMPLE -- for the arms where the seed identifies the draw.
     #
     # Wave 0 holds cells with 6 to 10 valid runs across 5 swept seeds, because repairing the
@@ -580,6 +597,7 @@ def load(pattern, condition=None, key=None, dedupe_by_seed=False):
                     continue
                 seen_seed.add(mark)
             cells[key(r)].append({a["q"]: a["position"] for a in r["answers"]})
+            CELL_DAYS[key(r)].add((r.get("collected_at") or "")[:10])
     return cells
 
 
@@ -1262,6 +1280,17 @@ def floor_elicitation_format():
         p_self.append(selfspread(p))
         seen.append("%s/%s" % (key[0].split("/")[-1], key[1]))
     if not across:
+        # DECLINED, NOT WAITING. The grammar arm's corpus is on the retired instrument and is
+        # in RETIRED_SOURCES; this design has no constrained-decoding arm at all, so the row
+        # cannot be filled by collecting. Returning None put it in UNCOMPUTED, where it read
+        # as "waiting on collection" and kept `--uncomputed` at exit 2 forever -- a check that
+        # is permanently red is a check that gets ignored, which is how a real dead path would
+        # then hide inside it.
+        _decline("the grammar arm was collected on the retired external questionnaire and is "
+                 "withdrawn; this design has no constrained-decoding arm, so there is nothing "
+                 "to collect. Restoring the row means designing the arm in and collecting it "
+                 "on the live instrument -- and it must pass its own replicate test first, "
+                 "which the retired arm did not.")
         return None
 
     def med(v):
@@ -1568,25 +1597,44 @@ def floor_conditions():
 
 
 def _condition_pairs(pattern, dedupe_by_seed=False):
-    """A→D pairs from one collection, keyed by (model, condition, collection date).
+    """A→D pairs from one collection, keyed by (model, condition).
 
     Extracted from floor_conditions so the wave arm below runs the SAME pairing rather than a
     copy of it. A second implementation of "what is a manipulation pair" is a second definition
     of the paper's reference scale, and the two would drift.
 
-    Returns (pairs, by_model, split_day, raw_cells).
+    THE COLLECTION DAY IS NOT PART OF THE KEY, and was. Keying on
+    `(model, condition, collected_at[:10])` and then assigning `by[m][c] = modal(runs)` in a
+    loop over days kept whichever day sorted last: 37 of these cells span two days, so each was
+    built from its 09-17 replicate sheets alone and its three 09-16 wave-order sheets were
+    dropped. The row would have changed composition -- from three shuffle orders to one -- with
+    nothing in the output saying so. The day is now metadata (`CELL_DAYS`), which is what it
+    always was: it supports the split-day disclosure without deciding what the cell contains.
+
+    Deduping by seed therefore also happens at the right scope. Per-day keys meant a seed
+    reissued on a second day counted twice.
+
+    THIS IS NOT THE SAME RULING AS `floor_conditions`, AND THE DIFFERENCE IS THE CORPUS.
+    That arm reads the retired temperature-0 corpus, where two dates can be two model versions
+    and a pooled modal produced a sheet neither version emitted -- so there, the later date
+    wins, deliberately. Every caller of this function reads `runs/*-wave/*.jsonl`, where the
+    second date is the SAME model version being deliberately deepened by a replicate pass.
+    Discarding the earlier day there throws away the collection the pass was run to add.
+    Do not "fix" either rule to match the other; they answer different questions.
+
+    Returns (pairs, by_model, split_day, raw_cells) -- `raw_cells` is keyed (model, condition).
     """
-    raw = load(pattern, key=lambda r: (r["model"], r["condition"],
-                                       r.get("collected_at", "")[:10]),
+    raw = load(pattern, key=lambda r: (r["model"], r["condition"]),
                dedupe_by_seed=dedupe_by_seed)
+    days = {k: set(v) for k, v in CELL_DAYS.items()}
     by = collections.defaultdict(dict)
-    seen_day = {}
-    for (m, c, day), runs in sorted(raw.items()):
+    for (m, c), runs in sorted(raw.items()):
         by[m][c] = modal(runs)
-        seen_day[(m, c)] = day
+    # The two arms of a pair share no collection day -- the condition contrast is then partly a
+    # between-day contrast. Unchanged in meaning; it just no longer costs the earlier day.
     split_day = sorted(m for m in by
                        if "A" in by[m] and "D" in by[m]
-                       and seen_day.get((m, "A")) != seen_day.get((m, "D")))
+                       and not (days.get((m, "A"), set()) & days.get((m, "D"), set())))
     pairs = [both_stats(cs["A"], cs["D"]) for _m, cs in sorted(by.items())
              if "A" in cs and "D" in cs]
     return pairs, by, split_day, raw
@@ -1930,7 +1978,7 @@ def floor_conditions_wave():
     for m, cs in sorted(by.items()):
         if "A" not in cs or "D" not in cs:
             continue
-        sizes = [len(v) for (mm, c, _d), v in raw.items() if mm == m and c in ("A", "D")]
+        sizes = [len(v) for (mm, c), v in raw.items() if mm == m and c in ("A", "D")]
         if sizes:
             runs_behind.append(min(sizes))
     runs_behind.sort()
@@ -2033,7 +2081,16 @@ def main(argv=None):
                   "exactly like an arm nobody wrote. Repoint it or retire it explicitly."
                   % (len(broken), ", ".join(broken)))
             return 1
-        print("No arm is broken; the ones above are waiting on collection.")
+        waiting = [a for a, k, _ in missing if k == "data"]
+        if not waiting:
+            # EVERY ABSENCE HAS A RULING. Retired or declined, each with a reason and a date,
+            # and nothing is silently missing -- which is the state this check exists to
+            # confirm, not a state it should keep reporting as unfinished.
+            print("No arm is broken and none is waiting on collection: every arm above is "
+                  "retired or declined, with its reason.")
+            return 0
+        print("No arm is broken; %d arm(s) are waiting on collection: %s."
+              % (len(waiting), ", ".join(waiting)))
         return 2
 
     if args.class_split:

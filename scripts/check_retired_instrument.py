@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import argparse
 import io
+import json
 import os
 import re
 import sys
@@ -177,6 +178,49 @@ def _matches_in_sibling(rel):
     return False
 
 
+def _our_own_audit_row():
+    """The one row in the controls audit that is OURS, checked even though the file is allowed.
+
+    THE ALLOWLIST HAD A HOLE SHAPED EXACTLY LIKE THIS ROW. `data/controls-audit.json` is
+    allowed wholesale, and correctly: it audits twelve external studies and each row names the
+    instrument THAT study administered, which is a citation. But one row -- `id: "ours"` -- is
+    this study describing itself, and it named the retired 62-item questionnaire as our
+    instrument long after it was withdrawn. A file-level exemption cannot tell a citation from
+    a self-description, so it waved through the one line that was neither.
+
+    Found by an independent review. The row is also where this study's self-description goes
+    public with the audit, which makes it the worst place in the tree for a stale fact: it is
+    the record backing the sentence "the same table scores us".
+    """
+    path = os.path.join(STUDY, "data", "controls-audit.json")
+    if not os.path.exists(path):
+        return []
+    try:
+        rec = json.load(io.open(path, encoding="utf-8"))
+    except ValueError:
+        return []
+    studies = rec.get("studies") if isinstance(rec, dict) else rec
+    if isinstance(studies, dict):
+        studies = [dict(v, id=k) for k, v in studies.items()]
+    ours = next((s for s in (studies or []) if (s.get("id") or s.get("key")) == "ours"), None)
+    if not ours:
+        return [("data/controls-audit.json", 0,
+                 "no row keyed 'ours' -- this study's self-description is missing from the "
+                 "audit that scores it")]
+    pattern = re.compile("|".join(re.escape(m) for m in RETIRED_MARKERS), re.IGNORECASE)
+    out = []
+    for field in ("instrument", "scale", "headline", "cite"):
+        value = str(ours.get(field) or "")
+        # The correction note may NAME what the field used to say; that is the record, not a
+        # claim. Only text before such a note is checked.
+        live = value.split("Until 2026-09-17")[0]
+        if pattern.search(live):
+            out.append(("data/controls-audit.json [row: ours]", 0,
+                        "our OWN audit row's %r names a retired instrument: %s"
+                        % (field, live.strip()[:90])))
+    return out
+
+
 def _text_files():
     for root, dirs, files in os.walk(STUDY):
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS and not d.startswith(".")]
@@ -227,6 +271,7 @@ def main(argv=None):
         return 0
 
     hits, n_files, allowed_used = scan()
+    hits += _our_own_audit_row()
 
     # A SCAN THAT OPENED NOTHING MUST NOT REPORT CLEAN. The house rule, and this gate is
     # exactly the kind that would sit green over an empty walk.

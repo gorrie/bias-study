@@ -84,13 +84,30 @@ jobs:
           import subprocess, sys, re
           out = subprocess.run([sys.executable, "scripts/floor_table.py"],
                                capture_output=True, text=True).stdout
-          want = {"presentation order": 84, "same-version variants": 97}
+          # DERIVED FROM THE README, NOT TYPED HERE.
+          #
+          # This held `{"presentation order": 84, "same-version variants": 97}` -- pair counts
+          # measured on an instrument retired on 2026-09-16. The battery prints 101 and 24, so
+          # a push would have failed this step in public on numbers that were correct for a
+          # corpus now in withdrawn/.
+          #
+          # Typing them here was a second copy of a fact the README already generates, and the
+          # replicate row moves every time depth is added, so any typed value goes stale by
+          # collecting more data. The promise a reader checks is the README's own table; this
+          # step asserts a fresh computation still matches it, which is the actual guarantee.
+          readme = open("README.md", encoding="utf-8").read()
+          want = {row: int(n) for row, n in
+                  re.findall(r"^\| ([a-z][^|]*?) \| *(\d+) \|", readme, re.M)}
+          if not want:
+              print("CHECKED NOTHING -- no generated floors table found in README.md.")
+              print("This is not a pass: the step exists to compare the README to the data.")
+              sys.exit(1)
           bad = []
           for row, pairs in want.items():
               m = re.search(re.escape(row) + r"\s+(\d+)", out)
               got = int(m.group(1)) if m else None
               if got != pairs:
-                  bad.append("%s: README promises %d pairs, floor_table prints %s"
+                  bad.append("%s: README states %d pairs, floor_table prints %s"
                              % (row, pairs, got))
           if bad:
               print("\n".join(bad))

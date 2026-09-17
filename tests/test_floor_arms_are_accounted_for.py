@@ -52,7 +52,9 @@ def test_every_arm_computes_a_row_or_says_why():
         assert not computed, "no arm computed, yet the table holds rows"
     # And every arm named in the report carries a reason, not a bare name.
     for arm, kind, why in missing:
-        assert kind in ("path", "retired", "data"), (arm, kind)
+        # Derived from the labels, not retyped. A literal list here meant adding a kind made
+        # this fail on the kind rather than on anything about the arm.
+        assert kind in F._KIND_LABEL, (arm, kind, sorted(F._KIND_LABEL))
         assert why and len(why) > 20, (arm, why)
 
 
