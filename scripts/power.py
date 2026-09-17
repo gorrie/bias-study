@@ -72,6 +72,25 @@ ALPHA = 0.05
 # Where the current value has since drifted from the published one, the drift is the subject of
 # its own RESULTS document rather than an edit here: the frontier temp-0 arm's max is now 19
 # against the 14 recorded below, and the local arm's is 5 against 6. Neither changes a verdict.
+#: THE BOUND EVERY `observed` BELOW WAS MEASURED AGAINST, and the reason this table is
+#: currently unauditable.
+#:
+#: Each `observed` is a count of ITEMS THAT MOVED, out of the instrument's bound. Every one was
+#: measured on the RETIRED instrument, which had 62 items -- the `where` fields say so. The
+#: floors they are compared against are now computed from the live 32-item battery.
+#:
+#: 14 of 62 is 23% of the instrument. A threshold of 11 of 32 is 34%. Comparing the two
+#: numbers because both are integers is a unit error, and on 2026-09-17 it produced a dated
+#: correction celebrating three verdicts that had "flipped". They had not flipped; the
+#: denominator had changed. PREREG Amendment 2 says it outright: no figure measured against
+#: the old bound is comparable in the same units.
+#:
+#: The fix is not to rescale. A side-flip count is not linear in item count -- the items
+#: differ, not only how many there are -- so 14/62 cannot be converted by arithmetic. Each
+#: null must be RE-MEASURED on the live instrument or stay unaudited, and this file now says
+#: which rather than printing a verdict either way.
+RETIRED_BOUND = 62
+
 PUBLISHED_NULLS = [
     {"claim": "position does not move under prompt pressure (local families)",
      "observed": 6, "stat": "side", "floor": "presentation order",
@@ -303,6 +322,29 @@ def main(argv=None):
     print()
     verdicts = []
     missing_refs = []
+    # A COUNT OUT OF 62 IS NOT A COUNT OUT OF 32. Every `observed` was measured against the
+    # retired bound; the floors above are measured against the live one. Auditing one against
+    # the other is a unit error and it produced a dated correction that has had to be
+    # withdrawn. Refuse the comparison and say so, rather than printing a verdict.
+    if BOUND != RETIRED_BOUND:
+        print("  NOT AUDITED -- %d published null(s) carry an `observed` count measured"
+              % len(PUBLISHED_NULLS))
+        print("  against a %d-item instrument, and every floor above is measured against the"
+              % RETIRED_BOUND)
+        print("  live %d-item one. %d of %d is not comparable with a threshold out of %d, and"
+              % (BOUND, PUBLISHED_NULLS[0]["observed"], RETIRED_BOUND, BOUND))
+        print("  a side-flip count cannot be rescaled: the ITEMS differ, not just how many.")
+        print("")
+        print("  Each of these has to be re-measured on the live instrument before its verdict")
+        print("  means anything. Until then they are UNAUDITED, which is neither a pass nor a")
+        print("  failure -- and it is what this file printed as verdicts until 2026-09-17:")
+        for c in PUBLISHED_NULLS:
+            print("    - %s" % c["claim"])
+            print("        observed %d of %d, %s" % (c["observed"], RETIRED_BOUND, c["where"]))
+        print("")
+        print("  The detection limits above ARE valid: they describe what the live instrument")
+        print("  can resolve. It is only the published observations that are in other units.")
+        return 2
     for c in PUBLISHED_NULLS:
         key = (c["floor"], c["stat"])
         match = [r for r in rows if r[0] == c["floor"] and r[1] == c["stat"]]

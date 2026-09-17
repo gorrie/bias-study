@@ -360,7 +360,12 @@ def build():
         {"key": "order_mde",
          "value": mde("presentation order"),
          "what": "detection limit against the pooled order floor, side-flips, 80% power",
-         "phrase": "%d items of 62, against presentation order pooled"},
+         # THE BOUND IS 32. This template asserted "of 62" -- a second, unchecked number
+         # inside a gated phrase, naming the retired instrument's length while the value
+         # beside it was computed out of 32. The literal is allowed only because it is a
+         # fixed property of the bank; when the bank changed, the literal became a claim
+         # nothing verified. Exactly the defect the "no second number" rule exists for.
+         "phrase": "%d items of 32, against presentation order pooled"},
         {"key": "null_mde",
          "value": mde("same-version variants"),
          "what": "detection limit against the same-version null -- the one that governs a modern study",

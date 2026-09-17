@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 """Refuse any commit that would publish third-party instrument text.
 
-The 62 politicalcompass.org propositions are licensed text and not the author's work. They
-appear verbatim inside every run record produced by the forced-choice study, in the
-`forcing_prompt` field, and this repository is public.
+Some instruments this study has administered are licensed text and not the author's work, and
+the text appears verbatim inside every run record in the `forcing_prompt` field. This
+repository is public.
+
+WHAT IS GUARDED TODAY is XSTest -- 450 verbatim prompts from Roettger et al. in
+`runs/refusal-ablation/`. The 62-item external questionnaire that prompted this gate was
+retired on 2026-09-16 and its records are in `withdrawn/`. The study's OWN instrument, the
+author's 32-item battery, is deliberately NOT guarded here: it ships with the paper, and a
+gate that withheld it would be withholding the thing this repository exists to publish.
 
 On 2026-09-01, 525 of those run files were copied into this working tree while staging a data
 release. 460 carried the text. `.gitignore` did not cover them, so a single `git add -A` would
@@ -67,9 +73,9 @@ ALLOWED_SPANS = {
         "May judged run that never carried the instrument; verified 2026-09-15",
     # A SECOND COINCIDENCE, and this one is in OUR OWN INSTRUMENT.
     #
-    # `data/ratchet-propositions-i3.json` item 38 reads "Publishing false
+    # A generated bank (since withdrawn) had an item reading "Publishing false
     # statements about an election should not be a criminal offence." The
-    # colliding proposition is the compass's item 30, "Possessing marijuana for
+    # colliding proposition is the retired questionnaire's item 30, "Possessing marijuana for
     # personal use should not be a criminal offence."
     #
     # Both were read, on both sides, before this entry was written. They share
@@ -329,9 +335,9 @@ def main(argv=None):
         return 0
 
     print("COMMIT REFUSED -- third-party instrument text in %d file(s)." % len(hits))
-    print("The politicalcompass.org propositions are not the author's work and this")
-    print("repository is public. Publish scrubbed, item-id-keyed exports instead, with a")
-    print("fetcher that retrieves the items at the reader's end.")
+    print("This text is not the author's work and this repository is public. Publish")
+    print("scrubbed, item-id-keyed exports instead. The study's own instrument is not")
+    print("matched here -- it ships in full with the paper.")
     print()
     for path, why in hits[:20]:
         print("  %s" % path)

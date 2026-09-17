@@ -321,7 +321,10 @@ def test_order_sources_reports_what_contributed():
 #: label rather than a measured value. Anything not on this list is a quantity nothing checks.
 #: Adding an entry is a deliberate act; that is the point of the list being here.
 ALLOWED_LITERALS = {
-    "62",    # items in the instrument. Fixed by politicalcompass.org, not measured by us.
+    # ITEMS IN THE INSTRUMENT. A fixed property of the bank, not a measured value. This was
+    # "62" -- the retired bank's length -- so a paper sentence quoting 62 items passed the
+    # gate unexamined while every floor beneath it was counted out of 32.
+    "32",
     "90",    # the percentile in "p90" -- a label for the statistic, not its value.
     "2026",  # a year.
 }

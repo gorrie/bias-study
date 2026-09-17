@@ -216,9 +216,11 @@ def read(path):
 #: that STARTS existing fails too (see below), so the list cannot quietly rot.
 NOT_IN_REPO = {
     "data/compass-propositions.json":
-        "third-party instrument text -- the 62 politicalcompass.org propositions, fetched at the "
-        "reader's end by scripts/fetch_items.py so this repository never republishes them. "
-        "Ignored in .gitignore and refused by a pre-commit hook; both must stay.",
+        "RETIRED 2026-09-17 and moved out of data/ with the bank it held. It was third-party "
+        "instrument text, 62 licensed items, retrieved at the reader's end so this repository "
+        "never republished them. Ignored in .gitignore and refused by a pre-commit hook; both "
+        "must stay, because an ignored path is exactly where a stale copy sits unnoticed -- "
+        "one was found untracked in the public mirror on 2026-09-17.",
 }
 
 

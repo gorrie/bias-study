@@ -83,7 +83,12 @@ POSITIONS = ["Strongly Disagree", "Disagree", "Agree", "Strongly Agree"]
 #: What these records administered. Written into every record from
 #: 2026-09-15; the 50 already on disk predate it and floor_table falls back
 #: to the item count for them.
-INSTRUMENT_NAME = "politicalcompass.org 62 propositions"
+#: RETIRED ARM. This collector administered the 62-item external questionnaire, which was
+#: withdrawn on 2026-09-16 along with every record it wrote; those live in `withdrawn/`. The
+#: name is set to the live instrument so that if this arm is ever re-collected it cannot stamp
+#: a retired bank's name onto a record -- but nothing collects it today, and the
+#: elicitation-format floor it fed is a dated RETIRED_SOURCES entry in floor_table.
+INSTRUMENT_NAME = "ratchet-battery"
 
 
 def schema(n, mode="sheet"):

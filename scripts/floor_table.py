@@ -173,9 +173,9 @@ _DROPPED_SEEN = set()
 #: `load()` filtered on `schema == "compass-run/1"` and nothing else. That was
 #: sufficient while `run_compass.py` only ever administered the 62 external
 #: propositions. It stopped being sufficient the moment the project authored its
-#: own instrument: `data/ratchet-propositions-i3.json` is 60 items in 30 mirrored
-#: pairs, administered by the SAME runner, written with the SAME schema, into the
-#: SAME tree.
+#: own instrument -- and again when a third, generated bank appeared: 60 items in
+#: 30 mirrored pairs, administered by the SAME runner, written with the SAME
+#: schema, into the SAME tree. All three are withdrawn but one.
 #:
 #: Pooled, the two produce a floor computed across instruments -- a side-flip
 #: count over 62 items averaged with one over 60, on different propositions, in
@@ -190,93 +190,93 @@ _DROPPED_SEEN = set()
 #: pooling defect it is.
 #:
 #: The records already carry the discriminator: `instrument` is written straight
-#: from the bank's own field (`run_compass.py:719`), so the compass sheets say
-#: "politicalcompass.org ..." and the I3 sheets say "ratchet-battery-i3".
+#: from the bank's own field, so a sheet names the bank it was collected on.
 #:
-#: DEFAULT IS THE COMPASS, deliberately, so this commit changes no published
-#: number. The floors move to the I3 bank when its wave has been collected, by
-#: flipping `INSTRUMENT_DEFAULT` in the SAME commit that moves CI's expected pair
-#: counts -- one deliberate change, reviewable as one diff, rather than a silent
-#: drift the day the first I3 run lands.
-COMPASS_INSTRUMENT = "politicalcompass"
-I3_INSTRUMENT = "ratchet-battery-i3"
+#: ONE INSTRUMENT LIVES HERE. 2026-09-17: `runs/` holds 702 records and every one
+#: of them names the author's battery. The two retired banks and every record
+#: collected on them are in `withdrawn/`, and the constants that existed to
+#: RECOGNISE them are gone with them -- a discriminator for a bank no record
+#: carries is a name kept alive for nothing, and this one kept being read as the
+#: default long after it was not.
 RATCHET_INSTRUMENT = "ratchet-battery"
 
 #: The study's own instrument. 32 items, 16 mirrored pairs, authored 2026-08-30.
 INSTRUMENT_DEFAULT = RATCHET_INSTRUMENT
 
-#: Item count per instrument, used ONLY when a record does not name its own.
+#: Item count per instrument. A FALLBACK THAT NOW MATCHES NOTHING, kept because the rule it
+#: encodes is still the rule: a record's own name wins, and item count identifies a record
+#: only for instruments collected before the field existed.
 #:
-#: NOT EVERY COLLECTOR WRITES THE FIELD. `constrained_probe.py` -- the grammar /
-#: constrained-decoding arm -- writes `compass-run/1` records with no
-#: `instrument` key at all: 50 records across 5 models, every one `n_items: 62`.
-#: Its docstring is explicit that it administers the same items ("the grammar
-#: keeps the ORIGINAL WORDING. So it is the same instrument with the parser
-#: removed").
-#:
-#: Failing closed on those dropped the whole elicitation-format row out of the
-#: generated floors table, silently, the moment the guard landed. That row is a
-#: published disqualification -- "ARM UNSTABLE, NOT A FLOOR" -- and deleting a
-#: negative result is not a safer error than keeping it.
-#:
-#: So: name wins, and item count is the fallback when there is no name. This
-#: still cannot pool the two instruments, because 60 != 62. It is narrower than
-#: it looks -- a record with neither a name nor a matching count is still
-#: dropped.
-INSTRUMENT_ITEMS = {COMPASS_INSTRUMENT: 62, I3_INSTRUMENT: 60, RATCHET_INSTRUMENT: 32}
+#: There are none left. The three run directories whose records carried no `instrument` key --
+#: the constrained-decoding arm, 59 records at 62 items -- moved to `withdrawn/` on 2026-09-17
+#: with the bank they were collected on. Every record under `runs/` names its instrument.
+INSTRUMENT_ITEMS = {RATCHET_INSTRUMENT: 32}
 
 #: Every string a record may carry for a given instrument, mapped to its canonical id.
 #:
 #: MATCHING IS EXACT, NOT SUBSTRING. It was `_INSTRUMENT.lower() in got.lower()`, and the
-#: two banks in this tree are `ratchet-battery-i3` and `ratchet-battery` -- ONE CHARACTER
-#: apart, inside an `in` test, deciding which instrument a floor is computed from. A name
-#: that happened to contain another's is a silent pooling, and these two were built to be
+#: live bank and the generated one that was substituted for it were ONE CHARACTER apart,
+#: inside an `in` test, deciding which instrument a floor is computed from. A name that
+#: happened to contain another's is a silent pooling, and those two were built to be
 #: confusable.
 #:
-#: Descriptive strings are declared here rather than matched loosely. The external
-#: questionnaire's record string is a sentence whose tail has changed before; that is an
-#: argument for listing its prefixes, not for substring-matching every instrument.
+#: Descriptive strings are declared here rather than matched loosely.
 INSTRUMENT_ALIASES = {
-    COMPASS_INSTRUMENT: ("politicalcompass",),
-    I3_INSTRUMENT: ("ratchet-battery-i3",),
-    # NO BARE "ratchet-battery" ALIAS. It was here and it claimed every string beginning
-    # `ratchet-battery-` -- including `ratchet-battery-i3`, the bank this instrument
-    # replaced. A family prefix is not an identity.
-    RATCHET_INSTRUMENT: ("ratchet-battery",),
+    # NO FAMILY PREFIX MATCHING. A bare "ratchet-battery" alias once claimed every string
+    # beginning `ratchet-battery-`, including the generated bank this instrument replaced,
+    # whose name is one character away. A family prefix is not an identity, and the two were
+    # built to be confusable. `_canonical` anchors at the start AND requires a boundary.
+    # EVERY NAME THIS BANK'S RECORDS ACTUALLY CARRY, listed. 582 records under runs/ say
+    # `ratchet-battery` and 120 say `ratchet-battery-v3`; both are this instrument and both
+    # are declared. Anything else in the family -- a future `ratchet-battery-v4`, or a bank
+    # named beside this one the way the substituted bank was -- is a DIFFERENT instrument
+    # until someone adds it here deliberately.
+    RATCHET_INSTRUMENT: ("ratchet-battery", "ratchet-battery-v3"),
 }
 
-#: Instruments collected BEFORE `instrument` was written onto every record. Only these may
-#: be identified by item count when the field is absent -- see `_instrument_matches`.
-#: The battery has carried the field from its first sheet, so it is deliberately absent.
-PREDATES_INSTRUMENT_FIELD = (COMPASS_INSTRUMENT,)
+#: Instruments collected BEFORE `instrument` was written onto every record. Only these may be
+#: identified by item count when the field is absent -- see `_instrument_matches`.
+#:
+#: EMPTY, AND THAT IS THE POINT. The battery has carried the field from its first sheet. The
+#: only records that ever needed this fallback were collected on a retired bank and left
+#: `runs/` on 2026-09-17, so nothing is identified by item count any more -- and an empty
+#: tuple means `_instrument_matches` cannot claim an unnamed record for ANY instrument.
+PREDATES_INSTRUMENT_FIELD = ()
 
 
 def _canonical(name):
     """A recorded instrument string -> its canonical id, or the string itself.
 
-    Anchored at the START of the recorded string. The external questionnaire records
-    "politicalcompass.org 62-proposition test; texts and ..." and the discriminating part
-    is the head; a tail edit must not change which instrument a record belongs to.
+    Anchored at the START of the recorded string, with a boundary. A retired bank recorded a
+    long descriptive sentence whose tail was edited more than once, and the discriminating
+    part is the head: a tail edit must not change which instrument a record belongs to.
     """
     got = (name or "").strip().lower()
 
-    # LONGEST PREFIX WINS, not the first one declared. `ratchet-battery` is a prefix of
-    # `ratchet-battery-i3`, so with first-match the canonical battery would claim the
-    # withdrawn bank's records the moment someone reordered this dict -- a pooling defect
+    # LONGEST ALIAS WINS, not the first one declared. `ratchet-battery` is a prefix of every
+    # longer name in its family, so with first-match the canonical battery would claim a
+    # sibling bank's records the moment someone reordered this dict -- a pooling defect
     # sitting behind nothing but the order keys happen to be written in. Sorting by length
     # makes the specific alias beat the family every time, whatever the order.
     candidates = sorted(
         ((prefix, canon) for canon, prefixes in INSTRUMENT_ALIASES.items()
          for prefix in prefixes),
         key=lambda pc: -len(pc[0]))
+    # THE NAME IS THE HEAD, AND THE HEAD MUST MATCH A DECLARED ALIAS EXACTLY.
+    #
+    # A record may carry a descriptive tail after a comma or semicolon -- "ratchet-battery-v3,
+    # 32 items" -- and those tails have been edited, so the tail cannot decide identity. The
+    # head is split off and then compared for EQUALITY against the declared aliases.
+    #
+    # A BOUNDARY IS NOT ENOUGH, and that was the rule here until 2026-09-17. It accepted any
+    # `ratchet-battery-<suffix>` as the live instrument because `-` is a boundary -- so a
+    # future bank named next to this one would have had its sheets pooled into this one's
+    # floors, silently, which is the same hazard the substring match had and the reason the
+    # bank that was substituted for this study's instrument was named one character away.
+    # `ratchet-battery-v3` matches because it is DECLARED, not because it starts the same.
+    head = got.split(";", 1)[0].split(",", 1)[0].strip()
     for prefix, canon in candidates:
-        if got == prefix:
-            return canon
-        # THE PREFIX MUST END AT A BOUNDARY. A bare `startswith` matched
-        # `ratchet-battery0` as `ratchet-battery` -- a future bank could take this one's
-        # floors simply by being named next to it, which is the same one-character hazard
-        # the substring match had, moved one place along.
-        if got.startswith(prefix) and not got[len(prefix)].isalnum():
+        if got == prefix or head == prefix:
             return canon
     return got
 
@@ -296,11 +296,10 @@ def set_instrument(name):
 def _instrument_matches(rec):
     """Is this sheet from the instrument under analysis?
 
-    Substring, not equality: the compass records carry a long descriptive string
-    ("politicalcompass.org 62-proposition test; texts and per-item research
-    classifications ...") whose tail has changed before now. The discriminating
-    part is the head, and an exact match on a sentence nobody guards is a filter
-    that fails open the next time somebody edits it.
+    Head match, not equality: a retired bank recorded a long descriptive sentence
+    whose tail changed more than once. The discriminating part is the head, and an
+    exact match on a sentence nobody guards is a filter that fails open the next
+    time somebody edits it.
 
     A record with NO instrument field falls back to its ITEM COUNT, because one
     collector never wrote the field -- see INSTRUMENT_ITEMS. That fallback cannot
@@ -1999,10 +1998,11 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--markdown", action="store_true")
     ap.add_argument("--instrument", default=INSTRUMENT_DEFAULT,
-                    help="which instrument every floor is computed from, matched as a "
-                         "substring of the record's `instrument` field. Default %s. "
-                         "Use %s for the project's own mirrored bank. Floors from two "
-                         "instruments are never pooled." % (COMPASS_INSTRUMENT, I3_INSTRUMENT))
+                    help="which instrument every floor is computed from, matched against "
+                         "the head of the record's `instrument` field. Default %s -- the "
+                         "author's mirrored bank, and the only instrument under runs/. "
+                         "Floors from two instruments are never pooled."
+                         % INSTRUMENT_DEFAULT)
     ap.add_argument("--class-split", action="store_true",
                     help="the 2x2 of nuisance-vs-manipulation by model class, as markdown")
     ap.add_argument("--uncomputed", action="store_true",

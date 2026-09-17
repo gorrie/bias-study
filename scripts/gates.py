@@ -151,6 +151,20 @@ GATES = [
                 "real-data path was a stub that printed 'Phase 4 has not been collected yet' "
                 "over 580 valid sheets. The selftest is necessary and it was not sufficient; "
                 "tests/test_position_analysis_reads_the_corpus.py is the other half"),
+    Gate("check_retired_instrument.py", tree="either", stage="prerun",
+         label="no retired instrument is named in the live tree",
+         covers="every .py/.md/.json in the tree except withdrawn/, export/ and runs/, for "
+                "any string identifying a bank this study has retired. Two were purged and "
+                "both came back -- as an analysis default, a constant, a gate pointed at a "
+                "withdrawn file, help text calling a retired bank the live instrument, and a "
+                "pre-run skill declaring LIVE_INSTRUMENT to be the withdrawn one. Not as "
+                "data: no record under runs/ has named a retired bank since 2026-09-16. It "
+                "came back as NAMES, and a name in a default is one missing argument from "
+                "being data again. Citations to other people's published work are declared "
+                "per file with a reason, because rewriting a third-party title to clear a "
+                "grep is falsification -- done here on 2026-09-16, ~121 mangled references",
+         why="it answers 'is the collection about to run on the right instrument', which is "
+             "a question about a run being written, not about a repository being released"),
     Gate("check_arm_match.py", ["--quant-known"], tree="either", stage="prerun",
          label="arm labels match the records",
          covers="a run's declared condition against what its records carry, and the "
@@ -240,7 +254,7 @@ GATES = [
          why="it is a precondition of collecting, not of releasing; run_i3_wave calls it "
              "in front of the spend"),
     # RETIRED 2026-09-17 with the bank it checked. `build_item_bank.py --check` verified
-    # `data/ratchet-propositions-i3.json` -- the 60-item bank an assistant generated and
+    # a 60-item bank an assistant generated and
     # substituted for the author's instrument -- against a fresh build. Its central rule,
     # "every pair is the same sentence with one inserted 'not'", CANNOT be applied to the
     # live instrument: the Ratchet battery's mirrored halves are re-worded opposing framings,

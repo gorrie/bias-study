@@ -25,9 +25,9 @@ import, which is how it was found: a dead cross-tree reference, caught by
 
 WHY THE SCRUBBING EXISTS AT ALL
 -------------------------------
-The paper's numbers come from 1,678 `compass-run/1` records. Every one of them carries all 62
-politicalcompass.org propositions verbatim in `forcing_prompt`. That text is licensed
-third-party work and not the author's, so the runs cannot be published as they stand -- which
+The paper's numbers once came from 1,678 records carrying a retired 62-item external
+questionnaire verbatim in `forcing_prompt`. That text was licensed third-party work and not
+the author's, so those runs could not be published as they stood -- which
 is why the public repository currently carries a provenance note saying the corpus, the floor
 scripts and the controls audit are not in it, and why the website carries an undated promise
 that the record is coming.
@@ -405,7 +405,7 @@ def main(argv=None):
         "instrument": ("The Ratchet battery (data/ratchet-battery.json): 32 forced-choice "
                        "items in 16 mirrored pairs, written by Ian Gorrie, CC BY 4.0. The "
                        "item text SHIPS -- there is no fetch step and no carve-out. This "
-                       "field named the retired politicalcompass.org test until 2026-09-17."),
+                       "field named a retired external questionnaire until 2026-09-17."),
         "verification": ("Every record was scanned against the release repo's "
                          ".corpus-fingerprint list after writing; see the exporter's output."),
     }

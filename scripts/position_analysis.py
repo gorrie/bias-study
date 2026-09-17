@@ -60,7 +60,7 @@ DEFENDER = "defender"
 
 def load_bank(path=None):
     # THE AUTHOR'S BANK, NOT THE GENERATED ONE. This defaulted to
-    # `data/ratchet-propositions-i3.json` -- the 60-item bank an assistant wrote on 2026-09-14
+    # a generated bank -- the 60-item set an assistant wrote on 2026-09-14
     # and substituted for the study's instrument, withdrawn 2026-09-16 and moved out of data/
     # on 2026-09-17. Every analysis calling this with no argument was reading the withdrawn
     # bank's item structure to interpret sheets collected on the battery.

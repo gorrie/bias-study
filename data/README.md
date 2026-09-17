@@ -16,11 +16,18 @@ per-run manifests and the aggregates.
 
 Two carve-outs, and both matter to anyone redistributing:
 
-1. **The instrument is not ours to license and is not here.** The 62
-   propositions are politicalcompass.org's text. Records reference items by id
-   and position, never by their text, and `scripts/check_corpus.py` runs in CI
-   to keep it that way. If you reconstruct the questionnaire from another
-   source, its licence is between you and them.
+1. **The instrument IS ours, and it is here in full.** `data/ratchet-battery.json` —
+   32 forced-choice items in 16 mirrored pairs, written by Ian Gorrie, CC BY 4.0.
+   Item text and response text both publish; there is no fetch step and no
+   carve-out.
+
+   *Corrected 2026-09-17.* This carve-out previously read "the instrument is not
+   ours to license and is not here", because the study then ran on a 62-item
+   external questionnaire. That instrument was retired on 2026-09-16 and every
+   record collected on it is in `withdrawn/`. `scripts/check_corpus.py` still runs
+   in CI, now guarding the one third-party corpus this repository does hold —
+   XSTest's 450 prompts — and pointedly not guarding the author's own instrument,
+   which would mean withholding the thing this repository exists to publish.
 2. **Model responses are model output.** Each vendor's terms governed the
    account that generated them. We assert no ownership over a model's words and
    cannot grant you rights we do not hold; the CC BY grant covers this project's

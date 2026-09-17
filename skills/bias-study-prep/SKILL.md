@@ -68,9 +68,13 @@ inside its own correction would keep the gate red forever.)*
    `vendor-enrollment-brief.md` are all present and non-empty. These are the spec the
    *judge-scored* runs are validated against. A pass here is not a statement about the
    forced-choice instrument — see step 3.
-3. **Validate the live forced-choice instrument.** It is **`data/ratchet-propositions-i3.json`,
-   and it ships in this repository in full** — 60 items in 30 mirrored pairs, authored for this
-   study and licensed CC BY 4.0. There is no fetch step and a fresh clone has everything.
+3. **Validate the live forced-choice instrument.** It is **`data/ratchet-battery.json`, and it
+   ships in this repository in full** — 32 items in 16 mirrored pairs, written by the author
+   and licensed CC BY 4.0. There is no fetch step and a fresh clone has everything.
+
+   > **Corrected 2026-09-17.** This step named a 60-item generated bank as the live
+   > instrument. That bank was withdrawn on 2026-09-16; a prep skill that validates the wrong
+   > instrument passes a collection it did not check.
 
    > **Changed 2026-09-15.** This step used to describe 62 third-party propositions that were
    > "not in this repository and never will be", fetched by `scripts/fetch_items.py`. That

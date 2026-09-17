@@ -41,10 +41,13 @@ which was for months the one method never executed, because the benchmark items 
 acquired. The gap in the scoring layer is the gap the rubric identified in May.
 
 **Method 8 is EXCLUDED, so nothing bounds a shared lean and nothing is planned to.** Its
-pre-registered form anchors to the Political Compass's own axes; this study uses those 62
-propositions as stimuli while rejecting the framework, so anchoring to them would import the
-framework it exists to criticise. Excluded on principle 2026-09-12, not pending. See
-RUBRIC-SCORES.md.
+pre-registered form anchors to the two-axis ideological framework of a well-known external
+questionnaire, and anchoring to it would import the framework this study exists to criticise.
+Excluded on principle 2026-09-12, not pending. See RUBRIC-SCORES.md.
+
+(This paragraph also said the study "uses those 62 propositions as stimuli". It did until
+2026-09-16; it does not now. The instrument is the author's own 32-item battery, which makes
+the exclusion cleaner rather than weaker: the framework is neither the anchor nor the stimulus.)
 
 So the spread below is a RELATIVE lean, permanently. What IS bounded is per-finding: --per-finding
 re-scores every CI-clean finding under each judge alone, and two of the five do not survive it.
@@ -434,9 +437,9 @@ def main(argv=None):
     print("against the median of the same panel, so a panel that agreed and was wrong together")
     print("would score a spread of zero and look ideal. Catching that needs an anchor OUTSIDE")
     print("the panel -- Method 8, ranked FIRST at 4.25 in the pre-registered rubric.")
-    print("Method 8 is EXCLUDED on principle -- its form anchors to the Political Compass's")
-    print("own axes, which this study uses as stimuli while rejecting. So this spread is a")
-    print("RELATIVE lean permanently, and nothing here bounds a lean shared by all four.")
+    print("Method 8 is EXCLUDED on principle -- its form anchors to the two-axis framework of")
+    print("an external questionnaire, which this study rejects. So this spread is a RELATIVE")
+    print("lean permanently, and nothing here bounds a lean shared by all four.")
     if spread is not None:
         print("")
         effects = ci_clean_effects()

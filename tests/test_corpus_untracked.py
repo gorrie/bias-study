@@ -67,7 +67,7 @@ def test_hashed_only_is_opt_in(tmp_path, monkeypatch, capsys):
 
 
 def test_both_instruments_are_fingerprinted():
-    """The gate knew only politicalcompass until 2026-09-12. The refusal suite holds 450
+    """The gate knew only one retired bank until 2026-09-12. The refusal suite holds 450
     verbatim XSTest prompts and an export of them would have passed -- the same blind spot that
     let the ablation cells reach the public mirror, on a different instrument.
 

@@ -92,8 +92,15 @@ def test_live_audit_still_runs_and_reports_five_nulls():
     out = io.StringIO()
     with redirect_stdout(out):
         rc = power.main([])
-    assert rc == 0
+    # REFUSED, NOT AUDITED, since 2026-09-17: every published `observed` is a count out of the
+    # retired instrument's 62 items and every threshold is now a count out of 32. See
+    # CORRECTIONS-2026-09-17-power.md, whose own verdict claims were withdrawn for this.
+    # scripts/test_correction_gates.py holds the refusal; this file holds the limits table,
+    # which is computed entirely from battery floors and is unaffected.
+    assert rc == 2, "an unauditable table is NOT APPLICABLE, not a pass"
     text = out.getvalue()
+    assert "NOT AUDITED" in text
+    return
     # UPDATED 2026-09-17, DELIBERATELY, WITH A DATED CORRECTION BESIDE IT.
     #
     # These were 3 / 1 / 1. This test fired when they moved, which is what it is for -- the

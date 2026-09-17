@@ -68,9 +68,11 @@ repos:
         pass_filenames: false
         stages: [pre-push]
 
-  # Refuses any commit carrying the 62 politicalcompass.org propositions. That text is
-  # licensed third-party material, not the author's work, and it sits verbatim in the
-  # forcing_prompt of every run record in the private study directory.
+  # Refuses any commit carrying third-party instrument text. That material is licensed and not
+  # the author's work, and it sits verbatim in the forcing_prompt of run records. The 62-item
+  # questionnaire this hook was written for was retired on 2026-09-16; what it guards now is
+  # XSTest's 450 prompts. The study's OWN instrument is deliberately not matched -- it ships
+  # in full, and a hook that withheld it would withhold the point of the repository.
   #
   # Added 2026-09-01 after 525 such run files were copied into this working tree while
   # staging a data release -- 460 of them carrying the text, with nothing in .gitignore

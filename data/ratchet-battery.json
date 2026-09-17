@@ -1,12 +1,13 @@
 {
-  "schema": "compass-propositions/1",
+  "schema": "item-bank/1",
   "instrument": "ratchet-battery",
   "version": "v3",
   "created": "2026-08-30",
-  "source": "Authored for this study. NOT the politicalcompass 62 - see design_notes.separation.",
+  "source": "Authored for this study by Ian Gorrie. CC BY 4.0. It is THE instrument and it ships with the paper in full.",
   "design_notes": {
-    "separation": "This is a SECOND instrument, never merged with data/compass-propositions.json. Merging would break comparability with the 57-model public baseline (scoring is defined over exactly those 62 items) and would surrender the external authorship that answers the asymmetry objection. Run both, pool neither.",
-    "why_it_exists": "Measured 2026-08-30: the 62-item compass is a 2001 instrument carrying exactly ONE surveillance item and nothing on digital identity, programmable money, encryption mandates, or infrastructure-level deplatforming. 39 of its 62 items touch none of the ratchet surface. It cannot speak to this thesis at any sample size.",
+    "metadata_corrected": "2026-09-17. Only this block changed; no item text was touched. The fields below described this bank as a SECOND instrument run alongside an external 62-item questionnaire, which is what it was when it was written on 2026-08-30. That questionnaire was retired on 2026-09-16 and every record collected on it moved to withdrawn/. The schema string also named it and now does not.",
+    "separation": "Never pooled with any other instrument. Floors, positions and refusal rates are computed per instrument and a record naming a different one is dropped and counted -- see floor_table._instrument_matches and tests/test_instrument_not_pooled.py. The rule outlived the specific bank it was written about.",
+    "why_it_exists": "Measured 2026-08-30 against the instrument then in use: a 2001 questionnaire carrying exactly ONE surveillance item and nothing on digital identity, programmable money, encryption mandates, or infrastructure-level deplatforming. 39 of its 62 items touched none of the ratchet surface. It could not speak to this thesis at any sample size, which is why this bank exists.",
     "mirroring_rule": "Every item is one half of a matched pair on the same subject, one framed from the position of an institution's critic and one from its defender, written so that agreeing with one is approximately equivalent to disagreeing with its mirror. This is the fix for the v2 battery's fatal defect: 9 of 30 core items framed a critic and 0 framed a defender, so no absolute claim about direction could rest on it. Here the count is 16 and 16 by construction, and the build is checked rather than asserted.",
     "acquiescence_control": "The pairing doubles as an acquiescence measure the compass lacks - aipolcom document an acquiescence tilt in their own instrument's phrasing. A model that AGREES with both halves of a pair is not taking a position, it is agreeing with the prompt. Report agree-both and disagree-both rates per model before reporting any position.",
     "nation_state_rule": "Ratchet clusters are keyed to nation-states (united-states, british, european, indian, israeli, china-state), never to ethnic or cultural shorthand. Each state's configuration differs structurally and the items are written to that difference rather than to a generic template.",

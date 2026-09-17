@@ -68,8 +68,36 @@ def test_manipulations_are_not_sensitivity_references(monkeypatch, capsys):
              'refusal-direction ablation', 'refusal-direction ablation, one sitting']
     monkeypatch.setattr(P, 'collect', lambda: {n: {'side':[1], 'endpoint':[2]} for n in names})
     assert all(P.reference_kind(n) == 'intervention' for n in names)
+    # THE UNIT GUARD IS STOOD DOWN FOR THIS TEST, deliberately. Since 2026-09-17 `main()`
+    # refuses the whole audit when the published observations were measured against a
+    # different item bound than the floors -- which they are today, so it returns 2 before
+    # reaching the reference logic this test is about. Setting the two bounds equal puts the
+    # audit back in the state it will be in once the nulls are re-measured, which is the only
+    # state where "a missing reference must not silently disappear" is a live guarantee.
+    monkeypatch.setattr(P, 'RETIRED_BOUND', P.BOUND)
     assert P.main([]) == 1  # missing historical references cannot silently disappear
     assert 'REFERENCE UNAVAILABLE' in capsys.readouterr().out
+
+
+def test_observations_in_other_units_are_refused_not_compared(capsys):
+    """A count out of 62 items is not a count out of 32, and both are integers.
+
+    Every `observed` in PUBLISHED_NULLS was measured on the retired instrument; every floor is
+    now measured on the live one. Comparing them produced a dated correction announcing that
+    three verdicts had flipped. They had not flipped -- the denominator had changed.
+
+    The audit must refuse rather than print a verdict, and must say which claims are affected.
+    """
+    assert P.BOUND != P.RETIRED_BOUND, (
+        "this guard is only meaningful while the two bounds differ; once the nulls are "
+        "re-measured on the live instrument, delete the guard and this test together")
+    rc = P.main([])
+    out = capsys.readouterr().out
+    assert rc == 2, "an unauditable table is NOT APPLICABLE, not a pass and not a failure"
+    assert "NOT AUDITED" in out
+    assert "cannot be rescaled" in out
+    for c in P.PUBLISHED_NULLS:
+        assert c["claim"] in out, "every affected claim must be named, not counted"
 
 
 def test_release_failures_and_launch_errors_are_nonzero(capsys):
