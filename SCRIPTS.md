@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-99 script(s). 0 carry no module docstring and are listed at the end.
+103 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -31,6 +31,7 @@
 
 ## Scoring and the judge panel
 
+- **`analyze.py`** — One analysis entry point for forced-choice runs. Both instruments, all metrics.
 - **`ci_analysis.py`** — ci_analysis.py — Bootstrap confidence intervals + inter-judge agreement over already-scored bias-study runs. No API calls; reads runs/<date>/scored/*.jsonl.
 - **`cross_method_report.py`** — Cross-method judge-effectiveness analysis.
 - **`evidence_concordance.py`** — Score an answer set on evidence-concordance: an axis-free political-position readout.
@@ -70,6 +71,7 @@
 - **`test_ablation_slugs.py`** — Two independent abliterations of one base must never share a directory.
 - **`test_analysis_plumbing.py`** — Regression tests for the analysis plumbing: encoding, run discovery, gate templates.
 - **`test_compass_parser.py`** — Fixtures for the forced-choice parser in run_compass.py. Run before any collection.
+- **`test_correction_gates.py`** — Regression tests for September 8 inference and release-gate defects; no network.
 - **`test_floor_resolution.py`** — Tests for the modal-resolution layer and the per-model verdict.
 
 ## Other
@@ -85,6 +87,7 @@
 - **`calibration_study.py`** — STATS-BOOTSTRAP-CALIBRATION-001 — does this study's inference actually control its errors?
 - **`chart_intervention_budget.py`** — One scale: how far does an intervention have to move a model before it means anything?
 - **`check_doc_links.py`** — Gate: every relative markdown link in this tree's documents resolves to a real file.
+- **`check_instrument_approved.py`** — Refuse to collect against an instrument the author has not read and signed.
 - **`check_named_scripts.py`** — Every script named in a shipped document must exist in this repository.
 - **`check_no_key_repro.py`** — Checklist item 10, made mechanical: can a reader re-derive the numbers with no API key?
 - **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
@@ -116,6 +119,7 @@
 - **`refusal_structure.py`** — Is whole-instrument refusal all-or-nothing, and which models do it?
 - **`refusal_suite_summary.py`** — Both model pairs of the XSTest-style refusal suite, with clustered intervals.
 - **`release_check.py`** — Run RELEASE-v2.md's release checklist instead of asserting it.
+- **`render_item_read.py`** — Render the I3 bank as 30 pairs for the human read that gates Phase 2.
 - **`replicates.py`** — One implementation of "average the replicates in a cell", for every consumer.
 - **`robustness_checks.py`** — robustness_checks.py — Two reviewer-requested robustness analyses over already- scored runs. No API calls.
 - **`run_dose_series.py`** — The Wash — Experiment 1 dose-series driver.

@@ -249,6 +249,72 @@ def floors():
     return F.all_floors()
 
 
+class _AbsentFloor(object):
+    """A floor arm that produced no row. Indexing it yields itself, never a KeyError.
+
+    `build()` indexed `f["prompt condition A->D"]` straight, so ONE uncomputed arm raised
+    KeyError out of main() -- after the surfaces already checked had printed PASS. This file's
+    own test says it plainly: *a gate that cannot say which key it failed to resolve is worse
+    than one that fails.* It fell out of the instrument change, where nine of fifteen arms have
+    no data yet and the gate died on the first of them instead of naming all nine.
+
+    Falsy, so `if not order:` reads naturally, and every field access chains back to itself so
+    `order["side"][1]` resolves rather than blowing up two levels down.
+    """
+    __slots__ = ("name", "why")
+
+    def __init__(self, name, why):
+        self.name, self.why = name, why
+
+    def __getitem__(self, _key):
+        return self
+
+    def get(self, _key, _default=None):
+        # `.get()` rather than a default, deliberately: a caller writing `rec.get("skipped")`
+        # wants "this row has no such field", and handing back the sentinel keeps the whole
+        # chain falsy instead of mixing None into it halfway down.
+        return self
+
+    def __iter__(self):
+        return iter(())
+
+    def __len__(self):
+        return 0
+
+    def __bool__(self):
+        return False
+
+    __nonzero__ = __bool__
+
+    def __repr__(self):
+        return "<floor %r did not compute: %s>" % (self.name, self.why)
+
+
+def _floor(f, name):
+    """One floor row by name, or a sentinel that carries WHY it is missing."""
+    if name in f:
+        return f[name]
+    missing = F.uncomputed_report()
+    return _AbsentFloor(name,
+                        "no arm produced a row named %r; %d of %d arm(s) computed nothing "
+                        "(floor_table.py --uncomputed says which and why)"
+                        % (name, len(missing), len(F.ALL_FLOORS)))
+
+
+def _resolve(rows):
+    """Turn every absent-floor value into UNAVAILABLE, keeping the reason on the row.
+
+    A row whose value is a sentinel object would render as `<floor ... did not compute>` inside
+    a sentence. UNAVAILABLE is the established way this file says "this tree cannot produce that
+    number", and `main()` already reports those rather than printing them.
+    """
+    for r in rows:
+        if isinstance(r.get("value"), _AbsentFloor):
+            r["why_unavailable"] = r["value"].why
+            r["value"] = UNAVAILABLE
+    return rows
+
+
 def build():
     f = floors()
     pairs = P.collect()
@@ -257,18 +323,32 @@ def build():
     arms = matched_arms()
 
     def mde(name, stat="side"):
+        # The pair store is built from the same arms; an arm with no data is absent here too,
+        # and an MDE against a floor that does not exist is not a smaller number, it is no
+        # number at all.
+        if name not in pairs:
+            return _AbsentFloor(name, "no pairs collected for %r yet" % name)
         vals = pairs[name][stat]
         return P.mde(vals, P.pctile(vals, 1 - P.ALPHA))
 
-    order = f["presentation order"]
-    manip = f["prompt condition A->D"]
-    manip_sitting = f["prompt condition A->D, one sitting"]
-    order_sitting = f["presentation order, one sitting"]
-    order_frontier = f["presentation order, one sitting, frontier API"]
-    abl = f["refusal-direction ablation"]
-    null = f["same-version variants"]
+    def by_class(fn, row, *path):
+        rows = fn() or {}
+        rec = rows.get(row)
+        if not rec:
+            return _AbsentFloor(row, "the by-class split produced no %r row" % row)
+        for k in path:
+            rec = rec[k]
+        return rec
 
-    return [
+    order = _floor(f, "presentation order")
+    manip = _floor(f, "prompt condition A->D")
+    manip_sitting = _floor(f, "prompt condition A->D, one sitting")
+    order_sitting = _floor(f, "presentation order, one sitting")
+    order_frontier = _floor(f, "presentation order, one sitting, frontier API")
+    abl = _floor(f, "refusal-direction ablation")
+    null = _floor(f, "same-version variants")
+
+    rows = [
         {"key": "order_mde",
          "value": mde("presentation order"),
          "what": "detection limit against the pooled order floor, side-flips, 80% power",
@@ -278,7 +358,7 @@ def build():
          "what": "detection limit against the same-version null -- the one that governs a modern study",
          "phrase": "same-version limit of %d"},
         {"key": "order_p90_local",
-         "value": F.floor_order_by_class()["presentation order, local open-weight"]["side"][1],
+         "value": by_class(F.floor_order_by_class, "presentation order, local open-weight", "side", 1),
          "what": "order floor p90 on 2024-generation open-weight models",
          # The phrase used to read "p90 %d, max 24" -- a SECOND number, hardcoded inside the
          # template for a different quantity. When the local max moved 24 -> 22 the gate's own
@@ -286,11 +366,11 @@ def build():
          # smuggles an unchecked number into its expectation is a checker with a blind spot.
          "phrase": "our order floor is p90 %d"},
         {"key": "order_max_local",
-         "value": F.floor_order_by_class()["presentation order, local open-weight"]["side"][2],
+         "value": by_class(F.floor_order_by_class, "presentation order, local open-weight", "side", 2),
          "what": "order floor MAX on 2024-generation open-weight models",
          "phrase": "max %d — a different factor"},
         {"key": "order_p90_frontier",
-         "value": F.floor_order_by_class()["presentation order, frontier API"]["side"][1],
+         "value": by_class(F.floor_order_by_class, "presentation order, frontier API", "side", 1),
          "what": "order floor p90 on 2026 frontier models",
          "phrase": "2026 frontier models gives p90 %d"},
         {"key": "order_pairs",
@@ -459,6 +539,7 @@ def build():
          "phrase": ("all %d read in full" if audit["full_text"] == audit["external"]
                     else "%d of the twelve read in full")},
     ]
+    return _resolve(rows)
 
 
 #: W3.2 -- the SAME numbers, on the OTHER surfaces that state them.
@@ -1135,20 +1216,10 @@ def surface_numbers():
         # missed it because it was backticked rather than written as a markdown link. A
         # redaction count is exactly the number a reader checks when deciding whether a
         # published corpus is complete, so it is counted rather than remembered.
-        # THE PUBLIC PAGE'S FLOORS TABLE. Ungated until 2026-09-12, and it drifted exactly
-        # where an ungated table does: it printed presentation-order max as 22 against the
-        # generated 24, and CORRECTIONS #14 already recorded that defect as FIXED on the
-        # research page. It had not been. Gate the cells, not the prose about them.
-        {"key": "order_med_pooled", "value": fl["presentation order"]["side"][0],
-         "what": "pooled presentation-order floor, median side-flips"},
-        {"key": "order_p90_pooled", "value": fl["presentation order"]["side"][1],
-         "what": "pooled presentation-order floor, p90 side-flips"},
-        {"key": "order_max_pooled", "value": fl["presentation order"]["side"][2],
-         "what": "pooled presentation-order floor, max side-flips"},
-        {"key": "null_p90_sideflips", "value": fl["same-version variants"]["side"][1],
-         "what": "same-version null, p90 side-flips -- the detection limit's own input"},
-        {"key": "null_max_sideflips", "value": fl["same-version variants"]["side"][2],
-         "what": "same-version null, max side-flips"},
+        # THE PUBLIC PAGE'S FLOORS TABLE is gated too -- its five cells moved to `optional`
+        # below on 2026-09-16, because they were indexed straight out of `fl` and every one of
+        # them raised KeyError the moment its arm had no data. That is the same defect the
+        # block below was written to fix, left in place five rows further up.
         {"key": "corrections_entries", "value": _corrections_entries(),
          "what": "claims this study published and then withdrew or narrowed"},
         {"key": "withheld_records", "value": _withheld_records(),
@@ -1271,6 +1342,20 @@ def surface_numbers():
          "same-version null p90, side-flips -- two variants of one declared version"),
         ("null_pairs_prose", "same-version variants", None,
          "pairs behind the same-version null, as stated in prose"),
+        # THE PUBLIC PAGE'S FLOORS TABLE. Ungated until 2026-09-12, and it drifted exactly
+        # where an ungated table does: it printed presentation-order max as 22 against the
+        # generated 24, and CORRECTIONS #14 already recorded that defect as FIXED on the
+        # research page. It had not been. Gate the cells, not the prose about them.
+        ("order_med_pooled", "presentation order", 0,
+         "pooled presentation-order floor, median side-flips"),
+        ("order_p90_pooled", "presentation order", 1,
+         "pooled presentation-order floor, p90 side-flips"),
+        ("order_max_pooled", "presentation order", 2,
+         "pooled presentation-order floor, max side-flips"),
+        ("null_p90_sideflips", "same-version variants", 1,
+         "same-version null, p90 side-flips -- the detection limit's own input"),
+        ("null_max_sideflips", "same-version variants", 2,
+         "same-version null, max side-flips"),
     ]
     for key, row, idx, what in optional:
         if row not in fl:

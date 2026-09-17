@@ -342,6 +342,152 @@ def load_report():
     return sorted(DROPPED.items(), key=lambda kv: (-kv[1], kv[0]))
 
 
+#: WHICH FILES EACH ARM ACTUALLY READ, recorded BY the read rather than declared beside it.
+#:
+#: An arm whose source directory is retired computes no pairs, `summarise` returns None, and
+#: `all_floors` dropped it with `if not r: continue` -- so the row simply left the table. An
+#: ABSENT ROW IS INDISTINGUISHABLE FROM AN ARM NOBODY WROTE, which is how `floor_same_version`
+#: -- the paper's headline null -- sat pointed at `runs/2026-08-31-lineage/**` after that
+#: directory moved to `withdrawn/`: a glob matching zero files, a row that vanished, and
+#: nothing saying so. The whole wave would have collected correctly and populated nothing.
+#:
+#: Declaring each arm's sources in a table beside the functions would be a second copy of a
+#: fact, and this project has been bitten by every one of those it has written. Recording the
+#: pattern at the moment it is globbed cannot drift from the pattern that was globbed.
+ARM_SOURCES = collections.defaultdict(list)
+DECLINED = {}
+UNCOMPUTED = []
+_ACTIVE_ARM = None
+
+#: SOURCE PATTERNS RETIRED ON PURPOSE, each with the reason and the date. Keyed by PATTERN and
+#: not by arm, because an arm can read one live source and one retired one -- `floor_replicate`
+#: reads the wave and the template-floor directory, and only the second is gone.
+#:
+#: This is the difference between "the corpus for this arm was withdrawn and we said so" and
+#: "the arm's path broke and nobody noticed", and without it the check below is red forever and
+#: gets ignored, which is worse than not having it. An entry here is a RULING, so it carries a
+#: date and a reason. It is NOT a suppression list: `test_floor_arms_are_accounted_for` fails
+#: if a pattern listed here is no longer read by any arm, so a stale exemption cannot outlive
+#: the code it was written for, and a pattern that starts matching files again simply stops
+#: being reported.
+RETIRED_SOURCES = {
+    "runs/2026-09-04-template-floor/**/*.jsonl":
+        "the ten-paraphrase template corpus was collected on the retired external instrument "
+        "and moved to withdrawn/ on 2026-09-16. This design has no template variation, so the "
+        "paraphrase row is gone unless it is designed in and collected.",
+    "runs/2026-08-30-quant-null/**/*.jsonl":
+        "quant-null on the retired instrument, withdrawn 2026-09-16; the requantisation pairs "
+        "for this instrument collect into the wave directory, which floor_quant now reads.",
+    "runs/2026-09-04-quant-null/**/*.jsonl":
+        "as above -- the second quant-null collection, withdrawn 2026-09-16.",
+    "runs/2026-08-30-ablation-pairs/*":
+        "the abliteration pair corpus is on the retired instrument, withdrawn 2026-09-16. "
+        "Ablation is out of scope for this wave and the row is not expected to compute.",
+    "runs/2026-09-07-ablation-wave/*/*/*.jsonl":
+        "as above -- the wider ablation wave, withdrawn 2026-09-16.",
+    "runs/*temp0*/**/*.jsonl":
+        "the 2026-08-30 temperature-0 condition corpus, withdrawn 2026-09-16 and superseded "
+        "by floor_conditions_wave, which reads the wave.",
+    "runs/*-wave-orders/*.jsonl":
+        "the supplementary order sweep beside wave 0, on the retired external instrument, "
+        "withdrawn 2026-09-16. This design sweeps three shuffle seeds inside the wave itself, "
+        "so the order arms read the wave directory and this pattern is kept only so an arm "
+        "that used to draw on both still says what it lost.",
+    "runs/*-wave-orders-local2026/*.jsonl":
+        "the off-panel local-2026 order tie-breaker, withdrawn 2026-09-16. Whether it is "
+        "re-collected off-panel or read from the wave -- which now carries local 2026 builds "
+        "on the panel itself -- is a design ruling, not a repoint. BACKLOG.",
+}
+
+
+def _record_source(pattern, n_files):
+    """Note that the arm currently running read `pattern`, and how many files matched it."""
+    if _ACTIVE_ARM:
+        ARM_SOURCES[_ACTIVE_ARM].append((pattern, n_files))
+
+
+def _decline(reason):
+    """An arm's own account of why it is returning nothing, for arms that never glob.
+
+    A cache refused for the wrong instrument and a directory that moved are both "this arm
+    produced no row", and the report is worthless if it cannot tell them apart.
+    """
+    if _ACTIVE_ARM:
+        DECLINED[_ACTIVE_ARM] = reason
+
+
+def _diagnose(arm):
+    """Why an arm computed nothing -- a dead path and an empty corpus are different facts.
+
+    Returns (kind, sentence). `kind` is "path" when a pattern matched no file at all and
+    nothing declared it retired, which is a DEFECT in the arm -- something moved and the arm
+    did not follow it. "retired" is the same absence with a ruling attached. "data" is an arm
+    whose files are there and whose records did not survive the instrument, validity or pairing
+    filters, which is an arm waiting on collection and not a defect at all. Conflating the
+    three is what let the first one hide for a day inside an expected-looking absence.
+    """
+    if arm in DECLINED:
+        return ("data", DECLINED[arm])
+    reads = ARM_SOURCES.get(arm) or []
+    if not reads:
+        return ("path", "read no source at all -- the arm globbed nothing, so it cannot have "
+                        "measured anything")
+    dead = sorted({p for p, n in reads if n == 0})
+    live = [(p, n) for p, n in reads if n]
+    pre_collection = [] if _tree_has_a_wave() else [p for p in dead if p in COLLECTION_SOURCES]
+    unexpected = [p for p in dead if p not in RETIRED_SOURCES and p not in pre_collection]
+    if unexpected:
+        return ("path", "no file matches %s%s"
+                % (", ".join("`%s`" % p for p in unexpected),
+                   ("; its other source(s) did match: "
+                    + ", ".join("`%s` (%d)" % pn for pn in live)) if live else ""))
+    # A LIVE SOURCE OUTRANKS A RETIRED ONE. An arm that still reads a corpus which exists is
+    # waiting on collection, whatever else it also reads -- calling `floor_quant` "retired"
+    # because one of its three patterns is would file the arm under "not expected to compute"
+    # on the very day its data starts arriving.
+    if live:
+        return ("data", "%s matched %d file(s); none survived the instrument, validity or "
+                        "pairing filters for %s%s"
+                        % (", ".join("`%s`" % p for p, _ in live), sum(n for _, n in live),
+                           _INSTRUMENT,
+                           ("; also reads %d absent source(s): %s"
+                            % (len(dead), ", ".join("`%s`" % p for p in dead))) if dead else ""))
+    if pre_collection:
+        return ("data", "%s matches no file and this tree holds no wave directory at all -- "
+                        "nothing has been collected here, or exported here, yet"
+                        % ", ".join("`%s`" % p for p in pre_collection))
+    return ("retired", "; ".join("`%s` %s" % (p, RETIRED_SOURCES[p]) for p in dead))
+
+
+#: How each kind prints. "BROKEN" is shouted because it is the only one that is a defect.
+_KIND_LABEL = {"path": "BROKEN", "retired": "retired", "data": "no data"}
+
+#: Patterns that read THE CURRENT COLLECTION, which is legitimately absent in two states: the
+#: study tree before the wave is collected, and the public mirror before the scrubbed export
+#: lands. Every arm reading one of these went BROKEN in the mirror on 2026-09-16, correctly by
+#: the letter and wrongly in substance -- that tree has no wave in it yet and is not expected to.
+#:
+#: THE EXEMPTION IS CONDITIONAL, and the condition is the whole point: it applies only when the
+#: tree holds NO wave directory at all. If a wave exists and one of these patterns still matches
+#: nothing, that is the defect this report was built for -- a path that no longer finds the data
+#: sitting right there -- and it stays BROKEN.
+#: The literal, not a reference to SAME_VERSION_GLOB, which is defined further down beside the
+#: arm that owns it. `test_floor_arms_are_accounted_for` asserts the two agree.
+COLLECTION_SOURCES = ("runs/*-wave/*.jsonl",)
+
+
+def _tree_has_a_wave():
+    # sorted() is redundant for a boolean and kept anyway: `test_load_reads_the_corpus_in_a
+    # _canonical_order` forbids an unsorted glob anywhere in this file, and an exemption for
+    # "this one does not need it" is how the rule stops being mechanical.
+    return bool(sorted(glob.glob(os.path.join(STUDY, "runs", "*-wave"))))
+
+
+def uncomputed_report():
+    """Every arm in ALL_FLOORS that produced no row, with the reason, after all_floors() ran."""
+    return list(UNCOMPUTED)
+
+
 def load(pattern, condition=None, key=None, dedupe_by_seed=False):
     """Answer sheets grouped into cells.
 
@@ -381,7 +527,9 @@ def load(pattern, condition=None, key=None, dedupe_by_seed=False):
     # ext4 on one side and NTFS on the other. A published percentile was a property of the
     # filesystem. Sorting here makes the corpus order canonical; modal() no longer depends on
     # it either way (see its own note), and both are fixed so neither can reintroduce it.
-    for p in sorted(glob.glob(os.path.join(STUDY, pattern), recursive=True)):
+    paths = sorted(glob.glob(os.path.join(STUDY, pattern), recursive=True))
+    _record_source(pattern, len(paths))
+    for p in paths:
         for line in io.open(p, encoding="utf-8"):
             if not line.strip():
                 continue
@@ -952,11 +1100,34 @@ def floor_quant():
     conditions. Four conditions of one model are not four independent pairs; the n column did
     not distinguish them, and the row was the only one in the table with no confidence
     interval.
+
+    IT READ TWO DEAD DIRECTORIES UNTIL 2026-09-16. Both quant-null runs were collected on the
+    retired external instrument and moved to `withdrawn/` with it, so this arm globbed zero
+    files and left the table -- and the requantisation pass planned for this instrument
+    collects into the WAVE directory, which the arm did not read. Sixty sheets would have been
+    collected, cost nothing because they run locally, and populated nothing. This is the same
+    defect that had `floor_same_version`, the paper's headline, pointed at a withdrawn
+    lineage directory; it was found by `--uncomputed`, which exists because of that one.
+
+    The old patterns are KEPT so the retired figure still regenerates from an unwithdrawn
+    corpus, and the wave is added beside them.
+
+    ORDERS ARE POOLED INTO ONE MODAL PER (model, condition). The previous grouping key carried
+    the shuffle seed and then assigned `by[c][m]` inside the loop, so with more than one order
+    per cell the LAST seed read silently won and the rest were discarded. The quant-null dirs
+    held one order each, so it never showed; the wave holds three.
     """
-    cells = load("runs/2026-08-30-quant-null/**/*.jsonl")
-    cells.update(load("runs/2026-09-04-quant-null/**/*.jsonl"))
+    cells = collections.defaultdict(list)
+    for pattern in ("runs/2026-08-30-quant-null/**/*.jsonl",
+                    "runs/2026-09-04-quant-null/**/*.jsonl",
+                    SAME_VERSION_GLOB):
+        for k, runs in load(pattern).items():
+            cells[k].extend(runs)
+    per_cell = collections.defaultdict(list)
+    for (m, c, _o), runs in cells.items():
+        per_cell[(c, m)].extend(runs)
     by = collections.defaultdict(dict)
-    for (m, c, o), runs in cells.items():
+    for (c, m), runs in per_cell.items():
         by[c][m] = modal(runs)
     pairs, families = [], set()
     # HALF-PAIRS ARE COUNTED, not dropped in silence. floor_ablation grew an "eligible but
@@ -1195,8 +1366,10 @@ def floor_ablation_wave():
     spread is as large as the ablation effect on the endpoint statistic.
     """
     per = collections.defaultdict(dict)
-    for path in sorted(glob.glob(os.path.join(
-            STUDY, "runs/2026-09-07-ablation-wave/*/*/*.jsonl"))):
+    _wave = "runs/2026-09-07-ablation-wave/*/*/*.jsonl"
+    _paths = sorted(glob.glob(os.path.join(STUDY, _wave)))
+    _record_source(_wave, len(_paths))
+    for path in _paths:
         parts = path.replace(os.sep, "/").split("/")
         base, arm = parts[-3], parts[-2]
         for cell, runs in load(os.path.relpath(path, STUDY),
@@ -1236,6 +1409,7 @@ def floor_ablation():
     """
     pairs, skipped = [], []
     pair_dirs = sorted(glob.glob(os.path.join(STUDY, "runs/2026-08-30-ablation-pairs/*")))
+    _record_source("runs/2026-08-30-ablation-pairs/*", len(pair_dirs))
     for pair_dir in pair_dirs:
         label = os.path.basename(pair_dir)
         if label in INELIGIBLE_PAIRS:
@@ -1474,13 +1648,16 @@ def floor_modal_noise():
     import json as _json
     path = os.path.join(STUDY, "data", "modal-noise.json")
     if not os.path.exists(path):
+        _decline("`data/modal-noise.json` does not exist -- run modal_noise.py to measure it")
         return None
     try:
         rec = _json.load(io.open(path, encoding="utf-8"))
     except ValueError:
+        _decline("`data/modal-noise.json` is not readable JSON")
         return None
     med, p90v, mx = rec.get("median"), rec.get("p90"), rec.get("max")
     if med is None or p90v is None:
+        _decline("`data/modal-noise.json` carries no median/p90")
         return None
 
     # A CACHED FLOOR MUST NAME THE INSTRUMENT IT WAS MEASURED ON.
@@ -1499,6 +1676,8 @@ def floor_modal_noise():
     if cached_on is None or _canonical(cached_on) != _INSTRUMENT:
         _count_drop("modal-noise cache measured on %s, not %s"
                     % (cached_on or "an unrecorded instrument", _INSTRUMENT), rec)
+        _decline("the cached measurement is on %s, not %s -- refused, not reused"
+                 % (cached_on or "an unrecorded instrument", _INSTRUMENT))
         return None
     # THE ENDPOINT FLOOR IS ITS OWN NUMBER. This row printed the side-flip triple in both
     # columns, which understated the endpoint estimator by nearly a factor of three -- p90 3
@@ -1759,18 +1938,31 @@ def all_floors():
     A floor function may return one record or a DICT of them -- `floor_order_by_class` and
     `floor_order_wave_by_class` each yield two rows, because a factor whose effect inverts
     between populations is two measurements wearing one name.
+
+    AN ARM THAT MEASURED NOTHING IS RECORDED, NOT DROPPED. `uncomputed_report()` names it and
+    says why; see ARM_SOURCES for the day that cost.
     """
+    global _ACTIVE_ARM
     out = {}
+    del UNCOMPUTED[:]
     for fn in ALL_FLOORS:
-        r = fn()
-        if not r:
-            continue
+        ARM_SOURCES.pop(fn.__name__, None)
+        DECLINED.pop(fn.__name__, None)
+        _ACTIVE_ARM = fn.__name__
+        try:
+            r = fn()
+        finally:
+            _ACTIVE_ARM = None
+        rows = []
         if isinstance(r, dict) and "name" not in r:
-            for rec in r.values():
-                if rec:
-                    out[rec["name"]] = rec
-        else:
-            out[r["name"]] = r
+            rows = [rec for rec in r.values() if rec]
+        elif r:
+            rows = [r]
+        if not rows:
+            UNCOMPUTED.append((fn.__name__,) + _diagnose(fn.__name__))
+            continue
+        for rec in rows:
+            out[rec["name"]] = rec
     return out
 
 
@@ -1784,11 +1976,36 @@ def main(argv=None):
                          "instruments are never pooled." % (COMPASS_INSTRUMENT, I3_INSTRUMENT))
     ap.add_argument("--class-split", action="store_true",
                     help="the 2x2 of nuisance-vs-manipulation by model class, as markdown")
+    ap.add_argument("--uncomputed", action="store_true",
+                    help="list only the arms that produced no row, and why. Exit 1 when an "
+                         "arm reads a path that matches no file -- that is a broken arm, not "
+                         "an empty one -- and 2 when arms are merely awaiting collection.")
     args = ap.parse_args(argv)
     set_instrument(args.instrument)
 
     rows = list(all_floors().values())
     rows.sort(key=lambda r: -r["side"][1])
+
+    if args.uncomputed:
+        missing = uncomputed_report()
+        print("ARMS IN ALL_FLOORS: %d.  COMPUTED A ROW: %d.  COMPUTED NOTHING: %d."
+              % (len(ALL_FLOORS), len(ALL_FLOORS) - len(missing), len(missing)))
+        if not missing:
+            print("Every arm measured something on %s." % _INSTRUMENT)
+            return 0
+        print()
+        for arm, kind, why in missing:
+            print("  %-28s %-8s %s" % (arm, _KIND_LABEL[kind], why))
+        print()
+        broken = [a for a, k, _ in missing if k == "path"]
+        if broken:
+            print("%d arm(s) read a path that matches NO FILE: %s. An arm whose source moved "
+                  "does not fail -- it returns no pairs and leaves the table, which reads "
+                  "exactly like an arm nobody wrote. Repoint it or retire it explicitly."
+                  % (len(broken), ", ".join(broken)))
+            return 1
+        print("No arm is broken; the ones above are waiting on collection.")
+        return 2
 
     if args.class_split:
         # GENERATED, because a hand-typed version of this table was published on 2026-09-07
@@ -1891,6 +2108,14 @@ def main(argv=None):
         for name, n, med, p90, mx in r.get("per_cluster") or ():
             print("  %-28s     %-30s %4d pairs  med %2d  p90 %2d  max %2d"
                   % ("", name[:30], n, med, p90, mx))
+    # EVERY ARM THAT PRODUCED NO ROW, BESIDE THE ROWS IT IS MISSING FROM. A table of eleven
+    # rows where fifteen arms ran is a table that has already lied by omission.
+    missing = uncomputed_report()
+    if missing:
+        print()
+        print("ARMS THAT COMPUTED NOTHING (%d of %d):" % (len(missing), len(ALL_FLOORS)))
+        for arm, kind, why in missing:
+            print("  %-28s %-8s %s" % (arm, _KIND_LABEL[kind], why))
     # Everything the loader refused, so a lost arm cannot be invisible again.
     dropped = load_report()
     if dropped:

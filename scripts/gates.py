@@ -193,6 +193,17 @@ GATES = [
          why="it EXECUTES documented steps, so it belongs before a collection "
              "where a broken step costs a run, not inside the release gate where "
              "it would re-run work the other gates already did"),
+    Gate("floor_table.py", ["--uncomputed"], tree="either", stage="prerun",
+         label="every floor arm is accounted for",
+         covers="the arms that produced no row, split into a path that matches no file "
+                "(exit 1), a source retired by a dated ruling, and a corpus not collected "
+                "yet (exit 2). floor_same_version -- the paper's headline null -- read one "
+                "hardcoded directory that had moved to withdrawn/, so a 252-sheet wave would "
+                "have collected correctly and populated nothing, and the only symptom would "
+                "have been a missing row",
+         why="it answers 'will this collection land anywhere?', which is a question about a "
+             "run about to be written, not about the repository being released. Exit 2 is "
+             "the normal state between passes"),
     Gate("check_undefined_names.py", ["--check"], tree="either", stage="prerun",
          label="no undefined names in scripts",
          covers="a static pass for names used and never bound",
