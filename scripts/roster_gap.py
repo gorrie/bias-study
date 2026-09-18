@@ -13,7 +13,7 @@ August or September 2026. It was stale in the sense that matters -- the frontier
 the instrument had not followed it.
 
     python scripts/roster_gap.py                 # the table
-    python scripts/roster_gap.py --commands      # run_compass invocations that close the gap
+    python scripts/roster_gap.py --commands      # run_battery invocations that close the gap
     python scripts/roster_gap.py --all-vendors   # include vendors we have never tracked
 
 THERE IS DELIBERATELY NO --check
@@ -90,7 +90,7 @@ def skip_reason(model_id):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--commands", action="store_true",
-                    help="print the run_compass invocations that would close the gap")
+                    help="print the run_battery invocations that would close the gap")
     ap.add_argument("--all-vendors", action="store_true",
                     help="include vendors this study has never measured at all")
     ap.add_argument("--condition", default="A,B,D,P",
@@ -153,7 +153,7 @@ def main(argv=None):
         print("# so the only factor that differs between it and this one is the model.")
         for _created, mid in sorted(gaps, reverse=True):
             for cond in args.condition.split(","):
-                print("python scripts/run_compass.py --model %s --condition %s --runs %d "
+                print("python scripts/run_battery.py --model %s --condition %s --runs %d "
                       "--temperature 0.7 --seed 20260830 --max-tokens 8192 --delay 2 --out %s"
                       % (mid, cond.strip(), args.runs, out))
     return 0

@@ -139,9 +139,9 @@ def test_the_placebo_is_byte_identical_to_the_compass_arm():
     measuring the same control, and the whole point of P is that it is the SAME
     control that dissolved the claim on the other arm.
     """
-    import run_compass as rc
+    import run_battery as rc
     assert rs.UNMASK_SYSTEM_PROMPT["P"] == rc.CONDITION_SYSTEM["P"], (
-        "the placebo has drifted between run_study.py and run_compass.py")
+        "the placebo has drifted between run_study.py and run_battery.py")
 
 
 def test_the_placebo_carries_no_stance_content():

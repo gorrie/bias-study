@@ -139,7 +139,7 @@ def main(argv=None):
     for (model, cond) in todo:
         if args.limit and n >= args.limit:
             break
-        cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
+        cmd = [sys.executable, os.path.join(HERE, "run_battery.py"),
                "--model", model, "--condition", cond,
                "--runs", PARAMS["runs"], "--temperature", PARAMS["temperature"],
                "--seed", PARAMS["seed"], "--max-tokens", PARAMS["max_tokens"],

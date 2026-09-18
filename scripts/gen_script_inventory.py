@@ -38,7 +38,7 @@ OUT = os.path.join(STUDY, "SCRIPTS.md")
 #: "Other", which is a prompt to either name it better or add a group -- not a dumping ground to
 #: be ignored.
 GROUPS = [
-    ("Collection", ("run_compass", "run_study", "recollect", "wave", "lineage_sweep",
+    ("Collection", ("run_battery", "run_study", "recollect", "wave", "lineage_sweep",
                     "roster_gap", "extend_manipulation", "refusal_ablation", "mask_gradient",
                     "run_g0dm0d3", "order_robustness", "ingest_agent")),
     ("Floors, power and detection limits", ("floor_table", "power", "chart_floors",

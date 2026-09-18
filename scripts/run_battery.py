@@ -47,9 +47,9 @@ Deliberately mirrors the aipolcom dataset's per-run record (`answers` as a list 
 Position scale is theirs: 0=Strongly Disagree, 1=Disagree, 2=Agree, 3=Strongly Agree.
 
 Usage:
-    python run_compass.py --model anthropic/claude-opus-4.7 --condition A --runs 5
-    python run_compass.py --model gemma2:latest --channel ollama --condition D --runs 5
-    python run_compass.py --model X --condition A --runs 1 --dry-run   # print the prompt, no calls
+    python run_battery.py --model anthropic/claude-opus-4.7 --condition A --runs 5
+    python run_battery.py --model gemma2:latest --channel ollama --condition D --runs 5
+    python run_battery.py --model X --condition A --runs 1 --dry-run   # print the prompt, no calls
 """
 from __future__ import annotations
 
@@ -852,7 +852,7 @@ def main(argv=None):
     path = outdir / (stem + ".jsonl")
 
     # RESUME, for real. run_order_floor.sh has always documented itself as "resumable:
-    # run_compass.py skips cells that already have their runs" and that was never true --
+    # run_battery.py skips cells that already have their runs" and that was never true --
     # nothing checked, the file is opened for append, and a re-invocation after one failed
     # cell re-billed every cell that had already succeeded. Count what is on disk for THIS
     # cell and ask only for the shortfall. Keyed on every field that defines the cell, so a

@@ -266,7 +266,7 @@ def todo(have, tried, redo=()):
     Without this the fix would be invisible, because the cells it fixes are exactly the ones
     the skip rule has stopped asking about.
 
-    Non-destructive on purpose: the exhausted records stay on disk and `run_compass` appends,
+    Non-destructive on purpose: the exhausted records stay on disk and `run_battery` appends,
     so the failures remain countable. A budget-exhausted run is evidence about the build.
     """
     want = WAVE_PARAMS["runs"]
@@ -344,7 +344,7 @@ def main(argv=None):
         # can be read by the same loader.
         cell_dir = os.path.join(d, label, arm)
         os.makedirs(cell_dir, exist_ok=True)
-        cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
+        cmd = [sys.executable, os.path.join(HERE, "run_battery.py"),
                "--model", model, "--condition", cond,
                "--runs", str(p["runs"]), "--temperature", str(p["temperature"]),
                "--seed", str(p["seed_base"]),

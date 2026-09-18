@@ -11,7 +11,7 @@ the floors MEASURE. So a cell straddling two backends confounds its condition
 contrast with the routing, and `collection_check` refuses the run for it.
 
 The record had carried a `provider` field since the arm was designed, with a
-comment in `run_compass.py` naming this exact hazard:
+comment in `run_battery.py` naming this exact hazard:
 
     "one model id can be routed to different providers within a single sitting,
      and this study counts serving path as a same-version variant, so a floor

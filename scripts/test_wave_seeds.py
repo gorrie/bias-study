@@ -6,7 +6,7 @@ Both defects are the same mistake in two places: a count that cannot tell PRESEN
 FINISHED. Neither raised anything. Both produced data that looked complete.
 
   1. RESUME RESTARTED THE SEED SWEEP.
-     `run_compass.py` resumes correctly -- it counts valid runs on disk and asks only for the
+     `run_battery.py` resumes correctly -- it counts valid runs on disk and asks only for the
      shortfall -- and then the collection loop restarted at `run_no = 1`. Under `--seed-sweep`
      the seed is a POSITION IN A SEQUENCE (run k carries seed_base + k), not a loop counter, so
      a cell interrupted after two runs re-issued seed_base + 0 and + 1: the two it already had.
@@ -120,9 +120,9 @@ def test_collected_and_verify_agree_about_what_is_short():
 # --------------------------------------------- 2. resume continues the sweep, not restarts it
 
 def _next_offsets(seen, runs, base=SEED_BASE):
-    """The selection rule from run_compass's collection loop, extracted so the test exercises
+    """The selection rule from run_battery's collection loop, extracted so the test exercises
     the rule rather than a copy of it. Kept deliberately small; if it drifts from the caller,
-    test_resume_offsets_match_run_compass below fails."""
+    test_resume_offsets_match_run_battery below fails."""
     offsets, k = [], 0
     while len(offsets) < runs:
         if base + k not in seen:
@@ -152,16 +152,16 @@ def test_repair_of_a_damaged_cell_does_not_collide_again():
     assert _next_offsets(seen, 2) == [3, 4]
 
 
-def test_resume_offsets_match_run_compass():
+def test_resume_offsets_match_run_battery():
     """The rule above is a restatement. Assert the real collector agrees with it, so this file
     cannot pass while the shipped path regresses."""
-    src = io.open(os.path.join(HERE, "run_compass.py"), encoding="utf-8").read()
+    src = io.open(os.path.join(HERE, "run_battery.py"), encoding="utf-8").read()
     assert "if args.seed + k not in seen_seeds:" in src, \
-        "run_compass no longer selects unused sweep positions -- resume may be restarting the sweep"
+        "run_battery no longer selects unused sweep positions -- resume may be restarting the sweep"
     assert "offsets[run_no - 1]" in src, \
-        "run_compass's collection loop no longer uses the computed sweep offsets"
+        "run_battery's collection loop no longer uses the computed sweep offsets"
     assert "seen_seeds.add(rec[\"seed\"])" in src, \
-        "run_compass no longer records which seeds are already on disk"
+        "run_battery no longer records which seeds are already on disk"
 
 
 # ------------------------------------------------- 3. a wave is a sitting, measured correctly

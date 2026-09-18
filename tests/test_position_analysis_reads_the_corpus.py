@@ -42,7 +42,7 @@ def _bank_ids():
 
 
 def _sheet(model, condition, answers, seed=11):
-    """A record in the shape run_compass actually writes."""
+    """A record in the shape run_battery actually writes."""
     return {
         "schema": "compass-run/1",
         "instrument": "ratchet-battery",

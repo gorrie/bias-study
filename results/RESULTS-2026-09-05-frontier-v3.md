@@ -217,7 +217,7 @@ is the one thing this corpus has never had.
 ## Reproduce
 
     python scripts/roster_gap.py --commands        # what to collect, and why
-    python scripts/run_compass.py --model <id> --condition <A|B|D|P> --runs 5 \
+    python scripts/run_battery.py --model <id> --condition <A|B|D|P> --runs 5 \
         --temperature 0.7 --seed 20260830 --max-tokens 8192 --out runs/2026-09-05-frontier-v3
 
 Raw records in `runs/2026-09-05-frontier-v3/`. Not excluded from the gated corpus, matching the

@@ -109,7 +109,7 @@ RETIRED_INSTRUMENT = "data/compass-propositions.json"
 
 FORCED_CHOICE_FILES = [
     LIVE_INSTRUMENT,
-    "scripts/run_compass.py",
+    "scripts/run_battery.py",
     "scripts/test_compass_parser.py",
 ]
 

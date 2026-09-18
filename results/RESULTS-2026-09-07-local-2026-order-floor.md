@@ -98,7 +98,7 @@ corpus have cells too thin to enter a class-split row. `served_over_api()` reads
 
 **The collector reported success over an empty cell.** The canonical-order cell was queued and
 the collector built `["--shuffle-seed", str(shuffle)]`, sending the four characters `None` to a
-parameter declared `type=int`. `run_compass` wrote nothing, the collector printed
+parameter declared `type=int`. `run_battery` wrote nothing, the collector printed
 "(no result line)" for that cell, and then printed **"collected 3 cell(s); 0 remain"** and
 exited 0 — leaving two shuffled orders with nothing to pair against, which measures
 shuffle-against-shuffle rather than order-against-canonical. That is the same failure

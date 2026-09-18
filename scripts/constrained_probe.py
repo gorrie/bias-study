@@ -10,7 +10,7 @@ grammar-constrained decoder and a post-hoc allowlist enforce the same policy, bu
 never produces the unauthorized artifact, "emission = 0 by construction", while the allowlist
 produces it and then rejects it.
 
-That is exactly this study's parsing problem, one domain over. `run_compass.py` is the
+That is exactly this study's parsing problem, one domain over. `run_battery.py` is the
 corrective arm: ask for 62 answers as prose, then parse, then classify what came back as
 refusal / budget-exhausted / tokenizer garbage / truncated. **28.2% of condition-A runs are
 invalid**, four models produce no valid sheet under any condition, one build exhausted its
@@ -72,7 +72,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
-import run_compass as RC   # noqa: E402
+import run_battery as RC   # noqa: E402
 
 ENDPOINT = "http://localhost:11434/api/chat"
 
@@ -127,7 +127,7 @@ def run_constrained(model, condition, shuffle_seed=None, template="T01",
                     temperature=0.0, seed=None, max_tokens=4096, mode="sheet"):
     """One constrained run. Returns (positions_by_item_id, raw, problems).
 
-    THE PROMPT COMES FROM `run_compass.build_prompt`, not from a copy written here. Two
+    THE PROMPT COMES FROM `run_battery.build_prompt`, not from a copy written here. Two
     encodings of the instrument is how the two arms end up measuring different things while
     both claiming to be the battery -- the defect this file's own agreement check exists to
     detect. Only the DECODING changes.

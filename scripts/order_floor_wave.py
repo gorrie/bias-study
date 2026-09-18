@@ -256,7 +256,7 @@ def main(argv=None):
     for (model, shuffle) in left:
         if args.limit and n >= args.limit:
             break
-        cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
+        cmd = [sys.executable, os.path.join(HERE, "run_battery.py"),
                "--model", model, "--condition", CONDITION,
                "--runs", str(p["runs"]), "--temperature", str(p["temperature"]),
                "--seed", str(p["seed_base"]), "--max-tokens", str(p["max_tokens"]),
@@ -265,7 +265,7 @@ def main(argv=None):
         # THE CANONICAL ORDER TAKES NO --shuffle-seed, AND PASSING str(None) SENT "None".
         #
         # 2026-09-07: the first off-panel arm queued the canonical order and this line passed
-        # the four characters `None` where an int was expected. run_compass exited without
+        # the four characters `None` where an int was expected. run_battery exited without
         # writing a record, the collector printed "(no result line)" for that cell, and then
         # printed **"collected 3 cell(s); 0 remain"** and exited 0 with the canonical arm empty.
         # Both shuffled orders were fine, so the arm looked collected and had nothing to pair

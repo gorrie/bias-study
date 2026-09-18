@@ -52,7 +52,7 @@ retry cap recorded on the record. Refusals stay done — a refusal is a measurem
 
 `llama3.1:8b` under A/seed 11 returns a complete 32-answer sheet in the shape
 `N. <proposition>\nAgree` — the option on the line *after* the number. `LINE_RE` in
-`run_compass.py` requires them on one line, so the sheet parses to zero answers and
+`run_battery.py` requires them on one line, so the sheet parses to zero answers and
 `classify_failure` calls a non-empty, non-capped, zero-answer body a refusal.
 
 Four of llama's six "refusals" are this. The refusal-by-vendor deliverable inherits it, and

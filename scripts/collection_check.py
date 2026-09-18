@@ -86,7 +86,7 @@ def load_raw(run_dir):
     """Every record in a run, in EITHER collector layout.
 
     TWO LAYOUTS, AND THIS READ ONLY ONE OF THEM. `run_study.py` writes
-    `<run>/raw/<model>.jsonl`; `run_compass.py` writes `<run>/<model>__<cond>.jsonl`
+    `<run>/raw/<model>.jsonl`; `run_battery.py` writes `<run>/<model>__<cond>.jsonl`
     flat at the run root. This globbed `raw/**` only, so it returned zero rows for
     EVERY forced-choice run ever collected.
 
@@ -389,7 +389,7 @@ def analyse_sheets(rows):
 
     # A PIN THAT DID NOT HOLD IS WORSE THAN NO PIN, because the run looks controlled.
     #
-    # `run_compass --provider` sends `allow_fallbacks: false`, so OpenRouter should fail
+    # `run_battery --provider` sends `allow_fallbacks: false`, so OpenRouter should fail
     # the call rather than route past the pin. Should is not did: this compares what was
     # REQUESTED against what SERVED on every sheet that asked for one, so a reroute is a
     # blocker instead of a row that merely records a different backend than intended.

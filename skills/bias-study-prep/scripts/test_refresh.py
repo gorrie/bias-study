@@ -43,7 +43,7 @@ def test_the_preflight_checks_the_live_instrument():
     assert R.FORCED_CHOICE_FILES, "the pre-flight checks no instrument at all"
     joined = " ".join(R.FORCED_CHOICE_FILES)
     assert R.LIVE_INSTRUMENT in joined, "the forced-choice item set is not checked"
-    assert "run_compass.py" in joined, "the collection harness is not checked"
+    assert "run_battery.py" in joined, "the collection harness is not checked"
     assert "test_compass_parser.py" in joined, "the answer parser's fixtures are not gated"
 
 
@@ -94,7 +94,7 @@ def _fake_study(tmp: Path, items, counts=None):
     if counts is not None:
         payload["counts"] = counts
     (tmp / R.LIVE_INSTRUMENT).write_text(json.dumps(payload), encoding="utf-8")
-    for rel in ("scripts/run_compass.py", "scripts/test_compass_parser.py"):
+    for rel in ("scripts/run_battery.py", "scripts/test_compass_parser.py"):
         (tmp / rel).write_text("placeholder\n", encoding="utf-8")
     return tmp
 

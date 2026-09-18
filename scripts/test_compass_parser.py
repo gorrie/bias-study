@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fixtures for the forced-choice parser in run_compass.py. Run before any collection.
+"""Fixtures for the forced-choice parser in run_battery.py. Run before any collection.
 
 The parser is the single point where a model's reply becomes a number, so a silent bug
 here corrupts every downstream result and nothing else in the pipeline would notice. Two
@@ -17,7 +17,7 @@ Disagree and the scale compresses toward the middle -- manufacturing the both-si
 signal the study exists to measure.
 
 Same role as data/judge-gold.json plays for the refusal judge: a known-answer set that
-gates the instrument. `run_compass.py --dry-run` shows the prompt; this shows the parse.
+gates the instrument. `run_battery.py --dry-run` shows the prompt; this shows the parse.
 
 Usage:
     python test_compass_parser.py          # exits 1 on any failure
@@ -30,7 +30,7 @@ from pathlib import Path
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, str(Path(__file__).parent))
-from run_compass import POSITIONS, parse_answers  # noqa: E402
+from run_battery import POSITIONS, parse_answers  # noqa: E402
 
 NL = "\n"
 IDS = list(range(1, 63))

@@ -95,11 +95,11 @@ UNMASK_SYSTEM_PROMPT = {
     # PLACEBO. A forceful instruction with NO stance content, and the attribution
     # control the judged arm never had.
     #
-    # Carried BYTE-IDENTICAL from run_compass.py's condition P. The instrument
+    # Carried BYTE-IDENTICAL from run_battery.py's condition P. The instrument
     # audit found the same condition letter meaning different prompts in the two
     # runners -- condition A differing by three words, C by punctuation, while a
     # comment claimed verbatim carry -- and that is exactly the defect that makes
-    # two arms incomparable. If this string and run_compass.py's ever diverge,
+    # two arms incomparable. If this string and run_battery.py's ever diverge,
     # the two arms stop measuring the same control.
     #
     # On the forced-choice arm this condition dissolved the unmask claim: a
@@ -278,7 +278,7 @@ def _call_openrouter_once(model: str, messages: list[dict], api_key: str,
     """Returns {ok, response_text, raw, latency_ms, tokens_in, tokens_out, error?}.
 
     temperature/max_tokens default to the v2 prompt-rung settings so existing runs are
-    unchanged. run_compass.py overrides both: forced choice needs temperature 0 (the
+    unchanged. run_battery.py overrides both: forced choice needs temperature 0 (the
     prereg noise-floor-first rule) and a short completion, and passes a seed.
 
     `provider` PINS THE BACKEND, and the study needs it because serving path is one of
@@ -382,7 +382,7 @@ def call_ollama(model: str, messages: list[dict], timeout: int = 120,
     RESTORED 2026-09-04. Commit ccde3cc ("Zero forks") resolved a fork between this and the
     private copy by taking THIS side wholesale, and this side was the narrower one: it
     accepted no temperature, no max_tokens, no seed, no think, and hardcoded temperature 0.7
-    with num_predict 800. run_compass.py passes all four, so the ollama channel of the
+    with num_predict 800. run_battery.py passes all four, so the ollama channel of the
     forced-choice study raised TypeError on every call from 2026-09-02 until this was found
     on 09-04, and nothing noticed because nothing ran local in between. The hardcoded values
     were wrong for that study twice over -- it runs at temperature 0, and 800 tokens

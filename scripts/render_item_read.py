@@ -46,8 +46,8 @@ STUDY = os.path.dirname(HERE)
 def _default_bank():
     try:
         sys.path.insert(0, HERE)
-        import run_compass
-        return str(run_compass.ITEMS_PATH)
+        import run_battery
+        return str(run_battery.ITEMS_PATH)
     except Exception:
         return os.path.join(STUDY, "data", "ratchet-battery.json")
 

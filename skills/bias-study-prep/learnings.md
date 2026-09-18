@@ -50,7 +50,7 @@ differed, in the order they are worth doing. **Follow all seven; each one caught
    prediction 1 MISSED — in the study's favour — and prediction 4 missed as stated. Both were
    published as misses. A prereg you read after the numbers is a summary, not a control.
 3. **Dry-run the collector and READ THE PROMPT IT PRINTS.** Not the exit code, the prompt.
-   `run_compass.py --dry-run` was building its preview without `shuffle_seed`, so it printed
+   `run_battery.py --dry-run` was building its preview without `shuffle_seed`, so it printed
    items in id order while the collection would have sent them shuffled. On a mirrored bank it
    showed every pair adjacent — the one arrangement the instrument exists to avoid. The preview
    is the step you take BECAUSE you are about to spend money, so it is the worse of the two to

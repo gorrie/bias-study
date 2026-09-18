@@ -225,21 +225,21 @@ def test_canonical_order_is_not_passed_as_the_string_None():
 
     2026-09-07: the first off-panel order arm queued the canonical order (shuffle `None`) and
     the collector built `["--shuffle-seed", str(shuffle)]`, sending the four characters `None`
-    to a parameter declared `type=int`. run_compass exited without writing anything, the
+    to a parameter declared `type=int`. run_battery exited without writing anything, the
     collector printed "(no result line)" for that cell and then **"collected 3 cell(s); 0
     remain"**, exiting 0 with the canonical arm empty -- so the arm had two shuffled orders and
     nothing to pair them against.
 
-    Two assertions, because either alone is weak: run_compass really does reject the string
+    Two assertions, because either alone is weak: run_battery really does reject the string
     (so the guard is necessary), and the collector really does guard it (so the bug is gone).
     """
     import subprocess
 
     # 1. The parameter is int-typed, so "None" is an error rather than a null.
-    r = subprocess.run([sys.executable, os.path.join(HERE, "run_compass.py"),
+    r = subprocess.run([sys.executable, os.path.join(HERE, "run_battery.py"),
                         "--model", "x", "--condition", "D", "--shuffle-seed", "None"],
                        capture_output=True, text=True, encoding="utf-8", errors="replace")
-    assert r.returncode != 0, "run_compass accepted --shuffle-seed None; the guard's premise is gone"
+    assert r.returncode != 0, "run_battery accepted --shuffle-seed None; the guard's premise is gone"
 
     # 2. The collector omits the flag entirely for the canonical order.
     src = io.open(os.path.join(HERE, "order_floor_wave.py"), encoding="utf-8").read()

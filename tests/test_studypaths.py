@@ -123,7 +123,7 @@ def test_compass_entry_point_uses_each_requested_instrument(tmp_path):
         (root/'data').mkdir(parents=True)
         (root/'data/ratchet-battery.json').write_text(json.dumps(
             {'items':[{'id':1, 'text':f'fixture instrument {index}'}]}))
-        result = invoke(root, 'run_compass.py', '--model', 'fixture', '--channel', 'ollama', '--dry-run')
+        result = invoke(root, 'run_battery.py', '--model', 'fixture', '--channel', 'ollama', '--dry-run')
         assert result.returncode == 0, result.stderr
         assert f'fixture instrument {index}' in result.stdout
         assert f'fixture instrument {1-index}' not in result.stdout

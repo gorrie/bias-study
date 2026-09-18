@@ -43,7 +43,7 @@ Ollama accepts a JSON schema in `format`. An array of 62 enum values pins the wh
 ```
 
 **50 runs across 5 models, 62 of 62 answers every time, zero problems.** The prompt comes from
-`run_compass.build_prompt` — the same function the parser arm uses — so only the decoding
+`run_battery.build_prompt` — the same function the parser arm uses — so only the decoding
 changes. Records are written in the `compass-run/1` schema with `decoding: "grammar"`, so the
 existing floors machinery reads them without a parallel analysis.
 

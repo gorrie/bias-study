@@ -7,7 +7,7 @@ THE SHAPE, and every part of it is pre-registered in
     31 models  x  4 conditions (N, A, P, D)  x  3 shuffle seeds (11, 22, 33)
     = 372 whole-sheet calls
 
-`run_compass.py` is whole-sheet -- ONE CALL RETURNS ALL 32 ANSWERS -- which is
+`run_battery.py` is whole-sheet -- ONE CALL RETURNS ALL 32 ANSWERS -- which is
 why this is a count of sheets and not the "5,760" the prereg body said before
 the amendment. That figure counted item-answers.
 
@@ -24,7 +24,7 @@ them collects a corpus that looks complete:
     contrast whose arms were collected two days apart manufactured two of five
     "significant" intervals in this project's own rung-2 work, and the fix was
     to stop splitting a model across days.
-  * EVERY SAMPLE ITS OWN ORDER. `run_compass` defaults to id order, which puts
+  * EVERY SAMPLE ITS OWN ORDER. `run_battery` defaults to id order, which puts
     each mirrored pair's halves adjacent -- the model can see a proposition and
     its negation at once and be consistent for free. The three samples are three
     SEEDS, not three draws at one order.
@@ -163,10 +163,10 @@ def _served_provider(out_date, model, cond=None):
 
     Returns None on the local channel (no routing) and when the field is absent, and
     the caller simply does not pin. A missing provider must not become a pin of
-    `None`, which `run_compass --provider` would reject as a literal backend name.
+    `None`, which `run_battery --provider` would reject as a literal backend name.
 
     MATCH ON THE RECORD, NOT ON A FILENAME. The first version built the path from this
-    module's `safe()`, which maps `z-ai/glm-5.3` to `z-ai_glm-5.3` while run_compass's
+    module's `safe()`, which maps `z-ai/glm-5.3` to `z-ai_glm-5.3` while run_battery's
     own `safe_filename` writes `z-ai__glm-5.3`. Two functions for one fact, and the
     helper silently found nothing and pinned nothing -- a second copy of a naming rule
     behaving exactly like the second copies of numbers this study keeps correcting.
@@ -236,7 +236,7 @@ def probe_max():
 def valid_counts(out_dir):
     """{(model, condition, shuffle_seed): VALID records on disk}.
 
-    What `run_compass --runs K` measures a cell against, so `--plan` can report the sheets a
+    What `run_battery --runs K` measures a cell against, so `--plan` can report the sheets a
     replicate pass will actually write instead of assuming every cell starts empty.
     """
     seen = collections.Counter()
@@ -407,10 +407,10 @@ def main(argv=None):
     #: not have read.
     #:
     #: A replicate holds the ORDER fixed and varies only the draw, so this sweeps the
-    #: SAMPLING seed at one shuffle seed. Without --seed-sweep run_compass reuses the same
+    #: SAMPLING seed at one shuffle seed. Without --seed-sweep run_battery reuses the same
     #: sampling seed on every run, and on seed-honouring backends the repeats come back
     #: near-identical -- a replicate floor of ~0, which is worse than not measuring it.
-    #: K IS THE CELL'S TOTAL, NOT AN INCREMENT. `run_compass --runs K` counts the valid
+    #: K IS THE CELL'S TOTAL, NOT AN INCREMENT. `run_battery --runs K` counts the valid
     #: records already in the cell and collects `K - have`, so `--replicate 4` on a cell that
     #: already holds one wave sheet collects THREE. The help here said "K extra runs" and the
     #: prereg says "four extra runs on D ... five runs at one order is what makes
@@ -645,7 +645,7 @@ def main(argv=None):
         # contrast with the routing, and collection_check refuses the run for it.
         #
         # The pin is not chosen in advance: it is whatever served sheet 1, so the study
-        # is not picking backends, only holding one fixed within a cell. `run_compass
+        # is not picking backends, only holding one fixed within a cell. `run_battery
         # --provider` sends allow_fallbacks=False, so a pin that cannot be honoured
         # FAILS the sheet instead of quietly routing elsewhere and recording the
         # substitute -- which is the behaviour this replaces.
@@ -661,7 +661,7 @@ def main(argv=None):
         # That works for a fresh model with twelve cells. It DOES NOT WORK FOR A REPLICATE
         # PASS: replicate mode builds exactly one cell per model, so the pin is learned from
         # a sheet that has already been sent, and every replicate goes out unpinned in a
-        # single `run_compass --runs K` call. The router is then free to serve the repeats
+        # single `run_battery --runs K` call. The router is then free to serve the repeats
         # from a different backend than the wave sheets they are measured against -- and
         # serving path is a same-version variant this study MEASURES, so the replicate floor,
         # the floor under every other floor, would be confounded with routing. That is
@@ -672,14 +672,14 @@ def main(argv=None):
         if pinned:
             print("    pinned to %s from this model's existing sheets" % pinned, flush=True)
         for cond, seed in cells:
-            cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
+            cmd = [sys.executable, os.path.join(HERE, "run_battery.py"),
                    "--model", model, "--items", items_path, "--condition", cond,
                    "--runs", str(args.replicate or 1), "--shuffle-seed", str(seed),
                    "--temperature", str(TEMPERATURE), "--seed", str(BASE_SEED + seed),
                    "--max-tokens", str(MAX_TOKENS), "--out", os.path.join("runs", args.out_date)]
             if args.replicate:
                 # SWEEP THE SAMPLING SEED, or the repeats are not repeats. Without this
-                # run_compass reuses one seed for every run in the call, and a backend that
+                # run_battery reuses one seed for every run in the call, and a backend that
                 # honours seeds returns near-identical sheets -- a replicate floor of ~0,
                 # which understates the floor under every other floor in the table.
                 cmd += ["--seed-sweep"]

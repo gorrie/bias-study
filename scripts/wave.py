@@ -75,7 +75,7 @@ WAVE_PARAMS = {
     # the information of n=1, which inflates every count built on them and makes the
     # within-cell spread zero by construction.
     #
-    # `run_compass --seed-sweep` is the flag that does this on purpose; its own help says
+    # `run_battery --seed-sweep` is the flag that does this on purpose; its own help says
     # "repeating a seeded deterministic call measures nothing". The wave was doing exactly that.
     "seed_base": 20260830,
     "seed_sweep": True,
@@ -85,7 +85,7 @@ WAVE_PARAMS = {
 }
 
 #: This project's own harness answered the instrument as a subject and is in the corpus. It
-#: cannot be re-collected by `run_compass` -- there is no endpoint to call -- so it is not a
+#: cannot be re-collected by `run_battery` -- there is no endpoint to call -- so it is not a
 #: panel member. Recorded rather than silently dropped, because "the harness is in the corpus"
 #: is a disclosure the paper makes deliberately.
 NOT_COLLECTABLE = {"claude-code-harness-agent"}
@@ -651,7 +651,7 @@ def main(argv=None):
     for (model, cond) in todo:
         if args.limit and n >= args.limit:
             break
-        cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
+        cmd = [sys.executable, os.path.join(HERE, "run_battery.py"),
                "--model", model, "--condition", cond,
                "--runs", str(p["runs"]), "--temperature", str(p["temperature"]),
                "--seed", str(p["seed_base"]), "--max-tokens", str(p["max_tokens"]),
@@ -659,7 +659,7 @@ def main(argv=None):
                "--delay", str(args.delay), "--out", outdir]
         if p.get("seed_sweep"):
             cmd.append("--seed-sweep")
-        # The COLLECTOR is run_compass, not a reimplementation of it. Two collectors would be
+        # The COLLECTOR is run_battery, not a reimplementation of it. Two collectors would be
         # two definitions of what a run is, and the wave would stop being comparable to every
         # other collection in this corpus.
         r = subprocess.run(cmd, capture_output=True, text=True)

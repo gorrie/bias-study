@@ -46,8 +46,8 @@ UNTICKED = re.compile(r"\[\s*\]")
 def live_instrument_path():
     """Whatever the runner would administer if nobody passed --items."""
     try:
-        import run_compass
-        return str(run_compass.ITEMS_PATH)
+        import run_battery
+        return str(run_battery.ITEMS_PATH)
     except Exception:                                   # noqa: BLE001
         return os.path.join(STUDY, "data", "ratchet-battery.json")
 

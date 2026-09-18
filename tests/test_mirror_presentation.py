@@ -23,7 +23,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
 
-import run_compass as RC  # noqa: E402
+import run_battery as RC  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #: THE LIVE BANK. This named the withdrawn i3 bank, which left data/ on 2026-09-17 -- so this

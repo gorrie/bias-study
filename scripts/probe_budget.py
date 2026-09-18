@@ -196,7 +196,7 @@ def main(argv=None):
         return 0
 
     for m in todo:
-        cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
+        cmd = [sys.executable, os.path.join(HERE, "run_battery.py"),
                "--model", m, "--items", items_path,
                "--condition", args.condition, "--runs", "1", "--shuffle-seed", "11",
                "--temperature", "0.7", "--seed", "20260926",

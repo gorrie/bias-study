@@ -324,7 +324,7 @@ python scripts/power.py                             # detection limits per null
 at **97**; `power.py` should put the order threshold at **13** and the same-version detection
 limit at **11**. If your numbers differ, something is wrong and it is worth telling us about.
 
-To collect your own runs rather than re-analyse ours, `scripts/run_compass.py` needs an
+To collect your own runs rather than re-analyse ours, `scripts/run_battery.py` needs an
 `OPENROUTER_API_KEY`. Run the parser fixtures first — the whole instrument depends on the
 answer parser being strict, and it has 13 tests for that reason.
 

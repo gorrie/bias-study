@@ -87,7 +87,7 @@ inside its own correction would keep the gate red forever.)*
    > the operator to pass `--skip` and stop reading.
 
    The checks, and why each one is there:
-   - the item file, `scripts/run_compass.py` and `scripts/test_compass_parser.py` are present;
+   - the item file, `scripts/run_battery.py` and `scripts/test_compass_parser.py` are present;
    - **ids are contiguous** — answers are keyed by item id, so a gap silently misaligns every
      comparison;
    - **every pair is a clean negation**: the two halves differ by exactly one inserted "not"

@@ -244,7 +244,7 @@ def main(argv=None):
     for (model, cond) in left:
         if args.limit and n >= args.limit:
             break
-        cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
+        cmd = [sys.executable, os.path.join(HERE, "run_battery.py"),
                "--model", model, "--condition", cond,
                "--runs", str(p["runs"]), "--temperature", str(p["temperature"]),
                "--seed", str(p["seed_base"]), "--max-tokens", str(p["max_tokens"]),

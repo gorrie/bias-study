@@ -121,7 +121,7 @@ models as much as a deliberate manipulation does, while barely moving 2026 front
 only be re-measured on this instrument if they are in the roster.
 
 **2. The call count was wrong by a factor of sixty, and it is a typed number in a document about
-typed numbers.** The body says "5,760 calls". `run_compass.py` is **whole-sheet**: one call
+typed numbers.** The body says "5,760 calls". `run_battery.py` is **whole-sheet**: one call
 returns all 60 answers. 5,760 counts item-answers. The real figure is
 **31 models × 4 conditions × 3 samples = 372 sheets**, about $20–40 at a measured ~1,200 tokens
 in and ~600–2,000 out per sheet.
@@ -132,7 +132,7 @@ condition is the runner's `D`. **`--condition C` is not collected** — the runn
 user suffix, which the body of this prereg explicitly excludes from every arm. Guarded by
 `tests/test_i3_conditions.py`, which iterates exactly `("N", "A", "P", "D")`.
 
-**4. Presentation order is swept, not defaulted.** `run_compass.py` defaults to **id order**,
+**4. Presentation order is swept, not defaulted.** `run_battery.py` defaults to **id order**,
 which places each mirrored pair's halves **adjacent** — visibly a proposition and its negation,
 so consistency costs the model nothing and the mirrored design is defeated. Each of the three
 samples per (model, condition) is a separate invocation with its own `--shuffle-seed` (11, 22,

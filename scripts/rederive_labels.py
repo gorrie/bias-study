@@ -4,7 +4,7 @@
 WHY THIS EXISTS
 ---------------
 A record's `valid`, `n_answers`, `answers`, `problems` and `failure_mode` are not measurements.
-They are the output of `run_compass.parse_answers` and `classify_failure` applied to
+They are the output of `run_battery.parse_answers` and `classify_failure` applied to
 `response_text`, which IS the measurement. When those functions are corrected, every record
 written before the correction still carries the old verdict, and nothing re-derives it.
 
@@ -49,7 +49,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
-from run_compass import CLASSIFIER_VERSION, classify_failure, parse_answers  # noqa: E402
+from run_battery import CLASSIFIER_VERSION, classify_failure, parse_answers  # noqa: E402
 
 #: Never rewritten. What the API returned and how it was asked.
 IMMUTABLE = ("response_text", "model", "condition", "shuffle_seed", "seed", "provider",
@@ -66,7 +66,7 @@ def item_ids(rec):
     depend on the record and the code, never on a file that could have moved.
 
     SORTED, BECAUSE THE COLLECTOR PASSES CANONICAL ID ORDER.
-    `run_compass.py:592` calls `parse_answers(text, [it["id"] for it in items])`, and `items`
+    `run_battery.py:592` calls `parse_answers(text, [it["id"] for it in items])`, and `items`
     there is the bank in id order -- the shuffle lives in `build_prompt` and does not reach
     this list. `parse_answers` emits its answers in the order of the ids it was given, so
     reading them out of the forcing prompt (which IS shuffled) re-derives the same answers in
@@ -93,7 +93,7 @@ def rederive(rec):
         return None, "no response_text stored -- nothing to re-derive from"
     answers, problems = parse_answers(text, item_ids(rec))
     # SIGNATURE ORDER IS (problems, n_answers, tokens_out, max_tokens, text) -- taken from the
-    # collector's own call site at run_compass.py:608, not from memory. Called with `text`
+    # collector's own call site at run_battery.py:608, not from memory. Called with `text`
     # first it raises on a list, which is the loud failure; called with two argument lists
     # that happen to be type-compatible it would silently classify the wrong thing.
     mode = classify_failure(problems, len(answers), rec.get("tokens_out") or 0,
@@ -169,7 +169,7 @@ def main(argv=None):
               % (stored[CLASSIFIER_VERSION], CLASSIFIER_VERSION))
         print("A fix that changes what the rule DECIDES is a new version of the rule, or the")
         print("audit cannot see that stored labels and current code disagree. Bump")
-        print("CLASSIFIER_VERSION in run_compass.py first.")
+        print("CLASSIFIER_VERSION in run_battery.py first.")
         return 1
 
     by_model = collections.Counter()

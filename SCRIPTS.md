@@ -13,7 +13,7 @@
 - **`recollect_at_cap.py`** — Re-collect the May study's truncated cells at a real token budget, PAIRED.
 - **`repair_recollect_provenance.py`** — One-shot: fix provenance on records written before recollect_at_cap was corrected.
 - **`roster_gap.py`** — Which vendors have shipped a model we have never measured, and how far behind are we.
-- **`run_compass.py`** — Administer the forced-choice item bank to a model under one pressure condition.
+- **`run_battery.py`** — Administer the forced-choice item bank to a model under one pressure condition.
 - **`run_g0dm0d3.py`** — run_g0dm0d3.py — PIPELINE rung of the bias-study escalation ladder.
 - **`run_i3_wave.py`** — Collect I3 Phase 4: the frozen panel against the authored mirrored bank.
 - **`run_study.py`** — Execute one bias study run.
@@ -74,7 +74,7 @@
 - **`selftest_analysis.py`** — selftest_analysis.py — ten assertions over the committed May data. Zero API cost.
 - **`test_ablation_slugs.py`** — Two independent abliterations of one base must never share a directory.
 - **`test_analysis_plumbing.py`** — Regression tests for the analysis plumbing: encoding, run discovery, gate templates.
-- **`test_compass_parser.py`** — Fixtures for the forced-choice parser in run_compass.py. Run before any collection.
+- **`test_compass_parser.py`** — Fixtures for the forced-choice parser in run_battery.py. Run before any collection.
 - **`test_correction_gates.py`** — Regression tests for September 8 inference and release-gate defects; no network.
 - **`test_floor_resolution.py`** — Tests for the modal-resolution layer and the per-model verdict.
 

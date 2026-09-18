@@ -8,7 +8,7 @@ so a later collection cannot silently move it again.
 Classification is DERIVED here rather than read from the run record. Rows collected before
 the structural classifier shipped carry no `failure_mode` at all, and dropping them silently
 is what produced a table nobody could reproduce. The derivation is a line-for-line mirror of
-run_compass.py's classifier:
+run_battery.py's classifier:
 
     refused          = prose returned, zero answers parsed, budget intact, tokenizer intact
     truncated        = at the token cap WITH some answers parsed
@@ -65,7 +65,7 @@ CONDITIONS = ["N", "A", "B", "C", "D", "E", "P"]
 # which version of the rule they claim to implement, or the audit is comparing two things and
 # cannot say which. So it is imported, not retyped.
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from run_compass import CLASSIFIER_VERSION, classify_failure  # noqa: E402
+from run_battery import CLASSIFIER_VERSION, classify_failure  # noqa: E402
 # The instrument guard belongs to ONE module. A second copy of "is this our instrument" is how
 # this file spent the instrument change reading a substring of the retired questionnaire's name.
 import floor_table as _FT  # noqa: E402
@@ -164,7 +164,7 @@ def vendor_of(model):
 
 
 def classify(row):
-    """Mirror of run_compass.py's classifier, applied to a stored record.
+    """Mirror of run_battery.py's classifier, applied to a stored record.
 
     Same order of tests, same predicates. The only substitution is the token cap: rows
     collected before the cap was recorded carry no max_tokens field, so the pre-measurement

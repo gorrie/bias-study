@@ -29,7 +29,7 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(HERE, "scripts"))
 
 import rederive_labels as RD  # noqa: E402
-from run_compass import CLASSIFIER_VERSION  # noqa: E402
+from run_battery import CLASSIFIER_VERSION  # noqa: E402
 
 ITEMS = [(1, "Government funding of organisations that flag lawful speech is censorship."),
          (2, "When a government funds researchers who identify harmful content, that is fine."),

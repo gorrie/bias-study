@@ -32,7 +32,7 @@ description: Run and verify a forced-choice barometer wave end-to-end — the fi
 > Two traps verified 2026-09-15 and not yet reflected in the body of this document:
 > - the prereg's conditions **N/F/P/C are the runner's `N, A, P, D`**. `--condition C` collects
 >   a user-suffix arm the prereg explicitly excludes;
-> - `run_compass.py` defaults to **id order, which puts mirror pairs adjacent**. A mirrored
+> - `run_battery.py` defaults to **id order, which puts mirror pairs adjacent**. A mirrored
 >   instrument administered in id order defeats its own design. Pass `--shuffle-seed` and record
 >   it.
 >
@@ -73,7 +73,7 @@ instrument, four options, no LLM judge anywhere in the scoring path.
 **Why this skill exists.** Eight of the nine scripts that do this work — `wave.py`,
 `order_floor_wave.py`, `ablation_wave.py`, `floor_table.py`, `floor_resolution.py`,
 `model_cards.py`, `frontier_extend.py`, `chart_intervention_budget.py` — were referenced by
-**no skill at all** as of 2026-09-07. `bias-study-prep` knew `run_compass.py` and
+**no skill at all** as of 2026-09-07. `bias-study-prep` knew `run_battery.py` and
 `key_numbers.py` and nothing else. So the entire current instrument was undocumented as a
 procedure, and every defect below was found by hand, twice in some cases, because there was
 nowhere to write down that it had been found already.
@@ -335,7 +335,7 @@ python scripts/gen_readme.py && python scripts/key_numbers.py --check-release
 - `scripts/order_floor_wave.py` — shuffled-order arm under the wave protocol
 - `scripts/ablation_wave.py` — stock vs ablated, per ablator, at the wave protocol
 - `scripts/frontier_extend.py` — extend the panel onto more hosted models
-- `scripts/run_compass.py` — the collector all three drive; owns the failure classifier
+- `scripts/run_battery.py` — the collector all three drive; owns the failure classifier
 - `scripts/floor_table.py` — every floor, both statistics, plus the class splits
 - `scripts/floor_resolution.py` — the estimator floor, between-vs-within, vendor consistency
 - `scripts/model_cards.py` — per-model verdict by exact permutation test

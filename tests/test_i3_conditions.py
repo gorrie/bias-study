@@ -28,7 +28,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
 
-import run_compass as RC  # noqa: E402
+import run_battery as RC  # noqa: E402
 
 ITEMS = [{"id": 1, "mirror_of": 2, "text": "A proposition."},
          {"id": 2, "mirror_of": 1, "text": "A proposition, negated."}]
