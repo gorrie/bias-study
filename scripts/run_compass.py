@@ -54,6 +54,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import collections
 import datetime
 import io
 import json
@@ -341,6 +342,17 @@ def load_items(path=None):
 #: a model can see both halves at once and be consistent without holding a position.
 MIRROR_MIN_SEPARATION = 6
 
+#: Minimum positions between two items built from the SAME STEM -- the factions bank's
+#: `family` field. A stem-by-slot instrument shows the model four near-identical sentences
+#: differing only in a path phrase; adjacent, that is not a measurement of how it judges each
+#: sector, it is a reading-comprehension test the model can ace by pattern-matching. A perfect
+#: interleave of four families gives 4, so 3 is feasible at the design's shape.
+#:
+#: NO-OP FOR THE RATCHET BATTERY, which carries no `family`. Added while the battery wave was
+#: collecting, deliberately as a pure extension: the constraint activates only when every item
+#: declares a family, so no sheet already planned changes.
+FAMILY_MIN_SEPARATION = 3
+
 
 def order_items(items, shuffle_seed=None):
     """Return items in presentation order. Identity order when shuffle_seed is None.
@@ -375,17 +387,116 @@ def order_items(items, shuffle_seed=None):
         rng.shuffle(shuffled)
         return shuffled
 
+    # SAME-STEM SIBLINGS GET THEIR OWN CONSTRAINT, when the bank declares families. See
+    # FAMILY_MIN_SEPARATION. Only applied when EVERY item carries one, so a bank without the
+    # field -- the Ratchet battery -- takes exactly the path it always took.
+    families = [it.get("family") for it in items]
+    use_family = all(f is not None for f in families) and len(set(families)) > 1
+    if use_family:
+        return _order_by_family(items, rng)
+
     for _attempt in range(2000):
         rng.shuffle(shuffled)
         pos = {it["id"]: p for p, it in enumerate(shuffled)}
-        if all(abs(pos[it["id"]] - pos[it["mirror_of"]]) >= MIRROR_MIN_SEPARATION
-               for it in shuffled):
-            return shuffled
+        if not all(abs(pos[it["id"]] - pos[it["mirror_of"]]) >= MIRROR_MIN_SEPARATION
+                   for it in shuffled):
+            continue
+        if use_family:
+            by_family = collections.defaultdict(list)
+            for it in shuffled:
+                by_family[it["family"]].append(pos[it["id"]])
+            too_close = False
+            for places in by_family.values():
+                places.sort()
+                if any(b - a < FAMILY_MIN_SEPARATION
+                       for a, b in zip(places, places[1:])):
+                    too_close = True
+                    break
+            if too_close:
+                continue
+        return shuffled
     raise RuntimeError(
-        "no presentation order keeps mirror pairs %d apart after 2000 attempts for %d "
+        "no presentation order keeps mirror pairs %d apart%s after 2000 attempts for %d "
         "items -- the instrument is too small for this constraint, and collecting with "
         "adjacent halves would reintroduce the defect the mirroring exists to remove"
-        % (MIRROR_MIN_SEPARATION, len(items)))
+        % (MIRROR_MIN_SEPARATION,
+           (" and same-stem siblings %d apart" % FAMILY_MIN_SEPARATION) if use_family else "",
+           len(items)))
+
+
+def _order_by_family(items, rng):
+    """Presentation order for a stem-by-slot bank: CONSTRUCTED, not rejection-sampled.
+
+    WHY NOT JUST KEEP SHUFFLING. At the factions shape -- 4 families of 8 items in 32 slots,
+    siblings 3 apart, mirror halves 6 apart -- a valid order exists (the standard bound is
+    (8-1)*3 + 4 = 25 <= 32) but a random shuffle essentially never lands on one: 2000 attempts
+    found nothing across twenty seeds. Rejection sampling would have raised at collection time.
+    That is a loud failure rather than a silent one, which is right, but it would have stopped
+    the pilot dead for a constraint that is perfectly satisfiable.
+
+    The construction: deal families round-robin down the sheet, so a family lands every F
+    positions and sibling separation is exactly F (4 >= 3). Within one family's slots, put a
+    pair's two halves half the family apart, so they sit n_pairs * F positions apart
+    (16 >= 6). Everything the seed can still vary -- which family deals first, which pair takes
+    which slot, which half leads -- is varied, so orders differ across seeds as they must.
+
+    The result is CHECKED against both constraints before it is returned. A construction that
+    silently drifted from what it promises would be worse than the rejection loop it replaces.
+    """
+    by_family = collections.defaultdict(list)
+    for it in items:
+        by_family[it["family"]].append(it)
+    fams = sorted(by_family)
+    rng.shuffle(fams)
+
+    laid = {}
+    for fi, fam in enumerate(fams):
+        members = by_family[fam]
+        by_id = {it["id"]: it for it in members}
+        pairs, seen = [], set()
+        for it in sorted(members, key=lambda x: x["id"]):
+            if it["id"] in seen:
+                continue
+            other = by_id.get(it.get("mirror_of"))
+            if other is None:
+                pairs.append([it])
+                seen.add(it["id"])
+            else:
+                two = [it, other]
+                rng.shuffle(two)                 # which half leads
+                pairs.append(two)
+                seen.update({it["id"], other["id"]})
+        rng.shuffle(pairs)                       # which pair takes which slot
+        n = len(pairs)
+        for pi, pair in enumerate(pairs):
+            laid[(fi, pi)] = pair[0]
+            if len(pair) > 1:
+                laid[(fi, pi + n)] = pair[1]
+
+    n_slots = max(k[1] for k in laid) + 1
+    order = []
+    for slot in range(n_slots):
+        for fi in range(len(fams)):
+            it = laid.get((fi, slot))
+            if it is not None:
+                order.append(it)
+
+    pos = {it["id"]: p for p, it in enumerate(order)}
+    bad = [it["id"] for it in order
+           if it.get("mirror_of") in pos
+           and abs(pos[it["id"]] - pos[it["mirror_of"]]) < MIRROR_MIN_SEPARATION]
+    seps = collections.defaultdict(list)
+    for it in order:
+        seps[it["family"]].append(pos[it["id"]])
+    close = [f for f, places in seps.items()
+             if any(b - a < FAMILY_MIN_SEPARATION
+                    for a, b in zip(sorted(places), sorted(places)[1:]))]
+    if bad or close or len(order) != len(items):
+        raise RuntimeError(
+            "the family-aware construction produced an order it promised not to: %d mirror "
+            "violation(s), %d family violation(s), %d of %d items placed"
+            % (len(bad), len(close), len(order), len(items)))
+    return order
 
 
 def build_prompt(items, condition, shuffle_seed=None, template="T01"):
