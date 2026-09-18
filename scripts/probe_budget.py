@@ -61,6 +61,28 @@ ITEMS = _W.ITEMS
 OUT = "runs/" + _W.RUN_DATE + "-budget-probe"
 
 
+def profile_for(instrument, out_date=None):
+    """-> (items path, out dir). The bank and its directory, chosen together.
+
+    Importing two module constants kept them consistent with the wave driver but left BOTH
+    fixed to the battery, so a factions probe was not expressible -- and the version of it that
+    was (`--out-date` on the driver, nothing here) would have administered the battery into a
+    directory named for the factions pilot. `run_i3_wave.PROFILES` is the one place that
+    pairing lives; this reads it rather than keeping a second copy.
+    """
+    prof = _W.PROFILES[instrument]
+    date = out_date or prof["run"]
+    if not date:
+        raise SystemExit("--instrument %s has no default run directory; pass --out-date."
+                         % instrument)
+    if prof["slug"] not in date:
+        raise SystemExit(
+            "REFUSED -- instrument %r probes into a directory naming it, and %r does not "
+            "contain %r. A probe that measures the wrong instrument's token budget sets the "
+            "cap for a wave it never saw." % (instrument, date, prof["slug"]))
+    return prof["items"], "runs/" + date + "-budget-probe"
+
+
 PANEL_FILE = os.path.join(STUDY, "data", "wave-panel.json")
 
 
@@ -86,11 +108,15 @@ def is_local(m):
     return "/" not in m or m.startswith("hf.co")
 
 
-def collected():
-    """model -> (tokens_out, valid, n_answers) for sheets already probed."""
+def collected(out_rel=None):
+    """model -> (tokens_out, valid, n_answers) for sheets already probed.
+
+    Takes the directory rather than reading the module constant, so a probe of one instrument
+    cannot count another instrument's sheets as already done.
+    """
     got = {}
     import glob
-    for p in glob.glob(os.path.join(STUDY, OUT, "*.jsonl")):
+    for p in glob.glob(os.path.join(STUDY, out_rel or OUT, "*.jsonl")):
         for line in io.open(p, encoding="utf-8"):
             if not line.strip():
                 continue
@@ -105,7 +131,18 @@ def main(argv=None):
     ap.add_argument("--run", action="store_true")
     ap.add_argument("--condition", default="N",
                     help="N is the bare baseline and the longest answer in practice")
+    ap.add_argument("--instrument", choices=sorted(_W.PROFILES), default="battery",
+                    help="which bank to probe; its directory must name it")
+    ap.add_argument("--out-date", default=None,
+                    help="run date for instruments with no default (factions)")
     args = ap.parse_args(argv)
+
+    # The bank and its directory, resolved together. See profile_for.
+    items_path, out_rel = profile_for(args.instrument, args.out_date)
+    if not os.path.exists(os.path.join(STUDY, items_path)):
+        print("NOT APPLICABLE -- instrument %r has no bank at %s."
+              % (args.instrument, items_path))
+        return 2
 
     # NO PANEL, NO QUESTION TO ANSWER.
     #
@@ -128,7 +165,7 @@ def main(argv=None):
         return 2
 
     models = panel()
-    have = collected()
+    have = collected(out_rel)
     todo = [m for m in models if m not in have]
 
     if not args.run:
@@ -160,17 +197,17 @@ def main(argv=None):
 
     for m in todo:
         cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
-               "--model", m, "--items", ITEMS,
+               "--model", m, "--items", items_path,
                "--condition", args.condition, "--runs", "1", "--shuffle-seed", "11",
                "--temperature", "0.7", "--seed", "20260926",
-               "--max-tokens", str(PROBE_CEILING), "--out", OUT]
+               "--max-tokens", str(PROBE_CEILING), "--out", out_rel]
         if is_local(m):
             cmd += ["--channel", "ollama", "--no-think"]
         r = subprocess.run(cmd, cwd=STUDY, capture_output=True, text=True,
                            encoding="utf-8", errors="replace")
         print("  %-46s %s" % (m, "ok" if r.returncode == 0 else "FAILED"), flush=True)
 
-    have = collected()
+    have = collected(out_rel)
     print("")
     print("%-46s %9s %7s %s" % ("model", "tokens", "answers", "valid"))
     for m in sorted(have, key=lambda k: -have[k][0]):

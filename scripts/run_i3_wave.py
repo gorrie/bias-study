@@ -51,8 +51,35 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
 
-RUN_DATE = "2026-09-16-ratchet-v3-wave"
-ITEMS = "data/ratchet-battery.json"
+#: A BANK AND ITS RUN DIRECTORY TRAVEL TOGETHER, or they drift apart at the worst moment.
+#:
+#: `--out-date` was overridable and the bank was a module constant, so
+#: `--out-date 2026-09-20-factions-pilot` would have written sheets named for the factions
+#: pilot that were collected on the **Ratchet battery** -- a directory that looks exactly right
+#: holding the wrong instrument. `probe_budget` imports both from here, so it inherited the
+#: same hole; running it as its own refusal message instructs would have administered 36 sheets
+#: of the battery into the factions probe directory.
+#:
+#: Records carry their instrument, so `floor_table._instrument_matches` would eventually have
+#: caught it -- after the money was spent. A profile makes the mismatch unrepresentable
+#: instead: choosing the instrument chooses the bank, and the run directory must name it.
+PROFILES = {
+    "battery": {
+        "items": "data/ratchet-battery.json",
+        "run": "2026-09-16-ratchet-v3-wave",
+        "slug": "ratchet-v3",
+        "conditions": ("N", "A", "P", "D"),
+    },
+    "factions": {
+        "items": "data/ratchet-factions.json",
+        "run": None,                       # dated per pass; --out-date must supply it
+        "slug": "factions",
+        "conditions": ("N", "A", "P"),     # D is not collected on this instrument
+    },
+}
+
+RUN_DATE = PROFILES["battery"]["run"]
+ITEMS = PROFILES["battery"]["items"]
 CONDITIONS = ("N", "A", "P", "D")
 SEEDS = (11, 22, 33)
 TEMPERATURE = 0.7
@@ -337,7 +364,9 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--plan", action="store_true", help="what would be called; no API")
     ap.add_argument("--run", action="store_true")
-    ap.add_argument("--out-date", default=RUN_DATE)
+    ap.add_argument("--instrument", choices=sorted(PROFILES), default="battery",
+                    help="which bank to administer; its run directory must name it")
+    ap.add_argument("--out-date", default=None)
     ap.add_argument("--models", default="", help="comma-separated filter")
     ap.add_argument("--delay", type=float, default=1.0)
     #: THE REPLICATE PASS, which had no way to be issued.
@@ -376,6 +405,28 @@ def main(argv=None):
                          "(pass 4). Local builds only, so the pass costs time and no money. "
                          "They are a same-version null's second arm, not panel members.")
     args = ap.parse_args(argv)
+
+    # THE PROFILE RESOLVES THE BANK AND GUARDS THE DIRECTORY. See PROFILES.
+    profile = PROFILES[args.instrument]
+    items_path = profile["items"]
+    if args.out_date is None:
+        args.out_date = profile["run"]
+    if not args.out_date:
+        print("--instrument %s has no default run directory; pass --out-date."
+              % args.instrument)
+        return 2
+    if profile["slug"] not in args.out_date:
+        print("REFUSED -- instrument %r collects into a directory naming it, and %r does not "
+              "contain %r." % (args.instrument, args.out_date, profile["slug"]))
+        print("")
+        print("A run directory that looks right while holding the wrong instrument is the")
+        print("expensive kind of mistake: the sheets parse, the counts look sane, and the")
+        print("error surfaces only when an analysis drops every record for the wrong bank.")
+        return 2
+    if not os.path.exists(os.path.join(STUDY, items_path)):
+        print("NOT APPLICABLE -- instrument %r has no bank at %s."
+              % (args.instrument, items_path))
+        return 2
 
     out_dir = os.path.join(STUDY, "runs", args.out_date)
     models = panel(include_siblings=args.siblings)
@@ -430,7 +481,7 @@ def main(argv=None):
         # a collection that --run then refused, and the operator learned that only by running.
         try:
             import check_instrument_approved as _A
-            ok, _ = _A.audit(os.path.join(STUDY, ITEMS))
+            ok, _ = _A.audit(os.path.join(STUDY, items_path))
             print("  instrument  %s" % ("APPROVED" if ok else "NOT APPROVED -- --run refuses"))
         except ImportError:
             print("  instrument  UNKNOWN -- approval gate not importable")
@@ -448,7 +499,7 @@ def main(argv=None):
     # document. This reads it back, in front of the spend.
     try:
         import check_instrument_approved as _A
-        _ok, _findings = _A.audit(os.path.join(STUDY, ITEMS))
+        _ok, _findings = _A.audit(os.path.join(STUDY, items_path))
         if _ok is False:
             print("REFUSING TO COLLECT -- the instrument is not approved.")
             for f in _findings:
@@ -457,7 +508,7 @@ def main(argv=None):
             print("A bank is collectable when its author has read every pair and said so.")
             print("Render the sheet, read it, tick the boxes:")
             print("  python scripts/render_item_read.py --items %s > ITEM-READ-<date>-<name>.md"
-                  % ITEMS)
+                  % items_path)
             return 2
     except ImportError as exc:
         # FAIL CLOSED. This was : if the approval module could not be imported the
@@ -592,7 +643,7 @@ def main(argv=None):
             print("    pinned to %s from this model's existing sheets" % pinned, flush=True)
         for cond, seed in cells:
             cmd = [sys.executable, os.path.join(HERE, "run_compass.py"),
-                   "--model", model, "--items", ITEMS, "--condition", cond,
+                   "--model", model, "--items", items_path, "--condition", cond,
                    "--runs", str(args.replicate or 1), "--shuffle-seed", str(seed),
                    "--temperature", str(TEMPERATURE), "--seed", str(BASE_SEED + seed),
                    "--max-tokens", str(MAX_TOKENS), "--out", os.path.join("runs", args.out_date)]

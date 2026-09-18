@@ -207,6 +207,13 @@ _DROPPED_SEEN = set()
 #: default long after it was not.
 RATCHET_INSTRUMENT = "ratchet-battery"
 
+#: The second instrument: 4 authored stems x 4 sectors x 2 frames, the sector entering only as
+#: a slot. Declared here BEFORE it collects anything, so its records can never be pooled with
+#: the battery's by default -- a floor that silently averaged two instruments is the defect
+#: `_canonical` was rewritten to prevent, and the safe moment to declare a name is before any
+#: record carries it.
+FACTIONS_INSTRUMENT = "ratchet-factions"
+
 #: The study's own instrument. 32 items, 16 mirrored pairs, authored 2026-08-30.
 INSTRUMENT_DEFAULT = RATCHET_INSTRUMENT
 
@@ -239,6 +246,12 @@ INSTRUMENT_ALIASES = {
     # named beside this one the way the substituted bank was -- is a DIFFERENT instrument
     # until someone adds it here deliberately.
     RATCHET_INSTRUMENT: ("ratchet-battery", "ratchet-battery-v3"),
+    # ONE ALIAS, AND THAT IS THE POINT. The factions bank does not exist yet, so the only name
+    # its records will ever carry is the one `instantiate_stems` writes. Declaring it now means
+    # the first factions sheet is already excluded from every battery floor rather than being
+    # noticed later -- the battery's own records were pooled across two names for a day before
+    # anyone checked.
+    FACTIONS_INSTRUMENT: ("ratchet-factions",),
 }
 
 #: Instruments collected BEFORE `instrument` was written onto every record. Only these may be

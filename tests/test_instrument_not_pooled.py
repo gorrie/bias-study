@@ -95,9 +95,20 @@ def test_only_the_live_instrument_is_registered():
     records are all in `withdrawn/`, out of every `runs/**` glob, and a registry entry for a
     bank no live record names is a name kept alive for nothing -- which is how one of them
     stayed the printed DEFAULT in this module's own `--instrument` help long after it was not.
+
+    THE RULE IS "LIVE OR PLANNED", NOT "EXACTLY ONE". `ratchet-factions` was added 2026-09-17
+    before it had collected a single sheet, deliberately: declaring a name before any record
+    carries it is the only moment at which the declaration cannot be wrong about the corpus.
+    The battery's own records were pooled across two names for a day before anyone checked.
     """
-    assert list(F.INSTRUMENT_ITEMS) == [F.RATCHET_INSTRUMENT]
-    assert list(F.INSTRUMENT_ALIASES) == [F.RATCHET_INSTRUMENT]
+    assert list(F.INSTRUMENT_ITEMS) == [F.RATCHET_INSTRUMENT], (
+        "the item-count fallback is for banks that predate the `instrument` field; the "
+        "factions bank postdates it and must never be identifiable by item count -- it has "
+        "32 items, exactly like the battery")
+    assert set(F.INSTRUMENT_ALIASES) == {F.RATCHET_INSTRUMENT, F.FACTIONS_INSTRUMENT}
+    for canon, names in F.INSTRUMENT_ALIASES.items():
+        assert canon in names, "%s does not alias its own name" % canon
+        assert "compass" not in " ".join(names).lower(), "a retired bank crept back in"
 
 
 def test_a_foreign_sheet_is_not_loaded_into_this_instruments_floor(tmp_path):

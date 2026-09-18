@@ -265,6 +265,26 @@ GATES = [
                 "nothing read the checklist back, so the gate was a document",
          why="it is a precondition of collecting, not of releasing; run_i3_wave calls it "
              "in front of the spend"),
+    Gate("faction_lean.py", ["--selftest"], tree="study", stage="prerun",
+         label="the factions estimator is calibrated",
+         covers="the two-way centring algebra, the design's detection floor, recovery of a "
+                "planted interaction, and the rejection rate on NULL panels -- all on "
+                "synthetic input, because the bank does not exist yet",
+         why="it is a precondition of collecting factions sheets, and it has already paid for "
+             "itself: the calibration showed the pre-registered P2 criterion was "
+             "unsatisfiable at ANY effect size (min p = S^(1-T) = 1/64 at four stems, and "
+             "BH-FDR over 36 models needs twelve models there before it rejects one). A wave "
+             "would have returned P2 FAIL and read as 'no model leans by sector'"),
+    Gate("check_mcp_coverage.py", tree="study", stage="prerun",
+         label="the dataset can supply what the design asks",
+         covers="per play: records, sourced records, and whether the live factions sectors "
+                "meet their own exemplar floor; records reachable by no play at all; and the "
+                "fields a design assumed and the dataset does not carry",
+         why="a design that assumes its inputs is the vacuous-pass failure in a new place. "
+             "The factions design specified 'at least three people.jsonl ids for its play' "
+             "and nothing checked that was satisfiable: 346 of 550 records carry no play, "
+             "and the absent jurisdiction field was found two hours after a jurisdiction "
+             "slot was recommended"),
     Gate("instantiate_stems.py", ["--stems", "data/faction-stems.json", "--check"],
          tree="study", stage="prerun",
          label="the factions bank still matches its stems",
