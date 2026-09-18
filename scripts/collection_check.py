@@ -270,20 +270,45 @@ def analyse_sheets(rows):
         model_total[r.get("model") or "?"] += 1
         if not r.get("valid"):
             model_bad[r.get("model") or "?"] += 1
+    # WHY A MODEL LOST ITS SHEETS DECIDES WHAT TO DO ABOUT IT, so the two are separated.
+    #
+    # `transport` is the network or the provider: the model never answered, re-collecting is
+    # cheap and costs nothing analytically. Everything else -- a degenerate sheet, a
+    # structural parse failure, an unusable answer -- is the model's own behaviour, and
+    # re-collecting reproduces it. Reported as one number, the two invite the same remedy and
+    # only one of them works.
+    infra = collections.Counter()
+    for r in attempted:
+        if not r.get("valid") and (r.get("failure_mode") or "") == "transport":
+            infra[r.get("model") or "?"] += 1
+
     losers = sorted(((model_bad[m] / float(model_total[m]), m, model_bad[m], model_total[m])
                      for m in model_total if model_total[m]),
                     reverse=True)
     concentrated = [row for row in losers if row[0] > LOST_CELL_VENDOR_BLOCK]
     if concentrated:
         out["invalid_by_model"] = {m: [b, t] for _s, m, b, t in losers if b}
-        out["problems"].append(
-            "%d model(s) lose more than %.0f%% of their ATTEMPTED sheets to invalidity, "
-            "whatever the cause: %s. Every floor drops these, so the comparison is run on a "
-            "different number of sheets per model -- differential exclusion, which is this "
-            "study's own FINDINGS #7."
+        out["infrastructure_losses"] = dict(infra)
+        recollectable = [row for row in concentrated if infra.get(row[1], 0) >= 0.5 * row[2]]
+        behavioural = [row for row in concentrated if row not in recollectable]
+        detail = (
+            "%d model(s) lose more than %.0f%% of their ATTEMPTED sheets to invalidity: %s. "
+            "Every floor drops these, so the comparison is run on a different number of "
+            "sheets per model -- differential exclusion, which is this study's own FINDINGS #7."
             % (len(concentrated), 100 * LOST_CELL_VENDOR_BLOCK,
                "; ".join("%s %d/%d (%.0f%%)" % (m.split("/")[-1], b, t, 100 * s)
                          for s, m, b, t in concentrated)))
+        if recollectable:
+            detail += (" RE-COLLECTABLE -- mostly `transport`, the provider or the network "
+                       "rather than the model, so a retry pass fixes these at no analytic "
+                       "cost: %s." % ", ".join("%s (%d transport)" % (m.split("/")[-1],
+                                                                      infra.get(m, 0))
+                                               for _s, m, _b, _t in recollectable))
+        if behavioural:
+            detail += (" NOT re-collectable -- the model's own output is unusable and a retry "
+                       "reproduces it; these are a limitation to report, not a pass to redo: "
+                       "%s." % ", ".join(m.split("/")[-1] for _s, m, _b, _t in behavioural))
+        out["problems"].append(detail)
 
     # A sheet answering every item identically has no position to compare, and
     # scoring it against a normal sheet reports a huge side-flip count that reads

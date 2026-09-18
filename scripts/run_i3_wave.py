@@ -253,6 +253,36 @@ def valid_counts(out_dir):
     return seen
 
 
+#: Lines that are always present and never the reason a sheet failed. Each is noise this
+#: machine emits on every invocation; taking the tail of stderr reports one of them as the
+#: cause and hides the real message somewhere above it.
+_NOISE = ("warnings.warn(", "RequestsDependencyWarning", "urllib3", "chardet",
+          "charset_normalizer", "DeprecationWarning", "UserWarning")
+
+#: Lines that usually ARE the reason. Ordered by how specific they are.
+_DIAGNOSTIC = ("Traceback", "Error", "error", "REFUS", "refused", "timeout", "Timeout",
+               "HTTP", "status", "failed", "FAILED", "No such", "not found", "quota",
+               "rate limit", "Connection", "SSL")
+
+
+def _failure_line(stderr, stdout):
+    """The line most likely to explain a failed sheet, or an honest admission that none does.
+
+    `(stderr or stdout).splitlines()[-1]` reported ten models' failures as `warnings.warn(`.
+    That is not a message about the failure; it is the tail of a dependency warning every run
+    emits, and it made twelve transport errors unreadable in the log.
+    """
+    lines = [ln.strip() for ln in ((stderr or "") + "\n" + (stdout or "")).splitlines()
+             if ln.strip()]
+    signal = [ln for ln in lines if not any(n in ln for n in _NOISE)]
+    for ln in reversed(signal):
+        if any(d in ln for d in _DIAGNOSTIC):
+            return ln
+    if signal:
+        return signal[-1]
+    return "no diagnosable output (only %d line(s) of boilerplate)" % len(lines)
+
+
 def attempt_counts(out_dir):
     """{(model, condition, shuffle_seed): records on disk, valid or not}.
 
@@ -680,7 +710,15 @@ def main(argv=None):
                 print("    %s seed %-3s %s" % (cond, seed, tail[-1].split(": ")[-1]), flush=True)
             else:
                 n_fail += 1
-                err = ((r.stderr or r.stdout or "").strip().splitlines() or ["?"])[-1]
+                # THE LAST LINE OF STDERR IS NOT THE ERROR. It was, and on this machine the
+                # last line of stderr is `warnings.warn(` -- the tail of a urllib3 version
+                # warning every invocation emits. Ten models' failures were reported as
+                # "FAILED warnings.warn(", which says nothing and looks like a parser bug
+                # rather than the twelve transport errors it actually was.
+                #
+                # Prefer a line that looks like a diagnosis, and fall back to the tail only
+                # when nothing does -- saying so, rather than presenting boilerplate as a cause.
+                err = _failure_line(r.stderr, r.stdout)
                 print("    %s seed %-3s FAILED  %s" % (cond, seed, err[:110]), flush=True)
             time.sleep(args.delay)
 
