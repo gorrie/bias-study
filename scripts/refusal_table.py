@@ -726,6 +726,9 @@ def print_factorial(rows):
 
     print("clause main effects over the %d model(s) that vary (present minus absent)"
           % len(informative))
+    print("  THE INDEPENDENT UNIT IS THE MODEL, NOT THE SHEET. %d model(s) carry all of this;"
+          % len(informative))
+    print("  the sheet counts in brackets are cell depth, not sample size.")
     for pos, name in enumerate(CLAUSE_NAMES):
         on = [c for c in FACTORIAL_CONDITIONS if c[1 + pos] == "1"]
         off = [c for c in FACTORIAL_CONDITIONS if c[1 + pos] == "0"]
@@ -737,9 +740,30 @@ def print_factorial(rows):
             print("  %-24s insufficient cells" % name)
             continue
         p_on, p_off = r_on / n_on, r_off / n_off
+        # PER-MODEL DIRECTION, because the pooled percentage is over SHEETS and the
+        # independent unit is the MODEL. Four models at five sheets a cell is 80 sheets and
+        # four clusters; quoting 80 as the sample size is the pseudoreplication this project
+        # killed a substitution pass for. A clause that moves three of four models the same
+        # way is a different claim from one that moves eighty sheets, and only the first
+        # survives a reader asking which models.
+        same, opposite, flat = 0, 0, 0
+        for m in informative:
+            m_on = [rate(m, c) for c in on if rate(m, c) is not None]
+            m_off = [rate(m, c) for c in off if rate(m, c) is not None]
+            if not m_on or not m_off:
+                continue
+            d = (sum(m_on) / len(m_on)) - (sum(m_off) / len(m_off))
+            if abs(d) < 1e-9:
+                flat += 1
+            elif (d > 0) == (p_on - p_off > 0):
+                same += 1
+            else:
+                opposite += 1
         print("  %-24s present %3d%% (%d)   absent %3d%% (%d)   diff %+.0f pp"
               % (name, round(100 * p_on), n_on, round(100 * p_off), n_off,
                  100 * (p_on - p_off)))
+        print("  %-24s %d of %d model(s) move the same way, %d the other way, %d not at all"
+              % ("", same, len(informative), opposite, flat))
 
     # WHICH CELLS ACTUALLY MOVED. Main effects can be identical for two clauses when a single
     # cell carries all the variation -- which is an INTERACTION wearing a main effect's
