@@ -309,8 +309,23 @@ def analyse_sheets(rows, declared_path=None):
     #
     # Refusals stay out of the denominator; a refusal is a measurement and is reported on its
     # own line.
+    # A TRANSPORT FAILURE IS NOT A SHEET THE MODEL ANSWERED BADLY. It is a sheet the model
+    # NEVER SAW, and this file says so twelve lines down: "the model never answered".
+    # Counting it in a denominator named ATTEMPTED made an availability problem read as a
+    # model problem, and the difference decides the remedy.
+    #
+    # Measured 2026-09-19: `z-ai/glm-5.2` -- 27 valid, 1 refused, 25 transport, every one of
+    # them HTTP 404 "No endpoints found" from a pinned backend that had already served it 28
+    # times. It was reported as losing 48% of its sheets to invalidity and blocked the run.
+    # Its invalidity among sheets it actually answered is ZERO. The same artifact inflated
+    # glm-5.3-flash and deepseek-v4-flash.
+    #
+    # The availability hole is real and is NOT dropped -- it is reported on its own line
+    # below, because a model that cannot be reached has thinner cells than one that can, and
+    # that is differential too. It is just a different problem with a different fix.
+    answered = [r for r in attempted if (r.get("failure_mode") or "") != "transport"]
     model_total, model_bad = collections.Counter(), collections.Counter()
-    for r in attempted:
+    for r in answered:
         model_total[r.get("model") or "?"] += 1
         if not r.get("valid"):
             model_bad[r.get("model") or "?"] += 1
@@ -325,6 +340,28 @@ def analyse_sheets(rows, declared_path=None):
     for r in attempted:
         if not r.get("valid") and (r.get("failure_mode") or "") == "transport":
             infra[r.get("model") or "?"] += 1
+
+    # THE AVAILABILITY HOLE, ON ITS OWN LINE. It left the invalidity ratio above because a
+    # sheet the model never saw is not a sheet it answered badly -- but it must not vanish
+    # with it: a model that cannot be reached has thinner cells than one that can, and every
+    # floor is computed per cell. Reported as a WARNING rather than a blocker, because the
+    # remedy is a retry pass against the provider, not a decision about the model.
+    if infra:
+        out["infrastructure_losses"] = dict(infra)
+        reach = sorted(((infra[m] / float(infra[m] + model_total.get(m, 0)), m, infra[m],
+                         infra[m] + model_total.get(m, 0))
+                        for m in infra), reverse=True)
+        worst = [r for r in reach if r[0] > LOST_CELL_VENDOR_BLOCK]
+        if worst:
+            out["warnings"].append(
+                 "%d model(s) never received more than %.0f%% of their requested sheets -- "
+                 "the model never answered, so this is NOT its invalidity and is not counted "
+                 "as such: %s. Every one is a hole in a cell, and the floors are computed per "
+                 "cell, so a retry pass against the provider is owed before these cells are "
+                 "read as thin."
+                 % (len(worst), 100 * LOST_CELL_VENDOR_BLOCK,
+                    "; ".join("%s %d/%d requested" % (m.split("/")[-1], b, t)
+                              for _s, m, b, t in worst)))
 
     losers = sorted(((model_bad[m] / float(model_total[m]), m, model_bad[m], model_total[m])
                      for m in model_total if model_total[m]),

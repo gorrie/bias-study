@@ -261,6 +261,19 @@ def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int
             "HTTP 429" in err or "HTTP 5" in err
             or "Connection" in err or "connection" in err
             or "timed out" in err or "Max retries" in err
+            # A 404 "No endpoints found" UNDER A PROVIDER PIN is availability, not a bad model
+            # id. Measured 2026-09-19: `z-ai/glm-5.2` pinned to the backend that had already
+            # served it 28 times returned this 25 times, `transient: False`, and the collector
+            # gave up permanently -- 48% of that model's attempted sheets, which
+            # collection_check then reported as differential exclusion. The same shape cost
+            # glm-5.3-flash and deepseek-v4-flash 24 sheets each.
+            #
+            # Only retried when a pin was REQUESTED. Unpinned, a 404 really does mean the
+            # model id is wrong and four attempts would be four wasted calls. And the pin is
+            # never dropped to route around it: serving path is a same-version variant in
+            # this study, so silently taking another backend would buy a sheet that answers a
+            # different question.
+            or (provider and "HTTP 404" in err and "No endpoints found" in err)
         )
         if not retryable or attempt == attempts:
             break
@@ -269,7 +282,13 @@ def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int
     if last is not None:
         err = str(last.get("error") or "")
         if ("Connection" in err or "connection" in err or "Max retries" in err
-                or "timed out" in err):
+                or "timed out" in err
+                # An exhausted pin is a HOLE, not a measurement, and must be marked transient
+                # so the caller declines to persist it. Persisted, it sits in the corpus
+                # forever as that model's invalidity: `z-ai/glm-5.2` carried 25 such rows
+                # against 27 valid sheets and read as a model losing half its output, on a
+                # backend that had served it 28 times.
+                or (provider and "HTTP 404" in err and "No endpoints found" in err)):
             last["transient"] = True
     return last or {"ok": False, "error": "no attempt made", "transient": True}
 

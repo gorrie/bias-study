@@ -500,13 +500,46 @@ def test_floors_survive_a_reordered_corpus():
                             rec["side_ci"]))
         return out
 
+    # A GROWING CORPUS IS NOT AN ORDER-DEPENDENT FLOOR, AND THIS TEST USED TO SAY IT WAS.
+    #
+    # `snapshot()` is called three times against the LIVE runs/ tree. On 2026-09-19 the
+    # release checklist ran while four collection chains were writing, a sheet landed between
+    # two of the calls, the floors differed and the failure read "a floor changed when the
+    # corpus was read in another order". The corpus had changed, not the order. A check that
+    # accuses the wrong thing in the ordinary case is a check operators learn to skip -- this
+    # file convicts other code of exactly that.
+    def fingerprint():
+        seen = []
+        for path in sorted(_glob.glob(os.path.join(_SP.runs_root(), "**", "*.jsonl"),
+                                      recursive=True)):
+            try:
+                st = os.stat(path)
+            except OSError:
+                continue
+            seen.append((path, st.st_size))
+        return seen
+
+    before = fingerprint()
     base = snapshot()
     real = _glob.glob
     try:
         for shuffle in (lambda L: L[::-1],
                         lambda L: _random.Random(7).sample(L, len(L))):
             _glob.glob = lambda *a, **k: shuffle(list(real(*a, **k)))
-            assert snapshot() == base, "a floor changed when the corpus was read in another order"
+            got = snapshot()
+            if got != base:
+                _glob.glob = real
+                after = fingerprint()
+                if after != before:
+                    changed = len(set(after) ^ set(before))
+                    pytest.skip(
+                        "the corpus changed under the test -- %d file entr(ies) differ "
+                        "between the first and last read, so the floors were computed over "
+                        "two different corpora. This says nothing about order-independence. "
+                        "Re-run when collection is not writing." % changed)
+                raise AssertionError(
+                    "a floor changed when the corpus was read in another order, and the "
+                    "corpus itself did not change")
     finally:
         _glob.glob = real
         F.DROPPED.clear()
