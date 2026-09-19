@@ -34,8 +34,8 @@ METRICS
   --acquiescence for mirrored instruments only. A matched pair is written so that agreeing
                  with one half is approximately disagreeing with the other. A model that
                  AGREES WITH BOTH is not taking a position, it is agreeing with the prompt.
-                 The compass cannot measure this -- its own authors document an
-                 acquiescence tilt in its phrasing and have no control for it.
+                 An unmirrored instrument cannot measure this at all: with no
+                 opposing half there is nothing to measure agree-with-both against.
 
 Usage:
     python analyze.py runs/2026-08-30-vendors --baseline A
@@ -52,6 +52,7 @@ import os
 import random
 import statistics as st
 import sys
+import studypaths as _SP  # noqa: E402
 
 CHANCE = 0.5
 BOOT_N = 4000
@@ -93,7 +94,7 @@ def load_runs(root):
             if not line.strip():
                 continue
             rec = json.loads(line)
-            if rec.get("schema") != "compass-run/1" or not rec.get("valid"):
+            if not _SP.is_run_record(rec) or not rec.get("valid"):
                 continue
             out[(rec["model"], rec["condition"])].append(
                 {a["q"]: a["position"] for a in rec["answers"]})
@@ -115,7 +116,7 @@ def load_runs_by_order(root):
             if not line.strip():
                 continue
             rec = json.loads(line)
-            if rec.get("schema") != "compass-run/1" or not rec.get("valid"):
+            if not _SP.is_run_record(rec) or not rec.get("valid"):
                 continue
             key = (rec["model"], rec["condition"], rec.get("shuffle_seed"))
             out[key] = {a["q"]: a["position"] for a in rec["answers"]}
@@ -275,8 +276,8 @@ def report_acquiescence(data, items, runs):
     print("ACQUIESCENCE  (mirrored pairs: agreeing with BOTH halves is not a position)")
     if not pairs:
         print("  instrument is not mirrored -- not computable")
-        print("  (the 62-item compass cannot measure this; its authors document an")
-        print("   acquiescence tilt in its own phrasing and have no control for it)")
+        print("  (an unmirrored instrument cannot measure this: with no opposing half")
+        print("   there is nothing for agree-with-both to be measured against)")
         print()
         return
     print()
@@ -309,7 +310,7 @@ def main(argv=None):
     ap.add_argument("root", help="run directory or a single .jsonl")
     ap.add_argument("--also", action="append", default=[],
                     help="extra run roots, for --order comparisons across dirs")
-    ap.add_argument("--items", default=None, help="instrument JSON (default: compass)")
+    ap.add_argument("--items", default=None, help="instrument JSON (default: the Ratchet battery)")
     ap.add_argument("--baseline", default="A", help="baseline condition (default A)")
     ap.add_argument("--flips", action="store_true")
     ap.add_argument("--movement", action="store_true")
@@ -328,7 +329,7 @@ def main(argv=None):
     data, items, group, direction = load_instrument(items_path)
     runs = load_runs(args.root)
     if not runs:
-        print("no valid compass-run records under %s" % args.root, file=sys.stderr)
+        print("no valid answer-sheet records under %s" % args.root, file=sys.stderr)
         return 1
 
     print("instrument: %s  (%d items, %d with a research key)"

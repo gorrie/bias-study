@@ -229,7 +229,9 @@ def load_pairs(path: Path) -> list[dict]:
 def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int = 60,
                     temperature: float = 0.7, max_tokens: int = 800,
                     seed: int | None = None, attempts: int = 4,
-                    provider: str | None = None) -> dict:
+                    provider: str | None = None,
+                    presence_penalty: float | None = None,
+                    frequency_penalty: float | None = None) -> dict:
     """Retrying front door. Transient transport failures are NOT model behaviour.
 
     Measured 2026-08-31 in the working study: 66 rows across 11 models were recorded as model
@@ -248,7 +250,9 @@ def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int
     for attempt in range(1, attempts + 1):
         r = _call_openrouter_once(model, messages, api_key, timeout=timeout,
                                   temperature=temperature, max_tokens=max_tokens,
-                                  seed=seed, provider=provider)
+                                  seed=seed, provider=provider,
+                                  presence_penalty=presence_penalty,
+                                  frequency_penalty=frequency_penalty)
         if r.get("ok"):
             return r
         last = r
@@ -274,7 +278,9 @@ def _call_openrouter_once(model: str, messages: list[dict], api_key: str,
                           timeout: int = 60, temperature: float = 0.7,
                           max_tokens: int = 800,
                           seed: int | None = None,
-                          provider: str | None = None) -> dict:
+                          provider: str | None = None,
+                          presence_penalty: float | None = None,
+                          frequency_penalty: float | None = None) -> dict:
     """Returns {ok, response_text, raw, latency_ms, tokens_in, tokens_out, error?}.
 
     temperature/max_tokens default to the v2 prompt-rung settings so existing runs are
@@ -315,6 +321,15 @@ def _call_openrouter_once(model: str, messages: list[dict], api_key: str,
                 # Only sent when asked for. An unconditional null seed is not the same
                 # request as no seed field, and the forced-choice rung depends on it.
                 **({"seed": seed} if seed is not None else {}),
+                # SAME RULE FOR THE PENALTIES. Added 2026-09-19 for the elicitation rung,
+                # which reproduces G0DM0D3's `applyGodmodeBoost` (presence +0.15, frequency
+                # +0.1) directly rather than through a proxy that estimates its own token
+                # counts. Sent ONLY when asked for, so every existing arm's request body is
+                # byte-identical to what it was.
+                **({"presence_penalty": presence_penalty}
+                   if presence_penalty is not None else {}),
+                **({"frequency_penalty": frequency_penalty}
+                   if frequency_penalty is not None else {}),
                 # Same rule for the pin: sending `provider` unconditionally would change
                 # the request for every existing arm. When asked for, fallbacks are OFF --
                 # a pin that silently routes elsewhere is the unpinned behaviour with a

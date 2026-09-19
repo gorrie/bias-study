@@ -80,14 +80,33 @@ def main(argv=None):
             print("  %s" % "  ".join(detail))
         print("  *Provenance:* %s." % PROV.get(s["provenance"], s["provenance"]))
     print()
-    unread = [s["id"] for s in studies if s["provenance"] == "project-review"]
+    # THE READ-IN-FULL COUNT, COUNTED. Not "all of them", which is what this block used to
+    # say -- "All studies in the audit have been read in full or retrieved directly" folds
+    # `full-text` and `partial` into one clause and reads as the stronger claim. The document
+    # previously carried a hand-typed "All twelve are now read in full", and `sclar2024` has
+    # always been provenance `partial` with a note saying the full text was not read end to
+    # end. That contradiction is the first entry in this very file. Restating it through a
+    # generator would be the same error with a build step.
+    external = [s for s in studies if s["id"] != "ours"]
+    full = [s["id"] for s in external if s["provenance"] == "full-text"]
+    unread = [s["id"] for s in external if s["provenance"] == "project-review"]
+    partial = [s["id"] for s in external if s["provenance"] == "partial"]
+    n = len(external)
+    WORD = {11: "Eleven", 12: "Twelve", 10: "Ten", 13: "Thirteen", 14: "Fourteen"}
+    print("%s of the %s are read in full. %s"
+          % (WORD.get(len(full), str(len(full))),
+             {12: "twelve", 11: "eleven", 13: "thirteen"}.get(n, "%d" % n),
+             ("The remainder — %s — %s consulted as abstract and PDF without the full text "
+              "being read end to end, and no verdict in the controls table rests on more "
+              "than that."
+              % (", ".join(sorted(partial)), "was" if len(partial) == 1 else "were"))
+             if partial else
+             "No verdict in the controls table rests on a second-hand note."))
     if unread:
+        print()
         print("**%d record(s) still unread: %s.** No claim about what these studies did or "
               "did not do may appear in the paper until they are read."
-              % (len(unread), ", ".join(unread)))
-    else:
-        print("All studies in the audit have been read in full or retrieved directly. No "
-              "verdict in the controls table rests on a second-hand note.")
+              % (len(unread), ", ".join(sorted(unread))))
     return 0
 
 

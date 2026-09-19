@@ -132,9 +132,15 @@ GATES = [
     Gate("validate_runs.py", tree="either", stage="release",
          label="3  run data validates",
          covers="run directories against their manifests, and the NOT VALIDATED count"),
-    Gate("collection_check.py", ["2026-09-13-g0dm0d3-replicate"], tree="either",
+    # THE GATE MUST CHECK THE RUN THE PAPER IS WRITTEN FROM. It checked
+    # `2026-09-13-g0dm0d3-replicate` -- a rung-2 run this paper does not cite -- so the release
+    # gate would have passed green while the paper's own corpus carried NOT FIT TO SCORE. An
+    # acceptance gate pointed at the wrong artifact is the vacuous pass with a run directory
+    # attached: it examines something real and answers a question nobody asked.
+    Gate("collection_check.py", ["2026-09-16-ratchet-v3-wave"], tree="either",
          stage="release", label="3  cited runs are fit to score",
-         covers="the acceptance gate over a run a published number cites"),
+         covers="the acceptance gate over the wave every published figure in this paper "
+                "is computed from"),
     Gate("run_inventory.py", ["--check"], tree="either", stage="release",
          label="3  every run directory accounted for",
          covers="no run directory is unlisted or orphaned"),
@@ -142,6 +148,28 @@ GATES = [
          label="3  the treatment was actually applied",
          covers="whether the intervention an arm is named after actually ran -- "
                 "B-Parseltongue passed every other check with 0 of 240 applied"),
+    Gate("g0dm0d3_constants.py", ["--check"], tree="study", stage="manual",
+         label="3c the elicitation rung's constants match their source",
+         covers="the GODMODE system prompt and DEPTH_DIRECTIVE are PARSED from the G0DM0D3 "
+                "checkout rather than copied, and the three sampling offsets -- the only "
+                "values that ARE retyped -- still match `applyGodmodeBoost`.",
+         why="it reads a third-party checkout that CI deliberately does not clone, so on the "
+             "release runner it could only report a missing file. Run it before collecting "
+             "rung 2 and whenever that checkout is updated: a prompt that drifts upstream "
+             "changes the treatment while every sheet still looks valid"),
+    Gate("parseltongue_triggers.py", ["--check"], tree="study", stage="manual",
+         label="3b the obfuscation arm's premise is re-measured",
+         covers="whether the Parseltongue trigger list -- READ FROM THE SERVER'S SOURCE, "
+                "never retyped -- intersects the live instrument at all. It exits 1 when the "
+                "list cannot be read, NOT when it finds zero: zero is a finding. `manual` "
+                "because it needs the G0DM0D3 checkout, which CI does not have.",
+         why="it reads the trigger list out of a third-party checkout that CI deliberately "
+             "does not clone, so on the release runner it could only ever report a missing "
+             "file. Run it when the instrument changes or when the arm is next proposed -- "
+             "those are the only two moments its answer can move. It is registered rather "
+             "than left as a loose script because the arm was written off as dead on a "
+             "measurement taken against a DIFFERENT instrument, and a verdict nobody re-runs "
+             "is a verdict that outlives its evidence"),
     Gate("position_analysis.py", ["--selftest"], tree="either", stage="release",
          label="6  the position estimator is validated",
          covers="position, consistency and acquiescence against synthetic input whose true "
@@ -151,6 +179,61 @@ GATES = [
                 "real-data path was a stub that printed 'Phase 4 has not been collected yet' "
                 "over 580 valid sheets. The selftest is necessary and it was not sufficient; "
                 "tests/test_position_analysis_reads_the_corpus.py is the other half"),
+    # ---- added 2026-09-18. Four tools were built that day, none was registered, and an
+    # unregistered gate is a gate that does not run. The estimator defect they exist to
+    # prevent was found by a check that had never been written down anywhere.
+    Gate("null_audit.py", tree="study", stage="release",
+         label="6  every null carries a minimum detectable effect",
+         covers="the effect each null this study REPORTS could have detected, by simulation "
+                "through the same test the paper ran. This study scores twelve other papers "
+                "on that exact column and reported three nulls without it -- the jurisdiction "
+                "crossover as 'no interaction' when its MDE bounds the effect at +/-0.50, and "
+                "prediction 3 as 39-of-39 when it rules out only a COMMON opposite direction "
+                "at 3.9%. A null with no MDE is a sample size, not a finding"),
+    Gate("item_omission.py", ["--selftest"], tree="either", stage="release",
+         label="6  item, slot and numeral can be told apart",
+         covers="the discriminator against synthetic input with a KNOWN cause -- a pure slot "
+                "effect, a pure item effect, single-order data that must return NOT "
+                "SEPARABLE, and the proof that a concentration p-value fires on both causes "
+                "and therefore decides nothing. Three declared item-omission patterns were "
+                "slot patterns at one presentation order, and a permutation test called every "
+                "one of them p < 0.001"),
+    Gate("check_citation.py", ["--path", "../../../bias-study-release/CITATION.cff"],
+         tree="study", stage="release",
+         label="10 the citation record is fit to mint a PERMANENT DOI",
+         covers="CITATION.cff in the tree that SHIPS, checked from the tree that is "
+                "developed -- because the private tree has none and a reader there would "
+                "conclude none exists. Found unguarded 2026-09-18: the mirror's file carried "
+                "the withdrawn title 'The Hedge Is the Bias' and an abstract quoting 2,866 "
+                "runs, 166 models and 62 propositions, every figure from the retired "
+                "instrument. A Release fires the Zenodo webhook and the DOI carries that text "
+                "forever, so a stale sentence here is not a correction, it is a permanent "
+                "citation to a study that does not exist"),
+    Gate("check_sheet_attribution.py", tree="either", stage="release",
+         label="3  every scored answer belongs to a known proposition",
+         covers="sheets returned in ascending id order, which is ambiguous under protocol v1: "
+                "the model may have re-sorted a shuffled sheet and answered by item id, or "
+                "ignored the printed numbers and answered down the page. Mirror-pair "
+                "consistency under both mappings tells them apart. Measured 2026-09-18: 61 "
+                "UNATTRIBUTABLE -- near chance under both, so which proposition each answer "
+                "belongs to is not recoverable -- and 4 ANSWERED BY SLOT and therefore scored "
+                "against the wrong propositions, including one frontier model at 0.62 by id "
+                "against 0.88 by slot. Protocol v2 renumbering dissolves the ambiguity: the "
+                "printed number IS the slot, so the two mappings coincide"),
+    Gate("gen_deviations.py", ["--check"], tree="study", stage="release",
+         label="7  the deviation record matches its sources",
+         covers="PROTOCOL-DEVIATIONS.md against data/wave-panel.json, "
+                "data/collection-limitations.json and the PREREG headers -- every "
+                "pre-registration, every roster amendment with the rule that selected it, "
+                "every rejected listing with its reason. This study scores others on whether "
+                "a reader can tell what was planned from what was done"),
+    Gate("gen_vintage.py", ["--check"], tree="study", stage="release",
+         label="7  every model in runs/ has a recorded release date",
+         covers="data/model-vintage.json against the models actually in the corpus. A study "
+                "about how a measured position MOVES has to be able to cut its figures by "
+                "model generation, and until 2026-09-18 it could not: vintage, quantisation "
+                "and serving path moved together, which is why T9 is recorded as orphaned. "
+                "A model with no date silently drops out of every generation contrast"),
     Gate("check_outcomes_computable.py", tree="either", stage="prerun",
          label="every pre-registered outcome computes",
          covers="runs the real estimator against the real corpus and requires a value out: "
@@ -216,7 +299,7 @@ GATES = [
          covers="the documented reproduction runs with no API key AND returns the "
                 "committed artifacts byte-for-byte"),
     Gate("check_release_table.py", ["--quiet"], tree="study", stage="release",
-         label="2  RELEASE-v2 arm inventory matches runs/",
+         label="2  RELEASE-2026-09-07 arm inventory matches runs/",
          covers="the release definition's hand-typed arm table against the generated one"),
 
     # ---- the documents ----------------------------------------------------------
@@ -360,11 +443,22 @@ def runnable(gate):
     return gate.cwd() is not None
 
 
+#: A gate that ran out of wall clock. NOT 1 -- a defect is a gate that answered "broken", and
+#: this is a gate that did not answer at all. The two were the same code until 2026-09-18,
+#: when `check_outcomes_computable` exceeded the 900s budget and the collection runner read
+#: "FAIL ... did not run" and refused two stages that had nothing wrong with them. It still
+#: BLOCKS -- failing open on an unanswered question is the worse error -- but it says which
+#: kind of not-passing it is, because the remedy is completely different: a defect is fixed in
+#: the gate, a timeout is fixed in the budget or the cost.
+TIMEOUT = 3
+
+
 def execute(gate, timeout=900):
     """Run one gate. Returns (rc, first_line_of_output).
 
-    rc 0 pass, 1 defect, 2 NOT APPLICABLE -- the project's convention, honoured here so a
-    gate that cannot apply in this tree is never counted as a pass.
+    rc 0 pass, 1 defect, 2 NOT APPLICABLE, 3 TIMED OUT -- the project's convention, honoured
+    here so a gate that cannot apply in this tree is never counted as a pass, and a gate that
+    never finished is never reported as one that found something.
     """
     import subprocess
     cwd = gate.cwd()
@@ -376,6 +470,10 @@ def execute(gate, timeout=900):
     try:
         r = subprocess.run(argv, cwd=cwd, capture_output=True, text=True,
                            encoding="utf-8", errors="replace", timeout=timeout, env=env)
+    except subprocess.TimeoutExpired:
+        return TIMEOUT, ("NO ANSWER: still running after %ds. This gate found nothing wrong -- "
+                         "it did not finish. Re-run it alone (`python scripts/gates.py --only "
+                         "%s`) or raise --timeout." % (timeout, gate.script))
     except Exception as exc:                                    # noqa: BLE001
         return 1, "did not run: %s" % exc
     blob = ((r.stdout or "") + (r.stderr or "")).strip()
@@ -413,7 +511,7 @@ def preflight(stage="prerun", timeout=900, echo=print):
     rc 2 is NOT a failure -- it is a gate that does not apply in this tree, and it is reported
     as such rather than silently counted green.
     """
-    failed, passed, na = [], 0, 0
+    failed, passed, na, timed_out = [], 0, 0, []
     rows = for_stage(stage)
     if not rows:
         # A PREFLIGHT OVER NOTHING MUST NOT READ AS CLEAN. Same rule as every other gate here.
@@ -423,16 +521,24 @@ def preflight(stage="prerun", timeout=900, echo=print):
          % (len(rows), stage, "MIRROR" if THIS_IS_MIRROR else "private study"))
     for g in rows:
         rc, line = execute(g, timeout=timeout)
-        mark = {0: "pass", 2: "n/a "}.get(rc, "FAIL")
+        mark = {0: "pass", 2: "n/a ", TIMEOUT: "TIME"}.get(rc, "FAIL")
         echo("  %s  %-44s %s" % (mark, g.label[:44], line[:88]))
         if rc == 0:
             passed += 1
         elif rc == 2:
             na += 1
+        elif rc == TIMEOUT:
+            timed_out.append((g, rc, line))
         else:
             failed.append((g, rc, line))
-    echo("  %d passed, %d not applicable, %d FAILED" % (passed, na, len(failed)))
-    return failed
+    echo("  %d passed, %d not applicable, %d FAILED, %d TIMED OUT"
+         % (passed, na, len(failed), len(timed_out)))
+    if timed_out:
+        # Counted with the failures because an unanswered gate must block -- but named
+        # separately, so nobody spends an evening debugging a check that was merely slow.
+        echo("  NOTE: %d gate(s) did not finish and found NOTHING. They are blocking because "
+             "they gave no answer, not because they gave a bad one." % len(timed_out))
+    return failed + timed_out
 
 
 def main(argv=None):

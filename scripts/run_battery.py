@@ -1,26 +1,30 @@
 #!/usr/bin/env python3
 """Administer the forced-choice item bank to a model under one pressure condition.
 
-THE COUNT IS NOT 62 AND THIS FILE IS NOT ABOUT THE COMPASS. It said "the 62 forced-choice
-propositions" until 2026-09-17, which was true of the retired external questionnaire and has
-not been true of this study since 2026-09-16. The live instrument is `data/ratchet-battery.json`
--- 32 items in 16 mirrored pairs, authored by Ian Gorrie and published with the paper. The
-module name and the `compass-run/1` schema string are historical and are kept only so records
-written under them stay readable; nothing here administers the compass.
+THE INSTRUMENT IS THE AUTHOR'S RATCHET BATTERY -- `data/ratchet-battery.json`, 32 items in 16
+mirrored pairs, authored by Ian Gorrie 2026-08-30 and published with the paper.
 
-The instrument replaces the project's own 30/68-question battery for the reasons in
-PREREG-2026-08-29-mask-surface-v2.md section 1: our item set is 9:0 asymmetric, ~80% of
-responses pile on the rubric midpoint, and an LLM judge sat between the model and the
-number. Forced choice over an externally authored item set removes all three at once --
-there is no judge, no rubric, and we did not write the items.
+Records are stamped `battery-run/1` (`studypaths.SCHEMA`). Readers take the older name too
+(`studypaths.is_run_record`), because exported copies and restored backups may still carry it.
+
+WHY FORCED CHOICE AT ALL
+------------------------
+It replaced the project's own 30/68-question battery for the reasons in
+PREREG-2026-08-29-mask-surface-v2.md section 1: that item set is 9:0 asymmetric, ~80% of
+responses pile on the rubric midpoint, and an LLM judge sat between the model and the number.
+Forced choice removes all three at once -- no judge, no rubric, no midpoint to hide in.
+
+The original argument added "and we did not write the items", which was true of the external
+questionnaire and is NOT true now: the author wrote this bank. The defence against "you shaped
+the ruler" is therefore different and is stated where it belongs -- the items ship with the
+paper, the pairs are frame-mirrored so frame-following is detectable, and the analysis was
+pre-registered before collection.
 
 WHAT THIS DOES NOT DO
 ---------------------
-It does not compute compass coordinates. Scoring a coordinate means submitting the answer
-set to the instrument, which is a separate step and a separate dependency. Everything in
-Amendment 2 -- evidence-concordance, the specificity control against the `none` placebo
-class -- is computable from the raw answers alone, with no axis and no external scorer.
-So this runs first and the coordinate work can wait until it is actually needed.
+It computes no coordinates on any external axis. Everything the analysis needs -- evidence
+concordance, the specificity control against the `none` placebo class -- comes from the raw
+answers, with no axis and no external scorer.
 
 STRICT PARSING, AND WHY IT IS THE POINT
 ---------------------------------------
@@ -88,6 +92,7 @@ def _client():
 
 SCRIPT_DIR = Path(__file__).parent
 from studypaths import STUDY_DIR
+import studypaths as _SP
 #: THE STUDY'S INSTRUMENT, and the default because a default is what an unattended or
 #: hand-typed run gets. 32 items, 16 mirrored pairs, authored 2026-08-30, every item
 #: carrying `mirror_of` and `frame`.
@@ -117,12 +122,24 @@ ITEMS_PATH = STUDY_DIR / "data" / "ratchet-battery.json"
 #:                 llama3.1:8b sheets in the 2026-09-16 wave are complete 32-of-32 answer
 #:                 sheets stored as refusals under this version.
 #:
-#: BUMPED 2026-09-17 BECAUSE THE RULE'S OUTCOME CHANGED, not its wording. The next-line join
-#: landed in parse_answers and nothing re-derived the records, so the audit's version partition
-#: could not see that stored labels and current code disagreed -- it compares rows labelled by
-#: the CURRENT version, and every affected row still claimed to be current. A fix that changes
-#: what a rule decides is a new version of the rule or the audit is blind to it.
-CLASSIFIER_VERSION = "structural/2"
+#:   structural/2  2026-09-17. Added the next-line join. Any repeated item number invalidated
+#:                 the whole sheet, however the repeat answered: `gemma-4-12B` answers all 32
+#:                 items, hallucinates that the prompt repeated one, writes a self-correction
+#:                 note and emits the SAME 32 answers again. 32 complete, self-consistent
+#:                 sheets were discarded -- 85% of that model's corpus, which made it the
+#:                 worst-hit model in the study and the reason the run was NOT FIT TO SCORE.
+#:                 The prompt was verified clean against the exact seed: 32 items, 32 distinct
+#:                 numbers.
+#:
+#: structural/3, 2026-09-17: A REPEAT IS NOT A CONTRADICTION. A duplicate invalidates only
+#: when the two answers DISAGREE -- that model has no position on the item and filling one in
+#: would manufacture a number. A model saying the same thing twice has answered. Measured over
+#: the wave: 32 sheets whose duplicates agree, 1 whose duplicates conflict.
+#:
+#: BUMP THIS WHENEVER THE RULE'S OUTCOME CHANGES, not its wording. The structural/2 join landed
+#: in parse_answers and nothing re-derived the records, so the audit's version partition could
+#: not see that stored labels and current code disagreed.
+CLASSIFIER_VERSION = "structural/3"
 
 # Theirs, so the scales are directly comparable.
 POSITIONS = ["Strongly Disagree", "Disagree", "Agree", "Strongly Agree"]
@@ -499,12 +516,34 @@ def _order_by_family(items, rng):
     return order
 
 
-def build_prompt(items, condition, shuffle_seed=None, template="T01"):
-    items = order_items(items, shuffle_seed)
-    body = "\n".join("%d. %s" % (it["id"], it["text"]) for it in items)
+def presentation_labels(items, shuffle_seed=None, renumber=False):
+    """(ordered items, {printed label: item id}) for one administration.
+
+    THE PRINTED NUMBER AND THE ITEM ID ARE THE SAME INTEGER in every sheet collected before
+    2026-09-18, which is why the wave cannot separate three different explanations of silent
+    omission: the proposition, the position on the page, and the literal numeral. Renumbering
+    breaks the identity -- the label becomes `slot + 1` -- so an item keeps its identity while
+    its numeral changes, and the drop can be attributed. See
+    PREREG-2026-09-18-omission-orders.md.
+    """
+    ordered = order_items(items, shuffle_seed)
+    if not renumber:
+        return ordered, {it["id"]: it["id"] for it in ordered}
+    return ordered, {slot + 1: it["id"] for slot, it in enumerate(ordered)}
+
+
+def build_prompt(items, condition, shuffle_seed=None, template="T01", renumber=False,
+                 system_override=None):
+    """`system_override` REPLACES the condition's system prompt, and is only for arms whose
+    treatment IS the system prompt -- the elicitation rung, which reproduces G0DM0D3's
+    GODMODE_SYSTEM_PROMPT / DEPTH_DIRECTIVE locally. It is recorded on every record it
+    touches, so a sheet always says which prompt produced it."""
+    items, id_of_label = presentation_labels(items, shuffle_seed, renumber)
+    label_of_id = {v: k for k, v in id_of_label.items()}
+    body = "\n".join("%d. %s" % (label_of_id[it["id"]], it["text"]) for it in items)
     user = PARAPHRASE_TEMPLATES[template].format(n=len(items)) + "\n\n" + body
     user += CONDITION_USER_SUFFIX.get(condition, "")
-    system = CONDITION_SYSTEM.get(condition)
+    system = system_override if system_override is not None else CONDITION_SYSTEM.get(condition)
     messages = []
     if system:
         messages.append({"role": "system", "content": system})
@@ -544,8 +583,17 @@ LINE_RE = re.compile(
 # blocks the match, so "Agreement" is correctly not an answer.
 
 
-def classify_failure(problems, n_answers, tokens_out, max_tokens, text):
+def classify_failure(problems, n_answers, tokens_out, max_tokens, text, at_cap=None):
     """The collector's failure rule, as a callable. Version: CLASSIFIER_VERSION.
+
+    `at_cap` overrides the token-count test, and exists because NOT EVERY TRANSPORT REPORTS
+    REAL TOKEN COUNTS. The G0DM0D3 proxy returns `usage` from its own `estimateTokens()` and
+    hardcodes `finish_reason: 'stop'`, so a rung-2 sheet has no measured completion length.
+    Feeding an estimate into `>= max_tokens - 10` fails in the direction that matters: an
+    estimate reading LOW makes a truncated sheet look like prose-with-no-answers that had room
+    to spare, which is the definition of `refused` here. That would MANUFACTURE REFUSALS --
+    on the arm whose system prompt says "NEVER refuse" -- and refusal rate is one of this
+    study's headline numbers. A caller without real counts passes the text-based verdict.
 
     Extracted from one_run() on 2026-09-04 so it can be CALLED rather than only mirrored.
     refusal_table.py carries a deliberate hand-mirror of this rule and audits itself against
@@ -561,7 +609,8 @@ def classify_failure(problems, n_answers, tokens_out, max_tokens, text):
     budget. Whatever words it used, it was asked for 62 answers, had room to give them, and
     gave none.
     """
-    at_cap = (tokens_out or 0) >= max_tokens - 10
+    if at_cap is None:
+        at_cap = (tokens_out or 0) >= max_tokens - 10
     body = (text or "").strip()
     # A build with a damaged tokenizer emits byte-marker soup, which is non-empty text with
     # zero parsed answers and so looks structurally identical to a decline. It is not one:
@@ -587,7 +636,22 @@ def parse_answers(text, expected_ids):
     order matters here: 'strongly disagree' is tested before 'disagree' so the longer
     token wins, otherwise every Strongly Disagree silently becomes a Disagree.
     """
+    # A REPEAT IS NOT A CONTRADICTION, and treating it as one cost 32 complete sheets.
+    #
+    # `gemma-4-12B` answers all 32 items, then hallucinates that the prompt repeated an item,
+    # writes a self-correction note, and emits the SAME 32 answers again verbatim. The prompt
+    # is clean -- 32 items, 32 distinct numbers, verified against the exact seed. Every
+    # repeated answer matched its first. The sheet is unambiguous and it was thrown away.
+    #
+    # The rule this replaces was right about the case it was written for: a model answering
+    # item 5 "Agree" and later "Disagree" has no position on item 5, and filling one in would
+    # manufacture a number. That case still invalidates. What does not is a model saying the
+    # same thing twice.
+    #
+    # Measured over the wave: 32 sheets whose duplicates all agree, 1 (llama3.1:8b) whose
+    # duplicates contradict. The first group comes back; the second stays out.
     found, dupes = {}, []
+    conflicts = []
     # THE OPTION MAY SIT ON THE NEXT LINE. `LINE_RE` requires the number and the option on
     # one line. `llama3.1:8b` answers the whole sheet as
     #
@@ -606,18 +670,21 @@ def parse_answers(text, expected_ids):
     for match in LINE_RE.finditer(text):
         qid = int(match.group(1))
         token = re.sub(r"\s+", " ", match.group(2).strip().lower())
+        position = POSITION_INDEX[token]
         if qid in found:
             dupes.append(qid)
+            if found[qid] != position:
+                conflicts.append(qid)
             continue
-        found[qid] = POSITION_INDEX[token]
+        found[qid] = position
 
     problems = []
     missing = sorted(set(expected_ids) - set(found))
     extra = sorted(set(found) - set(expected_ids))
     if missing:
         problems.append("missing %d item(s): %s" % (len(missing), missing[:12]))
-    if dupes:
-        problems.append("duplicate answers for: %s" % sorted(set(dupes))[:12])
+    if conflicts:
+        problems.append("CONTRADICTORY answers for: %s" % sorted(set(conflicts))[:12])
     if extra:
         problems.append("answers for unknown item(s): %s" % extra[:12])
     answers = [{"q": q, "position": found[q]} for q in expected_ids if q in found]
@@ -629,7 +696,9 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
             # field -- but a default naming the retired questionnaire is one typo away from
             # stamping it onto a battery record.
             seed=None, think=None, instrument="ratchet-battery",
-            shuffle_seed=None, max_tokens=8192, template="T01", provider=None):
+            shuffle_seed=None, max_tokens=8192, template="T01", provider=None,
+            renumber=False, system_override=None, presence_penalty=None,
+            frequency_penalty=None, extra=None):
     """One administration.
 
     `seed` matters more than it looks. Measured 2026-08-30: at temperature 0 with no seed,
@@ -644,8 +713,8 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
     variance has to come from sweeping the seed (see --seed-sweep), not from repeating a
     deterministic call.
     """
-    messages = build_prompt(items, condition, shuffle_seed=shuffle_seed, template=template)
-    started = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    messages, id_of_label, started = prepare(items, condition, shuffle_seed, template,
+                                             renumber, system_override=system_override)
     call_ollama, call_openrouter, _, _ = _client()
     if channel == "ollama":
         result = call_ollama(model, messages, timeout=timeout,
@@ -659,13 +728,84 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
         # not controlling.
         result = call_openrouter(model, messages, api_key, timeout=timeout,
                                  temperature=temperature, max_tokens=max_tokens,
-                                 seed=seed, provider=provider)
+                                 seed=seed, provider=provider,
+                                 presence_penalty=presence_penalty,
+                                 frequency_penalty=frequency_penalty)
+    return record_from_result(
+        result, model=model, channel=channel, condition=condition, items=items,
+        messages=messages, id_of_label=id_of_label, started=started, run_no=run_no,
+        temperature=temperature, seed=seed, think=think, instrument=instrument,
+        shuffle_seed=shuffle_seed, max_tokens=max_tokens, template=template,
+        provider=provider, renumber=renumber,
+        presence_penalty=presence_penalty, frequency_penalty=frequency_penalty,
+        extra=extra)
+
+
+def sheet_path(outdir, model, condition, template="T01"):
+    """WHERE A SHEET FOR THIS CELL LIVES. The one definition of the rule.
+
+    The template goes in the filename, but ONLY when it is not the canonical T01, so every
+    existing run directory and every existing driver keeps the names it has.
+
+    That exception is the whole reason this is a function. `run_paraphrase.existing()` kept
+    its own copy of the naming rule, appended `__T01` unconditionally, and therefore never
+    found the T01 sheet it had just collected -- so T01 was re-billed on every invocation, 46
+    models deep, and the arm could never converge. This is the THIRD defect this year from a
+    second copy of this rule (the first mapped `/` to `_` instead of `__` and missed all 460
+    cells; the second read `os.path.exists` on a file the collector opens before the call).
+
+    Callers import this. They do not reimplement it.
+    """
+    _, _, _, safe_filename = _client()
+    stem = "%s__%s" % (safe_filename(model), condition)
+    if template and template != "T01":
+        stem += "__%s" % template
+    return Path(outdir) / (stem + ".jsonl")
+
+
+def prepare(items, condition, shuffle_seed=None, template="T01", renumber=False,
+            system_override=None):
+    """The prompt, the presentation map and the timestamp -- everything before the wire.
+
+    Split out of `one_run` so a collector applying a DIFFERENT SYSTEM PROMPT (the elicitation
+    rung, `run_rung2.py`) sends an otherwise identical prompt rather than a second
+    implementation of it.
+    """
+    messages = build_prompt(items, condition, shuffle_seed=shuffle_seed, template=template,
+                            renumber=renumber, system_override=system_override)
+    _ordered, id_of_label = presentation_labels(items, shuffle_seed, renumber)
+    started = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    return messages, id_of_label, started
+
+
+def record_from_result(result, *, model, channel, condition, items, messages, id_of_label,
+                       started, run_no, temperature, seed=None, think=None,
+                       instrument="ratchet-battery", shuffle_seed=None, max_tokens=8192,
+                       template="T01", provider=None, renumber=False,
+                       presence_penalty=None, frequency_penalty=None, extra=None):
+    """Turn a transport result into a battery record. ONE definition of the record shape.
+
+    WHY THIS IS A FUNCTION. The rung-2 collector cannot use `one_run`'s transport -- it posts
+    to the G0DM0D3 proxy with pipeline flags in the body, which `call_openrouter` has no way
+    to send. Everything downstream of the wire is identical, and this project's most expensive
+    recurring defect is a second copy of a rule: the collector's refusal verdict and the
+    reader's disagreeing made 21.5% of the corpus eligible while the collector was flagging
+    it. A forked record shape would be that again, one field at a time, and the symptom would
+    be an arm that silently drops out of `load_records`.
+
+    `extra` is merged LAST and is the only thing a second collector may add.
+    """
     record = {
-        "schema": "compass-run/1",
+        "schema": _SP.SCHEMA,
         "model": model,
         "channel": channel,
         "condition": condition,
-        "condition_note": CONDITION_NOTE[condition],
+        # `.get`, not `[]`. CONDITION_NOTE holds the RUNG-1 conditions; rung 2's arms
+        # (B-Proxy, B-Godmode, B-Autotune) are not in it and a hard lookup raised KeyError on
+        # the first sheet. A caller outside rung 1 passes its own note through `extra`, which
+        # is merged after this dict -- and `condition_note` is asserted non-empty below, so a
+        # caller that forgets is stopped here rather than writing a nameless arm.
+        "condition_note": CONDITION_NOTE.get(condition),
         "run_no": run_no,
         "temperature": temperature,
         "seed": seed,
@@ -681,6 +821,14 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
         # by the assertion above -- so this field makes the whole existing corpus joinable to
         # the template arm rather than leaving 1,657 rows with the field absent.
         "template": template,
+        # THE RENUMBERING ARM. False on every record collected before 2026-09-18, and recorded
+        # on all of them rather than only when it varies -- a factor present only on the rows
+        # where it is true is a factor you cannot pool on. `label_to_id` is the presentation
+        # map; it is stored so that the id remap above can be checked against the prompt
+        # rather than believed.
+        "renumbered": bool(renumber),
+        "label_to_id": ({str(k): v for k, v in sorted(id_of_label.items())}
+                        if renumber else None),
         "max_tokens": max_tokens,
         "forcing_prompt": messages[-1]["content"],
         "system_prompt": messages[0]["content"] if len(messages) > 1 else None,
@@ -699,7 +847,22 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
         # state; different means the pin did not hold and the row says so instead
         # of looking like a deliberate choice.
         "provider_pinned": provider,
+        # RECORDED ONLY WHEN SENT. Added 2026-09-19 for the elicitation rung, which applies
+        # G0DM0D3's sampling boost directly. Stamping a null on every row would change the
+        # shape of the whole existing corpus; omitting it when a penalty WAS sent would leave
+        # a sampling offset nobody can control for later.
+        **({"presence_penalty": presence_penalty} if presence_penalty is not None else {}),
+        **({"frequency_penalty": frequency_penalty} if frequency_penalty is not None else {}),
     }
+    # AN ARM WITHOUT A NOTE IS AN ARM NOBODY CAN READ SIX MONTHS LATER. Checked HERE, above
+    # the transport early-return, so it covers both exits -- the first version sat at the
+    # bottom and a failed call slipped past it. Every other record in this corpus carries a
+    # note; a collector using a vocabulary outside CONDITION_NOTE passes its own in `extra`.
+    if not (record.get("condition_note") or (extra or {}).get("condition_note")):
+        raise KeyError(
+            "condition %r has no note. CONDITION_NOTE covers the rung-1 conditions; a "
+            "collector using another vocabulary must pass `condition_note` in `extra`."
+            % condition)
     if not result.get("ok"):
         # A transport failure is not a measurement. Recorded 2026-08-31: 66 such rows across
         # 11 models were written as model failures when the cause was connection resets from
@@ -708,9 +871,22 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
                        "problems": ["call failed"], "answers": [],
                        "failure_mode": "transport",
                        "transient": bool(result.get("transient"))})
+        # Merged on the failure path too. A pipeline record that loses its flags when the
+        # call fails cannot be told apart from a plain-B failure, and the arm's denominator
+        # silently shrinks.
+        if extra:
+            record.update(extra)
         return record
     text = result["response_text"]
-    answers, problems = parse_answers(text, [it["id"] for it in items])
+    # PARSE AGAINST THE PRINTED LABELS, THEN MAP BACK TO ITEM IDS. With `renumber=False`
+    # these are the same integers and this is exactly what it always did. With renumbering the
+    # model answers "7." meaning the seventh line, and storing that as item 7 would silently
+    # scramble every answer on the sheet -- so the mapping is applied here, once, and the
+    # record carries it so the remap is auditable rather than trusted.
+    answers, problems = parse_answers(text, sorted(id_of_label))
+    if renumber:
+        answers = [dict(a, q=id_of_label[a["q"]], printed_label=a["q"])
+                   for a in answers if a.get("q") in id_of_label]
     # Three failure modes were being collapsed into one "invalid" bucket, and a human read
     # the bucket as refusal. They are not the same thing and only one is about the model
     # declining: claude-opus-5 parsed 36-53 answers and hit the token cap; deepseek returned
@@ -726,8 +902,11 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
     # The structural test: the model produced PROSE and ZERO answers, without running out
     # of budget. Whatever words it used, it was asked for 62 answers, had room to give
     # them, and gave none.
+    # `at_cap` comes from the transport when the transport knows. A proxy that ESTIMATES its
+    # token counts sets `at_cap` itself from the text and says so on the record; everything
+    # else leaves it None and the token test runs exactly as it always has.
     failure = classify_failure(problems, len(answers), result.get("tokens_out"),
-                               max_tokens, text)
+                               max_tokens, text, at_cap=result.get("at_cap"))
     record.update({
         "response_text": text,
         "answers": answers,
@@ -745,6 +924,8 @@ def one_run(channel, model, items, condition, api_key, run_no, temperature, time
         "classifier": CLASSIFIER_VERSION,
         "valid": not problems,
     })
+    if extra:
+        record.update(extra)
     return record
 
 
@@ -787,6 +968,15 @@ def main(argv=None):
     ap.add_argument("--template", choices=sorted(PARAPHRASE_TEMPLATES), default="T01",
                     help="paraphrase of the forced-choice instruction (T01 is canonical, and "
                          "is what every run before 2026-09-04 used)")
+    #: PROTOCOL v2. Added to build_prompt and one_run on 2026-09-18 and NOT wired to the CLI
+    #: until this line -- so every driver calling run_battery as a subprocess collected under
+    #: v1 and ate the numbering artifact on susceptible models. Measured: 14.0% of sheets lose
+    #: an item as-is against 1.4% renumbered.
+    ap.add_argument("--renumber", action="store_true",
+                    help="PROTOCOL v2: print the items 1..32 in presentation order, so the "
+                         "printed number is the slot rather than the item id. Removes the "
+                         "silent item-omission artifact (COLLECTION-STANDARD.md). The record "
+                         "carries label_to_id and answers are mapped back through it.")
     ap.add_argument("--shuffle-seed", type=int, default=None,
                     help="present items in a seeded random order. The item keeps its "
                          "id, so scoring is unaffected and shuffled runs stay "
@@ -844,12 +1034,7 @@ def main(argv=None):
     today = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
     outdir = Path(args.out) if args.out else STUDY_DIR / "runs" / today / "compass"
     outdir.mkdir(parents=True, exist_ok=True)
-    # The template goes in the filename, but only when it is not the canonical one, so every
-    # existing run directory and every existing driver keeps the names it has.
-    stem = "%s__%s" % (safe_filename(args.model), args.condition)
-    if args.template != "T01":
-        stem += "__%s" % args.template
-    path = outdir / (stem + ".jsonl")
+    path = sheet_path(outdir, args.model, args.condition, args.template)
 
     # RESUME, for real. run_order_floor.sh has always documented itself as "resumable:
     # run_battery.py skips cells that already have their runs" and that was never true --
@@ -926,7 +1111,7 @@ def main(argv=None):
                              api_key, run_no, args.temperature, args.timeout, seed=seed,
                              think=args.think, shuffle_seed=args.shuffle_seed,
                              max_tokens=args.max_tokens, template=args.template,
-                             provider=args.provider,
+                             provider=args.provider, renumber=args.renumber,
                              instrument=data.get("instrument") or data.get("source", "?"))
             if record.get("transient"):
                 # Never persist a transport failure. It is not data about the model, and

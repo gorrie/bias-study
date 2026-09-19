@@ -98,14 +98,23 @@ def panel():
     with io.open(PANEL_FILE, encoding="utf-8") as fh:
         payload = json.load(fh)
     models = list(payload["models"])
-    for m in payload.get("requant_siblings") or []:
-        if m not in models:
-            models.append(m)
+    # THE SAME RULE, APPLIED TO EVERY DECLARED ADDITION. Both `requant_siblings` and the
+    # 2026-09-18 `breadth` set are collectable by `run_i3_wave`, so both must be probeable
+    # here or the budget gate refuses a pass it is supposed to enable -- the failure this
+    # docstring already describes, repeated the moment a third group was declared.
+    for key in ("requant_siblings", "breadth", "ablation"):
+        for m in payload.get(key) or []:
+            if m not in models:
+                models.append(m)
     return models
 
 
 def is_local(m):
-    return "/" not in m or m.startswith("hf.co")
+    # SAME RULE AS run_i3_wave.is_local, and same bug until 2026-09-18: `huihui_ai/...:14b`
+    # has a slash and is not an hf.co repo, so it read as HOSTED and would have been probed
+    # against OpenRouter, which does not serve it. An OpenRouter id is `vendor/model` and
+    # never carries a colon; an ollama tag always does.
+    return "/" not in m or m.startswith("hf.co") or ":" in m
 
 
 def collected(out_rel=None):

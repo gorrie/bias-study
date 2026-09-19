@@ -67,6 +67,7 @@ except Exception:
     pass
 
 import eligibility as E  # noqa: E402
+import studypaths as _SP  # noqa: E402
 
 #: Above this share of truncated responses the run is not scoreable as collected.
 TRUNCATION_BLOCK = 0.05
@@ -150,7 +151,29 @@ LOST_CELL_BLOCK = 0.05
 LOST_CELL_VENDOR_BLOCK = 0.25
 
 
-def analyse_sheets(rows):
+#: Where the declared limitations live, when `--declared` is not given explicitly.
+DECLARED_DEFAULT = os.path.join(os.path.dirname(HERE), "data", "collection-limitations.json")
+
+
+def _declared_models(path=None):
+    """Models declared as behavioural losses. -> set of model ids.
+
+    An absent file declares nothing, which is the safe direction: every behavioural loser then
+    blocks. A model listed under `not_declared_and_still_blocking` is deliberately NOT returned
+    -- that section exists to record why something was left blocking, and reading it as a
+    declaration would invert its meaning.
+    """
+    path = path or DECLARED_DEFAULT
+    if not os.path.exists(path):
+        return set()
+    try:
+        doc = json.load(io.open(path, encoding="utf-8"))
+    except (OSError, ValueError):
+        return set()
+    return {m.get("model") for m in (doc.get("models") or []) if m.get("model")}
+
+
+def analyse_sheets(rows, declared_path=None):
     """Checks that only mean anything for a WHOLE-SHEET forced-choice run.
 
     The judged checks above read `response_text` and ask whether it was severed.
@@ -160,7 +183,7 @@ def analyse_sheets(rows):
 
     Returns {} for a judged run, so the caller can merge unconditionally.
     """
-    sheets = [r for r in rows if r.get("schema") == "compass-run/1"]
+    sheets = [r for r in rows if _SP.is_run_record(r)]
     if not sheets:
         return {}
 
@@ -244,14 +267,35 @@ def analyse_sheets(rows):
                        % (worst_vendor, 100 * worst_share))
         out["lost_cells"] = under
         out["lost_rate"] = round(lost_rate, 4)
-        if lost_rate > LOST_CELL_BLOCK or worst_share > LOST_CELL_VENDOR_BLOCK:
+        # THE SAME DECLARATION COVERS BOTH METRICS, or the two disagree about one model.
+        #
+        # This check names the worst vendor by PARSE RATE and the check below names the worst
+        # models by INVALIDITY, and on this corpus they are the same models -- `mistral:latest`
+        # is the worst on both. Declaring a behavioural loss on one metric and not the other
+        # would leave the run blocked by a restatement of the fact just declared.
+        #
+        # The volume limit is NOT waivable this way. A run that loses 5% of everything is a
+        # smaller run whoever it lost it from, and no declaration makes it bigger.
+        declared_here = _declared_models(declared_path)
+        worst_is_declared = bool(worst_vendor) and any(
+            m.split("/")[-1].startswith(worst_vendor) or m == worst_vendor
+            for m in declared_here)
+        if lost_rate > LOST_CELL_BLOCK:
             out["problems"].append(
-                detail + (" BLOCKING: the loss rate is %.1f%% (limit %.0f%%) or one vendor "
-                          "loses %.0f%% (limit %.0f%%), which is differential exclusion and "
-                          "makes the comparison invalid rather than merely smaller."
-                          % (100 * lost_rate, 100 * LOST_CELL_BLOCK,
-                             100 * worst_share, 100 * LOST_CELL_VENDOR_BLOCK)))
+                detail + (" BLOCKING: the loss rate is %.1f%% against a %.0f%% limit. Volume, "
+                          "not concentration -- a declaration cannot make a smaller run bigger."
+                          % (100 * lost_rate, 100 * LOST_CELL_BLOCK)))
+        elif worst_share > LOST_CELL_VENDOR_BLOCK and not worst_is_declared:
+            out["problems"].append(
+                detail + (" BLOCKING: %s loses %.0f%% of its attempted sheets (limit %.0f%%), "
+                          "which is differential exclusion and makes the comparison invalid "
+                          "rather than merely smaller. Re-collect it, or declare it in "
+                          "data/collection-limitations.json with its failure shape."
+                          % (worst_vendor, 100 * worst_share, 100 * LOST_CELL_VENDOR_BLOCK)))
         else:
+            if worst_share > LOST_CELL_VENDOR_BLOCK:
+                detail += (" %s is above the per-vendor limit and is DECLARED."
+                           % worst_vendor)
             out["warnings"].append(detail)
 
     # WHAT THE ANALYSIS ACTUALLY DROPS, not just what parsed short.
@@ -308,7 +352,30 @@ def analyse_sheets(rows):
             detail += (" NOT re-collectable -- the model's own output is unusable and a retry "
                        "reproduces it; these are a limitation to report, not a pass to redo: "
                        "%s." % ", ".join(m.split("/")[-1] for _s, m, _b, _t in behavioural))
-        out["problems"].append(detail)
+        # A DECLARED LOSS IS A STATED LIMITATION; AN UNDECLARED ONE IS A HOLE.
+        #
+        # The prereg fixed this rule before collection: a run that does not parse at >=95% is
+        # "re-collected or reported as unparseable". Re-collection reproduces a model's own
+        # output, so `reported` is the remaining branch -- and a report that exists only in
+        # someone's head is not a report. `data/collection-limitations.json` is the report, and
+        # this is the check that the two agree.
+        #
+        # It does not loosen anything. An undeclared behavioural loser still blocks; a
+        # `transport` loser may never be declared and blocks until retried; and exit 0 requires
+        # the declared set to COVER the behavioural set, so a file declaring nothing passes
+        # nothing.
+        declared = _declared_models(declared_path)
+        undeclared = [row for row in behavioural if row[1] not in declared]
+        covered = [row for row in behavioural if row[1] in declared]
+        if covered:
+            out["declared_losses"] = {m: [b, t] for _s, m, b, t in covered}
+            detail += (" DECLARED as a stated limitation in %s: %s."
+                       % (os.path.basename(declared_path or "collection-limitations.json"),
+                          ", ".join(m.split("/")[-1] for _s, m, _b, _t in covered)))
+        if undeclared or recollectable:
+            out["problems"].append(detail)
+        else:
+            out["warnings"].append(detail)
 
     # A sheet answering every item identically has no position to compare, and
     # scoring it against a normal sheet reports a huge side-flip count that reads
@@ -434,7 +501,7 @@ def analyse_sheets(rows):
     return out
 
 
-def analyse(rows):
+def analyse(rows, declared_path=None):
     out = {"n_records": len(rows), "problems": [], "warnings": []}
     if not rows:
         return out
@@ -443,7 +510,7 @@ def analyse(rows):
     out["n_ok"] = len(ok_rows)
     out["n_failed"] = len(rows) - len(ok_rows)
 
-    sheets = analyse_sheets(rows)
+    sheets = analyse_sheets(rows, declared_path=declared_path)
     if sheets:
         out["problems"].extend(sheets.pop("problems", []))
         out["warnings"].extend(sheets.pop("warnings", []))
@@ -475,7 +542,7 @@ def analyse(rows):
     # directly. Applying a prose heuristic to a structured answer list is the same
     # category error as reading a CSV for full stops, and it would have blocked
     # every forced-choice collection the moment the loader could finally see one.
-    prose_rows = [r for r in ok_rows if r.get("schema") != "compass-run/1"]
+    prose_rows = [r for r in ok_rows if not _SP.is_run_record(r)]
     trunc_by_model = collections.Counter()
     total_by_model = collections.Counter()
     n_trunc = 0
@@ -660,6 +727,10 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("run", help="run date/name, e.g. 2026-09-13-g0dm0d3-replicate")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--declared", default=None,
+                    help="JSON of declared behavioural losses (default: "
+                         "data/collection-limitations.json). A declared loser is a stated "
+                         "limitation; an undeclared one still blocks.")
     a = ap.parse_args(argv)
 
     try:
@@ -682,7 +753,7 @@ def main(argv=None):
         return 2
 
     rows = load_raw(run_dir)
-    res = analyse(rows)
+    res = analyse(rows, declared_path=a.declared)
     res["run"] = a.run
     res["run_dir"] = run_dir
 

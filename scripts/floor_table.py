@@ -45,6 +45,7 @@ STUDY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 from check_arm_match import INELIGIBLE_PAIRS, QUANT_PAIRS  # noqa: E402
 from classify_lineage import classify, parse  # noqa: E402
+import studypaths as _SP  # noqa: E402
 
 BOOT_N = 2000
 BOOT_SEED = 20260831
@@ -593,7 +594,7 @@ def load(pattern, condition=None, key=None, dedupe_by_seed=False):
             if not line.strip():
                 continue
             r = json.loads(line)
-            if r.get("schema") != "compass-run/1":
+            if not _SP.is_run_record(r):
                 continue
             # The instrument guard. Counted, never silent: a floor whose pair
             # count moved because another instrument entered the tree must say

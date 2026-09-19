@@ -1,0 +1,50 @@
+{
+  "_what": "Models that lose more than LOST_CELL_VENDOR_BLOCK of their attempted sheets to their own output, DECLARED so the loss is a stated limitation rather than an unexplained hole. collection_check.py --declared reads this. A declared loser stops blocking; an UNDECLARED one still blocks, and exit 0 requires the declared count to equal the behavioural count -- a file that declares nothing passes nothing.",
+  "_why_this_is_not_loosening_the_gate": "PREREG-2026-09-14-i3-phase4.md fixes the rule before collection: a run whose answers do not parse at >=95% is not scored; it is re-collected OR reported as unparseable. Re-collection reproduces these -- the output is the model's own, not the network's -- so 'reported' is the remaining branch, and this file is the report. The prereg also forbids dropping a model from the roster after seeing data, so these models stay in every denominator. No published number moves: floor_table already excludes the sheets, and the contrasts resolve on 37/39/40 models either way.",
+  "_scope": "Behavioural loss only. A model losing sheets to `transport` is an infrastructure failure, is re-collectable, and may NOT be declared here -- collection_check keeps blocking on those until they are retried.",
+  "run": "2026-09-16-ratchet-v3-wave",
+  "declared": "2026-09-17",
+  "models": [
+    {
+      "model": "mistral:latest",
+      "lost": 11,
+      "attempted": 30,
+      "shape": "Answers the first 17 items in format, then degrades into prose -- '18. Uncertainty: This issue raises complex questions about the...'. Seven of its eleven losses drop exactly items 20, 21 and 31 together; three drop 20 and 31. Budget intact, nothing truncated: the model stops complying with the format partway through a 32-item sheet.",
+      "retry_evidence": "Reproduced across three conditions and five replicates at the pre-registered temperature. The failure is the model's output, not the call.",
+      "consequence": "Its cells carry fewer sheets than the panel. It contributes to no floor row it cannot fill."
+    },
+    {
+      "model": "mistral:7b-instruct-q8_0",
+      "lost": 5,
+      "attempted": 12,
+      "shape": "Two sheets one item short; three sheets 18-19 items short. Seven further sheets answer *Agree* to all 32 items, which `floor_table` drops separately as degenerate -- a sheet with no variance carries no position to compare.",
+      "retry_evidence": "Reproduced across replicates. Acquiescence at this size is a property of the build.",
+      "consequence": "Cannot resolve its own noise; excluded from every modal-vs-modal row by the degenerate-sheet rule."
+    },
+    {
+      "model": "qwen2.5:14b",
+      "lost": 10,
+      "attempted": 31,
+      "shape": "Every single loss is exactly one item short, and in nine of ten the missing item is the same one -- item 4, the defender half on programmable money. Systematic omission of one proposition, not truncation.",
+      "retry_evidence": "Ten sheets, one missing item each, across conditions and replicates.",
+      "consequence": "A model that silently omits a specific item is a finding the refusal table cannot see, because it counts whole-sheet declines. Reported in Limitations."
+    },
+    {
+      "model": "qwen2.5:14b-instruct-q8_0",
+      "lost": 2,
+      "attempted": 12,
+      "shape": "Same shape as its sibling: one item short, the missing item is item 4.",
+      "retry_evidence": "Reproduced.",
+      "consequence": "Below the per-model block threshold; declared for consistency with its unquantised sibling."
+    }
+  ],
+  "not_declared_and_still_blocking": [
+    {
+      "model": "z-ai/glm-5.3-flash",
+      "lost": 12,
+      "attempted": 28,
+      "shape": "transport",
+      "why_not_declared": "Infrastructure, not the model. Re-collectable at ~12 sheets. It blocks until it is retried, which is the correct behaviour."
+    }
+  ]
+}

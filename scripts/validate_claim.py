@@ -43,6 +43,7 @@ import math
 import os
 import statistics as st
 import sys
+import studypaths as _SP  # noqa: E402
 
 FAIL, WARN, OK = "FAIL", "WARN", "ok"
 
@@ -54,7 +55,7 @@ def load(runs_dir):
             if not line.strip():
                 continue
             r = json.loads(line)
-            if r.get("schema") == "compass-run/1":
+            if _SP.is_run_record(r):
                 r["_path"] = p
                 rows.append(r)
     return rows

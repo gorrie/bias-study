@@ -51,6 +51,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from run_battery import CONDITION_NOTE, load_items, parse_answers  # noqa: E402
+import studypaths as _SP  # noqa: E402
 
 CAVEAT = ("in-harness agent channel: NOT a matched arm against API runs. System prompt, "
           "tooling, sampling and version resolution all differ. Position comparisons across "
@@ -74,7 +75,7 @@ def main(argv=None):
     answers, problems = parse_answers(text, [it["id"] for it in items])
 
     record = {
-        "schema": "compass-run/1",
+        "schema": _SP.SCHEMA,
         "model": args.model,
         "channel": "agent",
         "access_tier": args.label,

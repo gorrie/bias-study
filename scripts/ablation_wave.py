@@ -57,6 +57,7 @@ STUDY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
 from wave import WAVE_PARAMS  # noqa: E402
+import studypaths as _SP  # noqa: E402
 
 CONDITIONS = ("A", "P", "D")
 
@@ -208,7 +209,7 @@ def _scan(d):
                 r = json.loads(line)
             except ValueError:
                 continue
-            if r.get("schema") != "compass-run/1":
+            if not _SP.is_run_record(r):
                 continue
             key = (r.get("model"), r.get("condition"))
             rows[key] += 1

@@ -33,9 +33,12 @@ from studypaths import (  # noqa: E402
 BOOTSTRAP_N = 10000
 
 
-def bootstrap_p_two_sided(deltas: list[float], rng, n: int = BOOTSTRAP_N) -> float:
+def bootstrap_p_two_sided(deltas: list[float], rng, n: int | None = None) -> float:
     """Bootstrap two-sided p-value for H0: mean delta = 0.
-    p = 2 * min(P(boot mean <= 0), P(boot mean >= 0))."""
+    p = 2 * min(P(boot mean <= 0), P(boot mean >= 0)).
+
+    `n=None` reads BOOTSTRAP_N at call time, never frozen into the signature."""
+    n = BOOTSTRAP_N if n is None else n
     k = len(deltas)
     if k < 2:
         return 1.0

@@ -117,7 +117,7 @@ def pair_gaps(cell: dict, a: str, b: str) -> dict:
     return gaps
 
 
-def cluster_bootstrap(cell: dict, a: str, b: str, rng, n: int = BOOTSTRAP_N,
+def cluster_bootstrap(cell: dict, a: str, b: str, rng, n: int | None = None,
                       alpha: float = 0.05):
     """Nonparametric cluster bootstrap: resample TEMPLATES with replacement, keeping
     each template's observations intact.
@@ -136,7 +136,11 @@ def cluster_bootstrap(cell: dict, a: str, b: str, rng, n: int = BOOTSTRAP_N,
     (The self-test's larger 27–29% reading was not this; that was sampling error in a
     single realised width at k=16, and it sent me after the estimator twice before the
     measurement was averaged over seeds. The double count is real and small.)
+
+    `n=None` reads BOOTSTRAP_N at call time; a frozen signature default is a knob that
+    looks connected and is not.
     """
+    n = BOOTSTRAP_N if n is None else n
     pids = sorted({p for (p, arm) in cell if arm == a and (p, b) in cell})
     k = len(pids)
     if k < 2:

@@ -80,7 +80,9 @@ def keyword_disagreement(cells):
     return (d / n) if n else None
 
 
-def analyse(pairs=PAIRS, suite=SUITE, seed=20260828, n=BOOTSTRAP_N):
+def analyse(pairs=PAIRS, suite=SUITE, seed=20260828, n=None):
+    # Read at call time -- a signature default is bound once, at import.
+    n = BOOTSTRAP_N if n is None else n
     rng = random.Random(seed)
     out = []
     for name, cf, af in pairs:

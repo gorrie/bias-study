@@ -56,6 +56,7 @@ sys.path.insert(0, HERE)
 
 import floor_table as F        # noqa: E402
 import refusal_table as R      # noqa: E402
+import studypaths as _SP  # noqa: E402
 
 WAVE = os.path.join("runs", "2026-09-07-ablation-wave")
 CONDITIONS = ("A", "P", "D")
@@ -95,7 +96,7 @@ def cells():
             if not line:
                 continue
             r = json.loads(line)
-            if r.get("schema") != "compass-run/1" or not r.get("valid"):
+            if not _SP.is_run_record(r) or not r.get("valid"):
                 continue
             sheet = {a["q"]: a["position"] for a in r["answers"]}
             if len(set(sheet.values())) == 1:

@@ -527,3 +527,33 @@ def stream(seed: int, *parts: object) -> random.Random:
     key = "\x1f".join([str(seed), *(str(p) for p in parts)])
     digest = hashlib.blake2b(key.encode("utf-8"), digest_size=8).digest()
     return random.Random(int.from_bytes(digest, "big"))
+
+
+# --------------------------------------------------------------------- the record schema name
+
+#: WHAT A NEW RECORD IS STAMPED WITH. One definition, imported; there were 24 literals.
+#:
+#: The old name was `compass-run/1`, from a retired external questionnaire this study no
+#: longer administers. It is the FILE FORMAT version, never the instrument -- every one of the
+#: 1,148 Ratchet battery records carries it, and so would a factions sheet. But the word sat
+#: in 38 files, so every grep for the retired instrument lit up the live collector, and
+#: "are you re-injecting the compass" is a reasonable question to ask of a tree that reads
+#: like that. A name nobody can distinguish from the thing it is not is a bad name.
+SCHEMA = "battery-run/1"
+
+#: WHAT A READER ACCEPTS. Both, permanently.
+#:
+#: 1,148 records on disk carry the old name and they are not rewritten: editing collected
+#: records to match a rename is falsifying provenance to satisfy a string. A reader takes
+#: either; a writer emits only the new one.
+SCHEMA_ACCEPTED = ("battery-run/1", "compass-run/1")
+
+
+def is_run_record(rec):
+    """True when this record is an answer sheet from this study's collector.
+
+    Replaces `rec.get("schema") == "compass-run/1"`, which appeared in 24 places and had to be
+    right in all of them. `runs/` also holds ~38,000 records with no schema at all -- the May
+    judged corpus and its neighbours -- and every one of those filters existed to exclude them.
+    """
+    return isinstance(rec, dict) and rec.get("schema") in SCHEMA_ACCEPTED

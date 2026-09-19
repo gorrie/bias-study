@@ -36,6 +36,13 @@ README = os.path.join(ROOT, "README.md")
 
 PRIOR_WORK = os.path.join(ROOT, "PRIOR-WORK-CORRECTIONS.md")
 
+#: The release definition's arm inventory. Hand-typed until 2026-09-18 and carrying the
+#: RETIRED instrument's scale -- 1,067 paraphrase pairs, 97 same-version, 84 order -- in the
+#: document that states "the arm inventory is the whole basis of the release". Generated from
+#: the same loader the paper's floors come from, so the release definition and the paper
+#: cannot disagree about what was measured.
+RELEASE_DOC = os.path.join(ROOT, "RELEASE-2026-09-07.md")
+
 BLOCKS = {
     "floors": [sys.executable, os.path.join(HERE, "floor_table.py"), "--markdown"],
     # The class-split 2x2. Generated for the reason the floors table is: it was hand-typed
@@ -62,8 +69,15 @@ PRIOR_WORK_BLOCKS = {
 }
 BLOCKS.update(PRIOR_WORK_BLOCKS)
 
+RELEASE_BLOCKS = {
+    "release_floors": [sys.executable, os.path.join(HERE, "floor_table.py"), "--markdown"],
+}
+BLOCKS.update(RELEASE_BLOCKS)
+
 #: Which file each block lives in.
-TARGETS = {name: (PRIOR_WORK if name in PRIOR_WORK_BLOCKS else README) for name in BLOCKS}
+TARGETS = {name: (PRIOR_WORK if name in PRIOR_WORK_BLOCKS
+                  else RELEASE_DOC if name in RELEASE_BLOCKS
+                  else README) for name in BLOCKS}
 
 
 def rendered(name):
@@ -109,8 +123,17 @@ def main(argv=None):
     for name in BLOCKS:
         by_file.setdefault(TARGETS[name], []).append(name)
 
-    stale, filled = [], 0
+    stale, filled, missing = [], 0, []
     for path, names in sorted(by_file.items()):
+        # A MISSING TARGET IS A REPORTED FAILURE, NOT A TRACEBACK. This called io.open
+        # directly, so `--check` died with FileNotFoundError on PRIOR-WORK-CORRECTIONS.md --
+        # a document that is referenced by four files and is not in the tree. A gate that
+        # exits on an exception instead of naming the problem is a gate that gets skipped in
+        # CI and then switched off, which is how the generated blocks stopped being checked
+        # at all.
+        if not os.path.exists(path):
+            missing.append((os.path.basename(path), sorted(names)))
+            continue
         have = io.open(path, encoding="utf-8").read()
         want = have
         for name in names:
@@ -121,6 +144,16 @@ def main(argv=None):
         else:
             io.open(path, "w", encoding="utf-8", newline="\n").write(want)
             filled += len(names)
+
+    if missing:
+        print("TARGET DOCUMENT(S) NOT IN THE TREE -- their generated blocks are not checked")
+        print("and are not filled. This is a gap, not a pass:")
+        for name, names in missing:
+            print("  %-34s would carry: %s" % (name, ", ".join(names)))
+        print("")
+        print("Either restore the document, or remove its block(s) from gen_readme.BLOCKS so")
+        print("nothing claims to generate into a file that is not here.")
+        return 1
 
     if args.check:
         if stale:

@@ -144,9 +144,64 @@ def panel(include_siblings=False):
     return models
 
 
+def ablation_panel():
+    """The declared stock/ablated pairs -- the WEIGHT rung, re-collected on this instrument.
+
+    THE ARM WAS NOT LOST, IT WAS STRANDED. `runs/2026-05-27-abliteration*` holds the May
+    collection and `runs/refusal-ablation/` holds 4,500 refusal-probe records; both are
+    intact. Neither can enter this paper: the first is scored by a judge panel, which is the
+    one thing this paper's design excludes, and the second measures refusal rather than
+    stance. Dropping the arm from the release definition on that basis would have thrown away
+    a real question -- does the institutional lean survive cutting the refusal direction out
+    of the weights -- for a reason that is about scoring, not about the finding.
+
+    Every pair is held locally at matched quantisation, so re-collecting it on the 32-item
+    battery costs nothing but GPU time. Two independent ablation methods per base where they
+    exist, because an effect that appears under one and not the other is a property of the
+    method.
+    """
+    with io.open(os.path.join(STUDY, "data", "wave-panel.json"), encoding="utf-8") as fh:
+        return list((json.load(fh)).get("ablation") or [])
+
+
+def breadth_panel(working_only=True):
+    """The 2026-09-18 breadth set -- models added for COVERAGE, not part of the frozen series.
+
+    SAME TRAP AS THE SIBLINGS, AND IT WAS ABOUT TO BE SPRUNG AGAIN. `panel()` reads only
+    `models`, so 22 listings declared under `breadth` with a dated criterion would have been
+    collected by nothing: `--models` filters the panel and cannot add to it, which is the
+    defect recorded in `panel()`'s own docstring about `requant_siblings`.
+
+    These start a SHORTER series of their own. They feed the floors and the panel-level
+    statistics, which need coverage rather than a fixed cohort, and no figure derived from the
+    frozen time series includes them.
+
+    `working_only` restricts to the listings that returned a parseable, non-degenerate sheet in
+    the roster smoke (`runs/2026-09-18-roster-smoke/manifest.json`). That filter is on
+    MECHANICS -- whether a sheet came back at all -- never on what the sheet said.
+    """
+    with io.open(os.path.join(STUDY, "data", "wave-panel.json"), encoding="utf-8") as fh:
+        declared = list((json.load(fh)).get("breadth") or [])
+    if not working_only:
+        return declared
+    smoke = os.path.join(STUDY, "runs", "2026-09-18-roster-smoke", "manifest.json")
+    if not os.path.exists(smoke):
+        return declared
+    with io.open(smoke, encoding="utf-8") as fh:
+        working = set((json.load(fh)).get("working") or [])
+    return [m for m in declared if m in working]
+
+
 def is_local(model):
-    """Local ids have no vendor prefix, or are a pulled GGUF repo."""
-    return "/" not in model or model.startswith("hf.co")
+    """Local ids have no vendor prefix, are a pulled GGUF repo, or carry an ollama tag.
+
+    THE TAG IS THE RELIABLE DISCRIMINATOR. This read `"/" not in model or startswith("hf.co")`,
+    which calls `huihui_ai/qwen2.5-abliterate:14b` HOSTED -- it has a slash and is not an
+    hf.co repo -- so the ablation arm would have been sent to OpenRouter, which does not serve
+    it, and every sheet would have come back `transport`. An OpenRouter id is `vendor/model`
+    and never carries a colon; an ollama tag always does.
+    """
+    return "/" not in model or model.startswith("hf.co") or ":" in model
 
 
 def safe(name):
@@ -257,7 +312,13 @@ def valid_counts(out_dir):
 #: machine emits on every invocation; taking the tail of stderr reports one of them as the
 #: cause and hides the real message somewhere above it.
 _NOISE = ("warnings.warn(", "RequestsDependencyWarning", "urllib3", "chardet",
-          "charset_normalizer", "DeprecationWarning", "UserWarning")
+          "charset_normalizer", "DeprecationWarning", "UserWarning",
+          # The collector's own standing policy text, printed on every invalid run. It
+          # contains "discarded" and "dropped", so the diagnostic heuristic below picked it as
+          # the cause and ten failures logged as "Invalid runs are recorded, not silently
+          # dropped..." -- true, and not a fact about why this sheet failed.
+          "Invalid runs are recorded", "Per the prereg decision rule",
+          "discarded from analysis")
 
 #: Lines that usually ARE the reason. Ordered by how specific they are.
 _DIAGNOSTIC = ("Traceback", "Error", "error", "REFUS", "refused", "timeout", "Timeout",
@@ -281,6 +342,39 @@ def _failure_line(stderr, stdout):
     if signal:
         return signal[-1]
     return "no diagnosable output (only %d line(s) of boilerplate)" % len(lines)
+
+
+def last_failure_mode(out_dir, model, condition, seed):
+    """What the most recent sheet for this cell actually WAS. -> failure_mode, or None if valid.
+
+    A REFUSAL IS A MEASUREMENT, NOT A FAILURE, and the runner could not tell the difference:
+    `run_battery` exits non-zero whenever a sheet is invalid, so a model declining the
+    instrument and a model the network could not reach look identical from here.
+
+    That fed the circuit breaker garbage. On the seed-22 pass it stopped `gemini-3.7-flash`
+    after three "failures" that were nineteen recorded REFUSALS -- the study's own finding
+    about that model -- and truncated its refusal denominator at whatever point the breaker
+    happened to fire. Whether a refusal rate is measured over 19 attempts or 32 would then
+    depend on the shape of a pass, which is the distortion the replicate guard above exists to
+    prevent.
+    """
+    latest, stamp = None, ""
+    for path in sorted(glob.glob(os.path.join(out_dir, "*.jsonl"))):
+        for line in io.open(path, encoding="utf-8", errors="replace"):
+            if not line.strip():
+                continue
+            try:
+                r = json.loads(line)
+            except ValueError:
+                continue
+            if (r.get("model") == model and r.get("condition") == condition
+                    and r.get("shuffle_seed") == seed):
+                when = r.get("collected_at") or ""
+                if when >= stamp:
+                    latest, stamp = r, when
+    if latest is None:
+        return "no-record"
+    return None if latest.get("valid") else (latest.get("failure_mode") or "other")
 
 
 def attempt_counts(out_dir):
@@ -399,6 +493,20 @@ def main(argv=None):
     ap.add_argument("--out-date", default=None)
     ap.add_argument("--models", default="", help="comma-separated filter")
     ap.add_argument("--delay", type=float, default=1.0)
+    #: CIRCUIT BREAKERS. See where they are applied in the collection loop.
+    #:
+    #: Defaults chosen from the depth-5 pass: `glm-5.3-flash` failed 12 of 12 consecutively,
+    #: so 3 stops that model after three wasted calls instead of twelve. No model in that pass
+    #: recovered after two consecutive failures, so 3 costs nothing real.
+    #:
+    #: The global default is deliberately higher than the model default: a whole pass is only
+    #: abandoned when the evidence is that nothing is answering, not when one provider is down.
+    ap.add_argument("--skip-model-after", type=int, default=3, metavar="N",
+                    help="stop buying a model's remaining cells after N consecutive failures "
+                         "(default 3; 0 disables)")
+    ap.add_argument("--abort-after", type=int, default=8, metavar="N",
+                    help="abort the whole pass after N consecutive failures across models -- "
+                         "a dead key, an exhausted balance or a dead provider (default 8)")
     #: THE REPLICATE PASS, which had no way to be issued.
     #:
     #: done_cells skips any (model, condition, shuffle_seed) already on disk, so "two more
@@ -434,6 +542,21 @@ def main(argv=None):
                     help="include the declared requantisation siblings from wave-panel.json "
                          "(pass 4). Local builds only, so the pass costs time and no money. "
                          "They are a same-version null's second arm, not panel members.")
+    ap.add_argument("--ablation", action="store_true",
+                    help="collect the declared stock/ablated pairs (the WEIGHT rung). Local "
+                         "builds, so no API spend. Not the frozen panel and not the breadth "
+                         "set: this arm asks whether the institutional lean survives cutting "
+                         "the refusal direction out of the weights, which no prompt condition "
+                         "can address. The May 2026 collection of it is on the judge-scored "
+                         "instrument and cannot enter a judge-free paper.")
+    ap.add_argument("--breadth", action="store_true",
+                    help="collect the 2026-09-18 breadth set instead of the frozen panel -- "
+                         "models added by the declared coverage rule, restricted to those "
+                         "that returned a parseable sheet in the roster smoke. A shorter "
+                         "series of its own; no frozen-panel figure includes them.")
+    ap.add_argument("--breadth-all", action="store_true",
+                    help="with --breadth, include listings the smoke test could not get a "
+                         "sheet from. Buys transport retries and known refusers.")
     args = ap.parse_args(argv)
 
     # THE PROFILE RESOLVES THE BANK AND GUARDS THE DIRECTORY. See PROFILES.
@@ -459,7 +582,9 @@ def main(argv=None):
         return 2
 
     out_dir = os.path.join(STUDY, "runs", args.out_date)
-    models = panel(include_siblings=args.siblings)
+    models = (ablation_panel() if args.ablation
+              else breadth_panel(working_only=not args.breadth_all) if args.breadth
+              else panel(include_siblings=args.siblings))
     if args.models:
         want = {m.strip() for m in args.models.split(",")}
         models = [m for m in models if m in want]
@@ -594,13 +719,32 @@ def main(argv=None):
         return 2
 
     started = time.time()
-    n_ok = n_fail = 0
+    n_ok = n_fail = n_refused = 0
     _ = _served_provider  # named here so a refactor cannot drop the helper silently
     # Read once, before the loop: a replicate pass decides per cell whether that cell has ever
     # produced a valid sheet, and re-globbing the run directory per model would also pick up
     # the sheets this pass is writing as it goes.
     rep_attempts = attempt_counts(out_dir) if args.replicate else {}
     rep_valid = valid_counts(out_dir) if args.replicate else {}
+
+    # CIRCUIT BREAKERS. A long pass must not spend its whole budget discovering that
+    # something is broken.
+    #
+    # Nothing stopped a pass that had started failing. The depth-5 run spent 390 minutes and
+    # its last model, `glm-5.3-flash`, returned `transport` on all twelve of its sheets -- the
+    # runner asked for every one of them, in order, after the first had already failed. Twelve
+    # is cheap; the same shape on a 1,500-sheet pass with an expired key, a rate limit or a
+    # dead provider is the entire budget.
+    #
+    # Two levels, because two different things break:
+    #   MODEL  -- this model is not answering. Stop asking IT, keep the pass going.
+    #   GLOBAL -- nothing is answering. Stop the pass; the problem is not the models.
+    #
+    # Both count CONSECUTIVE failures and both reset on a success, so a model that fails once
+    # and recovers is unaffected. Neither deletes or rewrites anything already collected.
+    model_fail_streak = 0
+    global_fail_streak = 0
+    aborted = None
     # Grouped by model so a model's twelve sheets are contiguous in time.
     for model in models:
         conds = [c.strip() for c in args.conditions.split(",") if c.strip()]
@@ -630,10 +774,30 @@ def main(argv=None):
                       "replicate pass does not re-buy a cell that has never produced one"
                       % (c, s, rep_attempts.get((model, c, s), 0)), flush=True)
             cells = [cell for cell in cells if cell not in skip]
+            # A CELL ALREADY AT DEPTH IS NOT WORK, AND CALLING IT LOOKS LIKE FAILURE.
+            #
+            # `run_battery` exits non-zero on "5 valid run(s) already on disk, nothing to do",
+            # so a resume over a corpus that is already deep asked every full cell, got a
+            # non-zero exit each time, and counted them as failures -- eight in a row aborted
+            # the whole pass. The breaker was right to stop a pass achieving nothing; the
+            # runner was wrong to ask. A resume must be able to run to completion over a
+            # finished corpus and simply report that there is nothing to do.
+            full = [(c, s) for (c, s) in cells
+                    if rep_valid.get((model, c, s), 0) >= args.replicate]
+            if full:
+                print("    already at depth %d: %s" % (args.replicate,
+                      ", ".join("%s/%s" % (c, s) for c, s in full)), flush=True)
+            cells = [cell for cell in cells if cell not in full]
         else:
             cells = [(c, s) for c in conds for s in SEEDS if (model, c, s) not in have]
         if not cells:
             continue
+        if aborted:
+            break
+        # The per-model streak is about THIS model. A pass that skipped one model must start
+        # the next one with a clean slate, or one bad provider takes the rest of the roster
+        # down with it.
+        model_fail_streak = 0
         print("=== %s  (%d sheet(s))" % (model, len(cells)), flush=True)
         # ONE BACKEND PER CELL, decided by the cell's first sheet and held for the rest.
         #
@@ -671,6 +835,31 @@ def main(argv=None):
         pinned = None if is_local(model) else _served_provider(args.out_date, model)
         if pinned:
             print("    pinned to %s from this model's existing sheets" % pinned, flush=True)
+        elif not is_local(model) and cells:
+            # A MODEL WITH NO HISTORY HAS NO PIN, AND ITS FIRST CELL IS THE WHOLE PROBLEM.
+            #
+            # The pin is learned after a cell completes -- but `--replicate 5` sends five
+            # replicates in ONE call, so for a model this directory has never seen, those
+            # five go out unpinned and the router is free to split them. Measured on the
+            # 2026-09-18 breadth pass: `ibm-granite/granite-4.2-8b` condition N came back
+            # across CoreWeave AND DeepInfra inside a single cell, which confounds that
+            # model's replicate floor with serving path -- the exact defect the per-model pin
+            # was added to remove, reappearing for every model the pin has no history for.
+            #
+            # Buy ONE sheet first, learn the backend from it, then collect the rest pinned.
+            # The probe sheet is a real sheet and is kept; the resume logic tops the cell up.
+            cond0, seed0 = cells[0]
+            probe = [sys.executable, os.path.join(HERE, "run_battery.py"),
+                     "--model", model, "--items", items_path, "--condition", cond0,
+                     "--runs", "1", "--shuffle-seed", str(seed0),
+                     "--temperature", str(TEMPERATURE), "--seed", str(BASE_SEED + seed0),
+                     "--max-tokens", str(MAX_TOKENS),
+                     "--out", os.path.join("runs", args.out_date)]
+            subprocess.run(probe, cwd=STUDY, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+            pinned = _served_provider(args.out_date, model, cond0)
+            print("    pinned to %s from a single probe sheet (no prior history)"
+                  % (pinned or "NOTHING -- the probe named no backend"), flush=True)
         for cond, seed in cells:
             cmd = [sys.executable, os.path.join(HERE, "run_battery.py"),
                    "--model", model, "--items", items_path, "--condition", cond,
@@ -707,9 +896,35 @@ def main(argv=None):
                           % served, flush=True)
             if r.returncode == 0 and tail:
                 n_ok += 1
+                model_fail_streak = 0
+                global_fail_streak = 0
                 print("    %s seed %-3s %s" % (cond, seed, tail[-1].split(": ")[-1]), flush=True)
             else:
                 n_fail += 1
+                # WHAT KIND OF FAILURE decides whether the breakers should care. A refusal is
+                # the model answering the question the study is asking; a transport error is
+                # the study failing to ask it. Only the second means "stop spending here".
+                # Belt and braces for the case above: if a full cell is asked anyway -- a
+                # count that moved under us, a manual invocation -- say so and move on. It is
+                # not a failure and must not reach a breaker.
+                combined = (r.stdout or "") + (r.stderr or "")
+                if "already on disk, nothing to do" in combined:
+                    print("    %s seed %-3s already at depth; nothing to do"
+                          % (cond, seed), flush=True)
+                    n_fail -= 1
+                    time.sleep(args.delay)
+                    continue
+                mode = last_failure_mode(out_dir, model, cond, seed)
+                if mode == "refused":
+                    n_refused += 1
+                    model_fail_streak = 0
+                    global_fail_streak = 0
+                    print("    %s seed %-3s REFUSED -- recorded as a measurement; the breakers "
+                          "do not count it" % (cond, seed), flush=True)
+                    time.sleep(args.delay)
+                    continue
+                model_fail_streak += 1
+                global_fail_streak += 1
                 # THE LAST LINE OF STDERR IS NOT THE ERROR. It was, and on this machine the
                 # last line of stderr is `warnings.warn(` -- the tail of a urllib3 version
                 # warning every invocation emits. Ten models' failures were reported as
@@ -720,11 +935,26 @@ def main(argv=None):
                 # when nothing does -- saying so, rather than presenting boilerplate as a cause.
                 err = _failure_line(r.stderr, r.stdout)
                 print("    %s seed %-3s FAILED  %s" % (cond, seed, err[:110]), flush=True)
+                if global_fail_streak >= args.abort_after:
+                    aborted = ("%d consecutive failures across models -- this is not the "
+                               "models. Check the key, the balance and the provider before "
+                               "spending more." % global_fail_streak)
+                    break
+                if model_fail_streak >= args.skip_model_after:
+                    print("    SKIPPING the rest of %s -- %d consecutive failures. Its "
+                          "remaining cells are not bought." % (model, model_fail_streak),
+                          flush=True)
+                    break
             time.sleep(args.delay)
 
     print("")
-    print("collected %d sheet(s), %d failed, in %.1f min"
-          % (n_ok, n_fail, (time.time() - started) / 60.0))
+    if aborted:
+        print("PASS ABORTED -- %s" % aborted)
+        print("Nothing collected so far is lost; re-run when the cause is fixed and the")
+        print("resume logic picks up where this stopped.")
+        print("")
+    print("collected %d sheet(s), %d failed, %d refused, in %.1f min"
+          % (n_ok, n_fail, n_refused, (time.time() - started) / 60.0))
     print("NOW RUN:  python scripts/collection_check.py %s" % args.out_date)
     return 0
 

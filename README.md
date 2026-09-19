@@ -867,7 +867,10 @@ Clone these from upstream at the pinned commits to reproduce the pipeline and we
 several here have been withdrawn or narrowed since May, and the tag is what tells a reader
 which set you read. [`CORRECTIONS.md`](CORRECTIONS.md) records what each release superseded,
 and [`VERSIONING.md`](VERSIONING.md) explains why releases are dated rather than numbered.
-Machine-readable metadata is in [`CITATION.cff`](CITATION.cff).
+Machine-readable metadata ships as `CITATION.cff` with the first tagged release. It is
+deliberately absent until then: its `title` and `doi` fields are minted permanently by the
+archiving step, and a placeholder that says otherwise is exactly the kind of number this study
+is about.
 
 *No DOI yet.* Archiving a tagged release to Zenodo would mint one (concept DOI for the study,
 a version DOI per release); until that happens a citation here resolves to a moving URL, which

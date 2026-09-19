@@ -73,6 +73,7 @@ STUDY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
 import run_battery as RC   # noqa: E402
+import studypaths as _SP  # noqa: E402
 
 ENDPOINT = "http://localhost:11434/api/chat"
 
@@ -396,7 +397,7 @@ def collect(model, condition, out_dir, runs=None, temperature=None, seed_base=No
             # `valid` uses the SAME rule as the parser arm: a full sheet of 62 answers. The
             # grammar guarantees legal labels, not a complete array, so this is not vacuous.
             rec = {
-                "schema": "compass-run/1",
+                "schema": _SP.SCHEMA,
                 # The grammar keeps the original wording, so this IS the same
                 # instrument with the parser removed -- say so, rather than
                 # leaving floor_table to infer it from the item count.
@@ -450,7 +451,7 @@ def parsed_modal(model, condition=None):
                 r = json.loads(line)
             except ValueError:
                 continue
-            if r.get("schema") != "compass-run/1" or r.get("model") != model:
+            if not _SP.is_run_record(r) or r.get("model") != model:
                 continue
             if condition and r.get("condition") != condition:
                 continue
@@ -490,7 +491,7 @@ def _persist(out_dir, model, condition, batch, seed, run_no, temperature, sheet,
                                       condition, batch)
     with io.open(os.path.join(out_dir, fn), "a", encoding="utf-8", newline="\n") as fh:
         fh.write(json.dumps({
-            "schema": "compass-run/1", "instrument": INSTRUMENT_NAME,
+            "schema": _SP.SCHEMA, "instrument": INSTRUMENT_NAME,
             "decoding": "grammar", "elicitation": "batched",
             "model": model, "condition": condition, "template": "T01",
             "batch": batch, "shuffle_seed": None, "seed": seed, "run_no": run_no,
@@ -813,7 +814,7 @@ def main(argv=None):
                 with io.open(os.path.join(rep_dir, fn), "a",
                              encoding="utf-8", newline="\n") as fh:
                     fh.write(json.dumps({
-                        "schema": "compass-run/1", "instrument": INSTRUMENT_NAME,
+                        "schema": _SP.SCHEMA, "instrument": INSTRUMENT_NAME,
                         "decoding": "grammar",
                         "elicitation": args.mode, "model": args.model,
                         "condition": args.condition, "template": "T01",

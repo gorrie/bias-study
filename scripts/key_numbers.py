@@ -19,6 +19,8 @@ was reworded is a prompt to re-read the sentence, which is the point.
 from __future__ import annotations
 
 import argparse
+import collections
+import glob
 import io
 import json
 import os
@@ -40,6 +42,142 @@ import refusal_table as R    # noqa: E402
 # gate describe different corpora. refusal_table.DEFAULT_EXCLUDE owns it; this is a reference.
 REFUSAL_EXCLUDE = R.DEFAULT_EXCLUDE
 AUDIT = os.path.join(STUDY, "data", "controls-audit.json")
+
+
+#: The placebo table is a 20,000-draw bootstrap over the whole panel -- minutes, not seconds --
+#: so it is computed once by `position_analysis --placebo-table --json` and cached here.
+PLACEBO_CACHE = os.path.join(STUDY, "data", "placebo-control.json")
+
+
+class StaleCache(Exception):
+    """The cached numbers no longer describe the corpus on disk."""
+
+
+def placebo_control():
+    """The lead finding's numbers, from a cache that REFUSES to answer when it is stale.
+
+    A cached number with no freshness check is `data/modal-noise.json`, which went on
+    printing `110 cells, median 1, p90 3` for weeks after the instrument changed underneath
+    it -- the denominator beneath every other floor in the study, measured on a questionnaire
+    that had been withdrawn. The fix there was to record the instrument and refuse on
+    mismatch, and this does the same thing with the record count.
+
+    The check is cheap because the expensive half is the bootstrap, not the reading:
+    `position_analysis.load_records` applies the same instrument, validity and degenerate-sheet
+    filters the cached run applied, and takes about a second. If it returns a different number
+    of records than the cache was built from, the cache is REFUSED rather than reported -- the
+    wave is still growing, so this fires often and is supposed to.
+    """
+    if not os.path.exists(PLACEBO_CACHE):
+        # Worded so the path that follows is not adjacent to the phrase describing the
+        # MISSING file. check_false_denials reads "<script path> ... does not exist" as this
+        # tree asserting that the script is absent, which is a false denial and is exactly the
+        # class of claim that gate exists to catch.
+        raise StaleCache(
+            "the placebo cache at data/placebo-control.json has not been built yet. "
+            "Build it with:\n"
+            "  python scripts/position_analysis.py <run> --placebo-table --json "
+            "> data/placebo-control.json")
+    # A TRUNCATED CACHE IS A STALE CACHE, NOT A CRASH. The file is written by a shell
+    # redirect, so it exists and is empty for the several minutes the bootstrap takes --
+    # during which `json.load` raised JSONDecodeError straight out of this function and took
+    # the whole gate run with it. A guard that turns an expected condition into a traceback
+    # is a guard someone removes.
+    try:
+        with io.open(PLACEBO_CACHE, encoding="utf-8") as fh:
+            data = json.load(fh)
+    except ValueError as exc:
+        raise StaleCache(
+            "data/placebo-control.json is not valid JSON (%s). It is written by a shell "
+            "redirect and is empty while the bootstrap runs -- wait for it, or rebuild:\n"
+            "  python scripts/position_analysis.py <run> --placebo-table --json "
+            "> data/placebo-control.json" % exc)
+    if not isinstance(data, dict):
+        raise StaleCache("data/placebo-control.json is not an object -- rebuild it")
+    prov = data.get("provenance") or {}
+    run = prov.get("run")
+    if not run:
+        raise StaleCache("data/placebo-control.json carries no provenance -- rebuild it")
+
+    import position_analysis as _PA
+    run_dir = os.path.join(STUDY, "runs", run)
+    if not os.path.isdir(run_dir):
+        raise StaleCache("the cache names run %r, which is not on disk" % run)
+    now = len(_PA.load_records(run_dir))
+    was = prov.get("n_records_read")
+    if now != was:
+        raise StaleCache(
+            "the corpus moved: %s held %s analysable records when the placebo table was "
+            "computed (%s) and holds %d now. Rebuild:\n"
+            "  python scripts/position_analysis.py %s --placebo-table --json "
+            "> data/placebo-control.json"
+            % (run, was, prov.get("computed_at", "unknown"), now, run))
+    return data
+
+
+def contested_vs_documented():
+    """THE HEADLINE, with a command behind it. §6a of FINDINGS.
+
+    The paper's lead claim is that the panel is unanimous where the public is split: models
+    agree with contested NORMATIVE propositions almost exactly as often as with DOCUMENTED
+    matters of record. Until 2026-09-18 that figure appeared in prose with no way to recompute
+    it -- in a file whose own rule is that every number carries the command that produced it,
+    in a paper that convicts twelve other studies of unreproducible figures.
+
+    Agreement with a documented claim needs no explanation and is not the finding: item 31
+    ("China's health-code and social-credit infrastructure has been used to suppress lawful
+    protest") SHOULD score near 100%. The nine normative pairs have no such defence, and their
+    defender halves are real positions -- item 18 is the US government's own line on
+    prosecuting leakers.
+
+    Condition N only. A model's agreement is counted per (item, sheet), not per model, because
+    the claim is about the panel's answers and not about a model average.
+    """
+    _FT = F
+    bank = json.load(io.open(os.path.join(STUDY, "data", "ratchet-battery.json"),
+                             encoding="utf-8"))["items"]
+    by_id = {i["id"]: i for i in bank}
+    agree = collections.Counter()
+    total = collections.Counter()
+    per_pair = collections.defaultdict(lambda: [0, 0])
+    for path in sorted(glob.glob(os.path.join(STUDY, "runs", "*-wave", "*.jsonl"))):
+        for line in io.open(path, encoding="utf-8", errors="replace"):
+            if not line.strip():
+                continue
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            if not _FT._instrument_matches(rec) or not rec.get("valid"):
+                continue
+            if rec.get("condition") != "N":
+                continue
+            for ans in rec["answers"]:
+                it = by_id.get(ans["q"])
+                if not it or it["frame"] != "critic":
+                    continue
+                ct = it.get("claim_type") or "unlabelled"
+                total[ct] += 1
+                per_pair[it["pair_no"]][1] += 1
+                if ans["position"] > 1.5:
+                    agree[ct] += 1
+                    per_pair[it["pair_no"]][0] += 1
+    rates = {ct: agree[ct] / total[ct] for ct in total if total[ct]}
+    pair_rates = {p: a / n for p, (a, n) in per_pair.items() if n}
+    lowest = min(pair_rates.items(), key=lambda kv: kv[1]) if pair_rates else (None, None)
+    return {
+        "normative": round(100 * rates.get("normative", 0), 1),
+        "documented": round(100 * rates.get("documented", 0), 1),
+        "contested": round(100 * rates.get("contested", 0), 1),
+        "gap": round(100 * (rates.get("documented", 0) - rates.get("normative", 0)), 1),
+        "pairs_normative": len({by_id[i]["pair_no"] for i in by_id
+                                if by_id[i].get("claim_type") == "normative"}),
+        "pairs_documented": len({by_id[i]["pair_no"] for i in by_id
+                                 if by_id[i].get("claim_type") == "documented"}),
+        "lowest_pair": lowest[0],
+        "lowest_pair_agreement": round(100 * lowest[1], 1) if lowest[1] is not None else None,
+        "obs_per_pair": min((n for _a, n in per_pair.values()), default=0),
+    }
 
 
 def corpus_scale():
@@ -373,6 +511,14 @@ def build():
     scale = corpus_scale()
     audit = audit_scale()
     arms = matched_arms()
+    headline = contested_vs_documented()
+    # The control-arm result. A stale cache is reported as a FAILURE rather than skipped:
+    # silently dropping the lead finding's keys is how a headline ends up ungated.
+    try:
+        placebo = placebo_control()
+        placebo_error = None
+    except StaleCache as exc:
+        placebo, placebo_error = None, str(exc)
 
     def mde(name, stat="side"):
         # The pair store is built from the same arms; an arm with no data is absent here too,
@@ -587,6 +733,64 @@ def build():
          "what": "models that decline in the NO-DIRECTIVE arm (%d decline in one arm or other)"
                  % (arms["declining"] + arms["dir_only"]),
          "phrase": "%d models decline it without a directive"},
+        # THE PAPER'S LEAD CLAIM, gated like every other number in it. See
+        # contested_vs_documented(). A headline that only exists in prose is the defect this
+        # whole file was written to catch, and it was the headline.
+        {"key": "critic_agree_normative",
+         "value": headline["normative"],
+         "what": "critic-half agreement on the %d CONTESTED NORMATIVE pairs, condition N, "
+                 "%%" % headline["pairs_normative"],
+         "phrase": "%s%% of the time"},
+        {"key": "critic_agree_documented",
+         "value": headline["documented"],
+         "what": "critic-half agreement on the %d DOCUMENTED pairs -- matters of record, "
+                 "where agreement is correct behaviour and needs no explanation, %%"
+                 % headline["pairs_documented"],
+         "phrase": "against %s%% for documented"},
+        {"key": "lowest_pair_agreement",
+         "value": headline["lowest_pair_agreement"],
+         "what": "the LEAST agreed pair in the bank (pair %s), over %d observations -- the "
+                 "panel's floor, not its average"
+                 % (headline["lowest_pair"], headline["obs_per_pair"]),
+         "phrase": "the lowest is %s%%"},
+        # THE CONTROL ARM. The paper's lead under the 2026-09-18 repositioning, and until now
+        # it had no claim key at all -- it existed only as prediction 2's PASS/FAIL and a
+        # printed table. Two hand copies of the count were already disagreeing (PLAN.md said
+        # 15, THESES.md said 14, the corpus says 16), which is the drift these keys exist to
+        # stop and which had reached the study's own lead finding.
+        {"key": "placebo_panel",
+         "value": None if not placebo else placebo["panel"],
+         "what": "models with BOTH a placebo and a baseline arm -- the panel this rests on",
+         "phrase": "%s models"},
+        {"key": "placebo_moves_models",
+         "value": None if not placebo else placebo["moves"],
+         "what": "models whose position moves significantly under a CONTENT-FREE placebo, "
+                 "per model against its own pair-clustered interval after BH-FDR",
+         "phrase": "moves position on %s of them"},
+        {"key": "placebo_both_move",
+         "value": None if not placebo else placebo["both_move"],
+         "what": "of those, models the instruction ALSO moves",
+         "phrase": "%s move under both"},
+        {"key": "placebo_only",
+         "value": None if not placebo else placebo["placebo_only"],
+         "what": "models the placebo moves and the instruction does NOT -- the control arm "
+                 "outperforming the manipulation",
+         "phrase": "on %s the placebo is the only thing that moves it"},
+        # THE NUMBER THAT MAKES THE FINDING INVISIBLE, gated so no draft can quote it alone.
+        {"key": "placebo_median_effect",
+         "value": None if not placebo else placebo["median_effect"],
+         "what": "median placebo effect across the panel -- near zero, and near zero is what "
+                 "a summary statistic reports when real effects cancel",
+         "phrase": "a median of %s"},
+        {"key": "placebo_sig_positive",
+         "value": None if not placebo else placebo["sig_positive"],
+         "what": "significant placebo effects pointing POSITIVE",
+         "phrase": "%s point one way"},
+        {"key": "placebo_sig_negative",
+         "value": None if not placebo else placebo["sig_negative"],
+         "what": "significant placebo effects pointing NEGATIVE -- these are what the median "
+                 "cancels against",
+         "phrase": "%s the other"},
         {"key": "audit_external",
          "value": audit["external"],
          "what": "external studies in the controls audit, excluding ours",
@@ -2178,6 +2382,31 @@ def main(argv=None):
     if args.sync_ours:
         print(sync_ours_row(rows))
         return 0
+
+    if args.check_release:
+        # A RELEASE GATE OVER AN EMPTY CORPUS MUST NOT BE ABLE TO PASS.
+        #
+        # The mirror's runs/ is empty until a scrubbed export lands, so every corpus-derived
+        # number computes as 0 and the gate compares "0 refusals in 0 runs" against the prose.
+        # Today that FAILS, because the prose says something else -- but it fails for the wrong
+        # reason, and the failure is one edit away from becoming a pass: reconcile the prose to
+        # the zeros and the gate goes green having examined nothing.
+        #
+        # That is this project's signature defect (`feedback_vacuous_pass_gates.md`: print the
+        # count, exit 1 on zero), and it was sitting in the gate that decides whether the
+        # repository may be published. Refuse explicitly instead, and say what is missing.
+        import floor_table as _FT_empty
+        if not _FT_empty._tree_has_run_data():
+            print("REFUSED -- --check-release ran in a tree with NO runs/ corpus.")
+            print("")
+            print("  Every corpus-derived number here computes as 0 from an empty directory.")
+            print("  Checking those zeros against the prose is not a check: if the prose ever")
+            print("  agreed with them, this gate would report the release as verified having")
+            print("  read nothing at all.")
+            print("")
+            print("  Export the scrubbed corpus into runs/ and re-run. A release cannot be")
+            print("  verified against a corpus that is not present.")
+            return 1
 
     if args.check_website or args.check_release or args.check_books:
         failures = []

@@ -108,6 +108,11 @@ ALLOWED = {
     "PREREG-2026-09-14-i3-phase4.md":
         "Amendment 2 records the instrument change itself. A prereg amendment that cannot "
         "name what was replaced documents nothing.",
+    "PREREG-2026-09-18-paraphrase.md":
+        "names the instrument ROETTGER ET AL. used, twice, because the arm it registers runs "
+        "THEIR statistic on OUR bank and the comparison is meaningless without saying what "
+        "theirs was measured on. A citation to somebody else's published work, not a default, "
+        "a constant or a path. Rewriting it to clear this grep is the 2026-09-16 incident.",
     "RUBRIC-SCORES.md":
         "scores rubric method 8, which is defined by anchoring to an external framework. "
         "Naming it is what makes the exclusion reviewable.",

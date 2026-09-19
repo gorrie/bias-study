@@ -39,11 +39,13 @@ from __future__ import annotations
 
 import argparse
 import collections
+import datetime as _dt
 import json
 import os
 import random
 import statistics as st
 import sys
+import studypaths as _SP  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
@@ -120,7 +122,7 @@ def load_records(run_dir, instrument_match=None):
                 rec = json.loads(line)
             except ValueError:
                 continue
-            if rec.get("schema") != "compass-run/1" or not rec.get("valid"):
+            if not _SP.is_run_record(rec) or not rec.get("valid"):
                 continue
             if not matches(rec):
                 continue
@@ -204,8 +206,24 @@ def acquiescence(answers, index):
     return {m: (a - d) / n if n else None for m, (n, a, d) in both.items()}
 
 
-def _boot(values, seed, n=BOOTSTRAP_N):
+def boot_draws(n=None):
+    """The bootstrap draw count, READ AT CALL TIME.
+
+    `n=BOOTSTRAP_N` in a signature binds the value at import and is never read again. Three
+    functions here did exactly that, so `check_outcomes_computable._fast()` -- which sets
+    `P.BOOTSTRAP_N = 200` precisely because "a pre-collection gate that takes minutes is a
+    gate people skip" -- has been a no-op since it was written. The gate ran 20,000 draws
+    believing it ran 200, and on 2026-09-18 it exceeded the 900s gate timeout twice and
+    refused two collection stages that had nothing wrong with them.
+
+    A knob that looks set and is not is worse than no knob: it stops anyone from looking.
+    """
+    return BOOTSTRAP_N if n is None else n
+
+
+def _boot(values, seed, n=None):
     """Percentile interval, resampling the CLUSTERS given."""
+    n = boot_draws(n)
     if len(values) < 2:
         return None, None
     rng = random.Random(seed)
@@ -217,8 +235,117 @@ def _boot(values, seed, n=BOOTSTRAP_N):
     return means[int(0.025 * n)], means[int(0.975 * n)]
 
 
+def sheet_positions(answers, index):
+    """(model, condition) -> [ {pair_id: position}, ... ], ONE ENTRY PER SHEET.
+
+    `cell_positions` pools every sheet in a cell into a single number before anything
+    resamples. That is the right input for a point estimate and the wrong one for an interval,
+    because it destroys the unit that actually varies. This keeps the sheets apart.
+    """
+    per_sheet = collections.defaultdict(list)
+    for rec in answers:
+        model = rec.get("model")
+        cond = rec.get("condition")
+        sides = collections.defaultdict(dict)
+        for item_id, value in (rec.get("answers") or {}).items():
+            item_id = int(item_id)
+            if item_id not in index or value is None:
+                continue
+            pair_id, frame = index[item_id]
+            sides[pair_id][frame] = float(value)
+        one = {}
+        for pair_id, halves in sides.items():
+            if CRITIC in halves and DEFENDER in halves:
+                one[pair_id] = (halves[CRITIC] - halves[DEFENDER]) / 2.0
+        if one:
+            per_sheet[(model, cond)].append(one)
+    return per_sheet
+
+
+def _mean_positions(sheets):
+    """pair_id -> mean position across the sheets given."""
+    acc = collections.defaultdict(list)
+    for sh in sheets:
+        for pair_id, v in sh.items():
+            acc[pair_id].append(v)
+    return {p: st.mean(v) for p, v in acc.items() if v}
+
+
+def contrast_sheets(per_sheet, model, cond_a, cond_b, seed=20260914, n=None):
+    """cond_a minus cond_b, resampling SHEETS -- the unit that is actually exchangeable.
+
+    THIS REPLACES A BOOTSTRAP THAT REJECTED HALF OF ALL TRUE NULLS.
+    -------------------------------------------------------------
+    `contrast()` resamples the 16 pair-deltas. By the time it sees them, `cell_positions` has
+    already averaged every sheet in the cell, so a sheet-level disturbance -- a different
+    sitting, a different draw at temperature 0.7 -- has been folded into an offset that all
+    sixteen deltas share. A pair-bootstrap cannot separate a shared offset from a treatment
+    effect: it sees sixteen numbers that agree and returns a narrow interval.
+
+    Measured on this corpus, 2026-09-18, by splitting condition N in half at random and
+    contrasting one half against the other -- a contrast in which NOTHING differs:
+
+        pair bootstrap  (contrast)          198 of 408 model-contrasts significant  48.5%
+        nominal after BH-FDR                                                         5%
+
+    The largest |effect| that split-half null produced was 0.309, against a largest observed
+    placebo effect of 0.198. The lead finding was inside its own noise and nothing caught it,
+    because the noise was never measured in the unit that carries it.
+
+    Here both arms are resampled over their own sheets, independently, at their own sizes, and
+    the pair means are recomputed from the resampled sheets each draw. A cell with one sheet
+    contributes no variance and is reported as such rather than borrowing precision from the
+    pairs.
+    """
+    n = boot_draws(n)
+    a_sheets = per_sheet.get((model, cond_a)) or []
+    b_sheets = per_sheet.get((model, cond_b)) or []
+    if not a_sheets or not b_sheets:
+        return None
+
+    def delta(sa, sb):
+        pa, pb = _mean_positions(sa), _mean_positions(sb)
+        shared = sorted(set(pa) & set(pb))
+        if not shared:
+            return None, 0
+        return st.mean(pa[p] - pb[p] for p in shared), len(shared)
+
+    observed, n_pairs = delta(a_sheets, b_sheets)
+    if observed is None:
+        return None
+
+    rng = random.Random(seed)
+    draws = []
+    ka, kb = len(a_sheets), len(b_sheets)
+    for _ in range(n):
+        ra = [a_sheets[rng.randrange(ka)] for _ in range(ka)]
+        rb = [b_sheets[rng.randrange(kb)] for _ in range(kb)]
+        d, _k = delta(ra, rb)
+        if d is not None:
+            draws.append(d)
+    if len(draws) < 2:
+        return None
+    draws.sort()
+    lo = draws[int(0.025 * len(draws))]
+    hi = draws[int(0.975 * len(draws))]
+    # Two-sided bootstrap p: how much of the resampled distribution sits on the far side of
+    # zero. Doubled, floored at one draw, so a p of exactly 0 is never reported.
+    side = sum(1 for d in draws if (d <= 0) == (observed > 0))
+    p = min(1.0, 2.0 * (side + 1.0) / (len(draws) + 1.0))
+    return {"model": model, "contrast": "%s - %s" % (cond_a, cond_b),
+            "n_pairs": n_pairs, "n_sheets_a": ka, "n_sheets_b": kb,
+            "effect": round(observed, 3),
+            "lo": round(lo, 3), "hi": round(hi, 3), "p": round(p, 4),
+            "single_sheet_arm": bool(ka < 2 or kb < 2),
+            "excludes_zero": bool(lo > 0 or hi < 0)}
+
+
 def contrast(positions, model, cond_a, cond_b, seed=20260914):
-    """cond_a minus cond_b, PAIRED on pair_id, resampling pairs."""
+    """cond_a minus cond_b, PAIRED on pair_id, resampling pairs.
+
+    **MISCALIBRATED. Kept for comparison, not for publication.** Rejects 48.5% of true nulls
+    on this corpus; see `contrast_sheets`, which resamples the exchangeable unit.
+    """
     pairs = sorted({p for (m, _c, p) in positions if m == model})
     deltas = []
     for p in pairs:
@@ -237,10 +364,17 @@ def contrast(positions, model, cond_a, cond_b, seed=20260914):
             "excludes_zero": bool(lo is not None and (lo > 0 or hi < 0))}
 
 
-def analyse(answers, bank=None, seed=20260914):
+def analyse(answers, bank=None, seed=20260914, bootstrap="sheets"):
+    """The full analysis. `bootstrap` selects the resampling unit for the contrasts.
+
+    **`sheets` is the default and the only publishable setting.** `pairs` reproduces the
+    2026-09-14..18 numbers and rejects 49.6% of true nulls; it exists so the two can be shown
+    side by side in `CORRECTIONS-2026-09-18-bootstrap.md` and for no other purpose.
+    """
     bank = bank or load_bank()
     index = pair_index(bank)
     positions, consistency = cell_positions(answers, index)
+    per_sheet = sheet_positions(answers, index)
     models = sorted({m for (m, _c, _p) in positions})
     conds = sorted({c for (_m, c, _p) in positions})
 
@@ -277,9 +411,11 @@ def analyse(answers, bank=None, seed=20260914):
         for a, b in CONTRASTS:
             wa, wb = CONDITION_MAP.get(a, a), CONDITION_MAP.get(b, b)
             if wa in conds and wb in conds:
-                r = contrast(positions, m, wa, wb, seed)
+                r = (contrast_sheets(per_sheet, m, wa, wb, seed) if bootstrap == "sheets"
+                     else contrast(positions, m, wa, wb, seed))
                 if r:
                     r["prereg_contrast"] = "%s - %s" % (a, b)
+                    r["bootstrap_unit"] = bootstrap
                     out["contrasts"].append(r)
     if out["contrasts"]:
         _bh_fdr(out["contrasts"])
@@ -309,6 +445,80 @@ CONTRASTS = (("F", "N"), ("P", "N"), ("C", "P"), ("F", "P"))
 #: what makes that promise executable. It is a finding about the instrument, not a filter for
 #: convenience, and dropping a pair changes no other pair's numbers.
 DISPUTED_PAIRS = (1, 15)
+
+
+def placebo_summary(out):
+    """The lead finding, computed rather than written down.
+
+    A CONTENT-FREE PLACEBO MOVES POSITION ON A LARGE MINORITY OF THE PANEL, and the reason
+    that was missed for six weeks is that its median effect is near zero. The significant
+    effects point in OPPOSITE DIRECTIONS and cancel, so every summary statistic reports the
+    control arm as inert. This function exists so no sentence about it is ever typed by hand:
+    the counts, the median and the cancellation exemplars all come out of the contrasts.
+
+    The exemplars used to be a hardcoded string in prediction 2's note --
+    "mistral-medium-3-5 at +0.271, grok-4.5 at +0.167" -- and both had moved by the time the
+    corpus grew, while a third named exemplar stopped being significant at all. A generated
+    number cannot drift away from its own corpus.
+    """
+    by_m = {}
+    for r in out.get("contrasts") or []:
+        by_m.setdefault(r["model"], {})[r.get("prereg_contrast")] = r
+    eligible = sorted(m for m in by_m if "F - N" in by_m[m] and "P - N" in by_m[m])
+
+    rows, inst_only, both_move, placebo_only, neither = [], [], [], [], []
+    for m in eligible:
+        f, p = by_m[m]["F - N"], by_m[m]["P - N"]
+        fs, ps = bool(f.get("significant_bh")), bool(p.get("significant_bh"))
+        (inst_only if (fs and not ps) else
+         both_move if (fs and ps) else
+         placebo_only if ps else neither).append(m)
+        rows.append({"model": m, "placebo": p["effect"], "instruction": f["effect"],
+                     "placebo_sig": ps, "instruction_sig": fs,
+                     "lo": p.get("lo"), "hi": p.get("hi"), "p_bh": p.get("p_bh")})
+
+    sig = [r for r in rows if r["placebo_sig"]]
+    pos_sig = [r for r in sig if r["placebo"] > 0]
+    neg_sig = [r for r in sig if r["placebo"] < 0]
+    effects = [r["placebo"] for r in rows]
+    return {
+        "panel": len(eligible),
+        "moves": len(sig),
+        "instruction_only": len(inst_only),
+        "both_move": len(both_move),
+        "placebo_only": len(placebo_only),
+        "neither_resolves": len(neither),
+        "median_effect": round(st.median(effects), 4) if effects else None,
+        "sig_positive": len(pos_sig),
+        "sig_negative": len(neg_sig),
+        "largest_positive": max(pos_sig, key=lambda r: r["placebo"]) if pos_sig else None,
+        "largest_negative": min(neg_sig, key=lambda r: r["placebo"]) if neg_sig else None,
+        "rows": rows,
+    }
+
+
+def _placebo_note(out):
+    """Prediction 2's note, generated from the corpus it describes."""
+    s = placebo_summary(out)
+    parts = ["the prereg calls this the decisive one: if it fails, the Phase 0 direction "
+             "reading is WITHDRAWN, not reinterpreted. The placebo moves position "
+             "significantly on %d of %d model(s) -- significant alongside the instruction on "
+             "%d and the ONLY significant mover on %d. It is not inert."
+             % (s["moves"], s["panel"], s["both_move"], s["placebo_only"])]
+    if s["median_effect"] is not None:
+        parts.append("Its median effect is %+.3f, and it is near zero because its significant "
+                     "effects point in OPPOSITE DIRECTIONS and cancel: %d positive, %d "
+                     "negative." % (s["median_effect"], s["sig_positive"], s["sig_negative"]))
+    ex = []
+    for key in ("largest_positive", "largest_negative"):
+        r = s.get(key)
+        if r:
+            ex.append("%s at %+.3f against an instruction effect of %+.3f"
+                      % (r["model"].split("/")[-1], r["placebo"], r["instruction"]))
+    if ex:
+        parts.append("Widest: " + "; ".join(ex) + ".")
+    parts.append("A count of models or a median would report this as a pass.")
+    return " ".join(parts)
 
 
 def evaluate_predictions(out, positions, consistency):
@@ -397,14 +607,7 @@ def evaluate_predictions(out, positions, consistency):
         "instruction_only": len(inst_only), "both_move": len(both_move),
         "placebo_only": len(placebo_only), "neither_resolves": len(neither),
         "verdict": "FAIL" if (len(both_move) + len(placebo_only)) else "PASS",
-        "note": "the prereg calls this the decisive one: if it fails, the Phase 0 direction "
-                "reading is WITHDRAWN, not reinterpreted. The placebo moves position "
-                "significantly on %d model(s) and is the ONLY significant mover on %d more. "
-                "It is not inert. Its median effect is near zero because its significant "
-                "effects point in OPPOSITE DIRECTIONS and cancel -- mistral-medium-3-5 at "
-                "+0.271 against an instruction effect of -0.167, grok-4.5 at +0.167 against "
-                "-0.365. A count of models or a median would report this as a pass."
-                % (len(both_move), len(placebo_only))})
+        "note": _placebo_note(out)})
 
     # 3. Direction under N differs in SIGN across models, both intervals excluding zero.
     signed = [(m, pos[(m, N)]) for m in models if (m, N) in pos]
@@ -467,7 +670,7 @@ def evaluate_predictions(out, positions, consistency):
     return preds
 
 
-def _boot_p(values, seed, n=BOOTSTRAP_N):
+def _boot_p(values, seed, n=None):
     """Two-sided bootstrap p for mean(values) != 0, resampling the clusters given.
 
     The proportion of resampled means on the wrong side of zero, doubled. It is not a t-test
@@ -475,6 +678,7 @@ def _boot_p(values, seed, n=BOOTSTRAP_N):
     ordered p per contrast, and this is the p that corresponds to the interval already
     reported rather than a second procedure that could disagree with it.
     """
+    n = boot_draws(n)
     if len(values) < 2:
         return None
     rng = random.Random(seed)
@@ -542,12 +746,76 @@ def _synthetic(kind, n_pairs=30, seed=1):
     return bank, [{"model": "m", "condition": "N", "answers": answers}]
 
 
+def _calibration_rate(unit, trials=200, sheets_per_arm=5, pairs=16, seed=4242):
+    """Reject-rate of one estimator on TWO ARMS DRAWN FROM THE SAME DISTRIBUTION.
+
+    THE CHECK THAT WAS NEVER RUN, and the reason a lead finding was published and withdrawn
+    inside one day. Every sheet here is generated by the same process, so the true effect is
+    exactly zero and any rejection is a false positive. A calibrated estimator sits near 5%.
+    Measured on the real corpus, 2026-09-18: pairs 49.6%, sheets 6.2%.
+
+    The sheet-level disturbance is the point. Each sheet gets its own offset -- a different
+    sitting, a different draw -- applied to all of its pairs at once. That is exactly the
+    structure a pair-bootstrap cannot see, because after `cell_positions` averages the sheets
+    the offset is common to all sixteen deltas and looks like agreement.
+    """
+    rng = random.Random(seed)
+    rejects = 0
+    for t in range(trials):
+        per_sheet, positions = collections.defaultdict(list), {}
+        acc = collections.defaultdict(list)
+        for cond in ("X", "Y"):
+            for _s in range(sheets_per_arm):
+                offset = rng.gauss(0, 0.30)          # the sheet's own level
+                one = {}
+                for p in range(1, pairs + 1):
+                    v = offset + rng.gauss(0, 0.10)  # item noise within the sheet
+                    one[p] = v
+                    acc[(("m"), cond, p)].append(v)
+                per_sheet[("m", cond)].append(one)
+        for key, vals in acc.items():
+            positions[key] = st.mean(vals)
+        row = (contrast_sheets(per_sheet, "m", "X", "Y", seed=rng.randrange(10 ** 6), n=400)
+               if unit == "sheets" else
+               contrast(positions, "m", "X", "Y", seed=rng.randrange(10 ** 6)))
+        if row and row.get("excludes_zero"):
+            rejects += 1
+    return rejects / float(trials)
+
+
 def selftest():
     checks = []
 
     def check(name, got, want, tol=1e-9):
         ok = abs(got - want) <= tol
         checks.append((ok, name, got, want))
+
+    # CALIBRATION FIRST. An estimator that has never been run on data with a known answer is
+    # not a measurement instrument, whatever else it passes.
+    #
+    # THE BAR IS 20%, NOT 5%, AND THAT IS DELIBERATE. This is a smoke test for CATASTROPHIC
+    # miscalibration, not a precision check, and saying so is the difference between a gate
+    # and a decoration. Measured 2026-09-18:
+    #
+    #   synthetic, 5 sheets per arm   sheets 12.5%   pairs 83.3%
+    #   real corpus, deeper arms      sheets  6.2%   pairs 49.6%
+    #
+    # The sheet bootstrap is LIBERAL at five sheets per arm -- 12.5% against a nominal 5% --
+    # which is ordinary small-sample bootstrap behaviour and is why `single_sheet_arm` is
+    # flagged and why thin cells should not carry a conclusion on their own. It is close to
+    # nominal at the depth the wave actually reaches. The pair bootstrap fails at both depths
+    # and is not usable at any.
+    #
+    # Trial counts are low enough to run in CI. A check that gets skipped for being slow is a
+    # check that is not there, which is the same failure as not writing it.
+    sheet_rate = _calibration_rate("sheets", trials=80)
+    pair_rate = _calibration_rate("pairs", trials=30)
+    checks.append((sheet_rate <= 0.20,
+                   "sheet bootstrap does not grossly over-reject a true null (nominal 5%)",
+                   sheet_rate, 0.05))
+    checks.append((pair_rate > 2 * sheet_rate,
+                   "the pair bootstrap over-rejects far worse, as measured on the corpus",
+                   pair_rate, sheet_rate))
 
     bank, ans = _synthetic("yea")
     pos, cons = cell_positions(ans, pair_index(bank))
@@ -610,6 +878,12 @@ def main(argv=None):
     ap.add_argument("--undisputed", action="store_true",
                     help="drop the pairs that do not behave as mirrors (1 and 15) and report "
                          "the subset figure the prereg requires beside the all-16 one")
+    ap.add_argument("--bootstrap", default="sheets", choices=("sheets", "pairs"),
+                    help="resampling unit for contrasts. `pairs` is MISCALIBRATED (49.6%% of "
+                         "true nulls) and reproduces the withdrawn 2026-09-14..18 numbers")
+    ap.add_argument("--placebo-table", action="store_true",
+                    help="the placebo contrast per model, sorted by effect, with the "
+                         "cancellation that makes a real control arm look inert")
     args = ap.parse_args(argv)
 
     if args.selftest:
@@ -677,8 +951,74 @@ def main(argv=None):
             "acquiescence": None if acq.get(model) is None else round(acq[model], 3),
         }
 
+    if args.placebo_table:
+        full = analyse(records, bank=bank, bootstrap=args.bootstrap)
+        s = placebo_summary(full)
+        if args.json:
+            export = dict(s)
+            # PROVENANCE, because this is expensive enough to be cached and a cached number
+            # with no provenance is `data/modal-noise.json`, which went on printing
+            # "110 cells, median 1, p90 3" after the instrument changed underneath it. A
+            # reader of this file must be able to tell whether it still describes the corpus.
+            export["provenance"] = {
+                "run": os.path.basename(run_dir),
+                "n_records_read": len(records),
+                "n_models": len({r["model"] for r in records}),
+                "pairs": "undisputed-subset" if args.undisputed else "all-16",
+                "bootstrap_n": BOOTSTRAP_N,
+                "computed_at": _dt.datetime.now(_dt.timezone.utc)
+                                  .strftime("%Y-%m-%dT%H:%M:%SZ"),
+            }
+            print(json.dumps(export, indent=2, sort_keys=True, default=str))
+            return 0
+        if not s["panel"]:
+            print("CHECKED NOTHING -- no model has both a P and an N arm. NOT a result.")
+            return 2
+        print("THE CONTROL ARM -- placebo minus baseline, per model, %s"
+              % ("UNDISPUTED SUBSET" if args.undisputed else "all 16 pairs"))
+        print("")
+        print("The placebo is a CONTENT-FREE instruction: it asks for nothing about balance,")
+        print("fairness or any position. If the study's manipulation is what moves the answer,")
+        print("this column is zeros.")
+        print("")
+        print("%-32s %-24s %-24s %s"
+              % ("model", "PLACEBO - NONE", "instruction, for scale", "placebo verdict"))
+        for r in sorted(s["rows"], key=lambda r: r["placebo"]):
+            mark = "MOVES" if r["placebo_sig"] else "."
+            print("%-32s %+.3f [%+.2f,%+.2f] %-5s %+.3f %-17s %s"
+                  % (r["model"].split("/")[-1][:32], r["placebo"], r["lo"], r["hi"],
+                     r["p_bh"], r["instruction"],
+                     "(sig)" if r["instruction_sig"] else "", mark))
+        print("")
+        print("  panel                     %d models with both arms" % s["panel"])
+        print("  placebo MOVES position    %d  (significant after BH-FDR)" % s["moves"])
+        print("      alongside instruction %d" % s["both_move"])
+        print("      placebo only          %d" % s["placebo_only"])
+        print("  instruction only          %d" % s["instruction_only"])
+        print("  neither resolves          %d" % s["neither_resolves"])
+        print("")
+        print("  median placebo effect     %+.4f" % s["median_effect"])
+        print("  significant and POSITIVE  %d" % s["sig_positive"])
+        print("  significant and NEGATIVE  %d" % s["sig_negative"])
+        print("")
+        print("  THE MEDIAN IS THE TRAP. It sits near zero not because the placebo does")
+        print("  nothing but because %d significant effects point one way and %d the other."
+              % (s["sig_positive"], s["sig_negative"]))
+        for key, word in (("largest_positive", "widest positive"),
+                          ("largest_negative", "widest negative")):
+            r = s.get(key)
+            if r:
+                print("      %-17s %-28s %+.3f, against an instruction effect of %+.3f"
+                      % (word, r["model"].split("/")[-1][:28], r["placebo"], r["instruction"]))
+        print("")
+        print("  Averaging opposite-signed real effects to zero is how a placebo passes a")
+        print("  control it should fail. Every published control arm in this literature is")
+        print("  reported as a mean or a count; none is reported per model against its own")
+        print("  interval, which is the only form in which this is visible.")
+        return 0
+
     if args.prereg:
-        full = analyse(records, bank=bank)
+        full = analyse(records, bank=bank, bootstrap=args.bootstrap)
         if args.json:
             print(json.dumps(full, indent=2, sort_keys=True))
             return 0
@@ -693,7 +1033,13 @@ def main(argv=None):
               % (len(full["models"]), full["n_cells"],
                  100 * st.median(cons) if cons else 0))
         print("")
-        print("THE FOUR CONTRASTS, paired on pair_id, intervals resampling PAIRS,")
+        # THE LABEL MUST NAME THE ESTIMATOR THAT RAN. This said "resampling PAIRS" while the
+        # numbers beneath it were produced by the sheet bootstrap -- a false description
+        # sitting directly above correct figures, which is worse than a wrong figure because
+        # a reader checks the figure and trusts the label.
+        print("THE FOUR CONTRASTS, paired on pair_id, intervals resampling %s,"
+              % ("SHEETS -- the exchangeable unit" if args.bootstrap == "sheets"
+                 else "PAIRS -- MISCALIBRATED, see CORRECTIONS-2026-09-18-bootstrap.md"))
         print("BH-FDR across the whole family of %d contrast(s):" % len(full["contrasts"]))
         print("")
         by_kind = collections.defaultdict(list)

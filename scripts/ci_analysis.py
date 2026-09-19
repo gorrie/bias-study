@@ -63,12 +63,16 @@ def per_model_deltas(recs: list[dict]) -> dict[str, list[float]]:
     return out
 
 
-def bootstrap_ci(deltas: list[float], rng, n: int = BOOTSTRAP_N, alpha: float = 0.05):
+def bootstrap_ci(deltas: list[float], rng, n: int | None = None, alpha: float = 0.05):
     """Legacy percentile endpoints, retained for reproducibility, not calibrated CIs.
+
+    `n` defaults to the module global READ AT CALL TIME, never frozen into this signature --
+    see `tests/test_bootstrap_knob_is_live.py` for the evening that rule cost.
 
     `rng` is this cell's own generator (studypaths.stream), so processing order does
     not change the draws. More draws do not remedy finite-sample coverage failures.
     """
+    n = BOOTSTRAP_N if n is None else n
     k = len(deltas)
     if not k:
         return None, None, None
@@ -176,8 +180,22 @@ def judge_ratings(recs: list[dict]) -> list[list[int]]:
 
 def main() -> int:
     run_dates = sys.argv[1:]
+    # `--help` IS NOT A RUN DIRECTORY. This read argv directly, so the first thing any new
+    # reader types was parsed as a run date, failed to resolve, and printed an error followed
+    # by all sixty-odd directory names. Handled explicitly rather than by adopting argparse,
+    # because the positional-list interface is what every caller of this script already
+    # passes and changing it would break them to fix a help message.
+    if any(a in ("-h", "--help") for a in run_dates):
+        print(__doc__.strip() if __doc__ else "")
+        print("")
+        print("usage: ci_analysis.py <run_date> [<run_date> ...]")
+        print("")
+        print("Each argument is a directory under runs/. A run that does not resolve is an")
+        print("operator error and exits non-zero -- it is not skipped.")
+        return 0
     if not run_dates:
         print("usage: ci_analysis.py <run_date> [<run_date> ...]", file=sys.stderr)
+        print("Pass --help for what this computes.", file=sys.stderr)
         return 1
     failed = 0
     for rd in run_dates:

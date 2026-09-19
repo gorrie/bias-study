@@ -121,7 +121,10 @@ def shifts(judged, mech, min_records=1):
     return rows
 
 
-def analyse(rows, seed=20260912, n=BOOTSTRAP_N):
+def analyse(rows, seed=20260912, n=None):
+    # `n=None` -> read the module global at CALL time. A signature default is evaluated at
+    # import, so freezing it here makes any later adjustment silently do nothing.
+    n = BOOTSTRAP_N if n is None else n
     if len(rows) < 5:
         return None
     xs = [r["judged_shift"] for r in rows]

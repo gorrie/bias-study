@@ -48,6 +48,7 @@ sys.path.insert(0, HERE)
 import floor_table as F      # noqa: E402
 import gen_paper as G        # noqa: E402
 import key_numbers as K      # noqa: E402
+import studypaths as _SP  # noqa: E402
 
 REPLACEMENT = "�"
 
@@ -115,7 +116,7 @@ def test_order_floor_discovers_a_new_run_directory():
     try:
         for seed, offset in ((101, 0), (202, 1)):
             record = {
-                "schema": "compass-run/1", "model": model, "condition": "A",
+                "schema": _SP.SCHEMA, "model": model, "condition": "A",
                 "instrument": "ratchet-battery",
                 "shuffle_seed": seed, "valid": True, "n_answers": 62,
                 # Not a constant sheet: load() drops degenerate ones on purpose.
@@ -172,7 +173,7 @@ def test_no_order_cell_pools_two_temperatures():
         # was a vote across temperatures.
         for temp, offset in ((0.0, 0), (0.7, 1)):
             record = {
-                "schema": "compass-run/1", "model": model, "condition": "A",
+                "schema": _SP.SCHEMA, "model": model, "condition": "A",
                 "instrument": "ratchet-battery",
                 "shuffle_seed": None, "temperature": temp, "valid": True, "n_answers": 62,
                 "answers": [{"q": q, "position": (q + offset) % 4} for q in range(1, 63)],
@@ -305,7 +306,7 @@ def test_order_sources_reports_what_contributed():
                 rec = _j.loads(line)
             except ValueError:
                 continue
-            if (rec.get("schema") == "compass-run/1" and rec.get("valid")
+            if (_SP.is_run_record(rec) and rec.get("valid")
                     and rec.get("condition") == "A" and F._instrument_matches(rec)):
                 on_disk[top] += 1
 
@@ -384,12 +385,45 @@ def test_gated_values_are_not_none():
         import pytest
         pytest.skip("no runs/ corpus in this tree -- NOT APPLICABLE, not a pass")
     panel_derived = {"wave_panel_size", "manip_refusing_sitting"}
+    # A SECOND DOCUMENTED CATEGORY, added 2026-09-18: the placebo control-arm keys.
+    #
+    # They come from a 20,000-draw bootstrap over the whole panel -- minutes per run -- so
+    # they are cached in data/placebo-control.json rather than recomputed on every listing.
+    # `key_numbers.placebo_control()` re-reads the corpus and REFUSES the cache when the
+    # record count has moved, which it does constantly while a wave is collecting. That
+    # refusal surfaces as UNAVAILABLE here.
+    #
+    # The alternative was worse in the way this file already documents: answering with a
+    # cached number whose corpus has changed underneath it is `data/modal-noise.json`, which
+    # printed "110 cells, median 1, p90 3" for weeks after the instrument was replaced.
+    # An absent number is a stated absence; a stale one is a false measurement.
+    #
+    # The release gate is where this must NOT be absent, and that is enforced separately:
+    # a release runs against a frozen corpus, so the cache is rebuildable and fresh.
+    cache_derived = {"placebo_panel", "placebo_moves_models", "placebo_both_move",
+                     "placebo_only", "placebo_median_effect", "placebo_sig_positive",
+                     "placebo_sig_negative"}
+    stale_cache = False
+    try:
+        K.placebo_control()
+    except K.StaleCache:
+        stale_cache = True
+
     for row in K.build():
         if row["value"] is K.UNAVAILABLE:
-            assert row["key"] in panel_derived, (
-                "%s computed to None and is not one of the documented panel-derived keys. "
-                "Either it has an uncaught failure, or it needs to be declared here with "
-                "the reason it can be absent." % row["key"])
+            assert row["key"] in panel_derived or row["key"] in cache_derived, (
+                "%s computed to None and is not one of the documented panel-derived or "
+                "cache-derived keys. Either it has an uncaught failure, or it needs to be "
+                "declared here with the reason it can be absent." % row["key"])
+            if row["key"] in cache_derived:
+                # It may only be absent for the ONE stated reason. If the cache is fresh and
+                # the key is still None, something else failed and is hiding behind a
+                # documented exemption -- which is how an exemption becomes a blanket.
+                assert stale_cache, (
+                    "%s is None while data/placebo-control.json is present and FRESH -- the "
+                    "cache loaded and matched the corpus, so this is a real failure, not an "
+                    "absent input" % row["key"])
+                continue
             assert not K.PANEL_AVAILABLE, (
                 "%s is None while data/wave-panel.json IS present in this tree -- the panel "
                 "loaded, so this is a real failure and not an absent input" % row["key"])
@@ -502,7 +536,7 @@ def test_sweep_records_will_not_match_an_unlabelled_batch():
     import tempfile as _tf                            # noqa: PLC0415
 
     def rec(**kw):
-        base = {"schema": "compass-run/1", "model": "m", "condition": "D",
+        base = {"schema": _SP.SCHEMA, "model": "m", "condition": "D",
                 "instrument": "ratchet-battery",
                 "valid": True, "seed": 1,
                 "answers": [{"q": "q%d" % i, "position": 1} for i in range(62)]}
