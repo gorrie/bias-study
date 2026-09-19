@@ -651,6 +651,81 @@ def print_rung2(rows):
     return 0
 
 
+#: Conditions whose between-order spread bounds a clause effect. `A` is the full four-clause
+#: instruction and therefore F111 itself, which makes it the closest analogue; `N` is the bare
+#: ask and bounds the cells with no directive.
+FLOOR_CONDITIONS = ("A", "N")
+
+
+def order_floor_refusal(rows, models, conditions=FLOOR_CONDITIONS):
+    """Between-order spread in REFUSAL RATE, per model. The factorial's own decision rule.
+
+    PREREG-2026-08-31 fixes it: *"A clause 'drives' refusal only if the difference between its
+    present and absent cells exceeds the between-order floor for these models"*, and the
+    2026-09-18 amendment reported the arm `unresolvable` because that companion run did not
+    exist for this roster.
+
+    **It exists now.** Three shuffle seeds (11/22/33) landed for these models during the
+    2026-09-16 wave, at conditions the factorial can be bounded against. The amendment was
+    true when written and is not any more, which is exactly the situation a decision rule
+    stated in advance is for -- the rule did not move, the data came to meet it.
+
+    Measured in REFUSAL units, not position: the outcome of this arm is a refusal rate, and a
+    floor in other units is the unit error this project published a correction about.
+
+    Returns {model: {"floor": pp, "detail": str}} over the conditions with >= 2 orders.
+    """
+    cells = collections.defaultdict(lambda: [0, 0])
+    for row in rows:
+        m, c, s = row.get("model"), row.get("condition"), row.get("shuffle_seed")
+        if m not in models or c not in conditions or s is None:
+            continue
+        mode = classify(row)
+        if mode in ("truncated", "budget-exhausted", "transport", "other"):
+            continue
+        cells[(m, c, s)][1] += 1
+        if mode == "refused":
+            cells[(m, c, s)][0] += 1
+
+    out = {}
+    for m in models:
+        best, detail = None, []
+        for c in conditions:
+            seen = [(s, cells[(m, c, s)]) for s in sorted({k[2] for k in cells if k[0] == m})
+                    if cells.get((m, c, s), [0, 0])[1]]
+            if len(seen) < 2:
+                continue
+            rates = [100.0 * b / n for _s, (b, n) in seen]
+            spread = max(rates) - min(rates)
+            # A FLOOR MEASURED WHERE THE MODEL IS SATURATED IS NOT A FLOOR.
+            #
+            # `gemini-3.8-flash` refuses 100% at every order under both A and N, so its
+            # between-order spread is 0pp -- and then every clause effect "clears" a floor of
+            # zero, which is free. The model is not order-insensitive; it is pinned, and a
+            # pinned cell cannot move in either direction to show what order does to it.
+            #
+            # Recorded rather than silently used, because a 0pp floor produced by saturation
+            # and a 0pp floor produced by genuine order-invariance are the same number and
+            # opposite facts.
+            if all(r >= 99.0 for r in rates) or all(r <= 1.0 for r in rates):
+                detail.append("%s %s SATURATED -- floor uninformative"
+                              % (c, "/".join("%.0f%%" % r for r in rates)))
+                continue
+            detail.append("%s %s (spread %.0fpp over %d orders)"
+                          % (c, "/".join("%.0f%%" % r for r in rates), spread, len(seen)))
+            # THE WIDEST spread is the floor, not the average. A floor is what an effect has
+            # to clear, and clearing the mean of two orders while sitting under one of them
+            # is not clearing anything.
+            best = spread if best is None else max(best, spread)
+        if best is not None:
+            out[m] = {"floor": best, "detail": "; ".join(detail)}
+        elif detail:
+            # Every boundable condition was saturated. NOT a zero floor -- no floor at all,
+            # and the difference decides whether this model's clause effects mean anything.
+            out[m] = {"floor": None, "detail": "; ".join(detail)}
+    return out
+
+
 def print_factorial(rows):
     """Refusal rate for the eight clause cells, plus the per-clause decomposition.
 
@@ -783,14 +858,65 @@ def print_factorial(rows):
             print("  because the same cell supplies both -- that is an INTERACTION, and the")
             print("  prereg commits to claiming none (prediction 5). Report the cell.")
 
+    # THE PREREG'S DECISION RULE, APPLIED RATHER THAN ASSERTED.
+    floors = order_floor_refusal(rows, informative)
     print()
-    print("UNRESOLVABLE on the prereg's own terms, and reported that way on purpose.")
-    print("A clause 'drives' refusal only if its difference exceeds the between-order floor")
-    print("FOR THESE MODELS, and the companion order run does not exist for this roster. The")
-    print("rates above stand on their own -- whether refusal concentrates on one clause or")
-    print("spreads across the instruction is the difference between 'models refuse to be")
-    print("balanced' and 'models refuse a four-clause prompt' -- but NO CLAUSE MAY BE NAMED")
-    print("as the driver until that floor is measured.")
+    print("THE DECISION RULE (PREREG-2026-08-31): a clause drives refusal only if its effect")
+    print("exceeds the BETWEEN-ORDER FLOOR FOR THAT MODEL, measured in the same units.")
+    print()
+    if not floors:
+        print("  NOT RESOLVABLE -- no model in this arm has two presentation orders at a")
+        print("  boundable condition, so there is no floor and no clause may be named.")
+        return 0
+
+    print("  %-30s %8s   %s" % ("model", "floor", "orders behind it"))
+    for m in sorted(floors):
+        fl = floors[m]["floor"]
+        print("  %-30s %8s   %s"
+              % (m[:29], "NONE" if fl is None else "%.0fpp" % fl, floors[m]["detail"]))
+    unbounded = [m for m in floors if floors[m]["floor"] is None]
+    if unbounded:
+        print()
+        print("  %d model(s) have NO USABLE FLOOR -- saturated at every order in every"
+              % len(unbounded))
+        print("  boundable condition, so nothing can be said about what order does to them.")
+        print("  Their clause effects are excluded below: a zero floor from saturation would")
+        print("  make every effect 'clear' for free.")
+
+    # Largest present-minus-absent difference per model per clause, against that model's floor.
+    print()
+    print("  clause effects PER MODEL against that model's own floor:")
+    any_named = False
+    for pos, name in enumerate(CLAUSE_NAMES):
+        on = [c for c in FACTORIAL_CONDITIONS if c[1 + pos] == "1"]
+        off = [c for c in FACTORIAL_CONDITIONS if c[1 + pos] == "0"]
+        for m in sorted(floors):
+            if floors[m]["floor"] is None:
+                continue
+            m_on = [rate(m, c) for c in on if rate(m, c) is not None]
+            m_off = [rate(m, c) for c in off if rate(m, c) is not None]
+            if not m_on or not m_off:
+                continue
+            eff = 100.0 * ((sum(m_on) / len(m_on)) - (sum(m_off) / len(m_off)))
+            fl = floors[m]["floor"]
+            clears = abs(eff) > fl
+            any_named = any_named or clears
+            print("    %-24s %-28s %+6.0fpp vs floor %4.0fpp   %s"
+                  % (name, m[:27], eff, fl, "CLEARS" if clears else "inside the floor"))
+    print()
+    if any_named:
+        print("  Some clause effects CLEAR their model's order floor. The arm is resolvable on")
+        print("  the prereg's own terms -- the rule did not move, the data came to meet it: the")
+        print("  2026-09-18 amendment called this unresolvable because the companion order run")
+        print("  did not exist for this roster, and three shuffle seeds have since landed.")
+    else:
+        print("  NO clause effect clears its model's order floor. Reported as unresolvable on")
+        print("  the prereg's own terms, which is a RESULT and publishes as one.")
+    print()
+    print("  The floors are wide and that is the finding's own limit: the F cells were all")
+    print("  collected at ONE order (seed 11), so an order-induced difference inside the F")
+    print("  comparison cannot be ruled out -- only bounded by these numbers. A clause effect")
+    print("  sitting under its floor is not a small effect, it is one this design cannot see.")
     if other:
         print()
         print("excluded as neither refusal nor answer sheet: %s"

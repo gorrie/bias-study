@@ -148,6 +148,18 @@ GATES = [
          label="3  the treatment was actually applied",
          covers="whether the intervention an arm is named after actually ran -- "
                 "B-Parseltongue passed every other check with 0 of 240 applied"),
+    Gate("multiple_comparisons.py", ["--check"], tree="either", stage="release",
+         label="6  the stated family size matches the data",
+         covers="how many hypothesis tests this study runs, and which are corrected. The "
+                "paper claimed 'a Benjamini-Hochberg correction over the whole family of 153 "
+                "contrasts' while the live count was 246 -- hand-typed, in four places, "
+                "gated by nothing, and stale in the direction that understates the "
+                "correction burden. It also enumerates the exploratory families the paper "
+                "never counted at all, which is the `multiple_comparisons` column the "
+                "controls audit scores twelve other studies on. It distinguishes a LIVE "
+                "claim from a HISTORICAL record and refuses to flag the latter: three of its "
+                "first four hits were a corrections document, a blockquote being refuted, "
+                "and a paragraph beginning 'Until 2026-09-17'."),
     Gate("g0dm0d3_constants.py", ["--check"], tree="study", stage="manual",
          label="3c the elicitation rung's constants match their source",
          covers="the GODMODE system prompt and DEPTH_DIRECTIVE are PARSED from the G0DM0D3 "
