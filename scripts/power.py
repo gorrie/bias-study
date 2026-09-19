@@ -59,67 +59,14 @@ import floor_table as F  # noqa: E402
 POWER = 0.80
 ALPHA = 0.05
 
-# Every null this project has published, with the movement observed AT THE TIME and the floor
-# it is judged against. Scope strings are deliberately verbatim from the documents so a reader
-# can find the sentence being audited.
-#
-# `observed` IS FROZEN BY DESIGN and is the one hand-typed field here. The question this table
-# asks is "did this claim clear its floor when it was made", so the effect size has to be the
-# one the claim rested on; recomputing it would silently re-ask a different question every time
-# the corpus grew. The FLOOR is live, which is the half that should move -- a null can lose its
-# verdict later because the instrument got sharper, and that is the finding.
-#
-# Where the current value has since drifted from the published one, the drift is the subject of
-# its own RESULTS document rather than an edit here: the frontier temp-0 arm's max is now 19
-# against the 14 recorded below, and the local arm's is 5 against 6. Neither changes a verdict.
-#: THE BOUND EVERY `observed` BELOW WAS MEASURED AGAINST, and the reason this table is
-#: currently unauditable.
-#:
-#: Each `observed` is a count of ITEMS THAT MOVED, out of the instrument's bound. Every one was
-#: measured on the RETIRED instrument, which had 62 items -- the `where` fields say so. The
-#: floors they are compared against are now computed from the live 32-item battery.
-#:
-#: 14 of 62 is 23% of the instrument. A threshold of 11 of 32 is 34%. Comparing the two
-#: numbers because both are integers is a unit error, and on 2026-09-17 it produced a dated
-#: correction celebrating three verdicts that had "flipped". They had not flipped; the
-#: denominator had changed. PREREG Amendment 2 says it outright: no figure measured against
-#: the old bound is comparable in the same units.
-#:
-#: The fix is not to rescale. A side-flip count is not linear in item count -- the items
-#: differ, not only how many there are -- so 14/62 cannot be converted by arithmetic. Each
-#: null must be RE-MEASURED on the live instrument or stay unaudited, and this file now says
-#: which rather than printing a verdict either way.
-RETIRED_BOUND = 62
-
-PUBLISHED_NULLS = [
-    {"claim": "position does not move under prompt pressure (local families)",
-     "observed": 6, "stat": "side", "floor": "presentation order",
-     "where": "STATUS section 2; the withdrawal of the founding thesis"},
-    {"claim": "position does not move under prompt pressure (frontier, temp 0)",
-     "observed": 14, "stat": "side", "floor": "presentation order",
-     "where": "same claim, unscoped, as published on the live page this morning"},
-    {"claim": "ablation does not move stance (arm-matched pairs)",
-     "observed": 12, "stat": "side", "floor": "requantisation",
-     "where": "the weight-rung dissociation, worst pair qwen2.5-14B under D",
-     # THE ONE ENTRY WHOSE OBSERVED EFFECT IS n=1, AND IT IS THE ONE THAT COMES BACK
-     # "SUPPORTED" -- so this audit's single most quotable output, "one null inverted
-     # outright", rested on the thinnest sample in the corpus.
-     #
-     # 12 side-flips between a stock and an ablated build, one run per arm. A one-run sheet is
-     # not a modal, and the run-to-run replicate floor is p90 5, so a 12 from n=1 sits inside
-     # its own noise before any ablation acts. The audit is still run on it, because dropping
-     # a published null from its own audit is the move this file exists to convict -- but the
-     # verdict is printed with the caveat attached, and "SUPPORTED" is not claimed.
-     "caveat": "observed effect is n=1 per arm; the replicate floor is p90 5, so this "
-               "verdict is not resolvable. Re-collected at n=5 in the 2026-09-07 "
-               "ablation wave; until that is analysed, UNDECIDED in both directions."},
-    {"claim": "access tiers of one model are indistinguishable",
-     "observed": 3, "stat": "side", "floor": "same-version variants",
-     "where": "RESULTS-2026-08-30-access-tier, max after the temp-0 sweep"},
-    {"claim": "version drift does not replicate",
-     "observed": 5, "stat": "side", "floor": "same-version variants",
-     "where": "RESULTS-2026-08-31-drift-does-not-replicate, median transition"},
-]
+#: The published-nulls audit that lived here was DELETED 2026-09-18 along with
+#: RETIRED_BOUND and PUBLISHED_NULLS. Five claims measured out of 62 items on the retired
+#: questionnaire were being compared against thresholds measured out of 32 on the live
+#: battery; the comparison is a unit error that cannot be fixed by rescaling, and the
+#: claims themselves are withdrawn. See CORRECTIONS-2026-09-17-power.md and
+#: test_correction_gates.test_no_audit_of_observations_in_retired_units, which keeps them
+#: deleted. What remains in this file -- the detection limits -- is measured on the live
+#: instrument and is the only thing the paper cites from it.
 
 
 def pctile(vals, q):
@@ -317,148 +264,23 @@ def main(argv=None):
         note = "p95 IS THE SAMPLE MAX (n=%d)" % n if is_max else ""
         print("%-28s %-9s %6d %11.0f %6.0f  %s" % (name, stat, n, thr, m, note))
 
-    print()
-    print("PUBLISHED NULLS, AUDITED AGAINST THE LIMIT ABOVE")
-    print()
-    verdicts = []
-    missing_refs = []
-    # A COUNT OUT OF 62 IS NOT A COUNT OUT OF 32. Every `observed` was measured against the
-    # retired bound; the floors above are measured against the live one. Auditing one against
-    # the other is a unit error and it produced a dated correction that has had to be
-    # withdrawn. Refuse the comparison and say so, rather than printing a verdict.
-    if BOUND != RETIRED_BOUND:
-        print("  NOT AUDITED -- %d published null(s) carry an `observed` count measured"
-              % len(PUBLISHED_NULLS))
-        print("  against a %d-item instrument, and every floor above is measured against the"
-              % RETIRED_BOUND)
-        print("  live %d-item one. %d of %d is not comparable with a threshold out of %d, and"
-              % (BOUND, PUBLISHED_NULLS[0]["observed"], RETIRED_BOUND, BOUND))
-        print("  a side-flip count cannot be rescaled: the ITEMS differ, not just how many.")
-        print("")
-        print("  Each of these has to be re-measured on the live instrument before its verdict")
-        print("  means anything. Until then they are UNAUDITED, which is neither a pass nor a")
-        print("  failure -- and it is what this file printed as verdicts until 2026-09-17:")
-        for c in PUBLISHED_NULLS:
-            print("    - %s" % c["claim"])
-            print("        observed %d of %d, %s" % (c["observed"], RETIRED_BOUND, c["where"]))
-        print("")
-        print("  The detection limits above ARE valid: they describe what the live instrument")
-        print("  can resolve. It is only the published observations that are in other units.")
-        return 2
-    for c in PUBLISHED_NULLS:
-        key = (c["floor"], c["stat"])
-        match = [r for r in rows if r[0] == c["floor"] and r[1] == c["stat"]]
-        if not match:
-            # A PUBLISHED NULL WHOSE REFERENCE IS GONE IS REPORTED, NOT SKIPPED. `continue`
-            # meant that excluding a reference -- as the intervention rule now does -- quietly
-            # removed the audit of every claim resting on it, and the report still ended
-            # "N of 5 published nulls", counting the survivors as though nothing were missing.
-            print("  %s" % c["claim"])
-            print("    observed %d, floor '%s' (%s): %s"
-                  % (c["observed"], c["floor"], c["stat"],
-                     classify_observation(c["observed"], float("nan"))))
-            print("    REFERENCE UNAVAILABLE -- this claim's reference is not in the table "
-                  "above, so it is not audited here at all. That is a gap, not a pass.")
-            print("    %s" % c["where"])
-            print()
-            missing_refs.append(c)
-            continue
-        _, _, n, thr, m, thr_is_max = match[0]
-        # A threshold that IS the sample maximum is a measurement limitation, and it
-        # governs the verdict rather than sitting in a footnote. The requantisation
-        # floor (n=13) is exactly this, and it is the reference the ablation null is
-        # judged against -- the single most quotable line this audit produces.
-        if thr_is_max and not c.get("caveat"):
-            c = dict(c)
-            c["caveat"] = ("reference p95 is the sample maximum (n=%d), so the threshold "
-                           "carries no tail behaviour and the comparison is not resolvable"
-                           % n)
-        # TWO DIFFERENT QUESTIONS, AND THIS LINE USED TO ASK ONLY THE SECOND ONE.
-        #   thr (rejection threshold) -- could this observation have come from the null?
-        #                               A calibrated test of the effect that WAS observed.
-        #   m   (MDE)                 -- could an effect of this size have been seen at all?
-        #                               Prospective power for a specified alternative.
-        # `supported = observed >= m` conflated them, and the two are not ordered: on the
-        # same-version-variants floor MDE is 11 while the threshold is 13, so an observation
-        # of 11 or 12 cleared the MDE, failed the test, and was still printed SUPPORTED --
-        # "calling it a null was wrong in the other direction" -- off a movement that is not
-        # distinguishable from the null. Feed the arithmetic the synthetic null [0..10] and it
-        # returns threshold 10, MDE 9: an observed 9 is called supported without exceeding 10.
-        # Clearing the threshold is what licenses the claim; clearing the MDE only says the
-        # instrument was not too blunt to look.
-        # STRICTLY greater. An observation EQUAL to the reference p95 does not exceed it,
-        # and `>=` called it supported. No published verdict turns on this -- no observation
-        # currently sits exactly at its reference -- but the boundary was anti-conservative
-        # in the same direction as every other defect this file exists to fix.
-        exceeds_threshold = c["observed"] > thr
-        above_mde = c["observed"] >= m
-        supported = exceeds_threshold
-        # A CAVEAT ON THE OBSERVED EFFECT DISQUALIFIES A "SUPPORTED" VERDICT, IT DOES NOT
-        # DECORATE IT. The one entry carrying a caveat is the one that came back SUPPORTED,
-        # and that verdict was published as "one null inverted outright" off a single run per
-        # arm. Printing the caveat under the word SUPPORTED would have changed nothing about
-        # how it got quoted.
-        caveat = c.get("caveat")
-        verdicts.append((c, thr, m, supported and not caveat))
-        print("  %s" % c["claim"])
-        print("    observed %d, floor '%s' (%s): threshold %.0f, MDE %.0f"
-              % (c["observed"], c["floor"], c["stat"], thr, m))
-        if supported and caveat:
-            print("    NOT RESOLVABLE -- the movement exceeds the threshold, but the observed "
-                  "effect itself does not survive scrutiny:")
-            print("      %s" % caveat)
-        elif supported:
-            print("    SUPPORTED -- the movement exceeds what the instrument can resolve, so "
-                  "calling it a null was wrong in the other direction")
-        elif above_mde:
-            # The band between the two limits, which used to be printed SUPPORTED.
-            print("    INCONCLUSIVE -- the instrument had the power to see an effect this "
-                  "size, and this observation still does not clear the rejection threshold. "
-                  "Neither the null nor its inversion is established.")
-        else:
-            print("    UNDERPOWERED -- 'no effect' is not established; the instrument "
-                  "cannot distinguish this from an effect it is too blunt to see")
-            if caveat:
-                print("      caveat: %s" % caveat)
-        print("    %s" % c["where"])
-        print()
-
-    # THREE CATEGORIES, NOT TWO. This printed "%d of %d published nulls are underpowered"
-    # off `not supported`, which silently folded the one NOT-RESOLVABLE entry in with the
-    # underpowered ones -- so the same script reported 3 underpowered nulls in its body and 4
-    # in its summary, and the prose that quotes it says 3. Underpowered means the instrument
-    # could not have seen the effect. Not-resolvable means the observed effect is not a
-    # measurement. They call for different work and they are counted separately.
-    under = sum(1 for c, _, m, _ in verdicts if c["observed"] < m)
-    inconclusive = sum(1 for c, thr, m, _ in verdicts
-                       if m <= c["observed"] < thr and not c.get("caveat"))
-    unresolvable = sum(1 for c, thr, _, _ in verdicts
-                       if c["observed"] >= thr and c.get("caveat"))
-    supported = len(verdicts) - under - inconclusive - unresolvable
-    print("%d of %d published nulls are underpowered -- the instrument could not have seen the"
-          % (under, len(verdicts)))
-    print("effect being ruled out. %d is not resolvable at all (its observed effect is n=1)."
-          % unresolvable)
-    if inconclusive:
-        print("%d sits between the MDE and the rejection threshold: powered enough to have seen"
-              % inconclusive)
-        print("the effect, not large enough to be distinguished from the null. Neither verdict.")
-    print("%d clears its floor, which means calling it a null was wrong in the other direction."
-          % supported)
-    print()
-    print("This does not make the withdrawn claims true. It makes them UNDECIDED, which is a")
-    print("different verdict and the honest one. Restoring any of them needs an instrument")
-    print("that can resolve the effect size in question -- more seeds, more orders, or a")
-    print("narrower item set -- not a re-reading of these runs.")
-    if missing_refs:
-        print()
-        print("%d published null(s) could not be audited because the reference they were "
-              "measured against is no longer in the table:" % len(missing_refs))
-        for c in missing_refs:
-            print("  - %s (floor '%s', %s)" % (c["claim"], c["floor"], c["stat"]))
-        print("Exit 1. A report that silently drops the claims it cannot check is how a")
-        print("withdrawn finding stays withdrawn on paper and unexamined in fact.")
-        return 1
+    # THE PUBLISHED-NULLS AUDIT WAS DELETED 2026-09-18, WITH ITS GUARD AND ITS TEST.
+    #
+    # It compared five claims measured on the retired 62-item questionnaire against
+    # thresholds measured on the live 32-item battery, which is a unit error: 14 of 62 is
+    # 23% of an instrument, 11 of 32 is 34%, and a side-flip count cannot be rescaled
+    # because the ITEMS differ, not merely how many there are. The guard that refused the
+    # comparison was correct, and it made this function exit 2 unconditionally, which
+    # blocked gen_paper.
+    #
+    # It is deleted rather than re-measured because THE CLAIMS THEMSELVES ARE WITHDRAWN.
+    # CORRECTIONS-2026-09-17-power.md said to delete the guard and the test together
+    # 'once the nulls are re-measured on the live instrument'. They will not be, because
+    # the study no longer makes them. That difference is written into that file rather
+    # than left for a later reader to infer that a re-measurement happened.
+    #
+    # What this file still does -- the detection limits above -- is unaffected. They are
+    # measured on the live instrument and are the only thing the paper cites from it.
     return 0
 
 

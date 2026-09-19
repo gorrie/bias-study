@@ -62,42 +62,49 @@ def test_collect_preserves_both_classes_and_restores_loader(monkeypatch):
     assert P.F.summarise is original
 
 
-def test_manipulations_are_not_sensitivity_references(monkeypatch, capsys):
+def test_manipulations_are_not_sensitivity_references(monkeypatch):
+    """A prompt manipulation is an INTERVENTION and must never be used as a noise reference.
+
+    Rewritten 2026-09-18. This used to drive the assertion through `power.main()`, which
+    audited five published nulls against the floors. That audit is deleted -- the nulls were
+    measured on the retired 62-item instrument and the claims are withdrawn -- so the test now
+    exercises `reference_kind` directly, which is the rule it was always about. Routing a unit
+    test through a whole report is what made it depend on machinery it did not care about.
+    """
     names = ['prompt condition A->D', 'prompt condition A->D, one sitting',
              'prompt condition A->D, one sitting, local open-weight',
              'refusal-direction ablation', 'refusal-direction ablation, one sitting']
-    monkeypatch.setattr(P, 'collect', lambda: {n: {'side':[1], 'endpoint':[2]} for n in names})
+    monkeypatch.setattr(P, 'collect', lambda: {n: {'side': [1], 'endpoint': [2]} for n in names})
     assert all(P.reference_kind(n) == 'intervention' for n in names)
-    # THE UNIT GUARD IS STOOD DOWN FOR THIS TEST, deliberately. Since 2026-09-17 `main()`
-    # refuses the whole audit when the published observations were measured against a
-    # different item bound than the floors -- which they are today, so it returns 2 before
-    # reaching the reference logic this test is about. Setting the two bounds equal puts the
-    # audit back in the state it will be in once the nulls are re-measured, which is the only
-    # state where "a missing reference must not silently disappear" is a live guarantee.
-    monkeypatch.setattr(P, 'RETIRED_BOUND', P.BOUND)
-    assert P.main([]) == 1  # missing historical references cannot silently disappear
-    assert 'REFERENCE UNAVAILABLE' in capsys.readouterr().out
+    # And the complement, so this cannot pass by calling everything an intervention.
+    for null in ('presentation order', 'run-to-run replicate', 'same-version variants',
+                 'requantisation'):
+        assert P.reference_kind(null) != 'intervention', (
+            "%r is a NULL -- the instrument disagreeing with itself while nothing changed. "
+            "Classifying it as an intervention would let a real floor be excluded from the "
+            "table that exists to report floors." % null)
 
 
-def test_observations_in_other_units_are_refused_not_compared(capsys):
-    """A count out of 62 items is not a count out of 32, and both are integers.
+def test_no_audit_of_observations_in_retired_units():
+    """The published-nulls audit stays deleted, and nothing re-imports its constants.
 
-    Every `observed` in PUBLISHED_NULLS was measured on the retired instrument; every floor is
-    now measured on the live one. Comparing them produced a dated correction announcing that
-    three verdicts had flipped. They had not flipped -- the denominator had changed.
+    A count out of 62 items is not a count out of 32, and both are integers. Comparing them
+    produced a dated correction announcing that three verdicts had flipped; they had not
+    flipped, the denominator had changed (CORRECTIONS-2026-09-17-power.md). The guard that
+    refused the comparison was correct and made `power.main()` exit 2 unconditionally, which
+    blocked `gen_paper`. Both the audit and the guard were deleted on 2026-09-18 because the
+    five claims are WITHDRAWN and will not be re-measured.
 
-    The audit must refuse rather than print a verdict, and must say which claims are affected.
+    This test is the thing that stops them coming back by hand.
     """
-    assert P.BOUND != P.RETIRED_BOUND, (
-        "this guard is only meaningful while the two bounds differ; once the nulls are "
-        "re-measured on the live instrument, delete the guard and this test together")
-    rc = P.main([])
-    out = capsys.readouterr().out
-    assert rc == 2, "an unauditable table is NOT APPLICABLE, not a pass and not a failure"
-    assert "NOT AUDITED" in out
-    assert "cannot be rescaled" in out
-    for c in P.PUBLISHED_NULLS:
-        assert c["claim"] in out, "every affected claim must be named, not counted"
+    assert not hasattr(P, "PUBLISHED_NULLS"), (
+        "power.PUBLISHED_NULLS is back. Those five observations are counts out of 62 on a "
+        "retired instrument and every floor is a count out of 32. They cannot be rescaled -- "
+        "the ITEMS differ, not merely how many. If the claims are being revived, they must be "
+        "re-collected on the live battery first.")
+    assert not hasattr(P, "RETIRED_BOUND"), (
+        "power.RETIRED_BOUND is back, which only ever existed to mark the unit mismatch.")
+    assert P.main([]) == 0, "the detection-limits table must compute and exit 0 on its own"
 
 
 def test_release_failures_and_launch_errors_are_nonzero(capsys):

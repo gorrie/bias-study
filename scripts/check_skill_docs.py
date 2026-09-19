@@ -54,6 +54,51 @@ SKILLS = os.path.join(ROOT, "skills")
 #: Scripts that are deliberately not part of any procedure. Each needs a reason, so that
 #: adding one is a decision rather than a way to quiet the report.
 NOT_A_PROCEDURE = {
+    # ---- GATES. Declared in gates.py and run by the registry, not typed by an operator.
+    # Naming each one in a skill would imply a manual step where there is none, and the
+    # registry is already the single place that says what this repository verifies.
+    "check_citation.py": "release gate -- the citation record that mints a permanent DOI, "
+                         "checked in the tree that SHIPS from the tree that is developed",
+    "check_sheet_attribution.py": "release gate -- sheets whose answers cannot be attributed "
+                                  "to a proposition under either mapping",
+    "check_instrument_approved.py": "pre-run gate -- the bank's sign-off sheet, read back",
+    "check_outcomes_computable.py": "pre-run gate -- every declared outcome produces a value",
+    "check_retired_instrument.py": "pre-run gate -- no retired bank named in the live tree",
+    "check_named_scripts.py": "release gate -- every script a document names exists",
+    "check_undefined_names.py": "pre-run gate -- static scan for unbound names",
+    "check_skill_procedures.py": "gate on THIS skill's own procedure block",
+    "check_mcp_coverage.py": "gate -- whether the factions dataset can supply its design",
+    # ---- GENERATORS. Run by gen_* gates and by --check; the operator edits the source of
+    # truth, never the generated block.
+    "gen_deviations.py": "generator -- PROTOCOL-DEVIATIONS.md from the panel, the limitations "
+                         "file and the prereg headers. --check is the release gate",
+    "gen_vintage.py": "generator -- data/model-vintage.json, so figures can be cut by model "
+                      "generation. --check fails when a model in runs/ has no release date",
+    # ---- ANALYSIS reported in step 6, not workflow steps in their own right.
+    "crossover_jurisdiction.py": "analysis -- the loyalty reading of the jurisdiction "
+                                 "gradient, refuted. Cited in step 6's command list",
+    "order_floor_position.py": "analysis -- the order floor in POSITION units, cited in "
+                               "step 6's command list",
+    "null_audit.py": "analysis and release gate -- the MDE behind every null reported",
+    "item_omission.py": "analysis and release gate -- item vs slot vs printed numeral",
+    "jurisdiction_gradient.py": "analysis -- cited in step 6's command list",
+    "strong_shift.py": "analysis -- cited in step 6's command list",
+    "pipeline_decomposition.py": "analysis of a rung this release does not ship",
+    # ---- PARKED. The factions instrument is specified and unbuilt; PLAN.md Parked owns it.
+    "faction_lean.py": "parked -- the factions estimator, calibrated on synthetic input "
+                       "because the bank does not exist yet",
+    "faction_reading_pack.py": "parked -- factions authoring input",
+    "build_faction_slots.py": "parked -- factions slot construction",
+    "pipeline_transform_audit.py": "release gate -- whether the intervention an arm is named "
+                                   "after actually ran. B-Parseltongue passed every other "
+                                   "check with 0 of 240 applied, which is why it is a gate "
+                                   "and not a step somebody remembers",
+    "render_item_read.py": "writes the sign-off sheet an author ticks by hand. The OPERATOR "
+                           "step is reading the instrument, not running this -- and a sheet "
+                           "rendered with every box left empty is exactly how 372 sheets were "
+                           "collected against an unapproved bank. check_instrument_approved "
+                           "reads it back; that gate is the procedure",
+
     "replicates.py": "a LIBRARY, not a procedure -- the single implementation of "
                      "'average the replicates in a cell', imported by aggregate, analysis, "
                      "pipeline_rung, frame_gap and abliteration_effect_check. It has no main() "
@@ -111,7 +156,7 @@ NOT_A_PROCEDURE = {
                      "every CI-clean finding under each judge alone. Rerun to re-derive that "
                      "document, not as a step in collecting anything",
     "check_release_table.py": "release gate, run by release_check.py as checklist item 2. Not a "
-                              "procedure anyone follows by hand: it re-derives RELEASE-v2's arm "
+                              "procedure anyone follows by hand: it re-derives RELEASE-2026-09-07's arm "
                               "inventory from runs/ and fails when the document has drifted",
     "lineage_exchangeability.py": "one-shot 2026-09-12 analysis behind "
                                   "RESULTS-2026-09-12-lineage-exchangeability.md. It asks "
