@@ -341,11 +341,23 @@ def analyse_sheets(rows, declared_path=None):
         if not r.get("valid") and (r.get("failure_mode") or "") == "transport":
             infra[r.get("model") or "?"] += 1
 
-    # THE AVAILABILITY HOLE, ON ITS OWN LINE. It left the invalidity ratio above because a
-    # sheet the model never saw is not a sheet it answered badly -- but it must not vanish
-    # with it: a model that cannot be reached has thinner cells than one that can, and every
-    # floor is computed per cell. Reported as a WARNING rather than a blocker, because the
-    # remedy is a retry pass against the provider, not a decision about the model.
+    # THE AVAILABILITY HOLE, ON ITS OWN LINE AND STILL A BLOCKER.
+    #
+    # It left the invalidity ratio above because a sheet the model never saw is not a sheet it
+    # answered badly -- that relabelling is correct. It was then DOWNGRADED TO A WARNING on
+    # 2026-09-19 and that was wrong, caught the same day by an adversarial review.
+    #
+    # MEASURED: 101 of the 104 transport losses in this wave fall on Chinese-jurisdiction
+    # vendors and ZERO on US ones -- 8.4% against 0.0%. That is perfectly differential along
+    # the exact axis of this study's jurisdiction gradient (p = 0.0004), its
+    # "US flagships 100% / Chinese vendors 0%" refusal result, and its hosted-vs-local and
+    # vintage groupings.
+    #
+    # LEARNINGS #6, in this project's own words: *"Differential exclusion relocates a confound;
+    # it does not remove it. Before excluding bad records, check whether the exclusion rate
+    # varies by the thing you are comparing."* A warning has no enforcement -- once the other
+    # blockers clear, the run reads FIT TO SCORE with those cells thin on one side of the
+    # comparison. So the ratio is relabelled and the hole still blocks.
     if infra:
         out["infrastructure_losses"] = dict(infra)
         reach = sorted(((infra[m] / float(infra[m] + model_total.get(m, 0)), m, infra[m],
@@ -353,12 +365,17 @@ def analyse_sheets(rows, declared_path=None):
                         for m in infra), reverse=True)
         worst = [r for r in reach if r[0] > LOST_CELL_VENDOR_BLOCK]
         if worst:
-            out["warnings"].append(
-                 "%d model(s) never received more than %.0f%% of their requested sheets -- "
-                 "the model never answered, so this is NOT its invalidity and is not counted "
-                 "as such: %s. Every one is a hole in a cell, and the floors are computed per "
-                 "cell, so a retry pass against the provider is owed before these cells are "
-                 "read as thin."
+            # A BLOCKER, not a warning. See the note above: these losses are differential on
+            # the axis the study compares, and a warning carries no enforcement.
+            out["problems"].append(
+                 "%d model(s) never received more than %.0f%% of their requested sheets. The "
+                 "model never answered, so this is NOT its invalidity and is not counted as "
+                 "such -- but it is a hole in a cell, the floors are computed per cell, and "
+                 "in this corpus the holes are DIFFERENTIAL: 101 of 104 fall on "
+                 "Chinese-jurisdiction vendors and 0 on US ones, which is the axis the "
+                 "jurisdiction gradient compares. Excluding them from the ratio without "
+                 "retrying them relocates that confound rather than removing it "
+                 "(LEARNINGS #6). Retry the provider: %s"
                  % (len(worst), 100 * LOST_CELL_VENDOR_BLOCK,
                     "; ".join("%s %d/%d requested" % (m.split("/")[-1], b, t)
                               for _s, m, b, t in worst)))

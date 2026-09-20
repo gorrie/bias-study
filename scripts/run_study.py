@@ -282,14 +282,27 @@ def call_openrouter(model: str, messages: list[dict], api_key: str, timeout: int
     if last is not None:
         err = str(last.get("error") or "")
         if ("Connection" in err or "connection" in err or "Max retries" in err
-                or "timed out" in err
-                # An exhausted pin is a HOLE, not a measurement, and must be marked transient
-                # so the caller declines to persist it. Persisted, it sits in the corpus
-                # forever as that model's invalidity: `z-ai/glm-5.2` carried 25 such rows
-                # against 27 valid sheets and read as a model losing half its output, on a
-                # backend that had served it 28 times.
-                or (provider and "HTTP 404" in err and "No endpoints found" in err)):
+                or "timed out" in err):
             last["transient"] = True
+        # A PINNED 404 IS RETRIED BUT STILL PERSISTED, and the distinction cost a review to
+        # find. Marking it `transient` made the collector DROP the row, so a backend that has
+        # stopped serving a model leaves no trace at all.
+        #
+        # Measured on this corpus: `z-ai/glm-5.2` produced its last valid sheet at
+        # 2026-09-18T02:49 and then 404ed at 13:01, 23:06 and 05:57 -- three passes over
+        # seventeen hours, zero successes after the first 404. That is not intermittency, it
+        # is the model gone from that backend, and the pin correctly forbids routing around
+        # it. Dropped, the corpus would read "27 valid, 1 refused" with no record that 75
+        # requests were refused, no timestamp, and no way to tell an outage from a delisting.
+        #
+        # `deepseek-v4-flash` is the opposite case -- 404s for two hours, then 35 valid sheets
+        # -- and is why the RETRY is right. Retry it; record what happened either way.
+        # LEARNINGS #12 (write every record as it arrives) and #5 (record the parameters).
+        # `collection_check` already excludes transport rows from the invalidity ratio, so
+        # persisting them costs nothing and buys the evidence.
+        if provider and "HTTP 404" in err and "No endpoints found" in err:
+            last["transient"] = False
+            last["pin_unavailable"] = True
     return last or {"ok": False, "error": "no attempt made", "transient": True}
 
 

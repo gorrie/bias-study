@@ -148,6 +148,23 @@ GATES = [
          label="3  the treatment was actually applied",
          covers="whether the intervention an arm is named after actually ran -- "
                 "B-Parseltongue passed every other check with 0 of 240 applied"),
+    Gate("check_comparison.py", ["--satisfiable", "--n-a", "5", "--n-b", "5",
+                                 "--family", "10"], tree="either", stage="manual",
+         label="6b a criterion this design cannot meet",
+         covers="whether a stated decision rule is reachable at the n in use. A permutation "
+                "test over C(na+nb, na) relabellings cannot return a p below 2/C(...), so a "
+                "BH threshold under that floor is unsatisfiable BY ANY EFFECT OF ANY SIZE -- "
+                "and the null result it produces is a fact about the design, not the models. "
+                "Three instances in this study: prediction 2 of the phase-4 prereg, the "
+                "clause-factorial floor, and rung 2's within-rung family (5v5, minimum p "
+                "0.0079, threshold 0.005). The same tool checks two arms for confounds with "
+                "--cells, which would have caught rung 2 differing from its control by "
+                "protocol AND token budget before 120 sheets were bought.",
+         why="it takes the parameters of a comparison rather than reading the tree, so there "
+             "is no single invocation that covers every arm. Run it when a new arm is "
+             "designed and when a decision rule is written -- those are the two moments its "
+             "answer can change anything. The registered invocation is the rung-2 case, kept "
+             "as a regression: it must keep reporting UNSATISFIABLE"),
     Gate("multiple_comparisons.py", ["--check"], tree="either", stage="release",
          label="6  the stated family size matches the data",
          covers="how many hypothesis tests this study runs, and which are corrected. The "

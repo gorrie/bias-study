@@ -98,8 +98,20 @@ EXPLORATORY = [
 ]
 
 #: Where a family size is stated in prose. Every one of these is checked against the data.
-STATED_IN = ["PAPER-below-the-floor.md", "FINDINGS-2026-09-17-battery.md",
-             "CORRECTIONS-2026-09-18-bootstrap.md"]
+#:
+#: HAND-MAINTAINED, WHICH IS THE WEAK POINT. The first version listed three files while its
+#: own commit message said "four documents", and the missing one -- `PLAN.md` -- carried a
+#: LIVE stale 153 that therefore went unflagged. A file list is a second copy of "where the
+#: numbers are", and this project's rule is to derive rather than type. Derived here: any
+#: tracked markdown at the study root, minus the withdrawn tree.
+def _stated_in():
+    out = []
+    for path in sorted(glob.glob(os.path.join(STUDY, "*.md"))):
+        name = os.path.basename(path)
+        if name.startswith("withdrawn"):
+            continue
+        out.append(name)
+    return out
 
 
 def prereg_family(run_dir=WAVE):
@@ -151,21 +163,32 @@ def _is_historical(text, start, end, filename):
     line = text[line_start:text.find("\n", end) if text.find("\n", end) > 0 else len(text)]
     if line.lstrip().startswith(">"):
         return "inside a blockquote -- quoted, not asserted"
-    window = text[max(0, start - 240):end + 80].lower()
+    # SAME SENTENCE, AND BEFORE THE NUMBER. A 240-character window silenced the check
+    # trivially: this paper uses "until" 9 times, "withdrawn" 11 and "previously" 3, so almost
+    # any live claim sat near one. Demonstrated by construction -- "The truncation gate is no
+    # longer needed... We correct over the whole family of 153 contrasts" was suppressed, and
+    # the one real hit survived only because its nearest marker was 760 characters away.
+    #
+    # A marker AFTER the figure does not make the figure historical either: "153 contrasts,
+    # and that result was withdrawn" is a live count in a sentence about something else.
+    sentence_start = max(text.rfind(". ", 0, start), text.rfind("\n", 0, start)) + 1
+    window = text[sentence_start:start].lower()
     for marker in HISTORICAL_MARKERS:
         if marker in window:
-            return "past tense nearby (%r)" % marker.strip()
+            return "past tense in the same sentence, before the figure (%r)" % marker.strip()
     return None
 
 
 def stated_family_sizes():
     """Every family-size figure written in prose, classified live or historical."""
     out = []
+    # Qualifiers are allowed between the number and the noun. `PLAN.md` said "the 153
+    # PRE-REGISTERED contrasts" and escaped a pattern that required them adjacent -- a live
+    # stale figure missed by one word.
     pat = re.compile(
-        r"(?:family of|over)\s+(\d{2,4})[\s-]*(?:member\s+)?(?:family|contrasts)"
-        r"|(\d{2,4})-member\s+family"
-        r"|(\d{2,4})\s+contrasts", re.I)
-    for name in STATED_IN:
+        r"(\d{2,4})-member\s+family"
+        r"|(\d{2,4})\s+(?:[a-z-]+\s+){0,3}contrasts", re.I)
+    for name in _stated_in():
         path = os.path.join(STUDY, name)
         if not os.path.exists(path):
             continue
