@@ -221,7 +221,7 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 
 > ### The instrument below is the PREVIOUS generation. Read this first.
 >
-> Everything in this section was measured on politicalcompass.org's 62 propositions. **That
+> Everything in this section was measured on a public 62-proposition questionnaire. **That
 > instrument has been retired from the study** (2026-09-15). It could not be republished, which
 > forced an id-only data export, required a `fetch_items.py` step of every replicator, and
 > produced a leak incident when its text briefly entered two commits. A study whose argument is
@@ -229,7 +229,8 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 > allowed to show you.
 >
 > **The instrument is `data/ratchet-battery.json`, and it ships here in full** — 32 items in 16
-> mirrored pairs, written by the author on 2026-08-30 and licensed CC BY 4.0. Each pair states
+> mirrored pairs, written by the author on 2026-08-30 and MIT-licensed with everything else in
+> this repository. Each pair states
 > a claim and its opposing framing in the author's own words; the halves are re-worded, not
 > negated, so neither reads as the mechanical inverse of the other. No fetch step, no carve-out,
 > and the item text and the response text both ship.
@@ -250,7 +251,7 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 > instrument; that was true of the compass and is the opposite of the position now.
 
 > **The instrument's own limits, stated rather than discovered.** This arm runs on the
-> politicalcompass.org 62-proposition test, and that choice bought the property the whole
+> the retired 62-proposition questionnaire, and that choice bought the property the whole
 > re-measurement exists for: **no language model anywhere in the scoring path.** It is why this
 > study scores `yes` on `judge_free_scoring` where five of the twelve audited studies score `no`
 > or `partial`.
@@ -286,14 +287,14 @@ with a bootstrap 95% CI; **a delta is a finding only if its CI excludes zero.**
 > **Provenance, and what you can check.** As of 2026-09-02 the forced-choice tooling and its
 > run data ARE in this repository, and the floors and detection limits below recompute from
 > what is checked in here. What is **not** here, and never will be, is the instrument itself:
-> the 62 propositions are politicalcompass.org's licensed text, not the author's work.
+> the 62 propositions are a third party's licensed text, not the author's work.
 >
 > That is why every run record is keyed by item id — `{"q": 17, "position": 2}` — and carries
 > `forcing_prompt_sha256` instead of the prompt. Run `scripts/fetch_items.py` to retrieve the
 > items at your end. See **Replicating the barometer** below.
 >
 > **Be precise about what that proves, because this paragraph was not.** The propositions
-> originate with politicalcompass.org; `fetch_items.py` retrieves them from aipolcom.net,
+> originate with that third party; `fetch_items.py` retrieves them from aipolcom.net,
 > which is the source every run record names. Two hashes come back. The **normalized** hash —
 > the item set after folding curly quotes, dashes and entities to ASCII — reproduces exactly,
 > `c49d38f9…`, so you can establish you hold the same 62 propositions. The **canonical**
@@ -850,12 +851,25 @@ Clone these from upstream at the pinned commits to reproduce the pipeline and we
 
 ## License
 
-- **Code:** MIT — see [`LICENSE`](LICENSE).
-- **Run records** in `data/` and `runs/`: **CC BY 4.0**, with the two carve-outs stated in
-  [`data/README.md`](data/README.md) — the instrument text is licensed third-party work and is
-  not here, and model outputs are model outputs under each vendor's terms.
-- **Documents** (`results/`, `CORRECTIONS.md`, `PRIOR-WORK-CORRECTIONS.md`, this README):
-  **CC BY 4.0**, same as the data. Quote them; attribute them to the release tag you read.
+**MIT, for everything in this study that is the author's to license** — code, run records and
+documents alike. See [`LICENSE`](LICENSE). Simplified 2026-09-21 from a split licence (MIT for
+code, CC BY 4.0 for data and prose), because one licence over the whole repository is easier to
+comply with than three, and nothing here needs the difference.
+
+**Two carve-outs remain, and they are not preferences — they are things the author does not own:**
+
+- **The instrument text.** The 62 propositions measured in the sections marked as the retired
+  instrument are **a third party's licensed work**, not the author's, and are
+  deliberately **not in this repository** at all. `check_corpus.py` gates their absence on
+  every release. The author's own bank — the 32 mirrored pairs written 2026-08-30 — is MIT with
+  everything else.
+- **Model outputs.** The response text inside the run records was produced by each vendor's
+  model and is subject to that vendor's terms. What is MIT-licensed is the corpus as
+  assembled, scored and structured here; a vendor's terms govern what their model emitted, and
+  no licence of ours can change that.
+
+Attribute to the release tag you read, not to the repository. The study's own finding is that
+numbers move.
 
 ## Citation
 

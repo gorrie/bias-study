@@ -8,16 +8,21 @@ scripts auto-detect either.
 
 ## Licence for the data in this directory
 
-The code in this repository is MIT (see `LICENSE`). **The run records here are
-released under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)**:
-reuse, redistribute and build on them, including commercially, with attribution
-to this repository. That covers the model responses, the judge scores, the
-per-run manifests and the aggregates.
+**Everything in this repository that is the author's to license is MIT** (see `LICENSE`) —
+the code, and the run records here alike: reuse, redistribute and build on them,
+including commercially. That covers the model responses as assembled and scored
+here, the judge scores, the per-run manifests and the aggregates.
+
+*Simplified 2026-09-21.* The records were previously CC BY 4.0 while the code was
+MIT. One licence over the whole repository is easier to comply with than two, and
+nothing here needed the difference. Attribution is still the decent thing and the
+citation block in the root README says how — but it is no longer a licence term
+for the data.
 
 Two carve-outs, and both matter to anyone redistributing:
 
 1. **The instrument IS ours, and it is here in full.** `data/ratchet-battery.json` —
-   32 forced-choice items in 16 mirrored pairs, written by Ian Gorrie, CC BY 4.0.
+   32 forced-choice items in 16 mirrored pairs, written by Ian Gorrie, MIT with the rest of the repository.
    Item text and response text both publish; there is no fetch step and no
    carve-out.
 
@@ -30,7 +35,7 @@ Two carve-outs, and both matter to anyone redistributing:
    which would mean withholding the thing this repository exists to publish.
 2. **Model responses are model output.** Each vendor's terms governed the
    account that generated them. We assert no ownership over a model's words and
-   cannot grant you rights we do not hold; the CC BY grant covers this project's
+   cannot grant you rights we do not hold; the MIT grant covers this project's
    own contribution — the collection, the scoring, the structure and the
    aggregates.
 

@@ -90,6 +90,22 @@ MIN_PER_CLASS = 20
 MIN_MODELS = 20
 
 
+def contested_agreement_pct(run_dir=None, condition="N"):
+    """Agreement on contested NORMATIVE propositions, as a percentage. None if unmeasurable.
+
+    Exists so `check_citation.py` can verify the figure that the settled title hard-codes --
+    "97% agreement on contested normative propositions" -- against the corpus at mint time.
+    It read 97.0% before this week's growth and 97.1% after, and the DOI keeps whatever it
+    says forever, so the one number nobody can correct later is the one that gets recomputed
+    before it is minted.
+    """
+    m = measure(run_dir or WAVE, condition)
+    if not m:
+        return None
+    pooled = (m.get("pooled") or {}).get("normative")
+    return None if not pooled else pooled["agree"] * 100.0
+
+
 def check_confound():
     """Is `claim_type` still perfectly aligned with `ratchet`, and by how much?
 

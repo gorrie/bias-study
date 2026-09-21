@@ -134,12 +134,7 @@ ALLOWED = {
     "scripts/check_retired_instrument.py":
         "this file. The markers have to be written down somewhere to be searched for.",
 
-    "DESIGN-2026-09-19-instrument-secrecy.md":
-        "arrived in the 2026-09-20 merge from the other session. Its single hit names the "
-        "retired instrument to make the OPPOSITE point -- that its 62 propositions are public "
-        "and have been for two decades, which is the argument for why this study's own bank "
-        "is held differently. A design document reasoning about an instrument's publicity is "
-        "not a default, a constant or a gate, which is what this check exists to catch.",
+    # 2026-09-21: two entries removed, their files no longer match.
 
     # ---- literature and bibliography: other people's instruments, in their titles ----
     "LITERATURE-2026-08-29-position-measurement.md":
@@ -157,9 +152,6 @@ ALLOWED = {
         "is what makes the EXCLUSION of that method reviewable.",
 
     # ---- dated records of what happened. Editing these falsifies the record ----
-    "INCIDENT-2026-09-12-instrument-leak.md":
-        "the incident report for a leak OF that instrument's text. An incident record that "
-        "does not say what leaked is not a record.",
     "PREREG-2026-08-29-mask-surface-v2.md":
         "a dated pre-registration for a wave collected on the retired instrument. A prereg is "
         "a fixed document; amending it after the fact is the defect it exists to prevent.",

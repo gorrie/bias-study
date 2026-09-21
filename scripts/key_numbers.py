@@ -673,7 +673,11 @@ def build():
         {"key": "manip_pairs_sitting",
          "value": manip_sitting["n"],
          "what": "model pairs behind the one-sitting manipulation floor",
-         "phrase": "%d of them answer both arms"},
+         # "%d of them answer both arms" until 2026-09-21. This counts PAIRS and the panel
+         # counts MODELS, so "of them" beside "36 panel models" asserted 61 of 36. A phrase
+         # template that cannot be written truthfully next to its neighbour forces the prose
+         # to choose between reading correctly and passing.
+         "phrase": "%d pairs answer both arms"},
         {"key": "wave_panel_size",
          "value": _panel_number(len(PANEL_MODELS)),
          "what": "models in the frozen wave panel",
@@ -690,7 +694,7 @@ def build():
         {"key": "null_median",
          "value": null["side"][0],
          "what": "same-version null median, side-flips",
-         "phrase": "pairs differ by %d items or more with no version change"},
+         "phrase": "pairs differ by %d or more items with no version change"},
         {"key": "null_pairs",
          "value": null["n"],
          "what": "pairs in the same-version null",
@@ -1898,12 +1902,24 @@ RETRACTED = [
      "political commentator' and then asks critic-framed questions, so Grok's 3.00 -> 5.00 is "
      "persona compliance, not a lean measurement, and quoting it as the top of a dose curve "
      "treats an identity instruction as more of the same force"),
-    ("rewrites ~70% of the political wording",
-     "FINDINGS #11, narrowed 2026-09-13. Established on 1 of 5 families (qwen2.5-7b, Jaccard "
-     "0.276). llama-3.1-8b at 0.339 and mistral-7b at 0.333 sit INSIDE the 0.303-0.392 band "
-     "one model produces resampled against itself, because the local runs sample at "
-     "temperature 0.7 with no seed. The repository's own abliteration_effect_check.py prints "
-     "TEXT CHANGE NOT ESTABLISHED for both"),
+    # REGISTERED AS THE INVARIANT CORE, not as the sentence it first appeared in. This read
+    # "rewrites ~70% of the political wording" and was green on three surfaces asserting the
+    # same claim in other words -- the paper dropped an article, and two website dispatches
+    # moved the verb ("roughly 70% of the political wording CHANGES"). The phrase below is
+    # the part every version of the claim shares; `_claim_pattern` makes articles optional,
+    # hedges interchangeable and "%" equal to "percent", so the next paraphrase is covered
+    # too. A retraction keyed to one spelling retracts one sentence.
+    ("70% of the political wording",
+     "FINDINGS #11, narrowed 2026-09-13 and SETTLED 2026-09-20. Established on 1 of 5 "
+     "families (qwen2.5-7b, Jaccard 0.276). llama-3.1-8b at 0.339 and mistral-7b at 0.333 sit "
+     "INSIDE the 0.303-0.392 band one model produces resampled against itself, because the "
+     "local runs sample at temperature 0.7 with no seed, and abliteration_effect_check.py "
+     "prints TEXT CHANGE NOT ESTABLISHED for both. Settled by the Gemma-2-9B re-collection, "
+     "which supplied the same-weights control the original never had: stock vs abliterated "
+     "0.339, against 0.380 and 0.377 for the same weights resampled against themselves. The "
+     "between-arm figure is below the subject's OWN noise, so the band is no longer borrowed "
+     "from another model. The STANCE half of the weight-rung claim is unaffected and is the "
+     "load-bearing one"),
     ("the two models move in opposite directions",
      "the rung-2 reading, withdrawn 2026-09-15 by the decomposition. B-STM is not an "
      "untreated control -- the proxy edits its scored text on 45 of 60 Opus records. Against "
@@ -1932,6 +1948,137 @@ RETRACTED = [
 #: the README and not the document titled "here is why the objections fail" has
 #: reached the wrong surface: a reviewer's first stop is the second one.
 RETRACTED_ALSO_SCAN = ("data/controls-audit.json",)
+
+
+#: Words a writer swaps without meaning anything by it. A retracted claim restated with
+#: "roughly" for "~", or with an article dropped, is the same claim.
+_HEDGES = ("~", "roughly", "about", "approximately", "around", "some")
+_ARTICLES = ("the", "a", "an")
+
+
+#: Lines that must NOT be joined to the one above: joining them would fuse a table's cells or
+#: a list's items into adjacency that the document does not contain, and invent matches.
+#: These prefixes are structural wherever they appear.
+_NO_JOIN = ("|", "#", ">", "=", "```", "~~~")
+
+#: List markers, which are structural ONLY when followed by a space. `**bold**` opens a
+#: paragraph and `*emphasis*` opens a sentence; treating either as a list item leaves the
+#: paragraph unjoined, and in this repository most paragraphs that state a gated number open
+#: in bold. Markdown itself requires the space, so this is the language's rule, not a guess.
+_LIST_MARKERS = ("-", "*", "+")
+
+
+def _unwrap_prose(text):
+    """Join hand-wrapped prose lines so a phrase split across a line break is still one phrase.
+
+    THE SCANNER READ LINE BY LINE, AND THESE FILES ARE WRAPPED AT ABOUT 95 COLUMNS. So the
+    single most likely form of a retracted claim -- a sentence long enough to wrap -- was the
+    one form it could not see. Found 2026-09-21 by an adversarial pass:
+    `RESULTS-2026-09-19-dose-response.md` was asserting
+
+        ... abliteration rewrites ~70% of political
+        wording while moving stance <= 0.10 ...
+
+    in a live, non-superseded document, while `--check-retractions` reported one occurrence
+    elsewhere and exited on that. Every other variant the gate had been hardened against --
+    dropped article, "per cent", emphasis, table cell -- was rarer than this one.
+
+    Paragraphs are preserved (a blank line still closes quote scope, which the caller relies
+    on) and structural lines are never joined: a table row, list item, heading, blockquote
+    marker or fence stays on its own line, because fusing them would create adjacency the
+    document does not have and report a phrase nobody wrote.
+    """
+    out, buf = [], []
+    in_quote = False
+    for raw in text.split("\n"):
+        stripped = raw.strip()
+        # A BLOCKQUOTE IS WRAPPED PROSE TOO. `>` was excluded wholesale so a quote block would
+        # not fuse with the text around it -- but consecutive `>` lines are one paragraph, and
+        # in this paper the corpus statement, the caveats and most declared limitations live
+        # in them. Join a quote line to the previous quote line only; a blank line, or any
+        # non-quote line, closes the block.
+        if stripped.startswith(">"):
+            body = stripped.lstrip(">").strip()
+            if in_quote and buf and body:
+                buf.append(body)
+            else:
+                if buf:
+                    out.append(" ".join(buf))
+                buf = [stripped] if body else []
+                if not body:
+                    out.append(raw)
+            in_quote = True
+            continue
+        in_quote = False
+        structural = (not stripped
+                      or stripped[0] in _NO_JOIN
+                      or (stripped[0] in _LIST_MARKERS
+                          and (len(stripped) == 1 or stripped[1] in " \t"))
+                      or (stripped[:1].isdigit() and stripped[1:3] in (". ", ") "))
+                      or raw[:4].strip() == "" and raw.strip())   # indented: code or nested
+        if structural:
+            if buf:
+                out.append(" ".join(buf))
+                buf = []
+            out.append(raw)
+        else:
+            buf.append(stripped)
+    if buf:
+        out.append(" ".join(buf))
+    return "\n".join(out)
+
+
+def _claim_pattern(phrase):
+    """Compile a retracted phrase into a pattern that survives ordinary rewording.
+
+    A LITERAL MATCH IS DEFEATED BY AN ARTICLE. Registered 2026-09-13, the phrase
+    "rewrites ~70% of the political wording" was still asserted on three surfaces on
+    2026-09-20 and the gate was green on all three:
+
+        PAPER-below-the-floor.md   "rewrites ~70% of political wording"        (no "the")
+        dispatches/alignment-mask  "roughly 70% of the political wording changes"
+        dispatches/gemma-delta     "roughly 70% of the political wording changes"
+
+    The README, which carried the phrase verbatim, was corrected; the three that paraphrased
+    it were not, because nothing told anyone they existed. That is the same defect as
+    LEARNINGS #3 -- an enumeration where a shape was needed -- and adding the three variants
+    to the list would be the next round of it, since the fourth is a sentence nobody has
+    written yet.
+
+    So: articles are optional, hedge words are interchangeable, and any run of whitespace
+    matches any other. Everything else stays literal, because these phrases are long and
+    specific and a looser rule on a RETRACTION gate would start flagging honest prose.
+
+    The pattern is searched against the lowercased line and returns real offsets into it, so
+    the quote, strikethrough and excerpt logic downstream is unaffected -- which is why this
+    is a pattern rather than a normalisation pass over the text.
+    """
+    import re as _re
+    hedge_alt = "(?:%s)" % "|".join(_re.escape(h) for h in _HEDGES)
+    out = []
+    for tok in phrase.lower().split():
+        # A hedge may be glued to what follows: "~70%" is one token.
+        lead = ""
+        for h in _HEDGES:
+            if tok.startswith(h) and len(tok) > len(h):
+                lead, tok = hedge_alt + r"\s*", tok[len(h):]
+                break
+        if tok in _HEDGES:
+            out.append(hedge_alt)
+            continue
+        if tok in _ARTICLES:
+            out.append("(?:%s)?" % "|".join(_ARTICLES))
+            continue
+        # "70%" and "70 percent" are the same number in two house styles, and the website
+        # and the README disagreed about which -- which is how one surface was corrected
+        # and the other was not.
+        if tok.endswith("%") and tok[:-1].replace(".", "").isdigit():
+            out.append(lead + _re.escape(tok[:-1]) + r"\s*(?:%|per\s?cent)")
+            continue
+        out.append(lead + _re.escape(tok))
+    # `\s*` between tokens rather than `\s+`, because an optional article leaves the gap it
+    # used to fill: "of the political" -> "of political" must still join across one space.
+    return _re.compile(r"\s*".join(out))
 
 
 def _unquoted_occurrences(text, phrase):
@@ -1969,6 +2116,7 @@ def _unquoted_occurrences(text, phrase):
     # forms for a claim someone believes. Verified 2026-09-16 by planting the capitalised
     # sentence in DEVELOPER.md and watching --check-release exit 0.
     needle = phrase.lower()
+    pattern = _claim_pattern(phrase)
     # Strikethrough state carried ACROSS lines. A struck sentence in a hand-wrapped source
     # file routinely opens on one line and closes on the next, so a per-line parity check
     # sees an unterminated `~~` and calls the withdrawal an assertion. Verified against
@@ -1989,7 +2137,7 @@ def _unquoted_occurrences(text, phrase):
     # exempt the whole rest of the file, which is how an escape hatch becomes a hole; a blank
     # line closes it, so the damage from a stray quote stops at the paragraph.
     open_quote = False
-    for line in text.split("\n"):
+    for line in _unwrap_prose(text).split("\n"):
         if not line.strip():
             open_quote = False
         line_opens_strike = line.count("~~") % 2 == 1
@@ -2002,11 +2150,17 @@ def _unquoted_occurrences(text, phrase):
             lowered = hay.lower()
             start = 0
             while True:
-                i = lowered.find(needle, start)
-                if i < 0:
+                m = pattern.search(lowered, start)
+                if m is None:
                     break
-                start = i + 1
-                before, after = hay[:i], hay[i + len(phrase):]
+                i, hit = m.start(), m.end() - m.start()
+                # ADVANCE PAST THE MATCH, not one character. With optional articles the same
+                # sentence matches at several start offsets ("the lean is in the weights" and
+                # "lean is in the weights"), and each produced its own finding with its own
+                # excerpt, so one assertion was reported three times. Later, genuinely
+                # separate occurrences are still found.
+                start = i + max(hit, 1)
+                before, after = hay[:i], hay[i + hit:]
                 quoted = (open_quote != (before.count('"') % 2 == 1)) or (
                     before.count("“") % 2 == 1) or ("“" in before and "”" in after)
                 # STRIKETHROUGH IS A WITHDRAWAL, and a plainer one than a quote mark.
@@ -2023,7 +2177,7 @@ def _unquoted_occurrences(text, phrase):
                     # clause -- which had nothing to do with the retracted phrase and read
                     # as a false positive. An operator who cannot see what matched cannot
                     # act on the finding, and a finding nobody can act on gets ignored.
-                    excerpt = _excerpt(hay, i, len(phrase))
+                    excerpt = _excerpt(hay, i, hit)
                     # Dedupe on the EMPHASIS-STRIPPED form: the same sentence is scanned
                     # once flat and once raw, and reporting it twice -- identical but for a
                     # pair of asterisks -- doubles the apparent defect count.
@@ -2632,6 +2786,12 @@ def main(argv=None):
         return 0
 
     text = io.open(PAPER, encoding="utf-8", newline="").read().replace("\r\n", "\n")
+    # A CLAIM PHRASE MUST SURVIVE THE LINE WRAP IT WILL BE WRITTEN IN. The paper is
+    # hand-wrapped at ~95 columns; a gated phrase longer than the gap to the margin lands
+    # across a break and reads as absent. That drives the prose towards satisfying the
+    # matcher rather than the reader, which is how sentences end up broken mid-clause. Same
+    # unwrap the retraction scan uses, and structural lines are still never joined.
+    text = _unwrap_prose(text)
     bad = []
     # A NUMBER THIS TREE CANNOT COMPUTE IS NAMED, NOT FORMATTED INTO A CRASH.
     #

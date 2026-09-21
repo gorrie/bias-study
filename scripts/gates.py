@@ -210,6 +210,33 @@ GATES = [
                 "is a hard failure rather than a blank. A dataset whose fields are "
                 "undocumented is not shared, it is uploaded."),
 
+    # ARRIVED IN THE 2026-09-20 MERGE AND WERE IN NO STAGE. Both carry `--check` and neither
+    # was registered, which `tests/test_gate_registry.py` caught the moment the two sessions'
+    # trees met: the other session added the tools, this one's gates.py won the merge without
+    # a conflict, and a conflict is the only thing that would have made the omission visible.
+    # This is the 2026-09-18 finding again -- four tools built in a day, sitting in the tree
+    # looking like safeguards, none of which would have run at release.
+    Gate("dose_figure.py", ["--check"], tree="study", stage="release",
+         label="4e the dose figure still matches the arms it draws",
+         covers="the SVG against the judged records behind it. The figure's job changed when "
+                "the pre-registered judge found no arm differs from stock: it now shows the "
+                "ABSENCE of a dose response across a measured 2.45x range of weight change, "
+                "which is a claim a stale chart would silently reverse."),
+    Gate("gen_artifact_manifest.py", ["--check"], tree="either", stage="manual",
+         label="3e the out-of-band weights are checkable",
+         covers="per-file SHA-256 and a directory digest for the ~100 GB of base and "
+                "abliterated weights the weight rung rests on. The bytes travel as a torrent "
+                "beside the release because 17 GB of them reached a branch's history on "
+                "2026-09-20; what ships here is what makes a download verifiable, and a "
+                "result nobody can recompute is not a result.",
+         why="IT CANNOT RUN ON THE MACHINE THAT RELEASES. The weights live on the box that "
+             "built them; this one holds 0.07 GB of leftovers, and the tool correctly REFUSES "
+             "to write a manifest describing the wrong directory. Registered at release for "
+             "half an hour on 2026-09-20 and it failed every run, which is how a gate gets "
+             "switched off wholesale -- so it is manual, and the release checklist's human "
+             "half is where 'run it on the machine holding the weights' belongs. A gate that "
+             "can never go green where it is registered protects nothing."),
+
     # PLAN step 7 -- the four body findings that had no command behind them. Two of the four
     # had a script but no registration, and two had no script at all; all four are in the
     # paper. A figure a reader cannot re-derive is this project's own rule being broken in its

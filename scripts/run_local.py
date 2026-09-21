@@ -207,7 +207,11 @@ def main() -> int:
     except Exception as e:
         print(f"  warmup skipped: {e}", flush=True)
 
-    out_dir = rs.runs_root() / args.out_date / "raw"
+    # `runs_root` is imported from studypaths at the top of this file, not re-exported by
+    # run_study -- `rs.runs_root()` raised AttributeError and this script could not write a
+    # single record. Found 2026-09-20 when the Gemma-2-9B recollection produced zero rows on
+    # both arms; every local collection through run_local.py was broken.
+    out_dir = runs_root() / args.out_date / "raw"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{rs.safe_filename(args.label)}.jsonl"
 

@@ -318,10 +318,19 @@ KNOWN = {
     # model to finish (or none) rather than all of them -- the same mode="w" overwrite this
     # validator was built to catch, one level in. The mismatch is in the harmless direction: more
     # was collected than was recorded. It is a provenance gap and stays listed as one.
-    # RE-VERIFIED 2026-09-20 against the files, because the numbers below had gone stale in
-    # both directions. These two manifests no longer name ONE model -- they name NONE, having
-    # been rewritten at 2026-09-15T19:52 with empty model lists and calls_completed=0. The
-    # records are intact and that is what makes it a provenance gap rather than a data loss.
+    # RE-MEASURED 2026-09-20 against the files. These two manifests no longer name ONE model --
+    # they name NONE, having been rewritten at 2026-09-15T19:52 with empty model lists and
+    # calls_completed=0. The records are intact and that is what makes it a provenance gap
+    # rather than a data loss.
+    #
+    # CORRECTED 2026-09-21: the 09-19 entries said ood held "110 records, 110 of 110 scored"
+    # and that this was "verified 2026-09-19 before being recorded here". It holds 106, and
+    # `git show --numstat 95231e1f` (2026-09-15) is where the other four went -- deleted from
+    # the raw AND scored maverick files four days BEFORE that verification was claimed. So 110
+    # was not a number that went stale; it was never measured, and the word "verified" was
+    # doing work nothing had done. Corrected here rather than quietly, because a declaration
+    # file whose counts are asserted rather than read is the same defect as the manifests it
+    # exists to declare.
     ("2026-09-14-recollect-may25", "manifest-names-no-models"):
         "Manifest rewritten with models_attempted=[] and calls_completed=0; 7 models and 118 "
         "records are on disk, mirrored in scored/, 0 empty responses. The manifest was "

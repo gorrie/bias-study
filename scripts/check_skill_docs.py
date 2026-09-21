@@ -114,9 +114,6 @@ NOT_A_PROCEDURE = {
                               "*.jsonl and an arm that was never collected are "
                               "indistinguishable to a reader, and that ambiguity produced a "
                               "written accusation of fabrication against a page that was right",
-    "gen_data_dictionary.py": "generator -- DATA-DICTIONARY.md from the corpus that exists, so "
-                              "it cannot describe fields the data does not have. --check is "
-                              "the release gate",
     "intensity_by_claim.py": "release gate -- the top-box comparison behind the paper's claim "
                              "that the panel commits hardest where it has least to go on",
     "item_gradient.py": "release gate -- every item of the bank observed at baseline. The "
@@ -132,8 +129,6 @@ NOT_A_PROCEDURE = {
                             "from their source rather than retyped, imported by the rung-2 "
                             "collector. Retyping them is how an arm comes to be named after a "
                             "transform it did not apply",
-    "dose_category.py": "analysis -- which refusal categories survive refusal-direction "
-                        "ablation at each dose. Rung 3, which this release does not ship",
     "group_power.py": "analysis -- what a between-GROUP comparison on this panel could "
                       "detect, asked before it is run. It is why the vintage question is "
                       "recorded as unanswerable (MDE 0.177 against an effect of 0.159) "
@@ -143,6 +138,27 @@ NOT_A_PROCEDURE = {
     # Where both described the same script, the longer explanation is kept: this file exists
     # to say WHY a script has no operator procedure, and the short form of that answer is the
     # one a later reader deletes for being unargued.
+    #
+    # MERGED AGAIN, same day, same rule. Two sessions added to this table within hours and
+    # three names collided -- gen_data_dictionary, dose_category and check_undefined_names.
+    # The longer entry won each time, and the shorter one was deleted rather than kept
+    # alongside, because two reasons for the same script is how the table stops being read.
+    "gen_data_dictionary.py": "a GENERATOR plus its gate -- it writes DATA-DICTIONARY.md from "
+                              "the corpus and `--check` fails when the file is stale or a field "
+                              "in the data has no description. Like the other gen_* scripts it "
+                              "is run because something changed, not as a step an operator "
+                              "chooses between",
+    "dose_figure.py": "a FIGURE GENERATOR plus its staleness gate -- it redraws the dose chart "
+                      "from the judged arms and `--check` fails when the SVG no longer matches "
+                      "them. Run when an arm is rescored, not as a step an operator chooses",
+    "dose_category.py": "an ANALYSIS of one collected series, not a repeatable operator step -- "
+                        "it answers PLAN-2026-08-29-dose-response question 2 against the arms "
+                        "that exist, and is re-run when an arm lands rather than on a schedule. "
+                        "There is nothing for an operator to choose",
+    "check_undefined_names.py": "a GATE, not a procedure -- it runs inside release_check as "
+                                "'no unbound names in any script' and catches the NameError "
+                                "waiting on a rare branch. There is nothing for an operator to "
+                                "decide, and it is private-only because it lints this tree",
     "export_repairs.py": "an OPERATOR TOOL that writes into the public mirror, and so belongs "
                          "on the private side with export_scrubbed.py. Naming it in a skill "
                          "would put a step that publishes into a procedure the mirror can read",

@@ -1001,8 +1001,15 @@ def main(argv=None):
         # worse than no preview: it is the step you take precisely BECAUSE you are
         # about to spend money, and on a mirrored instrument it showed every pair
         # adjacent -- the one arrangement the bank is built to avoid.
+        # AND `renumber` IS NOT OPTIONAL HERE EITHER. Omitted until 2026-09-20, so a preview
+        # taken with --renumber printed the sheet numbered by ITEM ID -- `20. 31. 1. 23.` --
+        # which is protocol v1, the arrangement this study measures as losing 14.0% of sheets
+        # against 1.4% renumbered. The operator checking that the corrected protocol was
+        # actually in effect saw, in the preview, that it was not. Same defect as the
+        # shuffle_seed one above, one argument over, and caught the same way: by reading the
+        # preview before spending.
         messages = build_prompt(items, args.condition, shuffle_seed=args.shuffle_seed,
-                                template=args.template)
+                                template=args.template, renumber=args.renumber)
         # PRINT THE WHOLE PROMPT. This was `m["content"][:1500]`, which on the external
         # 62-proposition bank happened to show most of the short items and on the Ratchet
         # battery's full sentences shows NINE OF THIRTY-TWO -- under a footer that says

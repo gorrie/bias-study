@@ -143,7 +143,7 @@ For published runs, the scored JSONL files are bundled into a HuggingFace datase
 - **Dataset name**: `<hf-namespace>/ai-bias-study-{date}` (one dataset per run)
 - **Splits**: one per model class (`us-closed`, `us-open`, `chinese-closed`, `chinese-open`, `european`, `specialized-abliterated`)
 - **Fields**: full scored-record schema as above
-- **License**: CC BY 4.0 (citation requested; reuse allowed)
+- **License**: MIT (citation requested; reuse allowed)
 - **Card text**: links back to the research page on evilrobots.lol and to this protocol directory
 
 The HF dataset is the canonical machine-readable artifact. The research page is the canonical human-readable artifact. The `runs/YYYY-MM-DD/` directory is the canonical reproducibility artifact.

@@ -44,6 +44,28 @@ dated instead:
 > when it held fourteen. Both fixed 2026-09-12. The dates above are the tags that exist; check
 > with `git tag`, and if this table and the tags disagree again, the tags are right.
 
+### No `vN.N.N` release tags. Ever.
+
+Stated as a rule 2026-09-21, because the question came up again and the reasoning above is easy
+to lose: a semantic version is the obvious thing to reach for, and here it is the one scheme
+that cannot be used. `v1` already means the prompt rung, in vocabulary that is published and
+cited. A `v1.0` release tag would be ambiguous in exactly the place ambiguity is permanent —
+Zenodo mints a DOI per release, and a DOI's version string is not editable afterwards.
+
+**There is one such tag in this repository already, `v2.0.0`, and it should be deleted or
+renamed before the first Zenodo release** — otherwise it sits in the citation history implying
+a numbering scheme this project does not use, next to the axis where `v2` means the
+elicitation pipeline.
+
+"This is the real one" belongs in the release TITLE, which Zenodo displays beside the DOI, not
+in the tag:
+
+> `release-2026-09-21` — *First published release: the 32-item battery instrument, full
+> corpus, and measurement floors.*
+
+And the concept DOI always resolves to the newest release, so no reader needs a version number
+to find current work.
+
 **A dated tag cannot collide with a rung, and it says when the numbers were true** — which
 matters more than a sequence number in a study whose own finding is that numbers move.
 

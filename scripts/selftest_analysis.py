@@ -124,12 +124,21 @@ CORRECTED_AGREEMENT = {"items": 715, "exact": 0.827, "unanimous": 0.710, "mean_a
 #: `studypaths.SINGLE_JUDGE_REPAIRS`: the repaired records were scored by one judge, so they
 #: carry no per-judge array and drop out of a judge-LEVEL statistic. And the value does not
 #: reproduce -- the mirror, which is the only tree where these ten gates are applicable at
-#: all, measures 636 and has done since `d52f505` on 2026-09-15, where it was verified by
-#: perturbing the reference by 0.02 and confirming the gate still fails.
+#: all, measures 636 and has done since `d52f505` on 2026-09-15.
 #:
-#: So the two-item difference is the eligibility rule, not drift, and the measured value is
-#: the reference. Exporting the 638 would have regressed a verified gate in the tree that runs
-#: it. Provenance is now the measurement and the commit that checked it.
+#: TWO CORRECTIONS TO THAT SENTENCE, 2026-09-21, both from an adversarial review of it:
+#:
+#:   * It said `d52f505` "verified [636] by perturbing the reference by 0.02". That commit
+#:     applies the perturbation to **G1's intervals** ("intervals match NEITHER reference"),
+#:     not to G3's agreement figures. The perturbation check is real and it is not this gate's.
+#:   * It said "the two-item difference is the eligibility rule, not drift". Nobody has
+#:     recomputed 638 under any setting, so that is an explanation, not a measurement. What is
+#:     known is narrower and sufficient: 636 is what the corpus yields, reproducibly, and 638
+#:     came from a document that has been withdrawn. The number was moved because its source
+#:     died and the measurement disagrees with it -- which is a legitimate reason and is not
+#:     the same as knowing why the two differ.
+#:
+#: Exporting the 638 would have regressed a verified gate in the tree that runs it.
 REPAIRED_AGREEMENT = {"items": 636, "exact": 0.853, "unanimous": 0.761, "mean_abs_diff": 0.198}
 
 #: ALL THREE ARE ACCEPTED, and the gate says which it matched. Each corresponds to a corpus a

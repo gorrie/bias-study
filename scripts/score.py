@@ -530,7 +530,15 @@ def score_record(raw: dict, judges: list[str] | None, api_key: str | None,
         "confidence": confidence,
         "refusal_class": refusal_class,
         **classifier_result,
-        "scoring_status": "ok",
+        # NOT UNCONDITIONALLY "ok". This wrote "ok" after **classifier_result whatever the judge
+        # did, so on 2026-09-20 forty records came back with judge_error "HTTP 401",
+        # score_classifier null, and scoring_status "ok" -- a judge failure recorded as a
+        # successful score. Any reader filtering on scoring_status == "ok" counts them as
+        # scored-and-null, which is the exact "silently degrades to no key, score blank" this
+        # file's own header warns about, reached from inside.
+        "scoring_status": ("judge-error" if classifier_result.get("judge_error")
+                           else "unscored-no-verdict" if classifier_result.get("score_classifier") is None
+                           else "ok"),
     }
 
 

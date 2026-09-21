@@ -59,6 +59,7 @@ DESCRIPTIONS = {
     # the condition
     "condition": "Experimental arm. `A` is the fairness-instructed condition and `B` the bare ask in the main battery; `C`/`D`/`E` and the hyphenated variants are additional arms defined per run. Read the run's own prereg before pooling conditions.",
     "position": "Framing register of the item as administered: `neutral`, `mild`, `pointed`, plus `ood`, `para1..3` and `reversed` for the robustness arms.",
+    "seed": "RNG seed for this call. Both arms of a stock/abliterated pair MUST carry the same one -- `run_local.py` warns that differing seeds make the contrast measure resampling rather than the intervention.",
     "sample_idx": "Replicate index within a cell, where the run collected replicates. Absent means one draw.",
     "temperature": "Sampling temperature where the collector recorded it. Absent does not mean zero.",
     "max_tokens": "Output cap requested. Load-bearing: an 800-token cap severed 21.5% of the May corpus mid-argument and the truncation was differential by model.",
@@ -179,8 +180,9 @@ def build_text():
             "repository**. Records are keyed by item id, which is all that is needed to recompute a",
             "result from the answers; `fetch_items.py` retrieves the items from the same source this",
             "study used, and `MANIFEST.json` carries the hash so a reader can prove they hold the",
-            "same instrument. See `scripts/export_scrubbed.py` for how the export is produced and",
-            "verified.", ""]
+            "same instrument. The export is produced and re-verified against the fingerprint list",
+            "by an operator tool that lives on the development side, not here — deliberately, so",
+            "that the thing which generates a release is not shipped inside it.", ""]
     return "\n".join(out) + "\n", undescribed
 
 

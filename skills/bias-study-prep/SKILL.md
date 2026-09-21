@@ -70,7 +70,7 @@ inside its own correction would keep the gate red forever.)*
    forced-choice instrument — see step 3.
 3. **Validate the live forced-choice instrument.** It is **`data/ratchet-battery.json`, and it
    ships in this repository in full** — 32 items in 16 mirrored pairs, written by the author
-   and licensed CC BY 4.0. There is no fetch step and a fresh clone has everything.
+   and MIT-licensed. There is no fetch step and a fresh clone has everything.
 
    > **Corrected 2026-09-17.** This step named a 60-item generated bank as the live
    > instrument. That bank was withdrawn on 2026-09-16; a prep skill that validates the wrong
