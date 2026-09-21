@@ -785,8 +785,23 @@ def main(argv=None):
             full = [(c, s) for (c, s) in cells
                     if rep_valid.get((model, c, s), 0) >= args.replicate]
             if full:
-                print("    already at depth %d: %s" % (args.replicate,
-                      ", ".join("%s/%s" % (c, s) for c, s in full)), flush=True)
+                # SAY WHICH CONDITIONS WERE CHECKED, not just which were full.
+                #
+                # On 2026-09-20 a retry for `glm-5.3-flash` printed "already at depth 5:
+                # N/11, A/11, P/11, D/11", collected nothing, and exited 0 -- and the operator
+                # read that as the model being complete. It was not: its shortfall was
+                # entirely conditions B, C and E, five invalid and zero valid apiece, which
+                # this runner does not collect and therefore never looked at. Every statement
+                # in that line was true and the conclusion a reader drew from it was false.
+                #
+                # `collection_check` counts requested sheets across ALL conditions, so the two
+                # tools disagreed about what "done" means and neither said so.
+                print("    already at depth %d across %s: %s"
+                      % (args.replicate, ",".join(conds),
+                         ", ".join("%s/%s" % (c, s) for c, s in full)), flush=True)
+                print("    NOT CHECKED HERE: any condition outside %s. This runner collects "
+                      "only those; a shortfall elsewhere is invisible to it and will still be "
+                      "a collection_check blocker." % ",".join(conds), flush=True)
             cells = [cell for cell in cells if cell not in full]
         else:
             cells = [(c, s) for c in conds for s in SEEDS if (model, c, s) not in have]

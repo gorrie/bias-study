@@ -98,6 +98,60 @@ NOT_A_PROCEDURE = {
                            "rendered with every box left empty is exactly how 372 sheets were "
                            "collected against an unapproved bank. check_instrument_approved "
                            "reads it back; that gate is the procedure",
+    # ---- ADDED 2026-09-20. Eleven entry points the coverage report had been naming since
+    # the registry was written, none of them an operator step. Eight are declared in
+    # gates.GATES and are typed by the registry rather than by a person; the other three are
+    # a parsed-constants module and two analyses cited in the paper. The twelfth script the
+    # report named, export_scripts.py, IS a procedure and is now named in the skill instead.
+    "agreement_by_training.py": "release gate -- whether the panel's agreement survives "
+                                "models trained outside the alignment mainstream. It is the "
+                                "abliterated class that answers the shared-RLHF objection, so "
+                                "the gate is what keeps that class from thinning unnoticed",
+    "calibrate_estimators.py": "release gate -- each estimator's false-positive rate AT THE n "
+                               "IT IS USED AT. The pair bootstrap read 49.6% by this method "
+                               "while its own selftest passed, which is why it is a gate",
+    "check_empty_records.py": "release gate -- every zero-byte record file declared. An empty "
+                              "*.jsonl and an arm that was never collected are "
+                              "indistinguishable to a reader, and that ambiguity produced a "
+                              "written accusation of fabrication against a page that was right",
+    "gen_data_dictionary.py": "generator -- DATA-DICTIONARY.md from the corpus that exists, so "
+                              "it cannot describe fields the data does not have. --check is "
+                              "the release gate",
+    "intensity_by_claim.py": "release gate -- the top-box comparison behind the paper's claim "
+                             "that the panel commits hardest where it has least to go on",
+    "item_gradient.py": "release gate -- every item of the bank observed at baseline. The "
+                        "gradient decides which pairs are most informative, and a hole in it "
+                        "is a silent hole in that ranking",
+    "multiple_comparisons.py": "release gate and generator -- the live family size, read at "
+                               "build time. It was hand-typed in four places saying 153, 241 "
+                               "and 246 at once, every stale copy understating the correction",
+    "pair_consistency.py": "release gate -- whether agreeing with both halves of a mirrored "
+                           "pair exceeds what independent answers produce. An excess would be "
+                           "an instrument defect, so the study checks itself here",
+    "g0dm0d3_constants.py": "a MODULE, not an entry point -- the transform constants PARSED "
+                            "from their source rather than retyped, imported by the rung-2 "
+                            "collector. Retyping them is how an arm comes to be named after a "
+                            "transform it did not apply",
+    "dose_category.py": "analysis -- which refusal categories survive refusal-direction "
+                        "ablation at each dose. Rung 3, which this release does not ship",
+    "group_power.py": "analysis -- what a between-GROUP comparison on this panel could "
+                      "detect, asked before it is run. It is why the vintage question is "
+                      "recorded as unanswerable (MDE 0.177 against an effect of 0.159) "
+                      "rather than omitted, and it is cited in the paper's Limitations",
+    # ---- MERGED IN 2026-09-20 from the other session. Both sides added entries to this
+    # registry and the sets were almost disjoint, so this is a union rather than a choice.
+    # Where both described the same script, the longer explanation is kept: this file exists
+    # to say WHY a script has no operator procedure, and the short form of that answer is the
+    # one a later reader deletes for being unargued.
+    "export_repairs.py": "an OPERATOR TOOL that writes into the public mirror, and so belongs "
+                         "on the private side with export_scrubbed.py. Naming it in a skill "
+                         "would put a step that publishes into a procedure the mirror can read",
+    "derive_manifest.py": "a GATE, not a procedure -- `--check` runs inside release_check as "
+                          "check 3b and verifies that every manifest.derived.json still matches "
+                          "the records it froze. `--write` is run once per new manifest-less "
+                          "run, which is not an operator workflow but a consequence of one; the "
+                          "collector that should have written a manifest is the thing with a "
+                          "procedure, and it no longer exists",
 
     "replicates.py": "a LIBRARY, not a procedure -- the single implementation of "
                      "'average the replicates in a cell', imported by aggregate, analysis, "

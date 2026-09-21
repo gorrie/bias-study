@@ -452,6 +452,49 @@ def is_derived_run(run_date: str) -> bool:
     return False
 
 
+def superseded_runs() -> set:
+    """Base runs that a repaired corpus replaces, where BOTH are present on disk.
+
+    WHY THIS EXISTS. `REPAIRS` declares that `2026-05-26-variance` is superseded by
+    `2026-09-14-variance-spliced`. `canonical_run()` honours that for a caller asking about one
+    run by name. A caller that GLOBS every scored run gets both, and every record the splice
+    carried forward unchanged is then counted twice.
+
+    That was not reachable while the repaired corpora lived only in the private tree. Exporting
+    them to the mirror on 2026-09-19 made it live the same hour: `judge_lean.py` went from 4,668
+    eligible judge records to 6,651, of which **2,967 were duplicates** -- 44.6% of the corpus --
+    and the inflated figure was published to a website page before anyone noticed. The panel
+    spread it carried moved 0.2961 against a true 0.3126. Deduplication makes the spread LARGER,
+    so the claim survived; the digits did not.
+
+    Only supersede where the replacement is actually on disk. In a tree holding the base run and
+    not its repair, the base run is the corpus.
+    """
+    roots = run_roots()
+    out = set()
+    for base, repaired in REPAIRS.items():
+        if any((r / repaired).is_dir() for r in roots) and any((r / base).is_dir() for r in roots):
+            out.add(base)
+    return out
+
+
+def scored_corpus_paths(pattern: str = "*/scored/**/*.jsonl") -> list:
+    """Every scored record file, with superseded base runs dropped. ONE implementation.
+
+    Any analysis that globs scored records across roots must come through here, or it
+    double-counts the repair. See `superseded_runs()`.
+    """
+    import glob as _glob
+    skip = superseded_runs()
+    out = []
+    for root in run_roots():
+        for path in _glob.glob(str(root / pattern), recursive=True):
+            run = Path(path).relative_to(root).parts[0]
+            if run not in skip:
+                out.append(path)
+    return sorted(out)
+
+
 def canonical_run(run_date: str) -> str:
     """The name an analysis should actually read for `run_date`.
 

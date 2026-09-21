@@ -59,16 +59,30 @@ EXPLORATORY = [
      "note": "unconditional and conditional forms, reported separately; the conditional one "
              "is the null (p=0.63) and the unconditional the finding (p=0.0004)"},
     {"family": "claim-type split (normative / documented)",
-     # NO COMMAND, AND THAT IS THE POINT. PLAN step 7 lists this among "the four findings
-     # with no recorded command" -- it is computed, it is in the paper, and no script in the
-     # tree produces it. Naming a plausible filename here would have created a reference to a
-     # script that does not exist, which `check_named_scripts` correctly refuses; it caught
-     # exactly that on the first version of this file.
-     "command": None,
+     # THIS READ `command: None` UNTIL 2026-09-19, and the None was load-bearing: the figure
+     # was in the paper with no script producing it, and naming a plausible filename here
+     # would have created a reference to a script that does not exist, which
+     # `check_named_scripts` correctly refuses -- it caught exactly that on the first version
+     # of this file. The script now exists, so the None goes rather than being explained.
+     "command": "scripts/item_gradient.py --claim-type",
      "corrected": False,
-     "note": "a split of the panel-agreement result by item class. ITS COMMAND IS OWED -- "
-             "PLAN step 7. A figure in the paper with no command behind it cannot be "
-             "re-derived by a reader, which is this project's own rule"},
+     "note": "a split of the panel-agreement result by item class, critic half only -- the "
+             "defender half of a documented pair is a claim of record being DENIED, so "
+             "pooling the frames would average two different questions"},
+    {"family": "agreement by training class (the shared-RLHF objection)",
+     "command": "scripts/agreement_by_training.py",
+     "corrected": False,
+     "note": "four classes -- abliterated, Chinese-jurisdiction, US/EU, local 2024 -- against "
+             "the panel's normative and documented agreement. Written AFTER the data was seen, "
+             "in answer to a reviewer objection, which is the definition of exploratory and is "
+             "why it is here rather than in the pre-registered family"},
+    {"family": "intensity by claim type (top-box rate, documented vs normative)",
+     "command": "scripts/intensity_by_claim.py",
+     "corrected": False,
+     "note": "one paired sign test over 56 models, p = 0.0038. Exploratory, and it carries a "
+             "confound the design forecloses rather than one more data fixes: claim_type is "
+             "perfectly aligned with the bank's jurisdiction tag, so this is simultaneously a "
+             "result about record-backed claims and about jurisdiction-specific ones"},
     {"family": "item omission -- item vs slot vs numeral",
      "command": "scripts/item_omission.py --matrix",
      "corrected": False,
@@ -84,7 +98,7 @@ EXPLORATORY = [
      "note": "8 cells x 7 models; judged against each model's own between-order floor per "
              "PREREG-2026-08-31 Amendment 2, which is a floor comparison and not a p-value"},
     {"family": "elicitation rung (rung 2)",
-     "command": "scripts/refusal_table.py --rung2, position contrasts vs rung-1 B",
+     "command": "scripts/refusal_table.py --rung2",
      "corrected": True,
      "note": "BH-FDR applied WITHIN the rung over its own 15 contrasts, not pooled with the "
              "pre-registered family -- a separate design with a separate control"},
@@ -215,14 +229,52 @@ def report():
             "historical": record, "exploratory": EXPLORATORY}
 
 
+def markdown(res):
+    """The §9 table, GENERATED.
+
+    The family size was hand-typed in four documents and the four disagreed -- 153, 241, 246 --
+    all of them stale in the direction that understates the correction burden, which is the
+    direction that flatters. `--check` catches that after the fact; a generated block means
+    there is nothing to catch, because the paper stops holding its own copy of the number.
+    LEARNINGS #10: two copies of a measurement drift, so derive one.
+    """
+    live = res["prereg_family_live"]
+    out = []
+    out.append("| family | tests | correction | command |")
+    out.append("|---|---:|---|---|")
+    out.append("| pre-registered condition contrasts | %s | **BH-FDR across the family** | "
+               "`position_analysis.py <run> --prereg` |"
+               % ("not computable" if live is None else live))
+    for e in res["exploratory"]:
+        mark = {True: "BH within itself", False: "**none — exploratory**",
+                None: "n/a"}[e["corrected"]]
+        n = e.get("count")
+        cmd = "`%s`" % e["command"] if e["command"] else "*no command*"
+        out.append("| %s | %s | %s | %s |"
+                   % (e["family"], "—" if n is None else n, mark, cmd))
+    out.append("")
+    out.append("Every row below the first is **uncorrected and exploratory**. They are not "
+               "thereby wrong, and they are not a second family that a correction was "
+               "forgotten on: they were not pre-registered, and the requirement this study "
+               "holds other papers to is that each is marked as exploratory *at its point of "
+               "use* rather than only in Limitations. The `multiple_comparisons` column of "
+               "the controls audit scores twelve other studies on exactly this.")
+    return "\n".join(out)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--markdown", action="store_true",
+                    help="the §9 table, for gen_paper's GEN:comparisons block")
     ap.add_argument("--check", action="store_true",
                     help="exit 1 when prose states a family size the data does not support")
     a = ap.parse_args(argv)
 
     res = report()
+    if a.markdown:
+        print(markdown(res))
+        return 0
     if a.json:
         print(json.dumps(res, indent=2, sort_keys=True))
         return 1 if (a.check and res["stale"]) else 0

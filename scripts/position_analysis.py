@@ -754,6 +754,13 @@ def _calibration_rate(unit, trials=200, sheets_per_arm=5, pairs=16, seed=4242):
     exactly zero and any rejection is a false positive. A calibrated estimator sits near 5%.
     Measured on the real corpus, 2026-09-18: pairs 49.6%, sheets 6.2%.
 
+    SUPERSEDED FOR THE SHEET BOOTSTRAP, 2026-09-19: 6.2% was measured on condition-N
+    split-halves, a population whose sheets all vary. `calibrate_estimators.py` splits EVERY
+    eligible cell, degenerate ones included, and gets **10.5%** over 200 splits against 4.5%
+    for an exact permutation test. Quote that number, not this one. This function is retained
+    because it is the only check that covers the PAIR bootstrap, whose 49.6% is what it was
+    built to find.
+
     The sheet-level disturbance is the point. Each sheet gets its own offset -- a different
     sitting, a different draw -- applied to all of its pairs at once. That is exactly the
     structure a pair-bootstrap cannot see, because after `cell_positions` averages the sheets
@@ -798,7 +805,13 @@ def selftest():
     # and a decoration. Measured 2026-09-18:
     #
     #   synthetic, 5 sheets per arm   sheets 12.5%   pairs 83.3%
-    #   real corpus, deeper arms      sheets  6.2%   pairs 49.6%
+    #   real corpus, condition N      sheets  6.2%   pairs 49.6%
+    #   real corpus, ALL cells        sheets 10.5%   exact 4.5%   (calibrate_estimators.py)
+    #
+    # The third row is the one to quote and it is NOT measured here: this selftest samples
+    # condition-N split-halves, whose sheets all vary. `calibrate_estimators.py` splits every
+    # cell with >= 6 sheets, which includes the ones whose sheets are near-copies, and gets
+    # nearly double. A calibration is only as good as the population it draws from.
     #
     # The sheet bootstrap is LIBERAL at five sheets per arm -- 12.5% against a nominal 5% --
     # which is ordinary small-sample bootstrap behaviour and is why `single_sheet_arm` is
@@ -965,6 +978,13 @@ def main(argv=None):
                 "n_records_read": len(records),
                 "n_models": len({r["model"] for r in records}),
                 "pairs": "undisputed-subset" if args.undisputed else "all-16",
+                # WHICH ESTIMATOR, because the record count alone does not identify the
+                # figures. The pair bootstrap rejected 49.6% of true nulls and produced a
+                # placebo result that stood for nine hours and was withdrawn; a cache built
+                # by it is a file full of withdrawn numbers that passes a freshness check the
+                # moment the corpus happens to hold the same number of records again.
+                # `sheet` and `pair` are not interchangeable and the file has to say which.
+                "estimator": "sheet-bootstrap",
                 "bootstrap_n": BOOTSTRAP_N,
                 "computed_at": _dt.datetime.now(_dt.timezone.utc)
                                   .strftime("%Y-%m-%dT%H:%M:%SZ"),

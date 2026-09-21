@@ -48,6 +48,22 @@ AUDIT = os.path.join(STUDY, "data", "controls-audit.json")
 #: so it is computed once by `position_analysis --placebo-table --json` and cached here.
 PLACEBO_CACHE = os.path.join(STUDY, "data", "placebo-control.json")
 
+#: Estimators whose placebo figures this paper is willing to report.
+#:
+#: `pair-bootstrap` is deliberately absent and must stay absent: it resampled the 16
+#: pair-deltas AFTER the sheets had been averaged, so a sheet-level disturbance arrived as
+#: sixteen agreeing numbers and read as signal. Measured at **49.6% rejection of true nulls**,
+#: and the placebo result it produced -- 16 of 37 models moving under a content-free
+#: instruction -- was this paper's lead for nine hours on 2026-09-18 before being withdrawn.
+#:
+#: `sheet-bootstrap` is here and is not innocent either: `calibrate_estimators.py` measures it
+#: at 10.5% against a nominal 5% (2026-09-19). It is reported because the placebo table is a
+#: per-model panel view rather than a single significance verdict, and because §1's reading of
+#: it -- 3 of 37 against 3.9 expected BY THAT RATE -- uses the measured rate rather than
+#: assuming nominal. A future exact-permutation build belongs in this set too; it does not
+#: exist yet, and listing an estimator nothing produces would be a false denial.
+ACCEPTED_PLACEBO_ESTIMATORS = {"sheet-bootstrap"}
+
 
 class StaleCache(Exception):
     """The cached numbers no longer describe the corpus on disk."""
@@ -98,6 +114,23 @@ def placebo_control():
     run = prov.get("run")
     if not run:
         raise StaleCache("data/placebo-control.json carries no provenance -- rebuild it")
+
+    # WHICH ESTIMATOR BUILT IT. The record count says the cache describes this corpus; it says
+    # nothing about how. The pair bootstrap rejected 49.6% of true nulls and the placebo result
+    # it produced stood for nine hours before being withdrawn -- and a cache full of those
+    # figures passes every freshness check here the moment the corpus holds the same number of
+    # records again. Caches written before 2026-09-19 carry no `estimator` key at all, and
+    # those are refused rather than assumed: the whole point is that we cannot tell.
+    est = prov.get("estimator")
+    if est not in ACCEPTED_PLACEBO_ESTIMATORS:
+        raise StaleCache(
+            "the placebo cache was built by estimator %r, which is not one this paper "
+            "reports (%s). A cache with no estimator recorded predates 2026-09-19 and may "
+            "hold PAIR-bootstrap figures, which were withdrawn at 49.6%% false positives. "
+            "Rebuild:\n"
+            "  python scripts/position_analysis.py %s --placebo-table --json "
+            "> data/placebo-control.json"
+            % (est, ", ".join(sorted(ACCEPTED_PLACEBO_ESTIMATORS)), run))
 
     import position_analysis as _PA
     run_dir = os.path.join(STUDY, "runs", run)
@@ -358,6 +391,10 @@ def audit_scale():
     # and it still happened, which is the argument for computing these rather than typing them.
     return {"external": len(external), "full_text": len(full),
             "not_full": len(external) - len(full),
+            # DERIVED, because it was a literal inside a claim template ("thirteen controls")
+            # and went stale the day a fourteenth control was added -- a gate failing on its
+            # own wording rather than the paper's.
+            "controls": len(controls),
             "yes_same_version_dist": tally("same_version_dist", "yes"),
             "no_same_version_dist": tally("same_version_dist", "no"),
             "applicable_same_version_dist": applicable("same_version_dist"),
@@ -794,7 +831,16 @@ def build():
         {"key": "audit_external",
          "value": audit["external"],
          "what": "external studies in the controls audit, excluding ours",
-         "phrase": "%d studies, thirteen controls"},
+         # THE CONTROL COUNT WAS A LITERAL HERE ("thirteen controls") AND WENT STALE THE DAY A
+         # FOURTEENTH CONTROL WAS ADDED -- a gate failing on its own wording rather than the
+         # paper's. The first repair substituted the live count INTO the template, which
+         # `test_no_phrase_template_hides_a_second_number` rejected and was right to: a value
+         # baked into a phrase looks checked and is not. It is its own claim key now.
+         "phrase": "%d studies"},
+        {"key": "audit_controls",
+         "value": audit["controls"],
+         "what": "controls in the audit matrix -- the columns every study is scored on",
+         "phrase": "%d controls"},
         {"key": "audit_full_text",
          "value": audit["full_text"],
          "what": "of those, read in full rather than retrieved as a summary",
@@ -805,9 +851,21 @@ def build():
          # the digit. A first attempt dropped the number entirely ("all twelve read in full"),
          # which reads better and silently stops the gate checking the count -- the phrase is
          # matched literally, so a phrase without the value verifies nothing.
+         # "the twelve" was a literal here too and broke at fourteen. The denominator is NOT
+         # substituted back in -- that was the same defect in the other direction. It is
+         # carried by `audit_external` in the adjacent sentence, where it is checked.
          "phrase": ("all %d read in full" if audit["full_text"] == audit["external"]
-                    else "%d of the twelve read in full")},
+                    else "%d of them read in full")},
     ]
+    # SAY WHY, not just that. Every placebo row above reads `None if not placebo else ...`, so
+    # a refused cache made seven numbers uncomputable and the report said only "no value
+    # produced in this tree" -- while `placebo_error` held the exact reason, naming the run,
+    # the record counts, the estimator and the rebuild command. A check that knows what drifted
+    # and prints a shrug is the one somebody stops reading.
+    if placebo_error:
+        for r in rows:
+            if r["key"].startswith("placebo_"):
+                r["why_unavailable"] = placebo_error
     return _resolve(rows)
 
 
@@ -1324,7 +1382,9 @@ def _judge_spread():
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         # THE MIRROR, for the same reason _withheld_records uses it: this number is quoted in
         # the PUBLIC README, so it must be the one a reader of that README can reproduce. The
-        # private tree returns 0.2915 over 4,744 records and the mirror 0.2926 over 4,668.
+        # the two trees hold different corpora, so the figures differ by construction; the
+        # mirror's are the published ones. Counts move whenever a repair is exported -- see
+        # studypaths.scored_corpus_paths(), which drops superseded base runs.
         return _mirror_judge_stats()[3]
     except Exception:
         return None
@@ -1334,7 +1394,7 @@ def _mirror_judge_records():
     """Every scored record in the PUBLIC MIRROR carrying a per-judge breakdown.
 
     THE MIRROR, DELIBERATELY, and this is the one place in this file where that distinction
-    bites. The private tree holds 4,744 such records and the mirror holds 4,668 -- the mirror is
+    bites. The counts differ between trees and move when a repair lands -- the mirror is
     the scrubbed, published corpus and it is what a reader actually re-runs. A public page must
     state a number the public artifact reproduces. Gating these against the private tree would
     fail a correct page, and "fixing" the page to make the gate green would publish a figure
@@ -1365,6 +1425,8 @@ def _mirror_judge_stats():
         import json as _json
         import statistics as _st
         import collections as _c
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from eligibility import is_eligible as _eligible
         # WHICH TREE IS THE MIRROR depends on which tree this is running in. From the private
         # study the mirror is the `bias-study-release` symlink; run FROM the mirror there is no
         # such path above it and the mirror is simply here. Resolving that wrong returned
@@ -1373,10 +1435,28 @@ def _mirror_judge_stats():
         mirror = _find_surface("bias-study-release")
         if not os.path.isdir(mirror):
             mirror = STUDY
+        # THE SAME SELECTION judge_lean uses, including dropping superseded base runs.
+        # This globbed both layouts directly and so counted every repaired corpus twice once
+        # the mirror held the splices as well as their sources -- 2,967 of 6,651 records were
+        # the same records again, and the inflated spread reached a published page.
+        #
+        # The supersession list is studypaths.REPAIRS, applied to the MIRROR's directories
+        # rather than this tree's, because that is the corpus being described. A base run is
+        # dropped only where its replacement is actually present.
+        from studypaths import REPAIRS as _REPAIRS
+        present = set()
+        for layout in ("data", "runs"):
+            d = os.path.join(mirror, layout)
+            if os.path.isdir(d):
+                present |= {n for n in os.listdir(d) if os.path.isdir(os.path.join(d, n))}
+        superseded = {b for b, rep in _REPAIRS.items() if rep in present and b in present}
         paths = []
         for layout in ("data", "runs"):
-            paths += _glob.glob(os.path.join(mirror, layout, "*", "scored", "**", "*.jsonl"),
-                                recursive=True)
+            for path in _glob.glob(os.path.join(mirror, layout, "*", "scored", "**", "*.jsonl"),
+                                   recursive=True):
+                run = os.path.relpath(path, os.path.join(mirror, layout)).split(os.sep)[0]
+                if run not in superseded:
+                    paths.append(path)
         per = _c.defaultdict(list)
         n = 0
         for path in sorted(paths):
@@ -1387,7 +1467,17 @@ def _mirror_judge_stats():
                     r = _json.loads(line)
                 except ValueError:
                     continue
-                if r.get("score_classifier") is None or not r.get("score_classifier_judges"):
+                # THE ELIGIBILITY RULE, NOT A SECOND COPY OF IT. This read
+                # `score_classifier is not None`, which judge_lean.py:166 names as
+                # EXACTLY the filter a scored-blank record passes -- it admits all 466
+                # scored-empty records and their 852 per-judge deviations, and they are
+                # not distributed evenly across judges (deepseek-v3.2 scored 466 of 466,
+                # claude-haiku-4.5 zero), so they move the lean they are averaged into.
+                # That made this gate compute the mirror's judge lean over 8,295 records
+                # where judge_lean.py computes it over 6,651, and the gate is what the
+                # published website phrases are checked against. A forked eligibility
+                # rule is DATA-EMPTY-SCORES-002 surviving inside the thing that guards it.
+                if not _eligible(r) or not r.get("score_classifier_judges"):
                     continue
                 n += 1
                 med = r["score_classifier"]
@@ -1396,9 +1486,11 @@ def _mirror_judge_stats():
                         per[j["judge"]].append(j["score"] - med)
         if n and per:
             means = sorted(_st.mean(v) for v in per.values())
-            # Fourth element is the UNROUNDED spread. Subtracting 3dp-rounded endpoints gives
-            # 0.2920 where the spread is 0.2926, and a margin hidden in a rounding is the exact
-            # error ci_clean_effects() exists to document.
+            # Fourth element is the UNROUNDED spread. Subtracting 3dp-rounded endpoints loses
+            # the last digit -- on the 2026-09-05 corpus it gave 0.2920 against a true 0.2926 --
+            # and a margin hidden in a rounding is the exact error ci_clean_effects() documents.
+            # The example is historical; the corpus has moved twice since. Do not read it as
+            # the current spread.
             out = (n, round(means[-1], 3), round(means[0], 3), round(means[-1] - means[0], 4))
     except Exception:
         out = (None, None, None, None)
@@ -1477,9 +1569,10 @@ def surface_numbers():
         # quotes most often against itself -- "larger than two of our own five published
         # effects", in CORRECTIONS.md, PRIOR-WORK-CORRECTIONS.md, README.md,
         # controls-audit.json and add_controls_2026_09.py. The comparison was a typed literal
-        # inside judge_lean.py and it was wrong: the spread is 0.2926 and the third-smallest
-        # effect is 0.3000. Five documents copied it. Gated here so the self-criticism is held
-        # to the standard the rest of the file holds the findings to.
+        # inside judge_lean.py and it was wrong: on that corpus the spread was 0.2926 against
+        # a third-smallest effect of 0.3000. Five documents copied it. Gated here so the
+        # self-criticism is held to the standard the rest of the file holds the findings to --
+        # and the spread is now computed, not typed, so it moves when the corpus does.
         # WITHHELD RECORDS. Typed as 19 in the README against 38 on disk, beside a pointer to
         # `runs/COMPASS-EXPORT-MANIFEST.json`, a file that does not exist -- check_doc_links.py
         # missed it because it was backticked rather than written as a markdown link. A

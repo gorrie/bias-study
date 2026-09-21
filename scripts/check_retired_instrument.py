@@ -55,6 +55,62 @@ RETIRED_MARKERS = (
     "ratchet-battery-i3",
 )
 
+#: THE RETIRED INSTRUMENT'S LENGTH, which leaks as a bare number long after its NAME is gone.
+#:
+#: The markers above are instrument names, and they are the easy half: a name is conspicuous
+#: and a search finds it. The number is not. On 2026-09-20 §6 of the paper read *"the same
+#: prompt returns the same 62 answers every time"* -- describing OUR instrument, which has 32
+#: items -- and every gate was green, because no gate was looking for a digit.
+#:
+#: This study has already paid for that confusion five times: `CORRECTIONS-2026-09-17-power.md`
+#: records five withdrawn claims that all came from counting out of 62 on a 32-item bank, and
+#: Limitation 1 carries its own note about the same slip in the same paper.
+#:
+#: A hit is EXPECTED wherever the sentence is about the retired questionnaire or about someone
+#: else's instrument -- which is most of them -- so this is not a ban on the digit. It is a
+#: requirement that the sentence say which instrument it means. See `_names_the_retired_one`.
+#: Filename prefixes that make a document a DATED RECORD rather than a live claim. A design
+#: note, a correction, a prereg or a results document written while the instrument was 62 items
+#: is *supposed* to say 62 -- editing it to say 32 would falsify the record of what was
+#: designed, measured and corrected, which is the same offence as rewriting a third-party
+#: title to clear a grep.
+#:
+#: The first version of this check scanned everything and produced 165 hits, nearly all of them
+#: correct history. A gate that noisy is a gate somebody silences wholesale, so the numeric
+#: pass runs only where a 62 would be a claim about the CURRENT instrument.
+#: SO IT IS A WHITELIST. A blacklist of dated-record prefixes was the first attempt and it left
+#: 121 hits -- FINDINGS.md, SCRIPTS.md, RUBRIC-SCORES.md, THESIS-STATE, OUTREACH, SPEC, REVIEW,
+#: each needing its own exception, each one a chance to rot back into noise. The set of
+#: documents where a bare 62 is a LIVE CLAIM ABOUT THIS INSTRUMENT is small, knowable and
+#: unlikely to grow: what ships, and what directs the work. Everything else in this tree is a
+#: record of a study that had 62 items, and it is supposed to say so.
+NUMERIC_SURFACES = (
+    "PAPER-below-the-floor.md",
+    "README.md",
+    "CITATION.cff",
+    "PLAN.md",
+)
+
+NUMERIC_MARKERS = (
+    (r"\b62\s+(?:answers?|items?|propositions?|questions?|statements?)\b",
+     "a 62-length claim -- this instrument has 32 items"),
+    (r"\b(?:of|out of)\s+62\b",
+     "a denominator of 62 -- this instrument has 32 items"),
+)
+
+#: Words that make a 62 legitimate: the sentence is about the retired bank, or about a cited
+#: study's own instrument. Matched in the SAME SENTENCE, in either direction -- unlike the
+#: historical test in `multiple_comparisons`, which requires the marker to precede the figure,
+#: because here the qualifier reads naturally on both sides ("13 items of 62 on the retired
+#: questionnaire" and "the retired questionnaire's 62 items" are both fine).
+CONTEXT_WORDS = (
+    "retired", "withdrawn", "superseded", "previous", "former", "old ", "until",
+    "political compass", "compass", "questionnaire", "i3", "60-item",
+    # A citation in the sentence: someone else's instrument, reported as they reported it.
+    "et al", "röttger", "rottger", "liu", "rozado", "kamal", "motoki", "sakhawat",
+    "dominguez", "their own", "they measured", "theirs",
+)
+
 #: Directories that hold withdrawn material by design. Their whole purpose is to keep what was
 #: retired, so scanning them would make the gate permanently red for doing its job.
 SKIP_DIRS = {"withdrawn", "export", ".git", "__pycache__", ".pytest_cache",
@@ -77,6 +133,13 @@ ALLOWED = {
         "a third-party finding ABOUT it, which is evidence for retiring it.",
     "scripts/check_retired_instrument.py":
         "this file. The markers have to be written down somewhere to be searched for.",
+
+    "DESIGN-2026-09-19-instrument-secrecy.md":
+        "arrived in the 2026-09-20 merge from the other session. Its single hit names the "
+        "retired instrument to make the OPPOSITE point -- that its 62 propositions are public "
+        "and have been for two decades, which is the argument for why this study's own bank "
+        "is held differently. A design document reasoning about an instrument's publicity is "
+        "not a default, a constant or a gate, which is what this check exists to catch.",
 
     # ---- literature and bibliography: other people's instruments, in their titles ----
     "LITERATURE-2026-08-29-position-measurement.md":
@@ -238,9 +301,45 @@ def _text_files():
             yield rel, path
 
 
+def _names_the_retired_one(text, start, end):
+    """Does this sentence say which instrument it means?
+
+    A 62 is fine when the sentence is about the retired questionnaire or about a cited study's
+    own instrument, and most of them are. It is a defect only when the sentence reads as a
+    claim about THIS instrument, which has 32 items. So the test is not "is the digit here"
+    but "does the surrounding sentence disambiguate".
+    """
+    line_start = text.rfind("\n", 0, start) + 1
+    line_end = text.find("\n", end)
+    line_end = len(text) if line_end < 0 else line_end
+    line = text[line_start:line_end]
+
+    # QUOTED IS NOT ASSERTED. A figure inside quotation marks is being reported -- somebody
+    # else's sentence, or our own being corrected. This file's own PLAN entry quotes the
+    # defect it fixed ("the same prompt returns the same 62 answers every time") and tripped
+    # the gate on the record of the repair, which is the same self-reference that made
+    # `run_inventory` certify a directory its comments warned about.
+    rel_start = start - line_start
+    for open_q, close_q in (('"', '"'), ("“", "”"), ("*", "*")):
+        before = line.count(open_q, 0, rel_start)
+        if open_q == close_q:
+            if before % 2 == 1:
+                return True
+        elif before > line.count(close_q, 0, rel_start):
+            return True
+
+    lo = max(text.rfind(". ", 0, start), text.rfind("\n", 0, start),
+             text.rfind("> ", 0, start)) + 1
+    hi = text.find(". ", end)
+    hi = len(text) if hi < 0 else hi
+    sentence = text[lo:hi].lower()
+    return any(w in sentence for w in CONTEXT_WORDS)
+
+
 def scan():
     """-> (hits, n_files, n_allowed_used). A hit is (rel_path, lineno, line)."""
     pattern = re.compile("|".join(re.escape(m) for m in RETIRED_MARKERS), re.IGNORECASE)
+    numeric = [(re.compile(p, re.IGNORECASE), why) for p, why in NUMERIC_MARKERS]
     hits, n_files, allowed_used = [], 0, set()
     for rel, path in _text_files():
         n_files += 1
@@ -255,6 +354,21 @@ def scan():
                 allowed_used.add(rel)
                 continue
             hits.append((rel, lineno, line.strip()[:120]))
+
+        # THE NUMERIC PASS IS NOT COVERED BY `ALLOWED`, deliberately. That allowlist exempts a
+        # whole file because its BIBLIOGRAPHY cites other people's instruments by name -- and
+        # that blanket exemption is exactly how "the same prompt returns the same 62 answers"
+        # sat in the paper's own prose with the gate green. A file may be allowed to NAME the
+        # retired instrument and still not be allowed to silently count out of it.
+        if os.path.basename(rel) not in NUMERIC_SURFACES:
+            continue
+        for rx, why in numeric:
+            for m in rx.finditer(text):
+                if _names_the_retired_one(text, m.start(), m.end()):
+                    continue
+                lineno = text[:m.start()].count("\n") + 1
+                line = text.splitlines()[lineno - 1].strip()[:120]
+                hits.append((rel, lineno, "%s -- %s" % (line, why)))
     return hits, n_files, allowed_used
 
 

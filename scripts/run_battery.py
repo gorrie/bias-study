@@ -1059,6 +1059,9 @@ def main(argv=None):
     # offsetting by a count. Offsetting by `have` is right for a clean resume and wrong for a
     # cell already carrying duplicates -- it would collide again while repairing.
     have = 0
+    #: Valid sheets in this cell that match the request in every respect EXCEPT the provider
+    #: pin. Counted so the skip message can say why a cell that looks full is not.
+    other_provider = 0
     seen_seeds = set()
     if path.exists():
         for line in io.open(path, encoding="utf-8"):
@@ -1072,6 +1075,23 @@ def main(argv=None):
                     and rec.get("template", "T01") == args.template
                     and rec.get("shuffle_seed") == args.shuffle_seed
                     and rec.get("temperature") == args.temperature):
+                # THE PIN IS PART OF THE REQUEST, and leaving it out of this comparison cost
+                # a repair that made things worse on 2026-09-20.
+                #
+                # `z-ai/glm-5.2` was pinned to a backend that had stopped serving it. The
+                # repair asked for all four conditions on a live backend, into the same
+                # directory. This loop counted the DEAD-BACKEND sheets as satisfying a request
+                # that named a different provider, printed "5 valid runs already on disk,
+                # nothing to do" for three conditions, and collected one sheet. The model went
+                # from one serving path to two -- the routing confound the repair existed to
+                # clear, manufactured by the repair, in one run.
+                #
+                # Serving path is a same-version variant in this study. A sheet from another
+                # backend is therefore not the sheet being asked for, and counting it is the
+                # same class of error as counting a different temperature.
+                if args.provider and rec.get("provider") and rec["provider"] != args.provider:
+                    other_provider += 1
+                    continue
                 have += 1
                 if rec.get("seed") is not None:
                     seen_seeds.add(rec["seed"])
@@ -1079,6 +1099,12 @@ def main(argv=None):
         # Sample size is DISTINCT SEEDS, so a cell with duplicates is short however many
         # records it holds. Count it that way, and the shortfall below is the real one.
         have = len(seen_seeds) if seen_seeds else have
+    if other_provider:
+        print("%s  %s  template %s: %d valid sheet(s) here were served by ANOTHER backend and "
+              "do NOT count toward the %s pin -- collecting alongside them will leave this "
+              "model on two serving paths, which is a collection_check blocker. Withdraw them "
+              "or collect into a directory that does not hold them."
+              % (args.model, args.condition, args.template, other_provider, args.provider))
     if have >= args.runs:
         print("%s  %s  template %s: %d valid run(s) already on disk, nothing to do"
               % (args.model, args.condition, args.template, have))

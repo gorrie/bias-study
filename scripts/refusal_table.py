@@ -87,13 +87,26 @@ CLAUSE_NAMES = ("multiple sides", "no personal position", "acknowledge uncertain
 #: so every time rather than leaving it to a reader of the writeup.
 RUNG2_CONDITIONS = ["G-Boost", "G-Directive", "G-Persona"]
 
+#: The sampling ladder, collected 2026-09-19. Rung-2 arms like the three above, and separated
+#: from them because they differ on the axis that matters for interpreting the rung: **these
+#: carry no system prompt at all.** The G- arms vary the prompt and hold sampling fixed; these
+#: vary temperature, top-p, top-k and the two penalties and hold the prompt at nothing. So they
+#: are the only PURE elicitation arm in the study -- a position change under them cannot be a
+#: prompt effect, because there is no prompt.
+#:
+#: They are the rescued half of `autotune`: its `adaptive` strategy reads learned state and is
+#: therefore not reproducible, but its four fixed strategies are literal constants and are
+#: reproducible exactly. Only the fixed four are collected. BACKLOG §21.
+SAMPLING_CONDITIONS = ["S-Precise", "S-Balanced", "S-Creative", "S-Chaotic"]
+
 #: Arms whose system prompt instructs against refusal. Mirrors `run_rung2`'s own dict; kept
 #: here as a literal so this table does not import a collector to print a warning.
 RUNG2_INSTRUCTS_AGAINST_REFUSAL = {"G-Directive", "G-Persona"}
 
 #: Everything this file knows how to place. A condition in the corpus and in none of these
 #: lists is an arm nobody is reporting, and that is a blocker rather than a shrug.
-KNOWN_CONDITIONS = set(CONDITIONS) | set(FACTORIAL_CONDITIONS) | set(RUNG2_CONDITIONS)
+KNOWN_CONDITIONS = (set(CONDITIONS) | set(FACTORIAL_CONDITIONS) | set(RUNG2_CONDITIONS)
+                    | set(SAMPLING_CONDITIONS))
 
 # The RULE below is a deliberate hand-mirror of the collector's -- that independence is what
 # the audit tests. The VERSION NUMBER is not mirrored: both implementations must agree about
@@ -478,6 +491,11 @@ def main():
                          "control. Two of the three carry a system prompt ordering the model "
                          "never to refuse, so their refusal rates are a manipulation check "
                          "rather than a measurement, and the view says so.")
+    ap.add_argument("--sampling", action="store_true",
+                    help="the sampling ladder -- four decoding settings, NO system prompt on "
+                         "any arm, against condition N. The only contrast in the study where "
+                         "a position change cannot be a prompt effect, because there is no "
+                         "prompt.")
     ap.add_argument("--factorial", action="store_true",
                     help="the eight clause-factorial cells and the per-clause decomposition. "
                          "They are NOT columns in the main table -- different prereg, "
@@ -500,6 +518,8 @@ def main():
         return print_factorial(rows)
     if args.rung2:
         return print_rung2(rows)
+    if args.sampling:
+        return print_sampling(rows)
 
     counted = collections.defaultdict(lambda: [0, 0])
     other = collections.Counter()
@@ -570,6 +590,7 @@ def report_unknown_conditions(skipped):
         return 0
     factorial = {c: n for c, n in skipped.items() if c in FACTORIAL_CONDITIONS}
     rung2 = {c: n for c, n in skipped.items() if c in RUNG2_CONDITIONS}
+    sampling = {c: n for c, n in skipped.items() if c in SAMPLING_CONDITIONS}
     unknown = {c: n for c, n in skipped.items() if c not in KNOWN_CONDITIONS}
     print()
     if factorial:
@@ -578,6 +599,9 @@ def report_unknown_conditions(skipped):
     if rung2:
         print("not in this table, by design: %d elicitation-rung sheet(s) across %d arm(s) "
               "-- run with --rung2" % (sum(rung2.values()), len(rung2)))
+    if sampling:
+        print("not in this table, by design: %d sampling-ladder sheet(s) across %d arm(s) "
+              "-- run with --sampling" % (sum(sampling.values()), len(sampling)))
     if unknown:
         print()
         print("BLOCKER: %d sheet(s) carry a condition this table places NOWHERE: %s"
@@ -644,6 +668,65 @@ def print_rung2(rows):
     print()
     print("G-Boost carries no system prompt and is the only elicitation reading here:")
     print("G-Boost minus B is the sampling change alone.")
+    if other:
+        print()
+        print("excluded as neither refusal nor answer sheet: %s"
+              % ", ".join("%s %d" % kv for kv in sorted(other.items())))
+    return 0
+
+
+def print_sampling(rows):
+    """The sampling ladder, against condition N -- the bare ask with no system prompt.
+
+    WHY N AND NOT B. Every arm here is collected with NO SYSTEM PROMPT, so the only thing that
+    separates one from another, or any of them from the control, is the decoding parameters.
+    Condition B adds "What do you think?" to the bare ask, which is a prompt change; using it
+    as the control would confound the ladder with that sentence and reproduce in miniature the
+    protocol confound that withdrew rung 2's position claims on 2026-09-19.
+
+    So this is the study's only clean elicitation contrast: same prompt, same items, same
+    order, four decoding settings from temperature 0.2 to 1.6.
+    """
+    wanted = set(SAMPLING_CONDITIONS) | {"N"}
+    counted = collections.defaultdict(lambda: [0, 0])
+    other = collections.Counter()
+    for row in rows:
+        cond = row.get("condition")
+        if cond not in wanted:
+            continue
+        mode = classify(row)
+        if mode in ("truncated", "budget-exhausted", "transport", "other"):
+            other[mode] += 1
+            continue
+        cell = counted[(row.get("model"), cond)]
+        cell[1] += 1
+        if mode == "refused":
+            cell[0] += 1
+
+    models = sorted({m for m, c in counted if c in SAMPLING_CONDITIONS})
+    if not models:
+        print("SAMPLING LADDER -- no sheets collected yet.")
+        return 0
+
+    cols = ["N"] + SAMPLING_CONDITIONS
+    print("SAMPLING LADDER -- refusal rate, against condition N as the control")
+    print("NO SYSTEM PROMPT ON ANY ARM. The arms differ only in decoding: temperature 0.2,")
+    print("0.7, 1.1, 1.6 with top-p, top-k and the two penalties moving with it. This is the")
+    print("only contrast in the study where a position change cannot be a prompt effect,")
+    print("because there is no prompt.")
+    print()
+    print("model".ljust(34) + "".join(c.rjust(13) for c in cols))
+    for m in models:
+        line = m[:33].ljust(34)
+        for cond in cols:
+            refused, n = counted[(m, cond)]
+            line += ("-" if not n
+                     else "%d%% (%d)" % (round(100 * refused / n), n)).rjust(13)
+        print(line)
+    print()
+    print("The rescued half of `autotune`: its `adaptive` strategy reads learned state and is")
+    print("not reproducible, so it is not collected. These four are literal constants in the")
+    print("source and reproduce exactly. BACKLOG §21.")
     if other:
         print()
         print("excluded as neither refusal nor answer sheet: %s"

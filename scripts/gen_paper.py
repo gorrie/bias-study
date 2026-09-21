@@ -43,6 +43,21 @@ BLOCKS = {
     "null":     ("floor_table.py", [], "same-version"),
     "references": ("references.py", [], None),
     "timeline":   ("timeline.py", ["--markdown"], None),
+    # GENERATED BECAUSE HAND-TYPING IT FAILED FOUR TIMES. The pre-registered family size sat
+    # in four documents as 153, 241 and 246 simultaneously -- every stale copy understating
+    # the correction burden, which is the direction that flatters. `multiple_comparisons
+    # --check` catches that after the fact; generating the table means the paper stops holding
+    # a copy to go stale. It also forces the exploratory families into the paper, which is the
+    # half of the disclosure the paper never made at all.
+    "comparisons": ("multiple_comparisons.py", ["--markdown"], None),
+    # §3b. The answer to "isn't this just shared RLHF?", which the paper had no answer to
+    # until 2026-09-20 although the data to give one had been on disk since the wave.
+    "training": ("agreement_by_training.py", ["--markdown"], None),
+    # §3b, second half. The intensity result and -- inseparably -- the confound that governs
+    # how it reads: `claim_type` is perfectly aligned with `ratchet` in this bank, so the
+    # caveat is emitted BY the generator rather than written around it. Prose beside a table
+    # can be edited away without touching the figures; this cannot.
+    "intensity": ("intensity_by_claim.py", ["--markdown"], None),
 }
 
 

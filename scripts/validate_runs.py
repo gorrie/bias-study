@@ -50,12 +50,22 @@ def count_records(d: Path) -> tuple[int, int, str]:
       "raw"    raw/*.jsonl                     -- the manifest collector
       "flat"   *.jsonl at the top level        -- the Aug-Sep barometer collector
       "nested" */*.jsonl one level down        -- calibration/<model>/<model>__C.jsonl
+      "pairs"  */*/*.jsonl two levels down     -- <pair>/<arm>/<model>__<condition>.jsonl
       "none"   no records anywhere
+
+    The "pairs" row was added 2026-09-19 and is the SAME DEFECT AS ABOVE, one level deeper.
+    `runs/2026-08-30-ablation-pairs` (48 files) and `runs/2026-09-07-ablation-wave` (63 files)
+    hold 364 records between them in the ablation collector's pair/arm layout, and this function
+    reported both as "none, 0 records" because it stopped looking at one level of nesting.
+    `run_inventory.py` saw 49 and 315 in the same directories, so two tools in this tree
+    disagreed about whether a third of a thousand records existed. Adding a layout here is
+    cheap; the expensive part is that the gate said nothing was there.
     """
     for layout, paths in (
         ("raw", sorted((d / "raw").glob("*.jsonl")) if (d / "raw").is_dir() else []),
         ("flat", sorted(d.glob("*.jsonl"))),
         ("nested", sorted(d.glob("*/*.jsonl"))),
+        ("pairs", sorted(d.glob("*/*/*.jsonl"))),
     ):
         if not paths:
             continue
@@ -68,6 +78,55 @@ def count_records(d: Path) -> tuple[int, int, str]:
                 continue
         return len(paths), n, layout
     return 0, 0, "none"
+
+
+def models_on_disk(d: Path) -> set:
+    """Distinct `model` values across this run's records, whatever its layout."""
+    out = set()
+    for p in _record_paths(d):
+        try:
+            with p.open(encoding="utf-8", errors="replace") as fh:
+                for line in fh:
+                    if not line.strip():
+                        continue
+                    try:
+                        r = json.loads(line)
+                    except ValueError:
+                        continue
+                    if isinstance(r, dict) and r.get("model"):
+                        out.add(str(r["model"]))
+        except OSError:
+            continue
+    return out
+
+
+def empty_on_disk(d: Path) -> int:
+    """Records whose response is empty -- written, but never a completed call."""
+    n = 0
+    for p in _record_paths(d):
+        try:
+            with p.open(encoding="utf-8", errors="replace") as fh:
+                for line in fh:
+                    if not line.strip():
+                        continue
+                    try:
+                        r = json.loads(line)
+                    except ValueError:
+                        continue
+                    if isinstance(r, dict) and not str(r.get("response_text") or "").strip():
+                        n += 1
+        except OSError:
+            continue
+    return n
+
+
+def _record_paths(d: Path) -> list:
+    for paths in (sorted((d / "raw").glob("*.jsonl")) if (d / "raw").is_dir() else [],
+                  sorted(d.glob("*.jsonl")), sorted(d.glob("*/*.jsonl")),
+                  sorted(d.glob("*/*/*.jsonl"))):
+        if paths:
+            return paths
+    return []
 
 
 def inspect(d: Path) -> dict:
@@ -109,12 +168,26 @@ def inspect(d: Path) -> dict:
         # and 30 flat runs were reported as defects on a discipline they predate.
         # Classification is per directory now, because a root is not a layout.
         if not _is_manifest_layout(d):
+            # A CONTENT FREEZE IS NOT A MANIFEST AND MUST NOT BE COUNTED AS ONE.
+            # `derive_manifest.py` can write manifest.derived.json for these layouts. It is
+            # derived from the records, so it agrees with them by construction and proves
+            # nothing about whether collection went as planned -- the attempted model set and
+            # the planned call count are gone with the collector. What it does buy is real and
+            # worth reporting separately: from the moment it is written, any change to a record
+            # file is detectable. So this run moves from UNVALIDATED to INVENTORIED, and
+            # inventoried is still not clean.
+            frozen = (d / "manifest.derived.json").is_file()
+            out["inventoried"] = frozen
             out["findings"].append({
-                "code": "not-manifest-layout",
+                "code": "inventoried-not-validated" if frozen else "not-manifest-layout",
                 "severity": "unvalidated",
                 "detail": (f"{layout} collector layout: {files} file(s), {records} record(s). "
-                           "No manifest discipline exists for this layout, so this run is "
-                           "NOT VALIDATED rather than clean."),
+                           + ("Content frozen in manifest.derived.json, so drift is now "
+                              "detectable -- but a freeze is derived from the records and "
+                              "cannot validate the collection. INVENTORIED, not clean."
+                              if frozen else
+                              "No manifest discipline exists for this layout, so this run is "
+                              "NOT VALIDATED rather than clean.")),
             })
             return out
         out["findings"].append({
@@ -128,53 +201,62 @@ def inspect(d: Path) -> dict:
         out["findings"].append({"code": "unreadable-manifest", "detail": str(e)})
         return out
 
-    # `models_on_disk` is MEASURED from the records; the other two describe one
-    # invocation and go empty on a resume. Prefer the measurement where it exists.
     attempted = m.get("models_attempted") or []
     completed = m.get("models_completed") or []
-    on_disk_models = m.get("models_on_disk") or []
-    claimed_models = (len(on_disk_models) if on_disk_models
-                      else max(len(attempted), len(completed)))
-    # ONE FILE PER MODEL IS NOT THE ONLY LAYOUT. `run_g0dm0d3.py` writes one file
-    # per (model, CONDITION) -- 2 models x 4 conditions = 8 files -- so comparing
-    # a model count against a file count flags a correct run. Scale the
-    # expectation by the conditions the manifest itself declares.
-    conditions = m.get("conditions") or []
-    expected_files = claimed_models * max(1, len(conditions))
-    if claimed_models and files and expected_files != files:
+    # READ THE KEY THE COLLECTOR ACTUALLY WROTE. `run_study` writes models_attempted /
+    # models_completed AFTER the fact; the pre-registered arms (`run_omission_orders`,
+    # `run_paraphrase`) write a `models` roster BEFORE the first call, which is a stronger
+    # provenance claim, not a missing one. Checking only the first pair read every one of those
+    # arms as naming no models -- and the roster they DO name is the thing worth checking.
+    roster = m.get("models") or []
+    # A SMOKE MANIFEST NAMES ITS ROSTER IN TWO HALVES. `smoke_roster` writes `working` (the
+    # models it kept) and `not_bought` (the ones it dropped, each with the reason), and their
+    # UNION is what it attempted -- 16 + 6 = 22 for the 2026-09-18 roster smoke. Read as
+    # `models` alone, every smoke in the tree reported naming no models while its manifest
+    # named all of them, just under the schema it actually writes.
+    if not roster:
+        roster = list(m.get("working") or []) + list((m.get("not_bought") or {}).keys())
+    claimed_models = max(len(attempted), len(completed), len(roster))
+    # COMPARE MODELS TO MODELS. This compared the manifest's model count to the FILE count,
+    # which only coincides in the one-file-per-model layout. `2026-09-15-g0dm0d3-decomposition`
+    # names 2 models and holds 2 models across 8 files -- four conditions each -- and was
+    # reported as a mismatch for having the wrong number of files, which is not a claim the
+    # manifest makes. Match units, per the working agreement: a file count is not a model count.
+    found_models = models_on_disk(d)
+    # A MANIFEST NAMING NO MODELS IS ITS OWN FINDING, not a clean run. `claimed_models` guards
+    # the comparison below because 0 != len(found) would fire on every manifest-less layout --
+    # but that guard also meant a manifest whose model list had been EMPTIED read as clean.
+    # Found 2026-09-20: `recollect-may25` and `recollect-ood` were listed in KNOWN for naming
+    # ONE model against 7 and 8 on disk; both manifests were later overwritten with
+    # `models_attempted: []`, the mismatch stopped firing, and the registry-rot report then
+    # told the next reader to DELETE the exemption. The finding had not been fixed. It had got
+    # worse and fallen through the guard, which is the shape LEARNINGS #44 describes.
+    if not claimed_models and found_models:
+        out["findings"].append({
+            "code": "manifest-names-no-models",
+            "detail": (f"manifest names NO models -- models_attempted, models_completed and models are all "
+                       f"empty -- while raw/ holds {len(found_models)} distinct model(s) "
+                       f"across {files} file(s). The model count cannot be checked at all."),
+        })
+    if claimed_models and found_models and claimed_models != len(found_models):
         out["findings"].append({
             "code": "model-count-mismatch",
-            "detail": f"manifest names {claimed_models} model(s)"
-                      + (f" x {len(conditions)} condition(s)" if conditions else "")
-                      + f"; raw/ holds {files} file(s)",
+            "detail": (f"manifest names {claimed_models} model(s); raw/ holds "
+                       f"{len(found_models)} distinct model(s) across {files} file(s)"),
         })
 
-    # A FAILED CALL IS STILL A RECORD, and a RESUMED collection did not make every
-    # call it can see. Both were reported as mismatches until 2026-09-15:
-    #
-    #  * `run_g0dm0d3.py` writes a record for a failed call and counts it in
-    #    `calls_failed`, not `calls_completed`. The decomposition run read
-    #    "claims 397, holds 400" -- and 397 + 3 IS 400.
-    #  * `recollect_at_cap.py` records the calls IT made. Re-running a finished
-    #    repair to write the manifest its NameError crash skipped therefore
-    #    stamps `calls_completed: 0` over a directory holding 94 records. That is
-    #    an accurate statement about the invocation and a misleading one about
-    #    the run, so the manifest now also carries `records_on_disk`.
+    # AND CALLS TO CALLS. `calls_completed` counts calls that COMPLETED; a call that returned
+    # nothing is still written as a record, so records = completed + empty. The decomposition
+    # run claims 397 against 400 records and holds exactly 3 empty responses, which is the
+    # manifest being right. Only a discrepancy that survives the empties is a finding.
     claimed_calls = m.get("calls_completed")
-    failed_calls = m.get("calls_failed") or 0
-    on_disk = m.get("records_on_disk")
-    # Collectors differ in whether a FAILED call also gets a record written, so
-    # all three readings are legitimate and the record count must match one of
-    # them: this invocation's completed calls, completed plus failed, or the
-    # count measured off disk.
-    accounted = {claimed_calls if isinstance(claimed_calls, int) else None,
-                 claimed_calls + failed_calls if isinstance(claimed_calls, int) else None,
-                 on_disk if isinstance(on_disk, int) else None}
-    if isinstance(claimed_calls, int) and records and records not in accounted:
+    if isinstance(claimed_calls, int) and records and claimed_calls == records - empty_on_disk(d):
+        claimed_calls = records
+    if isinstance(claimed_calls, int) and records and claimed_calls != records:
         out["findings"].append({
             "code": "call-count-mismatch",
-            "detail": f"manifest claims {claimed_calls} completed + {failed_calls} "
-                      f"failed call(s); raw/ holds {records} record(s)",
+            "detail": f"manifest claims {claimed_calls} completed call(s); "
+                      f"raw/ holds {records} record(s)",
         })
 
     # A MANIFEST WRITTEN TO ANOTHER SPECIFICATION IS NOT MISSING A FIELD.
@@ -230,6 +312,58 @@ def inspect(d: Path) -> dict:
 #: thing a manifest is for. Fabricating provenance to turn a gate green is the move this study
 #: spends its length criticising.
 KNOWN = {
+    # THE RECOLLECT MANIFESTS ARE LAST-WRITER-WINS SNAPSHOTS, not an account of the run.
+    # Verified 2026-09-19 before being recorded here: every record is present, every record is
+    # scored, and NOT ONE response is empty. What is wrong is the manifest, which names the last
+    # model to finish (or none) rather than all of them -- the same mode="w" overwrite this
+    # validator was built to catch, one level in. The mismatch is in the harmless direction: more
+    # was collected than was recorded. It is a provenance gap and stays listed as one.
+    # RE-VERIFIED 2026-09-20 against the files, because the numbers below had gone stale in
+    # both directions. These two manifests no longer name ONE model -- they name NONE, having
+    # been rewritten at 2026-09-15T19:52 with empty model lists and calls_completed=0. The
+    # records are intact and that is what makes it a provenance gap rather than a data loss.
+    ("2026-09-14-recollect-may25", "manifest-names-no-models"):
+        "Manifest rewritten with models_attempted=[] and calls_completed=0; 7 models and 118 "
+        "records are on disk, mirrored in scored/, 0 empty responses. The manifest was "
+        "overwritten per model and the run did not survive to write a final one.",
+    ("2026-09-14-recollect-may25", "call-count-mismatch"):
+        "Same cause: manifest claims 0 completed calls against 118 records on disk.",
+    ("2026-09-14-recollect-ood", "manifest-names-no-models"):
+        "Same overwrite: models_attempted=[]; 8 models and 106 records on disk, mirrored in "
+        "scored/, 0 empty responses.",
+    ("2026-09-14-recollect-ood", "call-count-mismatch"):
+        "Same cause: manifest claims 0 completed calls against 106 records on disk.",
+    # THE SAME OVERWRITE, ON FIVE MORE RUNS. Surfaced 2026-09-20 by the no-models finding and
+    # measured before being declared: every manifest in this family was rewritten on
+    # 2026-09-15 with empty model lists and calls_completed=0, and in every case the records
+    # are intact and mirrored one-for-one in scored/. That is what makes this a provenance gap
+    # rather than a data loss, and it is why they are declared rather than repaired -- writing
+    # a model list back out of the records would be provenance derived from the thing it is
+    # supposed to testify about.
+    ("2026-09-14-recollect-augmentation", "manifest-names-no-models"):
+        "Manifest rewritten 2026-09-15T19:52 with models_attempted=[]; 5 models and 180 "
+        "records on disk, 180 scored, 0 empty.",
+    ("2026-09-14-recollect-augmentation", "call-count-mismatch"):
+        "Same cause: manifest claims 0 completed calls against 180 records on disk.",
+    ("2026-09-14-recollect-gpt5-augmentation", "manifest-names-no-models"):
+        "Same overwrite; 1 model and 60 records on disk, 60 scored, 0 empty.",
+    ("2026-09-14-recollect-gpt5-augmentation", "call-count-mismatch"):
+        "Same cause: manifest claims 0 completed calls against 60 records on disk.",
+    ("2026-09-14-recollect-timeseries", "manifest-names-no-models"):
+        "Same overwrite; 10 models and 314 records on disk, 314 scored. 33 of those records "
+        "carry an EMPTY response -- written calls that returned nothing, excluded by "
+        "eligibility, and counted here so the 314 is not read as 314 answers.",
+    ("2026-09-14-recollect-timeseries", "call-count-mismatch"):
+        "Same cause: manifest claims 0 completed calls against 314 records on disk.",
+    ("2026-09-14-recollect-variance", "manifest-names-no-models"):
+        "Same overwrite; 7 models and 96 records on disk, 96 scored, 0 empty.",
+    ("2026-09-14-recollect-variance", "call-count-mismatch"):
+        "Same cause: manifest claims 0 completed calls against 96 records on disk.",
+    ("2026-09-14-recollect-reversed-premise", "manifest-names-no-models"):
+        "Same overwrite; 3 models and 94 records on disk, 94 scored, 0 empty.",
+    ("2026-09-14-recollect-reversed-premise", "call-count-mismatch"):
+        "Manifest claims 0 completed calls and names no models; 3 models and 94 records on "
+        "disk, 94 of 94 scored, 0 empty. Same per-model overwrite, caught at its first write.",
     ("2026-05-27-abliteration", "no-manifest"):
         "May 2026, before run_study.py wrote manifests. 10 model files, 160 records, all "
         "scored and all readable; the collection is intact, its request record is not.",
@@ -365,7 +499,9 @@ def main(argv: list[str]) -> int:
             # either is how 38 layout mismatches buried 5 real findings.
             if all(f.get("severity") == "unvalidated" for f in r["findings"]):
                 unvalidated.append(r)
-                print(f"  --   {head}   [{r.get('layout')} layout, not validated]")
+                tag = ("inventoried, not validated" if r.get("inventoried")
+                       else "not validated")
+                print(f"  --   {head}   [{r.get('layout')} layout, {tag}]")
                 continue
             print(f"  {'FLAG' if r['_live'] else 'known'}  {head}")
             for f in r["_live"]:
@@ -379,9 +515,37 @@ def main(argv: list[str]) -> int:
               f"across {len(reports)} run(s)")
         if unvalidated:
             recs = sum(r["records"] for r in unvalidated)
+            inv = [r for r in unvalidated if r.get("inventoried")]
+            irec = sum(r["records"] for r in inv)
             print(f"{len(unvalidated)} run(s) holding {recs} record(s) use a collector layout "
-                  f"with NO manifest discipline, so they are NOT VALIDATED -- not clean. "
-                  f"Building manifests for them is the only way this number goes down.")
+                  f"with NO manifest discipline, so they are NOT VALIDATED -- not clean.")
+            if inv:
+                print(f"  of those, {len(inv)} holding {irec} record(s) are INVENTORIED: their "
+                      f"content is frozen in manifest.derived.json and `derive_manifest.py "
+                      f"--check` will fail on any drift. That is an integrity guarantee, not a "
+                      f"validation -- a freeze derived from the records cannot testify about "
+                      f"the collection that produced them.")
+            rest = len(unvalidated) - len(inv)
+            if rest:
+                # NAME THE REMEDY ONLY WHERE IT SHIPS. `derive_manifest.py` is study-side --
+                # gate 3b is registered tree="study" -- and the public mirror does not carry
+                # it, so printing the command there sends a reader after a tool that is not
+                # in the tree they are holding. The mirror's own cross-tree test caught that
+                # on 2026-09-20 when this file was exported, which is the test doing its job.
+                #
+                # The command is BUILT FROM THE PATH THAT WAS TESTED rather than typed, so
+                # the message cannot name a file the guard did not check. That also settles a
+                # standoff between the two reference checks: a literal path here is a dead
+                # reference in the mirror, and the wording that exempts it there is a false
+                # denial in the study, where the file exists. Neither check is wrong -- the
+                # static string was.
+                freezer = Path(__file__).resolve().parent / "derive_manifest.py"
+                if freezer.is_file():
+                    print(f"  the remaining {rest} hold no freeze; run "
+                          f"`python scripts/{freezer.name} --write`.")
+                else:
+                    print(f"  the remaining {rest} hold no freeze. The tool that writes one "
+                          f"is study-side and is not in this tree.")
         if known_total:
             print("Known findings are enumerated in validate_runs.KNOWN with the reason each "
                   "is not a defect in the data.")

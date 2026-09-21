@@ -73,6 +73,7 @@ STUDY = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
 import eligibility as E  # noqa: E402  -- the single eligibility rule
+import studypaths  # noqa: E402  -- the single corpus selection
 
 #: The panel that produced every published score in the May study.
 PANEL = ("anthropic/claude-haiku-4.5", "openai/gpt-4.1",
@@ -154,10 +155,12 @@ def scored_records():
     # public mirror, where this script silently printed no spread at all. The public README
     # cites that spread. A number a reader is told to recompute has to recompute where the
     # reader is standing.
-    paths = []
-    for root in corpus_roots():
-        paths += glob.glob(os.path.join(root, "*", "scored", "**", "*.jsonl"),
-                           recursive=True)
+    # AND DROP SUPERSEDED BASE RUNS. Globbing both roots is right; globbing a repaired
+    # corpus alongside the base run it replaces is not. When the spliced views were exported
+    # to the mirror on 2026-09-19 this function went from 4,668 eligible records to 6,651,
+    # of which 2,967 were the same records twice, and the inflated spread reached a published
+    # page. studypaths.scored_corpus_paths() is the one implementation of that selection.
+    paths = list(studypaths.scored_corpus_paths())
     for p in sorted(paths):
         for line in io.open(p, encoding="utf-8", errors="replace"):
             if not line.strip():

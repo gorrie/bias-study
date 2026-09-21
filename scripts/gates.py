@@ -177,6 +177,120 @@ GATES = [
                 "claim from a HISTORICAL record and refuses to flag the latter: three of its "
                 "first four hits were a corrections document, a blockquote being refuted, "
                 "and a paragraph beginning 'Until 2026-09-17'."),
+    # ---- ARRIVED IN THE 2026-09-20 MERGE, and test_gate_registry caught that neither was
+    # registered anywhere. Both carry --check, and the other session's own release checklist
+    # named derive_manifest as "check 3b" -- so the gate existed in a hand-typed list and not
+    # in the registry the list was replaced by. That is the cost of two sessions holding two
+    # copies of the same inventory, which is why the literal list is gone.
+    Gate("derive_manifest.py", ["--check"], tree="study", stage="release",
+         label="3b frozen manifests still match their records",
+         covers="38 run directories holding ~8,674 records were collected by tools that never "
+                "wrote a manifest, so validate_runs can only call them NOT VALIDATED. This "
+                "does not forge one -- a record derived from the data agrees with the data by "
+                "construction and would be a red gate turned green while verifying nothing "
+                "(LEARNINGS #53). What it buys is a CONTENT FREEZE: --check re-derives each "
+                "manifest.derived.json and fails if the directory has changed under it."),
+    Gate("check_empty_records.py", ["--check"], tree="either", stage="release",
+         label="3d every zero-byte record file is declared",
+         covers="an empty .jsonl and an arm that was never collected are indistinguishable to "
+                "every reader, human or scripted. On 2026-09-20 that ambiguity cost an "
+                "independent reviewer an investigation and produced a written accusation that "
+                "a live evilrobots.lol claim was fabricated: fourteen gemma-2-9b stubs left "
+                "by a failed SVD attempt, while the real 40 records sat in a sibling "
+                "directory. The page was correct. Running it also surfaced eight empties "
+                "nobody had noticed in the LIVE wave -- six glm-5.2 cells from a stale "
+                "provider pin, and two conditions on a local abliterated build that are still "
+                "undiagnosed.",
+         why=None),
+    Gate("gen_data_dictionary.py", ["--check"], tree="either", stage="release",
+         label="9  the data dictionary describes the corpus that exists",
+         covers="~19,600 published records across two schemas and 45 fields. Presence, "
+                "coverage, type and categorical vocabulary are derived on every run; only "
+                "meanings are hand-written, and a field appearing in the data with no entry "
+                "is a hard failure rather than a blank. A dataset whose fields are "
+                "undocumented is not shared, it is uploaded."),
+
+    # PLAN step 7 -- the four body findings that had no command behind them. Two of the four
+    # had a script but no registration, and two had no script at all; all four are in the
+    # paper. A figure a reader cannot re-derive is this project's own rule being broken in its
+    # own paper, which is the rule it scores twelve other studies on.
+    Gate("strong_shift.py", ["--selftest"], tree="either", stage="release",
+         label="4c the scale-usage estimator still behaves",
+         covers="direction, tie handling and a split panel, on synthetic input. It validates "
+                "the ESTIMATOR, not the figure: the endpoint-vacating result moves with the "
+                "corpus and is gated as prose by key_numbers. Read LEARNINGS #51 before "
+                "reporting a selftest as a calibration -- this one samples input it "
+                "generates, which is why it is registered as a smoke test and described as "
+                "one.",
+         why=None),
+    Gate("jurisdiction_gradient.py", ["--selftest"], tree="either", stage="release",
+         label="4d the subject-gradient estimator still behaves",
+         covers="direction, ties and a deterministic modal rule. Same scope as above: the "
+                "unconditional (p=0.0004) and conditional (p=0.63) forms are reported "
+                "separately and counted in the exploratory family, and this gate covers the "
+                "machinery rather than either number.",
+         why=None),
+    Gate("intensity_by_claim.py", ["--check"], tree="either", stage="release",
+         label="3b the top-box comparison still has a panel",
+         covers="whether enough models carry both claim classes for §3b's sign test to mean "
+                "anything. Measured 2026-09-20: 56 models, strongest answer used more on "
+                "contested normative claims by 35 and on documented ones by 14, p = 0.0038 -- "
+                "the panel commits hardest where it has least to go on. The script also "
+                "asserts the claim_type/ratchet alignment and emits the confound INTO the "
+                "generated table, so the caveat cannot be edited away without touching the "
+                "figures it governs.",
+         why=None),
+    Gate("agreement_by_training.py", ["--check"], tree="either", stage="release",
+         label="3b the shared-RLHF objection is still answerable",
+         covers="whether the abliterated class -- builds with the refusal direction projected "
+                "out of their weights -- is still large enough to carry §3b's argument. It is "
+                "the ONLY class in the panel that removes safety tuning rather than varying "
+                "jurisdiction or vintage, so if it thins below three models the section's "
+                "answer to 'isn't this just shared RLHF' is gone and the other rows cannot "
+                "replace it. Measured 2026-09-20: 5 models, agreeing with every normative "
+                "proposition in the bank.",
+         why=None),
+    Gate("item_gradient.py", ["--check"], tree="either", stage="release",
+         label="4  the item gradient has no holes",
+         covers="every item of the bank observed at baseline, above an observation floor, "
+                "with both frames present. The gradient decides which pairs are the "
+                "instrument's most informative and which are saturated, and §4's reversal -- "
+                "pairs 1 and 15 are its top end, not its defects -- rests on the ranking. A "
+                "gradient missing an item is a ranking with a silent hole in it.",
+         why=None),
+    Gate("pair_consistency.py", ["--check"], tree="either", stage="release",
+         label="4b agree-both is contestedness, not acquiescence",
+         covers="whether agreeing with BOTH halves of a mirrored pair exceeds what "
+                "independent answers arithmetically produce, as a fraction of the reachable "
+                "range. An excess is yes-saying and WOULD be an instrument defect. Measured "
+                "2026-09-19: **only 2 of 16 pairs can be judged at all** -- critic agreement "
+                "runs 92-100%, so agreeing with both halves is pinned to agreeing with the "
+                "defender half and the widest reachable range on any pair is 1.85 points. Of "
+                "the two, neither is near the bar and pair 1 sits far BELOW independence, a "
+                "genuine forced choice. The gate returns NOT APPLICABLE rather than OK if "
+                "that falls to zero, because 'no pair over the bar' on unmeasurable pairs is "
+                "a check examining nothing.",
+         why=None),
+    Gate("calibrate_estimators.py", ["--check", "--draws", "200"], tree="either",
+         stage="manual",
+         label="6c each estimator's false-positive rate AT THE n IT IS USED AT",
+         covers="the measured error rate of the sheet bootstrap and the exact permutation "
+                "test, against a null built BY SPLITTING REAL CELLS IN HALF -- no treatment "
+                "exists, so every rejection is a false positive, and the halves carry the "
+                "corpus's own pathologies including the cells whose sheets barely differ. "
+                "Measured 2026-09-19 over 200 splits of 136 eligible cells: sheet bootstrap "
+                "10.5%, exact permutation 4.5%. That is why the paper reports the exact "
+                "test. The bootstrap's own docstring claimed 6.2% and its --selftest says "
+                "12.5% on synthetic nulls IT GENERATES, which is a detector validated "
+                "against input it chose.",
+         why="it is MANUAL and not release for two reasons, and the second is the important "
+             "one. It takes minutes, and -- decisively -- it currently EXITS 1 and always "
+             "will: 10.5% is a property of this corpus and this estimator, and no change to "
+             "the paper moves it. The remedy is to report the exact test, which is a "
+             "sentence, not a fix. Wiring a permanently-red gate into release is how a check "
+             "with no exit gets routed around by deleting it. Run it when an arm is "
+             "collected at a new depth -- the rate is measured over the cell sizes this "
+             "corpus HAS and does not transfer"),
     Gate("g0dm0d3_constants.py", ["--check"], tree="study", stage="manual",
          label="3c the elicitation rung's constants match their source",
          covers="the GODMODE system prompt and DEPTH_DIRECTIVE are PARSED from the G0DM0D3 "
@@ -238,6 +352,21 @@ GATES = [
                 "instrument. A Release fires the Zenodo webhook and the DOI carries that text "
                 "forever, so a stale sentence here is not a correction, it is a permanent "
                 "citation to a study that does not exist"),
+    Gate("check_sheet_attribution.py", tree="either", stage="manual",
+         label="3  attribution, before a NEW PROTOCOL is collected",
+         covers="the same check as the release copy. The protocol-v1 corpus contains 68 "
+                "sheets whose answers cannot be mapped to propositions under either reading, "
+                "and that number is fixed: those sheets exist, and collecting more does not "
+                "unmake them.",
+         why="IT WAS AT `prerun` FOR EIGHT HOURS ON 2026-09-19/20 AND BLOCKED ALL COLLECTION. "
+             "Registered there so attribution was checked in front of spend, which sounds "
+             "right and is not: the check reports a property of the corpus ALREADY ON DISK, "
+             "so it is permanently red and refuses every future run regardless of what that "
+             "run would collect. It killed the glm-5.3-flash retry overnight for a reason "
+             "that had nothing to do with glm-5.3-flash. A prerun gate has to be answerable "
+             "by the person about to spend; this one is not. Run it when the PROTOCOL "
+             "changes -- v2 renumbering dissolves the ambiguity, so a v2 arm cannot add to "
+             "the 68 and a v1 arm can."),
     Gate("check_sheet_attribution.py", tree="either", stage="release",
          label="3  every scored answer belongs to a known proposition",
          covers="sheets returned in ascending id order, which is ambiguous under protocol v1: "

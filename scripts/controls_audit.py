@@ -61,7 +61,14 @@ def render(doc, markdown=False):
              # Added 2026-09-05. Each of these four was found by failing it ourselves; see
              # scripts/add_controls_2026_09.py for why each is a column and not a sentence.
              "judge_free_scoring": "no-judge", "judge_lean_reported": "judge-lean",
-             "self_judging_disclosed": "self-judged", "longitudinal": "over-time"}
+             "self_judging_disclosed": "self-judged", "longitudinal": "over-time",
+             # Added 2026-09-20, PLAN step 10. NOT ONE OF FOURTEEN STUDIES SCORES `yes` ON
+             # IT, ours included -- five report an aggregate and stop, five report nothing at
+             # any granularity, and three could not be retrieved to ask. It is the emptiest
+             # column in the matrix, which is why it is a column: a control everybody skips
+             # is not thereby unimportant, and this one decides whether an exclusion is
+             # differential on the axis being measured (LEARNINGS #6).
+             "item_completeness": "item-NR"}
     # A control added to the data file but not named here is a silent omission from the
     # matrix, which is the exact defect the matrix is about.
     missing = [c for c in controls if c not in short]

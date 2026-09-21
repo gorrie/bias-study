@@ -364,6 +364,40 @@ def analyse_sheets(rows, declared_path=None):
                          infra[m] + model_total.get(m, 0))
                         for m in infra), reverse=True)
         worst = [r for r in reach if r[0] > LOST_CELL_VENDOR_BLOCK]
+        # WHY A MODEL NEVER ANSWERED DECIDES WHAT TO DO ABOUT IT, and the three cases have
+        # three different remedies. Measured on this wave 2026-09-19, all three present:
+        #
+        #   RECOVERED  its last success POSTDATES its last failure -- deepseek-v4-flash
+        #              404ed on 09-18 and has been serving since 09-19T13:51. The rows are
+        #              history; nothing is owed.
+        #   RETRYABLE  HTTP 429, and still succeeding -- glm-5.3-flash, 39 rate-limit refusals
+        #              with a success at 09-19T06:13. A backoff pass fixes it.
+        #   GONE       HTTP 404 under a pin with NO success after the first one -- glm-5.2,
+        #              zero in twenty-seven hours. The backend has stopped serving the model.
+        #              Retrying forever is not a remedy and a permanent blocker with no exit
+        #              is one somebody eventually routes around by reverting the check.
+        #
+        # A GONE model is declarable in `collection-limitations.json` exactly as a behavioural
+        # loser is. The declaration is the report; the blocker stands until it exists.
+        state = {}
+        for _s, m, _b, _t in worst:
+            rows = [r for r in sheets if r.get("model") == m]
+            fails = [r for r in rows if (r.get("failure_mode") or "") == "transport"]
+            oks = [r.get("collected_at") or "" for r in rows if r.get("valid")]
+            last_ok = max(oks) if oks else ""
+            last_fail = max((r.get("collected_at") or "") for r in fails) if fails else ""
+            errs = " ".join(str(r.get("error") or "") for r in fails)
+            if last_ok and last_ok > last_fail:
+                state[m] = "recovered"
+            elif "429" in errs:
+                state[m] = "retryable"
+            else:
+                state[m] = "gone"
+        out["availability_state"] = dict(state)
+        _declared = _declared_models(declared_path)
+        worst = [row for row in worst if state.get(row[1]) != "recovered"
+                 and row[1] not in _declared]
+
         if worst:
             # A BLOCKER, not a warning. See the note above: these losses are differential on
             # the axis the study compares, and a warning carries no enforcement.

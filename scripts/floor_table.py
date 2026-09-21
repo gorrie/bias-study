@@ -348,6 +348,44 @@ def _instrument_matches(rec):
     return n == want_items
 
 
+#: Lazily built, because `check_sheet_attribution` loads the bank and every floor calls
+#: `load()` many times over overlapping globs. None until first use.
+_ATTRIB = {}
+
+
+def _unattributable(rec):
+    """True when this sheet's answers cannot be assigned to propositions.
+
+    Only shuffled sheets can be ambiguous -- a canonical-order sheet's printed number is its
+    item id under both readings -- so an unshuffled record short-circuits before any work.
+
+    Fails OPEN on an import or bank error, and says so once. That is deliberate and it is the
+    less bad of two bad options: this filter drops data, so a broken checker silently dropping
+    everything would be worse than one silently dropping nothing. The release gate runs
+    `check_sheet_attribution.py` directly, so a checker that cannot run is caught there rather
+    than here.
+    """
+    if rec.get("shuffle_seed") is None:
+        return False
+    if "classify" not in _ATTRIB:
+        try:
+            import check_sheet_attribution as _CSA
+            import run_battery as _RB
+            items = _RB.load_items()["items"]
+            _ATTRIB["classify"] = _CSA.classify
+            _ATTRIB["items"] = items
+            _ATTRIB["index"] = {it["id"]: (it.get("pair_no", it.get("pair_id")), it["frame"])
+                                for it in items}
+        except Exception as exc:                                     # pragma: no cover
+            print("WARNING: attribution filter unavailable (%s); shuffled sheets are NOT "
+                  "being checked for attributability." % exc)
+            _ATTRIB["classify"] = None
+    if _ATTRIB["classify"] is None:
+        return False
+    verdict, _ci, _cs = _ATTRIB["classify"](rec, _ATTRIB["items"], _ATTRIB["index"])
+    return verdict == "UNATTRIBUTABLE"
+
+
 def _count_drop(reason, rec):
     ident = (rec.get("model"), rec.get("condition"), rec.get("collected_at"),
              rec.get("shuffle_seed"), rec.get("template"))
@@ -610,6 +648,28 @@ def load(pattern, condition=None, key=None, dedupe_by_seed=False):
             vals = [a["position"] for a in r["answers"]]
             if len(set(vals)) == 1:
                 _count_drop("degenerate sheet, all %d: %s" % (vals[0], r.get("model")), r)
+                continue
+            # UNLABELLED DATA, NOT NOISY DATA -- and until 2026-09-19 it went into the floors.
+            #
+            # A shuffled sheet returned in ascending id order is ambiguous under protocol v1:
+            # the model may have re-sorted and answered by item id, or ignored the printed
+            # numbers and answered straight down the page. `check_sheet_attribution` tells the
+            # two apart by mirror-pair consistency under each mapping -- and on 68 sheets it
+            # cannot, because both readings sit at chance. Which proposition each answer
+            # belongs to is not recoverable from the record.
+            #
+            # That tool has said "these must be excluded from any row that depends on item
+            # identity -- the order and same-version floors above all -- and the exclusion
+            # COUNTED where it is used" since it was written. Nothing excluded them. The check
+            # ran, printed the sentence, exited 0, and the floors went on reading the sheets.
+            # A gate whose remedy nobody applied is a gate that only documents the defect.
+            #
+            # Filtered HERE rather than per floor so it cannot be applied to one arm and
+            # forgotten on the next, which is the shape of this file's three previous
+            # fail-open defects (see `_order_cells`).
+            if _unattributable(r):
+                _count_drop("unattributable sheet (both mappings at chance): %s"
+                            % r.get("model"), r)
                 continue
             if dedupe_by_seed and r.get("seed") is not None:
                 mark = (key(r), r["seed"])
@@ -1486,7 +1546,16 @@ def floor_ablation():
     reason was wrong, which is a floor that holds until one of the accidents stops happening.
     """
     pairs, skipped = [], []
-    pair_dirs = sorted(glob.glob(os.path.join(STUDY, "runs/2026-08-30-ablation-pairs/*")))
+    # DIRECTORIES ONLY. This globbed "*" and treated every entry as a model pair, so the first
+    # ordinary file to land in that run directory became a model: `manifest.derived.json`,
+    # written 2026-09-19, was reported in the paper as an ablation arm that was "ELIGIBLE but
+    # produced no arm-matched condition -- investigate, this has no recorded reason". A generated
+    # paper block invented a model out of a sidecar file. Any stray file would have done it.
+    pair_dirs = sorted(d for d in glob.glob(os.path.join(STUDY, "runs/2026-08-30-ablation-pairs/*"))
+                       if os.path.isdir(d))
+    # Kept across the 2026-09-20 merge: the other session's fix dropped this line, and without
+    # it `--uncomputed` can only say the arm "read no source at all" -- which reads as a broken
+    # arm when the truth is an empty tree. Both halves are needed; neither replaces the other.
     _record_source("runs/2026-08-30-ablation-pairs/*", len(pair_dirs))
     for pair_dir in pair_dirs:
         label = os.path.basename(pair_dir)
