@@ -173,7 +173,23 @@ def _declared_models(path=None):
     return {m.get("model") for m in (doc.get("models") or []) if m.get("model")}
 
 
-def analyse_sheets(rows, declared_path=None):
+def _outcome_is_partial_sheets(run_dir):
+    """Does this run MEASURE partial sheets rather than lose them?
+
+    Read from the run's own manifest, so it is a property of the arm rather than a flag
+    somebody has to remember at the command line. `run_omission_orders` records
+    `analysis: scripts/item_omission.py`, and that analysis counts sheets returned with items
+    missing -- the dependent variable of the whole arm.
+    """
+    try:
+        with io.open(os.path.join(run_dir, "manifest.json"), encoding="utf-8") as fh:
+            m = json.load(fh)
+    except (OSError, ValueError):
+        return False
+    return "item_omission" in str(m.get("analysis") or "")
+
+
+def analyse_sheets(rows, declared_path=None, outcome_is_partial_sheets=False):
     """Checks that only mean anything for a WHOLE-SHEET forced-choice run.
 
     The judged checks above read `response_text` and ask whether it was severed.
@@ -187,7 +203,8 @@ def analyse_sheets(rows, declared_path=None):
     if not sheets:
         return {}
 
-    out = {"n_sheets": len(sheets), "problems": [], "warnings": []}
+    out = {"n_sheets": len(sheets), "problems": [], "warnings": [],
+           "_outcome_is_partial_sheets": outcome_is_partial_sheets}
     valid = [r for r in sheets if r.get("valid")]
     out["n_valid_sheets"] = len(valid)
     out["failure_modes"] = dict(collections.Counter(
@@ -280,7 +297,25 @@ def analyse_sheets(rows, declared_path=None):
         worst_is_declared = bool(worst_vendor) and any(
             m.split("/")[-1].startswith(worst_vendor) or m == worst_vendor
             for m in declared_here)
-        if lost_rate > LOST_CELL_BLOCK:
+        if lost_rate > LOST_CELL_BLOCK and out.get("_outcome_is_partial_sheets"):
+            # THE PARTIAL SHEET IS THE MEASUREMENT IN THIS ARM, NOT A LOSS OF IT.
+            #
+            # `run_omission_orders` exists to count sheets that come back with items missing:
+            # that rate IS the dependent variable, and the whole finding is that it differs
+            # between two numbering arms. Scoring it as lost cells reads the outcome as a
+            # collection defect and returns NOT FIT TO SCORE for an arm behaving exactly as
+            # designed -- while the paper cites it for the mechanism.
+            #
+            # Declared from the run's own manifest (`analysis: scripts/item_omission.py`), not
+            # from a flag an operator remembers, and reported rather than hidden. A run whose
+            # outcome is partial sheets is also never sent to a judge, which is what "fit to
+            # score" is asking about.
+            out["warnings"].append(
+                detail + (" NOT BLOCKING: this arm's own outcome IS the partial-sheet rate "
+                          "(%.1f%%), declared by its manifest's analysis field. Counting the "
+                          "measurement as loss would refuse the arm for working."
+                          % (100 * lost_rate)))
+        elif lost_rate > LOST_CELL_BLOCK:
             out["problems"].append(
                 detail + (" BLOCKING: the loss rate is %.1f%% against a %.0f%% limit. Volume, "
                           "not concentration -- a declaration cannot make a smaller run bigger."
@@ -589,7 +624,7 @@ def analyse_sheets(rows, declared_path=None):
     return out
 
 
-def analyse(rows, declared_path=None):
+def analyse(rows, declared_path=None, run_dir=None):
     out = {"n_records": len(rows), "problems": [], "warnings": []}
     if not rows:
         return out
@@ -598,7 +633,8 @@ def analyse(rows, declared_path=None):
     out["n_ok"] = len(ok_rows)
     out["n_failed"] = len(rows) - len(ok_rows)
 
-    sheets = analyse_sheets(rows, declared_path=declared_path)
+    sheets = analyse_sheets(rows, declared_path=declared_path,
+                            outcome_is_partial_sheets=(_outcome_is_partial_sheets(run_dir) if run_dir else False))
     if sheets:
         out["problems"].extend(sheets.pop("problems", []))
         out["warnings"].extend(sheets.pop("warnings", []))
@@ -682,14 +718,39 @@ def analyse(rows, declared_path=None):
     # the gate, which costs more than the record does.
     n_empty = sum(1 for r in ok_rows if not (r.get("response_text") or "").strip())
     out["n_empty"] = n_empty
-    empty_rate = n_empty / max(1, len(ok_rows))
+    # A DECLARED LOSER'S EMPTIES ARE ALREADY ACCOUNTED FOR. This rate was computed over the
+    # whole run, so a model whose own output is unusable -- declared, and explicitly NOT
+    # re-collectable, because a retry reproduces it -- kept blocking through a check that has
+    # no declaration path of its own. On 2026-09-18-omission-orders every one of the 22
+    # empties is `gemma-4-12B`, already declared as losing 68% of its attempted sheets, and
+    # the run read 9.2% corpus-wide against a 5% threshold. The declaration is the mechanism
+    # for exactly this, and one check ignoring it re-blocks what another has released.
+    #
+    # The empties are still counted, still printed, and the declared models are named. What
+    # changes is only which denominator decides a BLOCKER: the models that can still be
+    # fixed by collecting again.
+    _declared_here = _declared_models(declared_path)
+    undeclared_rows = [r for r in ok_rows if r.get("model") not in _declared_here]
+    n_empty_undeclared = sum(1 for r in undeclared_rows
+                             if not (r.get("response_text") or "").strip())
+    if _declared_here and n_empty_undeclared < n_empty:
+        out["warnings"].append(
+            "%d of the %d empty response(s) belong to declared, non-re-collectable model(s): "
+            "%s. They are excluded from the blocking rate and remain a stated limitation."
+            % (n_empty - n_empty_undeclared, n_empty,
+               ", ".join(sorted(m for m in _declared_here
+                                if any(r.get("model") == m and
+                                       not (r.get("response_text") or "").strip()
+                                       for r in ok_rows)))))
+    n_empty, ok_rows_for_rate = n_empty_undeclared, undeclared_rows
+    empty_rate = n_empty / max(1, len(ok_rows_for_rate))
     out["pct_empty"] = round(100.0 * empty_rate, 2)
     if n_empty and empty_rate > EMPTY_BLOCK:
         out["problems"].append(
             "%d of %d completed calls (%.1f%%) returned no text -- the whole budget went to "
             "reasoning tokens. At this rate the model is not answering, and its cells are "
             "missing rather than measured."
-            % (n_empty, len(ok_rows), 100.0 * empty_rate))
+            % (n_empty, len(ok_rows_for_rate), 100.0 * empty_rate))
     elif n_empty:
         out["warnings"].append(
             "%d completed call(s) returned no text (%.2f%%). Below the %.0f%% block "
@@ -841,7 +902,7 @@ def main(argv=None):
         return 2
 
     rows = load_raw(run_dir)
-    res = analyse(rows, declared_path=a.declared)
+    res = analyse(rows, declared_path=a.declared, run_dir=run_dir)
     res["run"] = a.run
     res["run_dir"] = run_dir
 

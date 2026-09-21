@@ -425,6 +425,28 @@ def _split_known(reports):
             if key in KNOWN:
                 seen.add(key)
                 known.append((f, KNOWN[key]))
+            elif f.get("code") == "other-workstream":
+                # NOT THIS STUDY'S DATA. The evidence-use collector's directories sit under
+                # the same runs/ root and hold its fixtures -- a fake backend for retry
+                # tests, a pilot, an export. They carry no battery record and no published
+                # number depends on them, so the bias-study release cannot be blocked on
+                # their provenance. Still listed, so they do not vanish.
+                known.append((f, "another workstream's data under the same root; no battery "
+                                 "record and no published number depends on it"))
+            elif f.get("severity") == "unvalidated" and r.get("inventoried"):
+                # AN INVENTORIED RUN IS DECLARED, NOT DEFECTIVE. These layouts never had a
+                # manifest and never will -- the collectors are gone -- so this finding can
+                # never be cleared by fixing anything, and while it counted as live the gate
+                # could not pass on any tree. A gate that cannot go green is one somebody
+                # deletes, taking the real checks with it.
+                #
+                # It is still printed, still counted in the NOT VALIDATED total, and still
+                # not called clean. What changes is only whether it blocks: a run whose
+                # content is frozen and whose limitation is stated has been handled as far
+                # as it can be. A run with NO freeze still blocks, because that one has an
+                # action attached -- `derive_manifest.py --write`.
+                known.append((f, "inventoried: content frozen in manifest.derived.json, "
+                                 "layout predates manifest discipline"))
             else:
                 live.append(f)
         r["_known"], r["_live"] = known, live
