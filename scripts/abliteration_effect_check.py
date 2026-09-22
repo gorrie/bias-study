@@ -41,7 +41,7 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR))
-from studypaths import runs_root  # noqa: E402
+from studypaths import run_path  # noqa: E402
 sys.path.insert(0, str(SCRIPT_DIR))
 from studypaths import STUDY_DIR  # noqa: E402
 import eligibility as E  # noqa: E402  -- the single eligibility rule
@@ -275,8 +275,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out-date", default="2026-05-27-abliteration")
     args = ap.parse_args(argv)
-    raw_dir = runs_root() / args.out_date / "raw"
-    scored_dir = runs_root() / args.out_date / "scored"
+    raw_dir = run_path(args.out_date) / "raw"
+    scored_dir = run_path(args.out_date) / "scored"
 
     print(f"=== dissociation report: {args.out_date} ===")
     print(f"    raw    = {raw_dir}")

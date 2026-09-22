@@ -1,4 +1,4 @@
-"""Run RELEASE-v2.md's release checklist instead of asserting it.
+"""Run RELEASE-2026-09-07.md's release checklist instead of asserting it.
 
 The checklist says "every item verifiable, none aspirational". This runs the verifiable ones so
 the release verdict is measured rather than asserted -- the 2026-09-07 review's finding was that
@@ -42,8 +42,19 @@ def run(cwd, *args, timeout=2700):
         # reports on something it did not read is worse than one that refuses.
         return 2, ("NOT APPLICABLE: this gate needs the other tree, which is not present "
                    "here. Run it from the tree that holds it.")
-    r = subprocess.run([PY] + list(args), cwd=cwd, capture_output=True, text=True,
-                       encoding="utf-8", errors="replace", timeout=timeout)
+    try:
+        r = subprocess.run([PY] + list(args), cwd=cwd, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=timeout)
+    except subprocess.TimeoutExpired:
+        # A TIMEOUT IS NOT A DEFECT. It is a gate that never answered, and the remedy is
+        # completely different: a defect is fixed in the check, a timeout in the budget or
+        # the cost. Conflating them cost this project four refused collection stages on
+        # 2026-09-18 -- the prerun runner read "timed out" as rc 1 and would not spend.
+        # It still BLOCKS (failing open on an unanswered question is worse), but it says
+        # which kind of not-passing it is. Matches `gates.TIMEOUT`.
+        return G.TIMEOUT, ("NO ANSWER: still running after %ss. This gate found nothing "
+                           "wrong -- it did not finish. Re-run it alone, or raise "
+                           "--timeout." % timeout)
     return r.returncode, (r.stdout or "") + (r.stderr or "")
 
 
@@ -113,15 +124,30 @@ def report(results):
         for label, where, _rc, _tail in na:
             print("  %s [%s]" % (label, where))
         print("")
+    # Split out of `fails` for reporting only -- still blocking, still in the exit code.
+    timed_out = [r for r in fails if r[2] == G.TIMEOUT]
+    defects = [r for r in fails if r[2] != G.TIMEOUT]
     if not fails:
         print("every mechanically verifiable checklist item passes.")
     else:
-        print("%d mechanical check(s) FAIL:" % len(fails))
-        for label, where, rc, tail in fails:
+        if defects:
+            print("%d mechanical check(s) FAIL:" % len(defects))
+            for label, where, rc, tail in defects:
+                print("")
+                print("  %s [%s] rc=%d%s"
+                      % (label, where, rc, "  ERRORED" if rc == 99 else ""))
+                for line in tail:
+                    print("      %s" % line[:150])
+        if timed_out:
             print("")
-            print("  %s [%s] rc=%d%s" % (label, where, rc, "  ERRORED" if rc == 99 else ""))
-            for line in tail:
-                print("      %s" % line[:150])
+            print("%d check(s) TIMED OUT -- they found NOTHING, they did not finish:"
+                  % len(timed_out))
+            for label, where, _rc, tail in timed_out:
+                print("  %s [%s]" % (label, where))
+                for line in tail:
+                    print("      %s" % line[:150])
+            print("  These block, because an unanswered question is not a pass. But do not")
+            print("  debug them as failures: raise --timeout or make the check cheaper.")
     print("")
     print("Human review remains required. NOT mechanically checkable here:")
     print("(these are OUTSTANDING -- they are not covered by the exit code either way):")
@@ -129,7 +155,8 @@ def report(results):
         print("  %s" % line)
     print("")
     if fails:
-        print("VERDICT: NOT RELEASABLE -- %d mechanical check(s) failed; exit 1." % len(fails))
+        print("VERDICT: NOT RELEASABLE -- %d mechanical check(s) did not pass (%d failed, "
+              "%d timed out); exit 1." % (len(fails), len(defects), len(timed_out)))
         return 1
     print("VERDICT: every mechanical check passes; exit 0. The human items above are still owed.")
     return 0
@@ -151,7 +178,7 @@ def main(argv=None, *, checks=None, runner=None):
     if not checks:
         print("FAIL: no checks configured")
         return 1
-    print("RELEASE-v2 CHECKLIST, run rather than asserted")
+    print("RELEASE-2026-09-07 CHECKLIST, run rather than asserted")
     print("")
     results = []
     for label, cwd, args in checks:
@@ -165,7 +192,10 @@ def main(argv=None, *, checks=None, runner=None):
         where = ("absent" if cwd is None
                  else "mirror" if G.THIS_IS_MIRROR and cwd == STUDY
                  else "mirror" if cwd == MIRROR else "study ")
-        verdict = "PASS" if rc == 0 else ("N/A (rc=2)" if rc == 2 else "FAIL (rc=%d)" % rc)
+        verdict = ("PASS" if rc == 0
+                   else "N/A (rc=2)" if rc == 2
+                   else "TIMED OUT -- no answer" if rc == G.TIMEOUT
+                   else "FAIL (rc=%d)" % rc)
         print("  [%s] %-36s %s" % (where, label, verdict))
         results.append((label, where, rc, out.strip().splitlines()[-6:]))
     return report(results)

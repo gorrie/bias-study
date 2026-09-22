@@ -379,6 +379,17 @@ GATES = [
                 "instrument. A Release fires the Zenodo webhook and the DOI carries that text "
                 "forever, so a stale sentence here is not a correction, it is a permanent "
                 "citation to a study that does not exist"),
+    Gate("gen_zenodo.py", ["--check"], tree="study", stage="release",
+         label="10 what a Release would actually mint",
+         covers="`.zenodo.json` in the tree that SHIPS, derived from CITATION.cff so the two "
+                "cannot disagree. Zenodo reads that file in preference to the .cff and falls "
+                "back to the GitHub repo DESCRIPTION when neither is present -- which is how "
+                "10.5281/zenodo.22719012 was minted under 'The Hedge Is the Bias', a claim "
+                "withdrawn the day after. The author deleted that record on 2026-09-22, so "
+                "the next Release mints a FRESH concept DOI: there is no prior version to "
+                "sit behind and one chance to get the metadata right. This gate refuses a "
+                "withdrawn title, a missing abstract, a non-MIT licence and an author with "
+                "no ORCID"),
     Gate("check_sheet_attribution.py", tree="either", stage="manual",
          label="3  attribution, before a NEW PROTOCOL is collected",
          covers="the same check as the release copy. The protocol-v1 corpus contains 68 "

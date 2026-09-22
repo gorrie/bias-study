@@ -41,6 +41,12 @@ BLOCKS = {
     # and on 2026-09-04 a new arm needed withholding from all three.
     "refusal":  ("refusal_table.py", [], None),
     "null":     ("floor_table.py", [], "same-version"),
+    # SECTION 1'S HEADLINE TABLE. It was typed, and it disagreed with `order_floor_position`
+    # -- the script the ABSTRACT's figures come from -- on both rows they share: 111 order
+    # pairs against 108 and 62 significant against 46. A paper whose argument is that a
+    # number typed into a document rots was leading with two versions of its own headline.
+    # Slow (a 4000-draw bootstrap over every pair), which is exactly why nobody re-ran it.
+    "position": ("order_floor_position.py", ["--markdown"], None),
     "references": ("references.py", [], None),
     "timeline":   ("timeline.py", ["--markdown"], None),
     # GENERATED BECAUSE HAND-TYPING IT FAILED FOUR TIMES. The pre-registered family size sat
@@ -96,8 +102,9 @@ def block_body(name):
         lines = text.split("\n")
         keep = [l for l in lines if l.strip().startswith("factor") or trim in l]
         text = "\n".join(keep) if keep else text
-    fence = "" if name in ("floors", "controls", "references", "timeline") else "```\n"
-    close = "" if name in ("floors", "controls", "references", "timeline") else "\n```"
+    unfenced = ("floors", "controls", "references", "timeline", "position")
+    fence = "" if name in unfenced else "```\n"
+    close = "" if name in unfenced else "\n```"
     return fence + text + close
 
 
@@ -173,6 +180,23 @@ def main(argv=None):
         print("all %d generated blocks are current" % len(BLOCKS))
         return 0
 
+    # READ-MODIFY-WRITE, AND THE GAP IS MINUTES WIDE. Every block is a subprocess and the
+    # position block is a 4000-draw bootstrap, so this holds a whole copy of the paper in
+    # memory for a long time and then overwrites the file with it. On 2026-09-21 a
+    # thirty-line correction to section 2 was written during one of those runs and silently
+    # erased -- the edit reported success, the checks passed, and the old text was back.
+    # Nothing detected it; it surfaced from re-reading the section by eye.
+    #
+    # Re-read and compare before writing. If the file moved under us, refuse: the generated
+    # blocks are cheap to recompute and a hand edit is not.
+    current = io.open(PAPER, encoding="utf-8", newline="").read()
+    if current != raw:
+        print("REFUSED -- %s changed on disk while these blocks were being computed."
+              % os.path.basename(PAPER))
+        print("Writing now would overwrite that edit with a copy read %d character(s) ago."
+              % len(raw))
+        print("Nothing has been written. Re-run: python scripts/gen_paper.py")
+        return 2
     io.open(PAPER, "w", encoding="utf-8", newline="").write(filled.replace("\n", nl))
     print("filled %d blocks: %s" % (len(BLOCKS), ", ".join(BLOCKS)))
     if stale:

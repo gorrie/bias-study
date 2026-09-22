@@ -333,6 +333,58 @@ def matched_arms():
             "dir_only": len(dir_declining - declining)}
 
 
+def omission_arms():
+    """The numbering contrast, local and hosted-pinned, from the sheets rather than a note.
+
+    These went into a results document as typed figures -- 10 of 191 partial sheets at
+    p = 8.4e-4 -- and neither the counts nor the p-value came from anything runnable: no file
+    in this repository computed a Fisher exact test until `omission_arms.py` was written. The
+    counts were wrong by one sheet in each margin. Gated here so the paper's version cannot
+    repeat that.
+    """
+    import omission_arms as OA
+    from item_omission import load_sheets, load_bank
+    bank = load_bank(os.path.join(STUDY, "data", "ratchet-battery.json"))
+    expected = {it["id"] for it in bank}
+    out = {}
+    for tag, run in (("local", "2026-09-18-omission-orders"),
+                     ("pinned", "2026-09-20-omission-hosted-pinned"),
+                     ("phala", "2026-09-21-omission-nemotron-phala")):
+        run_dir = os.path.join(STUDY, "runs", run)
+        if not os.path.isdir(run_dir):
+            out[tag] = None
+            continue
+        sheets, _ = load_sheets(run_dir, expected)
+        per = OA.arm_counts(sheets)
+        if not per:
+            out[tag] = None
+            continue
+        pooled, p = OA.summarise(per)
+        out[tag] = {"asis_partial": pooled["asis"][0], "asis_sheets": sum(pooled["asis"]),
+                    "renum_partial": pooled["renum"][0], "renum_sheets": sum(pooled["renum"]),
+                    "p": p}
+        # THE SERVING-PATH CONTRAST NEEDS ONE MODEL, NOT THE ARM. nemotron carries 7 of the
+        # 9 losses in the pinned arm, so it was re-collected on a second backend; the
+        # comparison the paper makes is that model against itself across backends, and
+        # pooling the arm would bury it.
+        if tag in ("pinned", "phala"):
+            cell = per.get("nvidia/nemotron-3.5-lightning")
+            out[tag]["nemotron_asis"] = cell["asis"][0] if cell else None
+            out[tag]["nemotron_asis_sheets"] = sum(cell["asis"]) if cell else None
+
+    # POOLED ACROSS BOTH BACKENDS, because the remedy's claim is that renumbering has never
+    # produced a partial sheet ANYWHERE -- a statement about every hosted sheet collected
+    # under a pin, not about either arm alone.
+    if out.get("pinned") and out.get("phala"):
+        out["hosted_pooled"] = {
+            "asis_partial": out["pinned"]["asis_partial"] + out["phala"]["asis_partial"],
+            "asis_sheets": out["pinned"]["asis_sheets"] + out["phala"]["asis_sheets"],
+            "renum_partial": out["pinned"]["renum_partial"] + out["phala"]["renum_partial"],
+            "renum_sheets": out["pinned"]["renum_sheets"] + out["phala"]["renum_sheets"],
+        }
+    return out
+
+
 def audit_scale():
     """External studies in the controls audit, and how many were read end to end.
 
@@ -373,6 +425,14 @@ def audit_scale():
         return sum(1 for s in external
                    if (s.get("status") or {}).get(control) not in ("n/a", None, "unknown"))
 
+    #: Externals that actually administer a political instrument. A study is IN unless the
+    #: JSON tags it out, so a new entry joins the subset by default and an omission shows up
+    #: as an over-count rather than a silent exclusion.
+    political = [s for s in external if s.get("political_instrument") is not False]
+
+    def pi_tally(control, verdict):
+        return sum(1 for s in political if (s.get("status") or {}).get(control) == verdict)
+
     ours = next((s for s in studies if (s.get("key") or s.get("id")) == "ours"), None)
     ours_status = (ours or {}).get("status") or {}
     controls = list((rec.get("controls") or {}).keys()) if isinstance(rec, dict) else []
@@ -397,6 +457,19 @@ def audit_scale():
             "controls": len(controls),
             "yes_same_version_dist": tally("same_version_dist", "yes"),
             "no_same_version_dist": tally("same_version_dist", "no"),
+            "partial_same_version_dist": tally("same_version_dist", "partial"),
+            "yes_nuisance_magnitude": tally("nuisance_magnitude", "yes"),
+            "partial_nuisance_magnitude": tally("nuisance_magnitude", "partial"),
+            # The subset the same-version claim is actually ABOUT. Two studies in the table
+            # administer no political instrument at all -- Sclar measures few-shot accuracy,
+            # Messing is statistical precedent -- and counting them makes the field's gap look
+            # wider for free, which is the mirror image of the `n/a` denominator problem above.
+            # Tagged in the JSON rather than listed here, so adding a fifteenth study cannot
+            # silently land in whichever subset the count was typed against.
+            "political_instrument": len(political),
+            "pi_no_same_version_dist": pi_tally("same_version_dist", "no"),
+            "pi_partial_same_version_dist": pi_tally("same_version_dist", "partial"),
+            "pi_na_same_version_dist": pi_tally("same_version_dist", "n/a"),
             "applicable_same_version_dist": applicable("same_version_dist"),
             "na_same_version_dist": tally("same_version_dist", "n/a"),
             "resolved_quantisation": resolved("quantisation"),
@@ -548,6 +621,7 @@ def build():
     scale = corpus_scale()
     audit = audit_scale()
     arms = matched_arms()
+    omission = omission_arms()
     headline = contested_vs_documented()
     # The control-arm result. A stale cache is reported as a FAILURE rather than skipped:
     # silently dropping the lead finding's keys is how a headline ends up ungated.
@@ -750,10 +824,17 @@ def build():
          "what": "refusals in the directive arm on that matched subset",
          "phrase": "%d of those runs are refusals"},
         # The paired statement, gated so it cannot drift the way the zero did.
+        #
+        # THE QUANTIFIER WAS NOT GATED AND THE DIGIT WAS. This phrase read "all %d of them
+        # stop" and passed while the sentence above it said nine models decline without a
+        # directive -- true when `declining` and `silenced` were both 8, false from the
+        # collection that made them 9 and 8, and invisible to a check that only ever
+        # substitutes an integer. "all" is a claim; it is gone from every surface, because a
+        # phrase that is true under both outcomes is the only kind a gate can defend.
         {"key": "arms_silenced",
          "value": arms["silenced"],
          "what": "models that decline without a directive and NOT with one",
-         "phrase": "all %d of them stop"},
+         "phrase": "%d of them stop"},
         {"key": "arms_dir_only",
          "value": arms["dir_only"],
          "what": "models that decline ONLY under a directive",
@@ -860,6 +941,98 @@ def build():
          # carried by `audit_external` in the adjacent sentence, where it is checked.
          "phrase": ("all %d read in full" if audit["full_text"] == audit["external"]
                     else "%d of them read in full")},
+        {"key": "audit_yes_nuisance_magnitude",
+         "value": audit["yes_nuisance_magnitude"],
+         "what": "external studies reporting a nuisance magnitude outright",
+         "phrase": "%d studies report a nuisance magnitude"},
+        {"key": "audit_partial_nuisance_magnitude",
+         "value": audit["partial_nuisance_magnitude"],
+         "what": "external studies reporting something adjacent to a nuisance magnitude",
+         "phrase": "%d more report something adjacent"},
+        {"key": "audit_pi_no_same_version_dist",
+         "value": audit["pi_no_same_version_dist"],
+         "what": "political-instrument studies scored `no` on the same-version distribution",
+         "phrase": "%d are scored `no` on it"},
+        {"key": "audit_political_instrument",
+         "value": audit["political_instrument"],
+         "what": "external studies that actually administer a political instrument",
+         "phrase": "%d political-instrument studies"},
+        # THE NUMBERING ARTIFACT. Absent from the paper until 2026-09-21 and present in the
+        # collector since 2026-09-18, which is the wrong way round: a fix shipped and the
+        # finding that motivated it unpublished.
+        # Every denominator is its own key. Baking one into a phrase ("%d of 102 sheets") is
+        # the defect `test_no_phrase_template_hides_a_second_number` exists to catch: the
+        # second number looks checked and is not.
+        {"key": "omission_local_asis_sheets",
+         "value": (omission["local"] or {}).get("asis_sheets", UNAVAILABLE),
+         "what": "as-is sheets attempted, local arm",
+         "phrase": "%d as-is sheets"},
+        {"key": "omission_local_asis",
+         "value": (omission["local"] or {}).get("asis_partial", UNAVAILABLE),
+         "what": "partial sheets in the as-is (non-monotonic numbering) local arm",
+         "phrase": "%d come back incomplete"},
+        {"key": "omission_local_renum_sheets",
+         "value": (omission["local"] or {}).get("renum_sheets", UNAVAILABLE),
+         "what": "renumbered sheets attempted, local arm",
+         "phrase": "%d renumbered sheets"},
+        {"key": "omission_local_renum",
+         "value": (omission["local"] or {}).get("renum_partial", UNAVAILABLE),
+         "what": "partial sheets in the renumbered local arm",
+         "phrase": "the count is %d"},
+        {"key": "omission_pinned_asis",
+         "value": (omission["pinned"] or {}).get("asis_partial", UNAVAILABLE),
+         "what": "partial sheets in the as-is hosted arm, backends pinned",
+         "phrase": "%d incomplete of"},
+        {"key": "omission_pinned_asis_sheets",
+         "value": (omission["pinned"] or {}).get("asis_sheets", UNAVAILABLE),
+         "what": "as-is sheets attempted, hosted arm with backends pinned",
+         "phrase": "of %d as-is sheets"},
+        {"key": "omission_pinned_renum",
+         "value": (omission["pinned"] or {}).get("renum_partial", UNAVAILABLE),
+         "what": "partial sheets in the renumbered hosted arm, backends pinned",
+         "phrase": "against %d of"},
+        {"key": "omission_pinned_renum_sheets",
+         "value": (omission["pinned"] or {}).get("renum_sheets", UNAVAILABLE),
+         "what": "renumbered sheets attempted, hosted arm with backends pinned",
+         "phrase": "%d renumbered, p ="},
+        # THE SERVING PATH. Same model, same protocol, two backends -- the contrast that
+        # decides whether the hosted finding is about numbering or about routing.
+        # THE DENOMINATOR IS ITS OWN KEY, and it is ONE key because both backends served the
+        # same number of as-is sheets. Writing "%d of 23" baked a literal that nothing
+        # checked -- `test_no_phrase_template_hides_a_second_number` caught it, correctly,
+        # in claims added to fix exactly that class of defect elsewhere.
+        {"key": "omission_nemotron_sheets",
+         "value": ((omission["pinned"] or {}).get("nemotron_asis_sheets", UNAVAILABLE)
+                   if ((omission["pinned"] or {}).get("nemotron_asis_sheets")
+                       == (omission["phala"] or {}).get("nemotron_asis_sheets"))
+                   else UNAVAILABLE),
+         "what": "as-is sheets this model contributed on EACH backend (equal, or the "
+                 "sentence below cannot be written as one denominator)",
+         "phrase": "served %d as-is sheets"},
+        {"key": "omission_nemotron_deepinfra",
+         "value": (omission["pinned"] or {}).get("nemotron_asis", UNAVAILABLE),
+         "what": "nemotron as-is partial sheets on DeepInfra",
+         "phrase": "On DeepInfra %d come back incomplete"},
+        {"key": "omission_nemotron_phala",
+         "value": (omission["phala"] or {}).get("nemotron_asis", UNAVAILABLE),
+         "what": "nemotron as-is partial sheets on Phala, same protocol",
+         "phrase": "on Phala, %d."},
+        {"key": "omission_hosted_pooled_asis",
+         "value": (omission.get("hosted_pooled") or {}).get("asis_partial", UNAVAILABLE),
+         "what": "partial sheets in the as-is arm across BOTH hosted backends",
+         "phrase": "as-is arm loses %d sheets"},
+        {"key": "omission_hosted_pooled_asis_sheets",
+         "value": (omission.get("hosted_pooled") or {}).get("asis_sheets", UNAVAILABLE),
+         "what": "as-is sheets attempted across BOTH hosted backends",
+         "phrase": "%d collected, and the renumbered"},
+        {"key": "omission_hosted_pooled_renum",
+         "value": (omission.get("hosted_pooled") or {}).get("renum_partial", UNAVAILABLE),
+         "what": "partial sheets in the renumbered arm across BOTH hosted backends",
+         "phrase": "renumbered arm loses %d sheets"},
+        {"key": "omission_hosted_pooled_renum_sheets",
+         "value": (omission.get("hosted_pooled") or {}).get("renum_sheets", UNAVAILABLE),
+         "what": "renumbered sheets attempted across BOTH hosted backends",
+         "phrase": "%d collected there"},
     ]
     # SAY WHY, not just that. Every placebo row above reads `None if not placebo else ...`, so
     # a refused cache made seven numbers uncomputable and the report said only "no value
@@ -953,7 +1126,7 @@ SURFACES = {
             # page carried "not one of them declines even once ... 347 runs, zero refusals"
             # until 2026-09-04, and the zero was the only figure on it that was typed rather
             # than generated.
-            "arms_silenced": "**all %d of them stop**",
+            "arms_silenced": "**%d of them stop**",
             "arms_dir_only": "**%d other models decline only when told to commit**",
             # Conclusion five. Gated because it is the most quotable paragraph on the page,
             # and because its own argument is that a typed number goes stale.
@@ -999,9 +1172,14 @@ SURFACES = {
                 "%(audit_resolved_quantisation)d** fully, %(audit_partial_quantisation)d "
                 "partial (%(audit_na_quantisation)d n/a, %(audit_unknown_quantisation)d "
                 "unresolved) |",
-            "audit_yes_reported_mde": "minimum detectable effect at all | %d of 12",
-            "audit_no_reported_mde": "of 12 (**%d say no**)",
-            "audit_yes_open_raw": "publishes its raw data** | **%d of 12** |",
+            "audit_yes_reported_mde":
+                "minimum detectable effect at all | %(audit_yes_reported_mde)d of "
+                "%(audit_external)d",
+            "audit_no_reported_mde":
+                "of %(audit_external)d (**%(audit_no_reported_mde)d say no**)",
+            "audit_yes_open_raw":
+                "publishes its raw data** | **%(audit_yes_open_raw)d of "
+                "%(audit_external)d** |",
             "audit_yes_forcing":
                 "discloses its forcing prompt** | %(audit_yes_forcing)d of %(audit_external)d",
             "audit_ours_pass_comparable":
@@ -1030,7 +1208,7 @@ SURFACES = {
             "arms_nodir_runs": "%(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
             "arms_dir_refusals": "against %(arms_dir_refusals)d refusals in %(arms_dir_runs)d runs",
             "arms_dir_runs": "against %(arms_dir_refusals)d refusals in %(arms_dir_runs)d runs",
-            "arms_silenced": "all %d of them stop",
+            "arms_silenced": "%d of them stop",
             "order_max_all": "moves up to %d answers",
         },
     },
@@ -1046,7 +1224,7 @@ SURFACES = {
             "arms_nodir_runs": "%(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
             "arms_dir_refusals": "against %(arms_dir_refusals)d refusals in %(arms_dir_runs)d runs",
             "arms_dir_runs": "against %(arms_dir_refusals)d refusals in %(arms_dir_runs)d runs",
-            "arms_silenced": "all %d of them stop",
+            "arms_silenced": "%d of them stop",
             "order_max_all": "moves up to %d answers",
             "same_version_max": "a median of five and up to %d",
         },
@@ -1145,7 +1323,7 @@ SURFACES = {
             "arms_declining": "arms, %d decline all",
             "arms_nodir_refusals": "there are %(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
             "arms_nodir_runs": "there are %(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
-            "arms_silenced": "**all %d of them stop**",
+            "arms_silenced": "**%d of them stop**",
             "arms_dir_only": "**%d other models decline only when told to commit**",
             "arms_dir_refusals": "%d of those runs are refusals",
             "arms_dir_runs": "against %d runs where it carries one",
@@ -1330,12 +1508,25 @@ def _pipeline_rung_historical():
 
 
 def _corrections_entries():
-    """Numbered entries in CORRECTIONS.md, counted from its own headings."""
-    path = os.path.join(STUDY, "CORRECTIONS.md")
-    if not os.path.exists(path):
-        return None
-    text = io.open(path, encoding="utf-8", errors="replace").read()
-    return sum(1 for line in text.splitlines() if line.startswith("### "))
+    """Numbered entries in CORRECTIONS.md, counted from its own headings.
+
+    LOOKED IN THE WRONG TREE. `CORRECTIONS.md` is a PUBLIC-facing document and lives in the
+    mirror; the private tree carries dated `CORRECTIONS-*.md` files instead. This looked only
+    under STUDY, returned None from the tree the release check is run FROM, and the key
+    rendered as `<uncomputable: %d format: a real number is required, not NoneType>` -- a
+    gate key that could never pass as written, for a number that exists and is countable.
+    Found 2026-09-21. `_mirror_root()` exists for precisely this.
+    """
+    candidates = [os.path.join(STUDY, "CORRECTIONS.md")]
+    mirror = _mirror_root()
+    if mirror:
+        candidates.append(os.path.join(mirror, "CORRECTIONS.md"))
+    for path in candidates:
+        if not os.path.exists(path):
+            continue
+        text = io.open(path, encoding="utf-8", errors="replace").read()
+        return sum(1 for line in text.splitlines() if line.startswith("### "))
+    return None
 
 
 def _mirror_root():
@@ -1920,6 +2111,31 @@ RETRACTED = [
      "between-arm figure is below the subject's OWN noise, so the band is no longer borrowed "
      "from another model. The STANCE half of the weight-rung claim is unaffected and is the "
      "load-bearing one"),
+    # --- the 62-item questionnaire's figures, registered 2026-09-21 -----------
+    #
+    # ALL OF THESE WERE ALREADY WITHDRAWN IN THE PAPER'S OWN PROSE and were still asserted
+    # elsewhere in the same document, because nothing connected the two. §7 withdraws the
+    # same-version magnitude and §8 went on quoting it; §1 calls 16-of-37 "published, and
+    # false" and §1b cited it as live. A withdrawal that is not registered here protects the
+    # paragraph it was written in and nothing else.
+    ("median of 5 items and up to 24",
+     "the same-version magnitude on the retired 62-item questionnaire, withdrawn 2026-09-19 "
+     "(§7). On the 32-item battery the same-version null is the SMALLEST nuisance in the "
+     "table -- side 1 / 1 / 2, endpoint 5 / 11 / 19 -- and it sits below its own detection "
+     "limit, which inverts the claim this figure was quoted to support"),
+    ("moves measured position in sixteen",
+     "the placebo's reach, withdrawn with the 16-of-37 estimator on 2026-09-18 "
+     "(CORRECTIONS-2026-09-18-bootstrap.md). The pair bootstrap rejected 49.6% of true nulls; "
+     "on the sheet bootstrap the content-free arm moves 6 of 61, median effect 0.013, against "
+     "6.4 expected by chance"),
+    ("19 of 32 intensities",
+     "the frontier endpoint figure, stale since the 2026-09-01 sweep. The generated floors "
+     "table reads frontier presentation-order endpoint p90 11"),
+    ("sampling variability is zero",
+     "withdrawn 2026-09-21. §2 measures 263 within-cell run pairs at temperature 0 -- median "
+     "1, p90 5, max 32, and only 10 of 57 cells byte-identical. The run-to-run replicate "
+     "floor is SMALL (median 0, p90 3 over 6,240 pairs), which is the claim §6 needs; zero is "
+     "a different claim and this corpus refutes it"),
     ("the two models move in opposite directions",
      "the rung-2 reading, withdrawn 2026-09-15 by the decomposition. B-STM is not an "
      "untreated control -- the proxy edits its scored text on 45 of 60 Opus records. Against "
@@ -2338,7 +2554,12 @@ def _stale_twins(text, phrase, value, by_key):
     # the first run of this check.
     want = str(value).replace(",", "")
     out = []
-    for line in text.split("\n"):
+    # UNWRAPPED AND UN-EMPHASISED, for the same reason the existence check is. A stale twin
+    # split across a line wrap, or written `**7 items of 32**`, was invisible here while the
+    # identical sentence was matched by the present-check three functions up -- so the paper
+    # could carry "10 items of 32" beside a gated "7" and pass. Found 2026-09-21 in §3.
+    for raw in _unwrap_prose(text).split("\n"):
+        line = _strip_inline_emphasis(raw)
         for hit in re.finditer(pattern, line):
             got = hit.group("num").replace(",", "")
             try:
@@ -2370,6 +2591,14 @@ def check_surface(name, rows):
               % (name, os.path.basename(path)))
         return []
     text = io.open(path, encoding="utf-8", newline="").read().replace("\r\n", "\n")
+    # UNWRAPPED, LIKE THE PAPER CHECK. This read the raw text, so a gated phrase that
+    # happened to straddle a hand-wrapped line break was invisible -- and README prose is
+    # wrapped at 96 columns, so whether a statement passes depended on where the line broke.
+    # Measured 2026-09-21 on the rewritten mirror README: four of eight remaining failures
+    # were "there are\n88 refusals", "**8 of them\nstop**", "9 decline\nall" and "where it\n
+    # carries one", every one of them PRESENT and correct. Same defect as `_stale_twins` and
+    # the retraction scanner, in the third place it could hide.
+    text = _unwrap_prose(text)
     by_key = {r["key"]: r for r in list(rows) + surface_numbers()}
     bad = []
     checked = 0

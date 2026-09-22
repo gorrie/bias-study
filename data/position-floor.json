@@ -1,0 +1,21 @@
+{
+  "_note": "The paper's GEN:position table. A 4000-draw bootstrap over every pair, cached so `gen_paper --check` stays fast. Derived -- regenerate with order_floor_position.py --write, and see --check-cache.",
+  "signature": {
+    "run": "2026-09-16-ratchet-v3-wave",
+    "condition": "N",
+    "draws": 4000,
+    "records": 3316,
+    "models": 63,
+    "seeds": [
+      "11",
+      "22",
+      "33"
+    ]
+  },
+  "rows": [
+    "| measured the same way, on the same sheets, with the same estimator | pairs | median \\|effect\\| | p90 | max | clear BH-FDR |",
+    "|---|---:|---:|---:|---:|---:|",
+    "| the balance instruction (A − N) | 61 | **0.131** | 0.327 | 0.706 | 38 (62%) |",
+    "| **reprinting the items in a different order** (N, seed vs seed) | 108 | **0.088** | 0.281 | 0.575 | 46 (43%) |"
+  ]
+}

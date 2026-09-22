@@ -81,6 +81,35 @@ NOT_A_PROCEDURE = {
                                "step 6's command list",
     "null_audit.py": "analysis and release gate -- the MDE behind every null reported",
     "item_omission.py": "analysis and release gate -- item vs slot vs printed numeral",
+    # ---- ADDED 2026-09-21. Eight entry points the MIRROR's coverage report named and the
+    # study tree's did not, because the two trees carry different skills. A script is a
+    # procedure or it is not, independently of which tree you are standing in.
+    "gen_zenodo.py": "release gate -- derives .zenodo.json from CITATION.cff and decides "
+                     "what a GitHub Release would mint. Declared in gates.py, run by the "
+                     "registry, never typed by an operator",
+    "export_scrubbed.py": "the public data export. Run once per release from the release "
+                          "procedure itself, not a step inside another skill -- and it "
+                          "verifies its own output against the fingerprint oracle",
+    "build_corpus_fingerprint.py": "builds the oracle export_scrubbed and check_corpus test "
+                                   "against. Rebuilt only when the retired instrument's "
+                                   "text changes, which it cannot: it is retired",
+    "gen_artifact_manifest.py": "generator, run by its own gate at the manual stage",
+    "check_comparison.py": "gate -- comparability of two arms, run by the registry",
+    "analyze.py": "May-2026 judge-scored analysis. Superseded by position_analysis for the "
+                  "battery; kept because the May corpus still ships",
+    "ingest_agent_answers.py": "one-off importer for answers collected outside the "
+                               "collector. No live procedure uses it",
+    "rederive_labels.py": "maintenance -- recomputes stored refusal labels after a "
+                          "classifier change, and refusal_table --audit is what reports "
+                          "whether it is needed",
+    "omission_arms.py": "analysis -- the as-is/renumbered arm contrast and the exact test "
+                        "behind it. Written 2026-09-21 because two results documents carried "
+                        "Fisher p-values that nothing in this repository computed",
+    "paraphrase_analysis.py": "analysis -- Roettger's union statistic and ours on the same "
+                              "sheets, reported in RESULTS-2026-09-21-paraphrase.md",
+    "rung2_contrast.py": "analysis -- arm minus control across two run directories, the "
+                         "registered rung-2 analysis that had no script until 2026-09-21. "
+                         "Reported in RESULTS-2026-09-21-rung2-control-v2.md",
     "jurisdiction_gradient.py": "analysis -- cited in step 6's command list",
     "strong_shift.py": "analysis -- cited in step 6's command list",
     "pipeline_decomposition.py": "analysis of a rung this release does not ship",

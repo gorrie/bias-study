@@ -42,6 +42,13 @@ MARK = {"yes": "yes", "partial": "part", "no": "NO", "n/a": "--", "unknown": "?"
 #: about itself. Those verdicts are "unknown" now and return when someone reads the paper.
 WEAK_PROVENANCE = ("project-review", "retrieved-summary")
 
+#: Printed where a study is named in a list and carries no reason for being there. Two
+#: studies added 2026-09-20 rendered as `barmettler2026 -- ` with nothing after the dash and
+#: nobody noticed, in a table whose argument is that an unexplained verdict about someone
+#: else's paper is not a verdict. An empty note is now visible in the output and fails
+#: --strict, because the alternative is a blank that reads as "nothing to say".
+MISSING_NOTE = "NOTE MISSING -- this study is listed with no reason recorded"
+
 
 def load():
     with io.open(DATA, encoding="utf-8") as fh:
@@ -156,14 +163,15 @@ def gaps(doc):
     for s in have:
         note = (s["notes"].get("same_version_dist") or s["notes"].get("same_version_point")
                 or s["notes"].get("pairs_in_hand"))
-        lines.append("  %s -- %s" % (s["id"], note))
+        lines.append("  %s -- %s" % (s["id"], note or MISSING_NOTE))
     if unestablished:
         lines.append("")
         lines.append("NOT ESTABLISHED either way (%d) -- absent from the count above, and said"
                      % len(unestablished))
         lines.append("so rather than dropped:")
         for s in unestablished:
-            lines.append("  %s -- %s" % (s["id"], s["notes"].get("pairs_in_hand", "")))
+            lines.append("  %s -- %s"
+                         % (s["id"], s["notes"].get("pairs_in_hand") or MISSING_NOTE))
     return "\n".join(lines)
 
 
@@ -176,8 +184,21 @@ def strict_check(doc):
         for c, v in s["status"].items():
             if v == "no":
                 problems.append((s["id"], c, s["provenance"]))
+    blank = [s["id"] for s in doc["studies"]
+             if s["id"] != "ours" and s.get("pairs_in_hand") is not False
+             and not (s["notes"].get("pairs_in_hand")
+                      or s["notes"].get("same_version_dist")
+                      or s["notes"].get("same_version_point"))]
+    if blank:
+        print("STRICT FAILURE -- %d study/studies appear in the same-version lists with no"
+              % len(blank))
+        print("note explaining why. A name in a list is not a finding.")
+        for sid in blank:
+            print("  %-22s no pairs_in_hand / same_version note" % sid)
+        return 1
     if not problems:
         print("STRICT: every 'no' verdict is sourced from a read or retrieved paper.")
+        print("STRICT: every study in the same-version lists carries its reason.")
         return 0
     print("STRICT FAILURE -- %d 'no' verdicts rest on unverified records." % len(problems))
     print("Each asserts a study did NOT run a control, on the strength of our own notes.")

@@ -228,13 +228,25 @@ def readers(name, globs=None):
 
 
 def documented(study=STUDY):
+    """Every study document, in EITHER tree's layout.
+
+    This globbed `<study>/*.md` only. The private tree keeps its pre-registrations and
+    results documents flat at the root, so that was complete there -- and the PUBLIC MIRROR
+    files them under `prereg/` and `results/`, where the glob could not see them. Measured
+    2026-09-21: five run directories holding 1,598 records read as UNACCOUNTED FOR in the
+    mirror -- "has records, no collection schema, named in no document" -- while the
+    documents naming every one of them sat two directories down. A reachability check that
+    cannot see half the tree reports absence it did not establish.
+    """
     text = ""
-    for path in glob.glob(os.path.join(study, "*.md")):
-        try:
-            with open(path, encoding="utf-8", errors="replace") as fh:
-                text += fh.read()
-        except OSError:
-            pass
+    for pattern in ("*.md", os.path.join("prereg", "*.md"),
+                    os.path.join("results", "*.md")):
+        for path in glob.glob(os.path.join(study, pattern)):
+            try:
+                with open(path, encoding="utf-8", errors="replace") as fh:
+                    text += fh.read()
+            except OSError:
+                pass
     return text
 
 

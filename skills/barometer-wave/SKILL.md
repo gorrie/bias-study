@@ -8,7 +8,8 @@ description: Run and verify a forced-choice barometer wave end-to-end — the fi
 > ## THE INSTRUMENT CHANGED ON 2026-09-15. Read this before following anything below.
 >
 > Every procedure in this document was written against **62 externally authored propositions**
-> (`data/compass-propositions.json`, fetched by `scripts/fetch_items.py`). **That instrument has
+> (`data/compass-propositions.json`, fetched by what is now
+> `withdrawn/compass-bank/scripts/fetch_items.py`). **That instrument has
 > been removed from the study.** It could not be republished, which forced an id-only data
 > export and produced the 2026-09-12 leak incident.
 >

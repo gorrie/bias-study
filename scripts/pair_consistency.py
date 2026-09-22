@@ -105,7 +105,7 @@ def pair_rates(run_dir=WAVE, condition="N"):
     Pooling items across sheets first would make the question unanswerable.
     """
     import position_analysis as P
-    from studypaths import runs_root
+    from studypaths import run_path
     bank = P.load_bank()
     by_id = {i["id"]: i for i in bank["items"]}
     halves = collections.defaultdict(dict)          # pair_no -> frame -> item id
@@ -113,7 +113,7 @@ def pair_rates(run_dir=WAVE, condition="N"):
         halves[it["pair_no"]][it["frame"]] = it["id"]
 
     tally = collections.defaultdict(lambda: collections.Counter())
-    for rec in P.load_records(str(runs_root() / run_dir)):
+    for rec in P.load_records(str(run_path(run_dir))):
         if rec.get("condition") != condition:
             continue
         ans = rec["answers"]

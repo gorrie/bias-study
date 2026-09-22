@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-106 script(s). 0 carry no module docstring and are listed at the end.
+130 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -85,22 +85,32 @@
 - **`ablation_termination.py`** — Does abliteration change how much a model WRITES, and why are 24 wave cells short?
 - **`abliteration_effect_check.py`** — abliteration_effect_check.py — single-stop dissociation report.
 - **`aggregate.py`** — Aggregate scored bias study records per aggregation-rules.md.
+- **`agreement_by_training.py`** — Does the panel's agreement survive models trained outside the alignment consensus?
 - **`analysis.py`** — Enhanced analysis pass for a bias study run.
 - **`audit_response_quality.py`** — Inventory every scored record whose response was empty — DATA-EMPTY-SCORES-001 / -002.
+- **`calibrate_estimators.py`** — What is each estimator's false-positive rate AT THE n IT IS ACTUALLY USED AT?
 - **`calibration_study.py`** — STATS-BOOTSTRAP-CALIBRATION-001 — does this study's inference actually control its errors?
 - **`chart_intervention_budget.py`** — One scale: how far does an intervention have to move a model before it means anything?
+- **`check_citation.py`** — The citation metadata mints a PERMANENT DOI. Check it against the study that exists.
+- **`check_comparison.py`** — Can this comparison mean anything? Ask BEFORE the spend and BEFORE the writeup.
 - **`check_doc_links.py`** — Gate: every relative markdown link in this tree's documents resolves to a real file.
+- **`check_empty_records.py`** — A zero-byte record file is a STUB. It must not read as "this arm has no data".
 - **`check_instrument_approved.py`** — Refuse to collect against an instrument the author has not read and signed.
 - **`check_named_scripts.py`** — Every script named in a shipped document must exist in this repository.
 - **`check_no_key_repro.py`** — Checklist item 10, made mechanical: can a reader re-derive the numbers with no API key?
 - **`check_outcomes_computable.py`** — Refuse to collect until every pre-registered outcome can be COMPUTED from a run directory.
+- **`check_release_table.py`** — Does RELEASE-2026-09-07's arm inventory still match runs/?
+- **`check_sheet_attribution.py`** — Can each answer be attributed to the proposition it belongs to? For 44 sheets, no.
 - **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
 - **`check_skill_procedures.py`** — Do the skills' documented commands actually RUN, not just exist?
 - **`check_undefined_names.py`** — Names a script uses and never binds -- the NameError that waits for a rare path.
 - **`collection_check.py`** — Is this collection fit to score? Run it BEFORE spending judge calls on a run.
 - **`constrained_probe.py`** — Score the instrument by CONSTRAINED DECODING: make an invalid answer ungenerable.
 - **`convergent_validity.py`** — Do the judged scale and the mechanical instrument measure the same thing?
+- **`crossover_jurisdiction.py`** — Does a model go easy on ITS OWN state's items, or is some topic hard for everyone?
+- **`derive_manifest.py`** — Freeze what a manifest-less run actually contains, and say what cannot be recovered.
 - **`dl_model.py`** — dl_model.py — Robust HuggingFace model downloader (host-side, resume-until-valid).
+- **`dose_figure.py`** — The dose figure: outcome against MEASURED perturbation, not the knob setting.
 - **`dose_smoke_gate.py`** — Post-abliteration quality gate.
 - **`eligibility.py`** — One rule for whether a scored record may enter an aggregate — DATA-EMPTY-SCORES-002.
 - **`export_analysis_ready.py`** — One flat, eligibility-flagged table of every scored record, for people who are not us.
@@ -109,11 +119,23 @@
 - **`frame_gap.py`** — Does the judged instrument measure a POSITION, or agreement with the FRAME?
 - **`frontier_extend.py`** — Extend the one-sitting arms onto the CURRENT frontier, which the frozen panel excludes.
 - **`gates.py`** — The one registry of every gate this study has, and where each one runs.
+- **`gen_artifact_manifest.py`** — Checksum the large binaries the study depends on, so they can travel outside git.
+- **`gen_data_dictionary.py`** — Generate DATA-DICTIONARY.md from the corpus, so it cannot describe a corpus that moved.
 - **`gen_readme.py`** — Fill the README's generated blocks from the run data. Nothing in them is hand-written.
+- **`gen_zenodo.py`** — Generate `.zenodo.json` from CITATION.cff, and gate what a Release will mint.
+- **`intensity_by_claim.py`** — Does the panel reserve its strongest answer for claims with a record behind them?
+- **`item_gradient.py`** — Per-item agreement at baseline: where the panel is saturated and where it divides.
+- **`item_omission.py`** — Do models skip particular PROPOSITIONS, or particular PLACES ON THE PAGE?
+- **`jurisdiction_gradient.py`** — Is the instruction's effect the same size on every subject, or does it pick its targets?
 - **`lineage_exchangeability.py`** — STATS-LINEAGE-NULL-001 — are the four same-version sub-classes exchangeable?
 - **`model_cards.py`** — One card per model: can this model carry a claim at all, and on what evidence?
 - **`monitor_experiment.py`** — monitor_experiment.py — the durable, cross-platform half of the experiment-monitor agent.
+- **`multiple_comparisons.py`** — How many hypothesis tests does this study actually run, and which are corrected?
+- **`omission_arms.py`** — The as-is vs renumbered arm contrast, with the exact test that decides it.
+- **`order_floor_position.py`** — Does the instruction move position further than REORDERING THE ITEMS does?
+- **`pair_consistency.py`** — Agreeing with BOTH halves of a mirrored pair: incoherence, or a contested subject?
 - **`paired_analysis.py`** — paired_analysis.py — the estimator for a matched-pair arm study. No API calls.
+- **`paraphrase_analysis.py`** — Roettger's union statistic and our pairwise rate, on the same sheets.
 - **`pipeline_decomposition.py`** — What is rung 2's surviving effect actually made of?
 - **`pipeline_rung.py`** — Rung 2 of the escalation ladder, estimated. The arm the analysis pipeline could not see.
 - **`pipeline_transform_audit.py`** — Did the pipeline rung apply the transform each condition is named after?
@@ -121,15 +143,17 @@
 - **`probe_budget.py`** — Measure the token budget the WHOLE roster needs, before collecting a wave.
 - **`refusal_structure.py`** — Is whole-instrument refusal all-or-nothing, and which models do it?
 - **`refusal_suite_summary.py`** — Both model pairs of the XSTest-style refusal suite, with clustered intervals.
-- **`release_check.py`** — Run RELEASE-v2.md's release checklist instead of asserting it.
+- **`release_check.py`** — Run RELEASE-2026-09-07.md's release checklist instead of asserting it.
 - **`render_item_read.py`** — Render the live item bank as mirrored pairs for the human read that gates collection.
 - **`replicates.py`** — One implementation of "average the replicates in a cell", for every consumer.
 - **`robustness_checks.py`** — robustness_checks.py — Two reviewer-requested robustness analyses over already- scored runs. No API calls.
 - **`run_dose_series.py`** — The Wash — Experiment 1 dose-series driver.
 - **`run_inventory.py`** — Every run directory, what is in it, and what reads it.
 - **`run_local.py`** — run_local.py — Run the bias question set against a LOCAL transformers model (stock or OBLITERATUS-abliterated), writing raw JSONL in the study schema so `score.py` / `aggregate.py` / `ci_analysis.py` consume it unchanged.
+- **`rung2_contrast.py`** — Arm minus control across TWO run directories, with the v2 floor and an exact test.
 - **`splice_corpus.py`** — Write a repaired corpus the ANALYSIS can actually read.
 - **`splice_holes.py`** — Which cells are STILL missing after splicing existing re-collections in?
+- **`strong_shift.py`** — How hard does a model state its answer, and what moves that? Two findings, one command.
 - **`supervised_dose_series.py`** — Supervised wrapper around run_dose_series.py.
 - **`validate_claim.py`** — Pre-publication gate. Refuses a claim until the data behind it passes every check.
 - **`validate_runs.py`** — validate_runs.py — does each run directory say what it actually contains?

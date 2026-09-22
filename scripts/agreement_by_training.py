@@ -113,7 +113,7 @@ def training_class(model):
 
 def measure(run_dir=WAVE, condition="N"):
     import position_analysis as P
-    from studypaths import runs_root
+    from studypaths import run_path
     bank = P.load_bank()["items"]
     normative = {i["id"] for i in bank
                  if i["frame"] == "critic" and i.get("claim_type") == "normative"}
@@ -122,7 +122,7 @@ def measure(run_dir=WAVE, condition="N"):
 
     agree = collections.defaultdict(collections.Counter)
     total = collections.defaultdict(collections.Counter)
-    for rec in P.load_records(str(runs_root() / run_dir)):
+    for rec in P.load_records(str(run_path(run_dir))):
         if rec.get("condition") != condition:
             continue
         m = rec["model"]

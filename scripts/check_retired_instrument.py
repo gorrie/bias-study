@@ -194,10 +194,20 @@ ALLOWED = {
         "describes third-party data held under their own terms.",
 
     # ---- public mirror. Same rules; its paths differ from the private tree's ----
-    "README.md":
-        "its 2026-08-31 section is explicitly headed 'the instrument below is the PREVIOUS "
-        "generation, read this first' and describes what was measured then. The live "
-        "instrument statement was corrected on 2026-09-17 and names the author's battery.",
+    # README.md WAS ALLOWED HERE UNTIL 2026-09-21 and no longer needs to be. The mirror's
+    # README was rewritten and its archive section now names the instrument beside every
+    # count -- "a count out of the retired questionnaire's 62 propositions is not a count
+    # out of this battery's 32 items" -- which is what the numeric pass wants and what an
+    # allowlist entry could never have given it, since that pass deliberately ignores
+    # ALLOWED. An exemption removed by fixing the sentence is the outcome this gate is for.
+    "prereg/PREREG-2026-09-14-i3-phase4.md":
+        "a dated pre-registration whose own opening amendment records that the bank it "
+        "names was WITHDRAWN -- written by an assistant session, never signed off, and "
+        "moved to withdrawn/i3/. The name has to stay so the withdrawal is legible.",
+    "prereg/PREREG-2026-09-18-paraphrase.md":
+        "quotes Roettger et al.'s published figures ('14 of 62 and 23 of 62 on the Political "
+        "Compass') to state what this arm compares against. A citation to somebody else's "
+        "instrument, which is the case ALLOWED exists for.",
     "PRIOR-WORK-CORRECTIONS.md":
         "corrections issued to OTHER people's published work, each naming the instrument "
         "that work used.",

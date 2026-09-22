@@ -99,6 +99,29 @@ def _looks_like_runs_root(p: Path) -> bool:
     return False
 
 
+def run_path(name: str) -> Path:
+    """The directory for ONE run, resolved by name across every corpus root.
+
+    USE THIS RATHER THAN `runs_root() / name`. `runs_root()` picks ONE root globally and
+    warns when both are populated -- and the public mirror legitimately holds two, the
+    retired May study under `data/` and the battery under `runs/`. There it picked `data/`,
+    so twelve analyses that composed `runs_root() / WAVE` looked for the battery wave inside
+    the May corpus, found nothing, and reported NOT APPLICABLE or "no records loaded" in the
+    tree that ships. Measured 2026-09-21: `intensity_by_claim` could not produce the
+    abstract's agreement figures and `multiple_comparisons` could not count the
+    pre-registered family, both silently, both only in the mirror.
+
+    `resolve_run` already does the right thing -- search by name, raise on a genuine
+    collision -- and nothing composed a path with it because composing one was shorter.
+    This is that, with the fallback kept so a caller in a tree with no manifest layout still
+    gets the old behaviour instead of an exception.
+    """
+    try:
+        return resolve_run(name, require_scored=False)
+    except Exception:
+        return runs_root() / name
+
+
 def runs_root() -> Path:
     """The directory holding run directories: `runs/` here, `data/` in the public mirror.
 

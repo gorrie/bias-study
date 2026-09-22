@@ -751,8 +751,8 @@ def main() -> int:
     # files, when the real corpus holds 547 such records. The mirror legitimately
     # keeps the May study under data/, which is why the heuristic exists at all --
     # so the collector must follow resolution, never define it.
-    from studypaths import runs_root  # noqa: E402
-    run_dir = runs_root() / run_date
+    from studypaths import run_path, runs_root  # noqa: E402
+    run_dir = run_path(run_date)
     raw_dir = run_dir / "raw"
     raw_dir.mkdir(parents=True, exist_ok=True)
 

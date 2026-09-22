@@ -138,8 +138,8 @@ def prereg_family(run_dir=WAVE):
     that costs a quarter of an hour to answer "how many tests" is one nobody runs.
     """
     import position_analysis as P
-    from studypaths import runs_root
-    recs = P.load_records(str(runs_root() / run_dir))
+    from studypaths import run_path
+    recs = P.load_records(str(run_path(run_dir)))
     if not recs:
         return None
     bank = P.load_bank()
@@ -170,7 +170,16 @@ HISTORICAL_MARKERS = (
 
 
 def _is_historical(text, start, end, filename):
-    """Is this figure a record of what was believed, rather than a claim about now?"""
+    """Is this figure a record of what was believed, rather than a claim about now?
+
+    KNOWN ASYMMETRY WITH `_is_local_family`, left deliberately. This treats a newline as a
+    sentence boundary, so a historical marker that wraps just before its figure is invisible
+    and the figure is reported as live. That fails SAFE -- a false positive names a sentence
+    a human then reads -- whereas the same hole in `_is_local_family` fails toward reporting
+    a true statement as stale, which trains an operator to ignore the gate. So only the
+    latter was moved to the wrap-immune window; widening this one would loosen a check whose
+    tightness is the point (see the comment below) and its tests are tuned to it.
+    """
     if filename.startswith("CORRECTIONS-"):
         return "in a corrections document, which records what WAS believed"
     line_start = text.rfind("\n", 0, start) + 1
@@ -190,6 +199,54 @@ def _is_historical(text, start, end, filename):
     for marker in HISTORICAL_MARKERS:
         if marker in window:
             return "past tense in the same sentence, before the figure (%r)" % marker.strip()
+    return None
+
+
+#: A contrast count that belongs to ONE NAMED ARM is not a claim about the pre-registered
+#: family. Added 2026-09-21, when `RESULTS-2026-09-21-rung2-control-v2.md` wrote "28 of 35
+#: contrasts are at or under their own model's floor" -- a true statement about seventy sheets
+#: of rung-2 control -- and this gate reported it as a stale family size of 35 against 246.
+#:
+#: NOT a loosening, and the distinction is load-bearing: the study's family is the set every
+#: p-value is corrected across, and an arm's contrast count is how many comparisons that arm
+#: computed. They are different objects and only the first can be stale. A per-file exemption
+#: would have been the wrong fix -- every future arm write-up states its own count, so the
+#: false positive recurs by construction (LEARNINGS #24).
+#:
+#: The qualifier has to be IN THE SENTENCE, before the number, the same discipline
+#: `_is_historical` uses: a marker anywhere nearby silences a gate trivially.
+LOCAL_FAMILY_MARKERS = (
+    "this arm", "the arm", "arm-minus-control", "within the arm",
+    "contrasts computed here", "of its own",
+)
+
+
+def _sentence_before(text, start):
+    """The text from the last sentence end to `start`, with line wraps flattened.
+
+    NOT `max(rfind(". "), rfind("\\n"))`, which is what `_is_historical` uses. Treating a
+    newline as a sentence boundary makes the window empty whenever the sentence happens to
+    wrap just before the figure -- and prose in this repository is hand-wrapped at 96
+    columns, so that is a coin flip. Measured 2026-09-21: "Of this arm's own\\n35 contrasts"
+    produced an EMPTY window and the qualifier three words to its left was invisible.
+
+    Sentence-scoped and wrap-immune: find the last `.`/`!`/`?` followed by whitespace, and
+    flatten every newline between there and the figure.
+    """
+    cut = 0
+    for i in range(start - 1, 0, -1):
+        if text[i - 1] in ".!?" and text[i].isspace():
+            cut = i
+            break
+    return " ".join(text[cut:start].split()).lower()
+
+
+def _is_local_family(text, start):
+    """Does this figure count ONE ARM's contrasts rather than the study's family?"""
+    window = _sentence_before(text, start)
+    for marker in LOCAL_FAMILY_MARKERS:
+        if marker in window:
+            return "one arm's own contrast count, not the study's family (%r)" % marker
     return None
 
 
@@ -214,6 +271,7 @@ def stated_family_sizes():
                 "line": text.count("\n", 0, m.start()) + 1,
                 "stated": int(n),
                 "historical": _is_historical(text, m.start(), m.end(), name),
+                "local_family": _is_local_family(text, m.start()),
                 "context": " ".join(text[max(0, m.start() - 60):m.end() + 20].split()),
             })
     return out
@@ -223,10 +281,14 @@ def report():
     live = prereg_family()
     stated = stated_family_sizes()
     stale = [s for s in stated
-             if live is not None and s["stated"] != live and not s["historical"]]
+             if live is not None and s["stated"] != live
+             and not s["historical"] and not s.get("local_family")]
     record = [s for s in stated if s["historical"]]
+    # PRINTED, NEVER DROPPED. A classification that removes a hit from the failing set has to
+    # show its work, or it is indistinguishable from the pattern quietly not matching.
+    local = [s for s in stated if s.get("local_family") and not s["historical"]]
     return {"prereg_family_live": live, "stated": stated, "stale": stale,
-            "historical": record, "exploratory": EXPLORATORY}
+            "historical": record, "local_family": local, "exploratory": EXPLORATORY}
 
 
 def markdown(res):
@@ -309,6 +371,15 @@ def main(argv=None):
         for s in res["historical"]:
             print("  %s:%d  says %d  (%s)"
                   % (s["file"], s["line"], s["stated"], s["historical"]))
+        print()
+
+    if res.get("local_family"):
+        print("ONE ARM'S OWN CONTRAST COUNT -- not the study's family, so not checked "
+              "against it:")
+        for s in res["local_family"]:
+            print("  %s:%d  says %d  (%s)"
+                  % (s["file"], s["line"], s["stated"], s["local_family"]))
+            print("      ...%s..." % s["context"][:110])
         print()
 
     if res["stale"]:

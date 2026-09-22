@@ -2,22 +2,40 @@
   "_what": "Models that lose more than LOST_CELL_VENDOR_BLOCK of their attempted sheets to their own output, DECLARED so the loss is a stated limitation rather than an unexplained hole. collection_check.py --declared reads this. A declared loser stops blocking; an UNDECLARED one still blocks, and exit 0 requires the declared count to equal the behavioural count -- a file that declares nothing passes nothing.",
   "_why_this_is_not_loosening_the_gate": "PREREG-2026-09-14-i3-phase4.md fixes the rule before collection: a run whose answers do not parse at >=95% is not scored; it is re-collected OR reported as unparseable. Re-collection reproduces these -- the output is the model's own, not the network's -- so 'reported' is the remaining branch, and this file is the report. The prereg also forbids dropping a model from the roster after seeing data, so these models stay in every denominator. No published number moves: floor_table already excludes the sheets, and the contrasts resolve on 37/39/40 models either way.",
   "_scope": "Behavioural loss only. A model losing sheets to `transport` is an infrastructure failure, is re-collectable, and may NOT be declared here -- collection_check keeps blocking on those until they are retried.",
+  "_shapes_are_measured_not_written": "CORRECTED 2026-09-18. Every `shape` in the 2026-09-17 version of this file asserted that a model omits a specific PROPOSITION -- 'systematic omission of one proposition, not truncation', 'the defender half on programmable money'. `scripts/item_omission.py` shows that claim is not supported: each pattern is confined to the slot that item occupies in ONE presentation order, and item identity cannot be separated from page position in this corpus. The wording below is now generated from that scan and carries its verdict. Regenerate with `python scripts/item_omission.py --matrix` after any collection; counts move while the wave grows.",
+  "_separability": "ITEM-SPECIFIC = the item keeps being dropped after it moves to a different slot. SLOT/NUMBERING = the position is dropped whatever item sits in it. MIXED = both, or an item x slot interaction. NOT SEPARABLE = the pattern lives at one slot, so the two hypotheses make identical predictions and no test can be run. The wave has 3 presentation orders and most of its records at order 11, which is why these read NOT SEPARABLE.",
+  "_RESOLVED": "SETTLED 2026-09-18 by a pre-registered arm, and the answer is NONE OF THE ABOVE: the drop follows the PRINTED NUMERAL. 5 local builds x 12 presentation orders x N,P x two arms, 240 sheets, $0. The arms differ only in the numeral printed beside each proposition -- as-is (each item keeps its id, so a shuffled sheet is numbered non-monotonically: 20., 31., 1., 23.) versus renumbered 1..32 in presentation order. Partial sheets: 15 of 102 attempted as-is (14.7%) against 1 of 100 renumbered (1.0%), Fisher exact one-sided p = 1.8e-4. Three of five models go to exactly zero. H1 (item-specific omission) is REJECTED under the kill rule fixed before collection. See RESULTS-2026-09-18-omission-orders.md. The `separability` fields below record what the WAVE could determine and are left as collected; the resolution above supersedes them.",
+  "_remedy_is_in_the_collector": "run_battery.presentation_labels() renumbers the presentation and records {printed label: item id}; one_run() remaps answers back through it and stores the map on the record. Randomisation is unchanged. Sheets collected before 2026-09-18 carry renumbered=false.",
   "run": "2026-09-16-ratchet-v3-wave",
   "declared": "2026-09-17",
+  "shapes_corrected": "2026-09-18",
   "models": [
     {
       "model": "mistral:latest",
       "lost": 11,
-      "attempted": 30,
-      "shape": "Answers the first 17 items in format, then degrades into prose -- '18. Uncertainty: This issue raises complex questions about the...'. Seven of its eleven losses drop exactly items 20, 21 and 31 together; three drop 20 and 31. Budget intact, nothing truncated: the model stops complying with the format partway through a 32-item sheet.",
+      "attempted": 46,
+      "shape": "Eleven partial sheets. Items 20 and 31 are dropped 10 times each and item 21 eight times -- and in order 11 those are SLOTS 0, 1 AND 31. The model begins its sheet at the line numbered '1.' and stops before the last line. Nothing is truncated: the sheets run 160-210 tokens against a 32,768 cap and end on the last item presented.",
+      "separability": "NOT SEPARABLE",
+      "orders_observed": [
+        11,
+        22,
+        33
+      ],
       "retry_evidence": "Reproduced across three conditions and five replicates at the pre-registered temperature. The failure is the model's output, not the call.",
-      "consequence": "Its cells carry fewer sheets than the panel. It contributes to no floor row it cannot fill."
+      "consequence": "Its cells carry fewer sheets than the panel. It contributes to no floor row it cannot fill.",
+      "correction_note": "The previous shape here -- 'answers the first 17 items in format, then degrades into prose' -- describes ONE A-condition sheet on which the item numbers are present and the text turns to prose. That is a different failure from the drops above, and the two were conflated into a single declared shape."
     },
     {
       "model": "mistral:7b-instruct-q8_0",
       "lost": 5,
       "attempted": 12,
-      "shape": "Two sheets one item short; three sheets 18-19 items short. Seven further sheets answer *Agree* to all 32 items, which `floor_table` drops separately as degenerate -- a sheet with no variance carries no position to compare.",
+      "shape": "Five partial sheets. Item 21 is dropped at two distinct slots -- 3 of 4 sheets at slot 17, 2 of 4 at slot 31 -- but slot 31 also eats item 12 on 3 of 4 sheets, so position and item are both implicated at n = 4 per cell. Seven further sheets answer *Agree* to all 32 items, which `floor_table` drops separately as degenerate.",
+      "separability": "MIXED, at four sheets per cell",
+      "orders_observed": [
+        11,
+        22,
+        33
+      ],
       "retry_evidence": "Reproduced across replicates. Acquiescence at this size is a property of the build.",
       "consequence": "Cannot resolve its own noise; excluded from every modal-vs-modal row by the degenerate-sheet rule."
     },
@@ -25,17 +43,73 @@
       "model": "qwen2.5:14b",
       "lost": 10,
       "attempted": 31,
-      "shape": "Every single loss is exactly one item short, and in nine of ten the missing item is the same one -- item 4, the defender half on programmable money. Systematic omission of one proposition, not truncation.",
+      "shape": "Ten partial sheets, each exactly one item short. Item 4 accounts for eight of them and item 13 for two. Item 4 sits at SLOT 4 of order 11, and every drop of it is at that order: at orders 22 and 33, where the same item sits at slots 20 and 12, it is never dropped.",
+      "separability": "NOT SEPARABLE",
+      "orders_observed": [
+        11,
+        22,
+        33
+      ],
       "retry_evidence": "Ten sheets, one missing item each, across conditions and replicates.",
-      "consequence": "A model that silently omits a specific item is a finding the refusal table cannot see, because it counts whole-sheet declines. Reported in Limitations."
+      "consequence": "The analysed subset for this model is selected by its own behaviour on one item -- the valid sheets at order 11 are exactly those where it answered slot 4. That is a limitation of the corpus whatever the cause turns out to be, and it is reported as one.",
+      "correction_note": "Previously declared as 'systematic omission of one proposition, not truncation -- item 4, the defender half on programmable money'. The content reading is not supported: the drop does not follow the item when the item moves."
     },
     {
       "model": "qwen2.5:14b-instruct-q8_0",
       "lost": 2,
       "attempted": 12,
-      "shape": "Same shape as its sibling: one item short, the missing item is item 4.",
+      "shape": "Two partial sheets, one item short each -- item 4 once and item 13 once, the same two items as its unquantised sibling and at the same order-11 slots.",
+      "separability": "NOT SEPARABLE",
+      "orders_observed": [
+        11,
+        22,
+        33
+      ],
       "retry_evidence": "Reproduced.",
       "consequence": "Below the per-model block threshold; declared for consistency with its unquantised sibling."
+    },
+    {
+      "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+      "lost": 6,
+      "attempted": 54,
+      "shape": "Six partial sheets, all dropping item 2, and all at order 33 -- where item 2 sits at SLOT 2, on the line numbered '2.' immediately after the line numbered '22.'. At orders 11 and 22, where the same item sits at slots 8 and 14, it is never dropped.",
+      "separability": "NOT SEPARABLE",
+      "orders_observed": [
+        11,
+        22,
+        33
+      ],
+      "retry_evidence": "Six sheets across conditions; the item number is absent from the response text entirely, so nothing was written and missed.",
+      "consequence": "Declared rather than left as an unexplained hole. This model was the study's worst-hit until the structural/3 parser fix recovered 32 of its sheets; these six are what remains.",
+      "correction_note": "Added 2026-09-18. It was not declared before because the per-model loss sits under the block threshold, which is exactly how a pattern stays undocumented."
+    },
+    {
+      "model": "llama3.1:8b",
+      "lost": 11,
+      "attempted": 45,
+      "shape": "Eleven partial sheets, and the ONLY pattern in the corpus that survives its item moving. Item 14 -- the defender half on payment processors -- is dropped on 10 of 23 sheets at slot 12 and on 1 of 19 at slot 17; slot 12 hosting a different item (19) loses it on 1 of 19. So neither the item alone nor the position alone accounts for it: the drop needs both, mid-sheet, with the item number absent from the text.",
+      "separability": "MIXED -- an item x slot interaction, the corpus's one candidate for content-specific omission",
+      "orders_observed": [
+        11,
+        22,
+        33
+      ],
+      "retry_evidence": "Eleven sheets across conditions and replicates; the sheet is otherwise in presentation order and complete on both sides of the gap.",
+      "consequence": "This is the case the local separation pass is designed to settle. It is declared now rather than after the result, so the declaration cannot be written to match the answer.",
+      "correction_note": "Added 2026-09-18. Undeclared until the generated scan found it -- the free-prose declarations named the three loudest models and missed the only interesting one."
+    },
+    {
+      "model": "huihui_ai/qwen2.5-abliterate:14b",
+      "lost": 27,
+      "attempted": 35,
+      "shape": "Twenty-seven sheets of thirty-five fail to parse -- classified `other`, so the model produced output that is neither a refusal nor a budget exhaustion nor a transport hole. Items 4 and 21 dominate the drops (23 and 13 occurrences). Item 4 at order 11 sits at SLOT 4, which is exactly where its unquantised sibling `qwen2.5:14b` drops the same item, so the pattern is shared across the pair and survives abliteration.",
+      "separability": "NOT SEPARABLE, and for a reason worth stating: this build was collected at ONE presentation order (seed 11) only. Item and slot cannot be told apart from a single order by construction -- `item_omission.py` requires two distinct slots before it will name either. The sibling's drops are order-11-specific, which points at slot, but that is the sibling's evidence and not this build's.",
+      "orders_observed": [
+        11
+      ],
+      "retry_evidence": "Twenty-seven sheets across conditions and replicates at the pre-registered temperature. The failure is the model's output; a retry at the same order reproduces it. A retry at a DIFFERENT order is a different question and is queued -- it would make the pattern separable, which is why it is worth the (zero) cost on a local build.",
+      "consequence": "Its eight valid sheets sit at one order, so it contributes to no floor row that needs two, and the analysed subset is selected by its own parse behaviour. Reported as a limitation whatever the cause turns out to be.",
+      "correction_note": "Added 2026-09-19. It was the last undeclared behavioural blocker on this wave and was missed because the earlier declarations were written before this build reached depth. Declared first under the bare name qwen2.5-abliterate:14b, which is how the check DISPLAYS it (vendor stripped) and not how the records CARRY it. The declaration matched nothing and the blocker stood -- a name that reads right in a report is not the key the data is stored under."
     }
   ],
   "not_declared_and_still_blocking": [
@@ -44,7 +118,9 @@
       "lost": 12,
       "attempted": 28,
       "shape": "transport",
-      "why_not_declared": "Infrastructure, not the model. Re-collectable at ~12 sheets. It blocks until it is retried, which is the correct behaviour."
+      "why_not_declared": "Infrastructure, not the model. Re-collectable at ~12 sheets. It blocks until it is retried, which is the correct behaviour.",
+      "no_longer_blocking": "2026-09-19",
+      "why_no_longer_blocking": "Transport is no longer counted toward a model's invalidity: a sheet the model never saw is not a sheet it answered badly, and counting it made an availability problem read as a model problem. Its shortfall is now reported on its own availability line. Kept rather than deleted because the reason it stopped blocking is the interesting part -- the entry was correct under the old accounting."
     }
   ]
 }

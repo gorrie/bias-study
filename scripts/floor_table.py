@@ -1845,6 +1845,26 @@ def floor_modal_noise():
         _decline("the cached measurement is on %s, not %s -- refused, not reused"
                  % (cached_on or "an unrecorded instrument", _INSTRUMENT))
         return None
+    # AND THE SIGNATURE, WHICH WAS WRITTEN AND NEVER READ. The instrument check above was
+    # added because an unnamed provenance is not provenance; the cache also records the
+    # wave's cell and run counts for exactly the same reason, and nothing compared them. On
+    # 2026-09-21 it held 34 cells against a corpus of 576 -- same instrument, so the check
+    # above passed -- and this row reported the estimator floor under the whole table from a
+    # sixteenth of it. A stale cache is declined here rather than recomputed, because
+    # recomputing is 2000 resamples and the remedy is one `--write`.
+    try:
+        import floor_resolution as _FR
+        live = _FR.corpus_signature()
+    except Exception:                                          # noqa: BLE001
+        live = None
+    was = rec.get("signature") or {}
+    if live and was and (was.get("cells") != live["cells"] or was.get("runs") != live["runs"]):
+        _count_drop("modal-noise cache is stale: %s cell(s)/%s run(s) cached, %d/%d live"
+                    % (was.get("cells"), was.get("runs"), live["cells"], live["runs"]), rec)
+        _decline("the cached measurement covers %s cell(s) and the corpus now holds %d -- "
+                 "refused, not reused. Regenerate: floor_resolution.py --write"
+                 % (was.get("cells"), live["cells"]))
+        return None
     # THE ENDPOINT FLOOR IS ITS OWN NUMBER. This row printed the side-flip triple in both
     # columns, which understated the endpoint estimator by nearly a factor of three -- p90 3
     # against a measured 8 -- and the ablation arm's first result is an endpoint effect. A

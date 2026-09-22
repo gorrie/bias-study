@@ -58,9 +58,9 @@ MIN_SHEETS = 6
 
 def _cells(run_dir=WAVE, min_sheets=MIN_SHEETS):
     import position_analysis as P
-    from studypaths import runs_root
+    from studypaths import run_path
     bank = P.load_bank()
-    per = P.sheet_positions(P.load_records(str(runs_root() / run_dir)), P.pair_index(bank))
+    per = P.sheet_positions(P.load_records(str(run_path(run_dir))), P.pair_index(bank))
     return {k: v for k, v in per.items() if len(v) >= min_sheets}
 
 

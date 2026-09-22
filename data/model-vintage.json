@@ -1,0 +1,472 @@
+{
+  "_bands": [
+    {
+      "before": "2025-01-01",
+      "from": null,
+      "name": "2024-or-earlier"
+    },
+    {
+      "before": "2026-01-01",
+      "from": "2025-01-01",
+      "name": "2025"
+    },
+    {
+      "before": null,
+      "from": "2026-01-01",
+      "name": "2026"
+    }
+  ],
+  "_bands_fixed_before_use": "Calendar boundaries, fixed before any contrast was cut by them, so a band cannot be chosen to make a result.",
+  "_local_note": "Local ollama tags carry no catalogue date; their vintage is the upstream weights' release and the base model is named for checking.",
+  "_what": "Release date and generation band per model, so every figure in this study can be read by model generation rather than only as a cross-section.",
+  "_why_not_live": "Taken once from the OpenRouter catalogue and written down. A figure that changes because a vendor re-dated a listing is not reproducible.",
+  "models": {
+    "aion-labs/aion-3.0-mini": {
+      "band": "2026",
+      "released": "2026-07-07",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "amazon/nova-micro-v1": {
+      "band": "2024-or-earlier",
+      "released": "2024-12-05",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "anthropic/claude-fable-5.1": {
+      "band": "2026",
+      "released": "2026-09-01",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "anthropic/claude-opus-4.6": {
+      "band": "2026",
+      "released": "2026-02-04",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "anthropic/claude-opus-5": {
+      "band": "2026",
+      "released": "2026-07-24",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "cohere/command-a": {
+      "band": "2025",
+      "released": "2025-03-13",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "deepseek/deepseek-v3.2": {
+      "band": "2025",
+      "released": "2025-12-01",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "deepseek/deepseek-v4-flash": {
+      "band": "2026",
+      "released": "2026-04-24",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "deepseek/deepseek-v4-flash-0731": {
+      "band": "2026",
+      "released": "2026-07-31",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "deepseek/deepseek-v4-pro": {
+      "band": "2026",
+      "released": "2026-04-24",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "deepseek/deepseek-v4-pro-0813": {
+      "band": "2026",
+      "released": "2026-08-12",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "gemma2:9b-instruct-q8_0": {
+      "band": "2024-or-earlier",
+      "base": "Gemma 2 9B",
+      "released": "2024-06-27",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "gemma2:latest": {
+      "band": "2024-or-earlier",
+      "base": "Gemma 2 9B",
+      "released": "2024-06-27",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "google/gemini-3.7-flash": {
+      "band": "2026",
+      "released": "2026-08-13",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "google/gemini-3.8-flash": {
+      "band": "2026",
+      "released": "2026-09-02",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "google/gemma-2-27b-it": {
+      "band": "2024-or-earlier",
+      "released": "2024-07-13",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "hf.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF:Q4_K_M": {
+      "band": "2026",
+      "base": "Qwen3.8 27B",
+      "released": "2026-08-14",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "hf.co/OBLITERATUS/Gemma-4-12B-OBLITERATED:Q4_K_M": {
+      "band": "2026",
+      "base": "Gemma 4 12B",
+      "released": "2026-03-10",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "hf.co/OBLITERATUS/Qwen3.8-27B-OBLITERATED:Q4_K_M": {
+      "band": "2026",
+      "base": "Qwen3.8 27B",
+      "released": "2026-08-14",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "hf.co/culturerevolt/gemma-4-12b-heretic-abliterated-GGUF:Q4_K_M": {
+      "band": "2026",
+      "base": "Gemma 4 12B",
+      "released": "2026-03-10",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M": {
+      "band": "2026",
+      "base": "Qwen3.8 27B",
+      "released": "2026-08-14",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M": {
+      "band": "2026",
+      "base": "Gemma 4 12B",
+      "released": "2026-03-10",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "huihui_ai/phi4-abliterated:latest": {
+      "band": "2024-or-earlier",
+      "base": "Phi-4 14B",
+      "released": "2024-12-12",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "huihui_ai/qwen2.5-abliterate:14b": {
+      "band": "2024-or-earlier",
+      "base": "Qwen2.5 14B",
+      "released": "2024-09-19",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "ibm-granite/granite-4.2-8b": {
+      "band": "2026",
+      "released": "2026-08-31",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "inception/mercury-2.5": {
+      "band": "2026",
+      "released": "2026-09-08",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "llama3.1:8b": {
+      "band": "2024-or-earlier",
+      "base": "Llama 3.1 8B",
+      "released": "2024-07-23",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "llama3.1:8b-instruct-q8_0": {
+      "band": "2024-or-earlier",
+      "base": "Llama 3.1 8B",
+      "released": "2024-07-23",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "llama3.2:3b-instruct-q8_0": {
+      "band": "2024-or-earlier",
+      "base": "Llama 3.2 3B",
+      "released": "2024-09-25",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "llama3.2:latest": {
+      "band": "2024-or-earlier",
+      "base": "Llama 3.2 3B",
+      "released": "2024-09-25",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "meituan/longcat-2.0": {
+      "band": "2026",
+      "released": "2026-07-20",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "meta-llama/llama-3.3-70b-instruct": {
+      "band": "2024-or-earlier",
+      "released": "2024-12-06",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "microsoft/phi-4": {
+      "band": "2025",
+      "released": "2025-01-10",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "minimax/minimax-m2.7": {
+      "band": "2026",
+      "released": "2026-03-18",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "mistral:7b-instruct-q8_0": {
+      "band": "2024-or-earlier",
+      "base": "Mistral 7B Instruct",
+      "released": "2023-09-27",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "mistral:latest": {
+      "band": "2024-or-earlier",
+      "base": "Mistral 7B v0.1 lineage",
+      "released": "2023-09-27",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "mistralai/mistral-medium-3-5": {
+      "band": "2026",
+      "released": "2026-04-30",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "mistralai/mistral-small-24b-instruct-2501": {
+      "band": "2025",
+      "released": "2025-01-30",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "moonshotai/kimi-k2-thinking": {
+      "band": "2025",
+      "released": "2025-11-06",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "moonshotai/kimi-k2.5": {
+      "band": "2026",
+      "released": "2026-01-27",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "moonshotai/kimi-k2.6": {
+      "band": "2026",
+      "released": "2026-04-20",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "moonshotai/kimi-k3": {
+      "band": "2026",
+      "released": "2026-07-16",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "nvidia/nemotron-3.5-lightning": {
+      "band": "2026",
+      "released": "2026-08-11",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "openai/gpt-5.6-luna": {
+      "band": "2026",
+      "released": "2026-07-09",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "openai/gpt-5.6-luna-pro": {
+      "band": "2026",
+      "released": "2026-07-09",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "openai/gpt-5.6-sol": {
+      "band": "2026",
+      "released": "2026-07-09",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "openai/gpt-5.6-sol-pro": {
+      "band": "2026",
+      "released": "2026-07-09",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "openai/gpt-5.6-terra": {
+      "band": "2026",
+      "released": "2026-07-09",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "openai/gpt-5.6-terra-pro": {
+      "band": "2026",
+      "released": "2026-07-09",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "openai/gpt-6-astra": {
+      "band": "2026",
+      "released": "2026-09-04",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "openai/gpt-6-astra-pro": {
+      "band": "2026",
+      "released": "2026-09-04",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "phi4:latest": {
+      "band": "2024-or-earlier",
+      "base": "Phi-4 14B",
+      "released": "2024-12-12",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "qwen/qwen3.8-2.4t-a95b": {
+      "band": "2026",
+      "released": "2026-08-12",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "qwen/qwen3.8-max": {
+      "band": "2026",
+      "base": "alias of qwen3.8-max-0902",
+      "released": "2026-09-03",
+      "served": "hosted",
+      "source": "resolved by hand against a dated sibling"
+    },
+    "qwen/qwen3.8-max-0902": {
+      "band": "2026",
+      "released": "2026-09-03",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "qwen2.5:14b": {
+      "band": "2024-or-earlier",
+      "base": "Qwen2.5 14B",
+      "released": "2024-09-19",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "qwen2.5:14b-instruct-q8_0": {
+      "band": "2024-or-earlier",
+      "base": "Qwen2.5 14B",
+      "released": "2024-09-19",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "rekaai/reka-flash-3": {
+      "band": "2025",
+      "released": "2025-03-12",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "stepfun/step-3.5-flash": {
+      "band": "2026",
+      "released": "2026-01-29",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "tencent/hy4-preview": {
+      "band": "2026",
+      "released": "2026-08-28",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "upstage/solar-pro4": {
+      "band": "2026",
+      "released": "2026-08-10",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "writer/palmyra-x5": {
+      "band": "2026",
+      "released": "2026-01-21",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "x-ai/grok-4.3": {
+      "band": "2026",
+      "released": "2026-04-30",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "x-ai/grok-4.5": {
+      "band": "2026",
+      "released": "2026-07-08",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "x-ai/grok-4.6": {
+      "band": "2026",
+      "released": "2026-08-12",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "xiaomi/mimo-v2.5-pro": {
+      "band": "2026",
+      "released": "2026-04-22",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "z-ai/glm-5-turbo": {
+      "band": "2026",
+      "released": "2026-03-15",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "z-ai/glm-5.1": {
+      "band": "2026",
+      "released": "2026-04-07",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "z-ai/glm-5.2": {
+      "band": "2026",
+      "released": "2026-06-16",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "z-ai/glm-5.3": {
+      "band": "2026",
+      "released": "2026-08-18",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    },
+    "z-ai/glm-5.3-flash": {
+      "band": "2026",
+      "released": "2026-08-26",
+      "served": "hosted",
+      "source": "openrouter catalogue"
+    }
+  },
+  "taken": "2026-09-21"
+}

@@ -44,7 +44,7 @@ SCRIPT_DIR = Path(__file__).parent
 # invoked against another study tree still read THIS repo for its protocol and
 # wrote into THIS repo's runs -- silent wrong-data, worse than a crash.
 sys.path.insert(0, str(SCRIPT_DIR))
-from studypaths import STUDY_DIR, runs_root  # noqa: E402
+from studypaths import STUDY_DIR, run_path, runs_root  # noqa: E402
 from eligibility import load_scored_records, inspect_scored_records
 import eligibility as E  # noqa: E402  -- the single eligibility rule
 
@@ -319,7 +319,7 @@ def contamination_delta(run_dir: Path) -> dict:
 
 
 def report_run(run_date: str) -> dict:
-    run_dir = runs_root() / run_date
+    run_dir = run_path(run_date)
     if not run_dir.is_dir():
         return {"run": run_date, "status": "not-found"}
 

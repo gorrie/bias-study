@@ -31,7 +31,7 @@ SCRIPT_DIR = Path(__file__).parent
 # invoked against another study tree still read THIS repo for its protocol and
 # wrote into THIS repo's runs -- silent wrong-data, worse than a crash.
 sys.path.insert(0, str(SCRIPT_DIR))
-from studypaths import STUDY_DIR, runs_root  # noqa: E402
+from studypaths import STUDY_DIR, run_path, runs_root  # noqa: E402
 from eligibility import load_scored_records
 import replicates as R  # noqa: E402
 
@@ -396,7 +396,7 @@ def main() -> int:
     parser.add_argument("run_date", help="Run date or run-dir name (e.g. 2026-05-25 or 2026-05-25-full)")
     args = parser.parse_args()
 
-    run_dir = runs_root() / args.run_date
+    run_dir = run_path(args.run_date)
     if not (run_dir / "scored").exists():
         print(f"ERROR: {run_dir}/scored not found", file=sys.stderr)
         return 2

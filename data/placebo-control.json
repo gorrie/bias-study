@@ -1,0 +1,652 @@
+{
+  "both_move": 2,
+  "instruction_only": 36,
+  "largest_negative": {
+    "hi": -0.042,
+    "instruction": 0.083,
+    "instruction_sig": false,
+    "lo": -0.302,
+    "model": "qwen2.5:14b-instruct-q8_0",
+    "p_bh": 0.0004,
+    "placebo": -0.167,
+    "placebo_sig": true
+  },
+  "largest_positive": {
+    "hi": 0.312,
+    "instruction": 0.01,
+    "instruction_sig": false,
+    "lo": 0.062,
+    "model": "gemma2:9b-instruct-q8_0",
+    "p_bh": 0.0004,
+    "placebo": 0.198,
+    "placebo_sig": true
+  },
+  "median_effect": 0.013,
+  "moves": 6,
+  "neither_resolves": 19,
+  "panel": 61,
+  "placebo_only": 4,
+  "provenance": {
+    "bootstrap_n": 20000,
+    "computed_at": "2026-09-21T05:35:04Z",
+    "estimator": "sheet-bootstrap",
+    "n_models": 63,
+    "n_records_read": 3316,
+    "pairs": "all-16",
+    "run": "2026-09-16-ratchet-v3-wave"
+  },
+  "rows": [
+    {
+      "hi": 0.044,
+      "instruction": -0.237,
+      "instruction_sig": true,
+      "lo": -0.3,
+      "model": "aion-labs/aion-3.0-mini",
+      "p_bh": 0.344,
+      "placebo": -0.106,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.042,
+      "instruction": -0.109,
+      "instruction_sig": true,
+      "lo": -0.058,
+      "model": "anthropic/claude-fable-5.1",
+      "p_bh": 0.7567,
+      "placebo": -0.01,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.04,
+      "instruction": -0.304,
+      "instruction_sig": true,
+      "lo": -0.181,
+      "model": "anthropic/claude-opus-4.6",
+      "p_bh": 0.3108,
+      "placebo": -0.073,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.055,
+      "instruction": -0.165,
+      "instruction_sig": true,
+      "lo": -0.031,
+      "model": "anthropic/claude-opus-5",
+      "p_bh": 0.6598,
+      "placebo": 0.013,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.025,
+      "instruction": 0.013,
+      "instruction_sig": false,
+      "lo": -0.013,
+      "model": "cohere/command-a",
+      "p_bh": 0.8216,
+      "placebo": 0.006,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.019,
+      "instruction": -0.112,
+      "instruction_sig": true,
+      "lo": -0.175,
+      "model": "deepseek/deepseek-v3.2",
+      "p_bh": 0.2636,
+      "placebo": -0.069,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.182,
+      "instruction": 0.099,
+      "instruction_sig": false,
+      "lo": -0.082,
+      "model": "deepseek/deepseek-v4-flash",
+      "p_bh": 0.6598,
+      "placebo": 0.045,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.142,
+      "instruction": -0.394,
+      "instruction_sig": true,
+      "lo": -0.245,
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "p_bh": 0.6973,
+      "placebo": -0.053,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.181,
+      "instruction": -0.226,
+      "instruction_sig": true,
+      "lo": -0.14,
+      "model": "deepseek/deepseek-v4-pro",
+      "p_bh": 0.8742,
+      "placebo": 0.017,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.01,
+      "instruction": -0.371,
+      "instruction_sig": true,
+      "lo": -0.292,
+      "model": "deepseek/deepseek-v4-pro-0813",
+      "p_bh": 0.1389,
+      "placebo": -0.144,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.312,
+      "instruction": 0.01,
+      "instruction_sig": false,
+      "lo": 0.062,
+      "model": "gemma2:9b-instruct-q8_0",
+      "p_bh": 0.0004,
+      "placebo": 0.198,
+      "placebo_sig": true
+    },
+    {
+      "hi": 0.152,
+      "instruction": -0.19,
+      "instruction_sig": true,
+      "lo": -0.021,
+      "model": "gemma2:latest",
+      "p_bh": 0.2291,
+      "placebo": 0.067,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.306,
+      "instruction": -0.175,
+      "instruction_sig": false,
+      "lo": -0.169,
+      "model": "google/gemma-2-27b-it",
+      "p_bh": 0.6634,
+      "placebo": 0.075,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.263,
+      "instruction": 0.019,
+      "instruction_sig": false,
+      "lo": -0.006,
+      "model": "hf.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF:Q4_K_M",
+      "p_bh": 0.2572,
+      "placebo": 0.125,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.011,
+      "instruction": -0.087,
+      "instruction_sig": true,
+      "lo": -0.025,
+      "model": "hf.co/OBLITERATUS/Gemma-4-12B-OBLITERATED:Q4_K_M",
+      "p_bh": 0.3856,
+      "placebo": -0.009,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.213,
+      "instruction": -0.131,
+      "instruction_sig": false,
+      "lo": -0.363,
+      "model": "hf.co/OBLITERATUS/Qwen3.8-27B-OBLITERATED:Q4_K_M",
+      "p_bh": 0.7027,
+      "placebo": -0.075,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.375,
+      "instruction": -0.238,
+      "instruction_sig": true,
+      "lo": -0.112,
+      "model": "hf.co/culturerevolt/gemma-4-12b-heretic-abliterated-GGUF:Q4_K_M",
+      "p_bh": 0.3646,
+      "placebo": 0.144,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.012,
+      "instruction": -0.094,
+      "instruction_sig": false,
+      "lo": -0.469,
+      "model": "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M",
+      "p_bh": 0.2965,
+      "placebo": -0.156,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.217,
+      "instruction": -0.07,
+      "instruction_sig": true,
+      "lo": 0.008,
+      "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+      "p_bh": 0.0544,
+      "placebo": 0.11,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.131,
+      "instruction": -0.244,
+      "instruction_sig": true,
+      "lo": -0.088,
+      "model": "huihui_ai/phi4-abliterated:latest",
+      "p_bh": 0.8274,
+      "placebo": 0.019,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.125,
+      "instruction": -0.237,
+      "instruction_sig": true,
+      "lo": -0.069,
+      "model": "ibm-granite/granite-4.2-8b",
+      "p_bh": 0.6588,
+      "placebo": 0.031,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.287,
+      "instruction": 0.015,
+      "instruction_sig": false,
+      "lo": -0.125,
+      "model": "llama3.1:8b",
+      "p_bh": 0.52,
+      "placebo": 0.092,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.198,
+      "instruction": 0.042,
+      "instruction_sig": false,
+      "lo": -0.135,
+      "model": "llama3.1:8b-instruct-q8_0",
+      "p_bh": 0.8216,
+      "placebo": 0.031,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.094,
+      "instruction": -0.052,
+      "instruction_sig": false,
+      "lo": -0.323,
+      "model": "llama3.2:3b-instruct-q8_0",
+      "p_bh": 0.3856,
+      "placebo": -0.115,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.062,
+      "instruction": -0.021,
+      "instruction_sig": false,
+      "lo": -0.406,
+      "model": "llama3.2:latest",
+      "p_bh": 0.2572,
+      "placebo": -0.177,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.044,
+      "instruction": -0.1,
+      "instruction_sig": false,
+      "lo": -0.212,
+      "model": "meituan/longcat-2.0",
+      "p_bh": 0.3097,
+      "placebo": -0.088,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.038,
+      "instruction": -0.294,
+      "instruction_sig": true,
+      "lo": -0.056,
+      "model": "meta-llama/llama-3.3-70b-instruct",
+      "p_bh": 0.647,
+      "placebo": -0.013,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.075,
+      "instruction": -0.087,
+      "instruction_sig": false,
+      "lo": -0.269,
+      "model": "minimax/minimax-m2.7",
+      "p_bh": 0.6406,
+      "placebo": -0.069,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.058,
+      "instruction": -0.09,
+      "instruction_sig": false,
+      "lo": -0.155,
+      "model": "mistral:latest",
+      "p_bh": 0.5564,
+      "placebo": -0.045,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.242,
+      "instruction": -0.283,
+      "instruction_sig": true,
+      "lo": 0.048,
+      "model": "mistralai/mistral-medium-3-5",
+      "p_bh": 0.001,
+      "placebo": 0.138,
+      "placebo_sig": true
+    },
+    {
+      "hi": 0.552,
+      "instruction": -0.125,
+      "instruction_sig": false,
+      "lo": -0.061,
+      "model": "moonshotai/kimi-k2-thinking",
+      "p_bh": 0.2232,
+      "placebo": 0.25,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.019,
+      "instruction": -0.126,
+      "instruction_sig": true,
+      "lo": -0.14,
+      "model": "moonshotai/kimi-k2.5",
+      "p_bh": 0.2622,
+      "placebo": -0.056,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.212,
+      "instruction": -0.182,
+      "instruction_sig": true,
+      "lo": -0.067,
+      "model": "moonshotai/kimi-k2.6",
+      "p_bh": 0.5345,
+      "placebo": 0.063,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.035,
+      "instruction": -0.126,
+      "instruction_sig": true,
+      "lo": -0.069,
+      "model": "moonshotai/kimi-k3",
+      "p_bh": 0.6406,
+      "placebo": -0.017,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.269,
+      "instruction": -0.246,
+      "instruction_sig": true,
+      "lo": -0.062,
+      "model": "openai/gpt-5.6-luna",
+      "p_bh": 0.3856,
+      "placebo": 0.092,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.071,
+      "instruction": -0.327,
+      "instruction_sig": true,
+      "lo": -0.119,
+      "model": "openai/gpt-5.6-luna-pro",
+      "p_bh": 0.6973,
+      "placebo": -0.025,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.127,
+      "instruction": -0.196,
+      "instruction_sig": true,
+      "lo": -0.05,
+      "model": "openai/gpt-5.6-sol",
+      "p_bh": 0.5833,
+      "placebo": 0.035,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.123,
+      "instruction": -0.229,
+      "instruction_sig": true,
+      "lo": -0.09,
+      "model": "openai/gpt-5.6-sol-pro",
+      "p_bh": 0.8961,
+      "placebo": 0.01,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.031,
+      "instruction": -0.131,
+      "instruction_sig": true,
+      "lo": -0.1,
+      "model": "openai/gpt-5.6-terra",
+      "p_bh": 0.4144,
+      "placebo": -0.035,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.069,
+      "instruction": -0.11,
+      "instruction_sig": true,
+      "lo": -0.042,
+      "model": "openai/gpt-5.6-terra-pro",
+      "p_bh": 0.7105,
+      "placebo": 0.015,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.106,
+      "instruction": -0.069,
+      "instruction_sig": true,
+      "lo": 0.037,
+      "model": "openai/gpt-6-astra",
+      "p_bh": 0.0007,
+      "placebo": 0.073,
+      "placebo_sig": true
+    },
+    {
+      "hi": 0.044,
+      "instruction": -0.108,
+      "instruction_sig": true,
+      "lo": -0.042,
+      "model": "openai/gpt-6-astra-pro",
+      "p_bh": 0.9026,
+      "placebo": 0.002,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.133,
+      "instruction": -0.321,
+      "instruction_sig": true,
+      "lo": -0.113,
+      "model": "phi4:latest",
+      "p_bh": 0.8742,
+      "placebo": 0.013,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.338,
+      "instruction": -0.606,
+      "instruction_sig": true,
+      "lo": -0.306,
+      "model": "qwen/qwen3.8-2.4t-a95b",
+      "p_bh": 0.8742,
+      "placebo": -0.019,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.208,
+      "instruction": -0.212,
+      "instruction_sig": true,
+      "lo": -0.019,
+      "model": "qwen/qwen3.8-max",
+      "p_bh": 0.1916,
+      "placebo": 0.096,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.179,
+      "instruction": -0.258,
+      "instruction_sig": true,
+      "lo": -0.175,
+      "model": "qwen/qwen3.8-max-0902",
+      "p_bh": 0.9887,
+      "placebo": 0.002,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.019,
+      "instruction": 0.054,
+      "instruction_sig": false,
+      "lo": -0.258,
+      "model": "qwen2.5:14b",
+      "p_bh": 0.181,
+      "placebo": -0.115,
+      "placebo_sig": false
+    },
+    {
+      "hi": -0.042,
+      "instruction": 0.083,
+      "instruction_sig": false,
+      "lo": -0.302,
+      "model": "qwen2.5:14b-instruct-q8_0",
+      "p_bh": 0.0004,
+      "placebo": -0.167,
+      "placebo_sig": true
+    },
+    {
+      "hi": 0.069,
+      "instruction": -0.169,
+      "instruction_sig": false,
+      "lo": -0.45,
+      "model": "stepfun/step-3.5-flash",
+      "p_bh": 0.3257,
+      "placebo": -0.162,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.306,
+      "instruction": -0.188,
+      "instruction_sig": false,
+      "lo": -0.231,
+      "model": "tencent/hy4-preview",
+      "p_bh": 0.7982,
+      "placebo": 0.05,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.381,
+      "instruction": -0.125,
+      "instruction_sig": false,
+      "lo": -0.187,
+      "model": "upstage/solar-pro4",
+      "p_bh": 0.6437,
+      "placebo": 0.094,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.125,
+      "instruction": -0.037,
+      "instruction_sig": false,
+      "lo": 0.025,
+      "model": "writer/palmyra-x5",
+      "p_bh": 0.0134,
+      "placebo": 0.075,
+      "placebo_sig": true
+    },
+    {
+      "hi": 0.146,
+      "instruction": -0.058,
+      "instruction_sig": false,
+      "lo": -0.104,
+      "model": "x-ai/grok-4.3",
+      "p_bh": 0.8728,
+      "placebo": 0.017,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.185,
+      "instruction": -0.377,
+      "instruction_sig": true,
+      "lo": -0.027,
+      "model": "x-ai/grok-4.5",
+      "p_bh": 0.2585,
+      "placebo": 0.079,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.031,
+      "instruction": -0.596,
+      "instruction_sig": true,
+      "lo": -0.294,
+      "model": "x-ai/grok-4.6",
+      "p_bh": 0.1988,
+      "placebo": -0.135,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.163,
+      "instruction": 0.044,
+      "instruction_sig": false,
+      "lo": 0.081,
+      "model": "xiaomi/mimo-v2.5-pro",
+      "p_bh": 0.0004,
+      "placebo": 0.125,
+      "placebo_sig": true
+    },
+    {
+      "hi": 0.044,
+      "instruction": -0.706,
+      "instruction_sig": true,
+      "lo": -0.412,
+      "model": "z-ai/glm-5-turbo",
+      "p_bh": 0.2667,
+      "placebo": -0.156,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.194,
+      "instruction": -0.275,
+      "instruction_sig": true,
+      "lo": -0.071,
+      "model": "z-ai/glm-5.1",
+      "p_bh": 0.4787,
+      "placebo": 0.062,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.056,
+      "instruction": -0.247,
+      "instruction_sig": true,
+      "lo": -0.319,
+      "model": "z-ai/glm-5.2",
+      "p_bh": 0.3112,
+      "placebo": -0.125,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.175,
+      "instruction": -0.085,
+      "instruction_sig": true,
+      "lo": 0.01,
+      "model": "z-ai/glm-5.3",
+      "p_bh": 0.062,
+      "placebo": 0.09,
+      "placebo_sig": false
+    },
+    {
+      "hi": 0.141,
+      "instruction": -0.061,
+      "instruction_sig": true,
+      "lo": -0.001,
+      "model": "z-ai/glm-5.3-flash",
+      "p_bh": 0.1086,
+      "placebo": 0.058,
+      "placebo_sig": false
+    }
+  ],
+  "sig_negative": 1,
+  "sig_positive": 5
+}

@@ -3,7 +3,7 @@
   "instrument": "ratchet-battery",
   "version": "v3",
   "created": "2026-08-30",
-  "source": "Authored for this study by Ian Gorrie. CC BY 4.0. It is THE instrument and it ships with the paper in full.",
+  "source": "Authored for this study by Ian Gorrie. MIT, with the rest of the repository. It is THE instrument and it ships with the paper in full.",
   "design_notes": {
     "metadata_corrected": "2026-09-17. Only this block changed; no item text was touched. The fields below described this bank as a SECOND instrument run alongside an external 62-item questionnaire, which is what it was when it was written on 2026-08-30. That questionnaire was retired on 2026-09-16 and every record collected on it moved to withdrawn/. The schema string also named it and now does not.",
     "separation": "Never pooled with any other instrument. Floors, positions and refusal rates are computed per instrument and a record naming a different one is dropped and counted -- see floor_table._instrument_matches and tests/test_instrument_not_pooled.py. The rule outlived the specific bank it was written about.",

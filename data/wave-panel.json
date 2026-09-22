@@ -1,23 +1,101 @@
 {
-  "frozen": "2026-09-05",
-  "criterion": "present in the corpus under both surviving conditions (D and P) at freeze time. Coverage, never outcome.",
-  "series_conditions": [
-    "D",
-    "P"
+  "ablation": [
+    "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+    "hf.co/OBLITERATUS/Gemma-4-12B-OBLITERATED:Q4_K_M",
+    "hf.co/culturerevolt/gemma-4-12b-heretic-abliterated-GGUF:Q4_K_M",
+    "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M",
+    "hf.co/OBLITERATUS/Qwen3.8-27B-OBLITERATED:Q4_K_M",
+    "hf.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF:Q4_K_M",
+    "qwen2.5:14b",
+    "huihui_ai/qwen2.5-abliterate:14b",
+    "phi4:latest",
+    "huihui_ai/phi4-abliterated:latest"
   ],
-  "refusal_conditions": [
-    "A",
-    "B"
+  "ablation_criterion": "WEIGHT-RUNG COVERAGE, declared before collection. A stock build and an abliterated build of the SAME base at the SAME quantisation, both held locally. Same-quantisation is the requirement `check_arm_match` rejected three of six 2026-05 pairs for -- a pair differing in quantisation, stop tokens or baked sampling is not an arm, it is two models. Where two independent ablation methods exist for one base they are both collected, because a stance change that appears under one method and not the other is a property of the method rather than of cutting the refusal direction. Selection is coverage: every locally-held pair meeting the rule is included, and none was run on this instrument before the list was fixed.",
+  "ablation_declared": "2026-09-18",
+  "ablation_note": "NOT part of the frozen panel and not part of the breadth set. The weight rung is its own arm: it answers whether the institutional lean survives cutting the refusal direction out of the weights, which no prompt-level condition can address. The May 2026 collection of this arm exists and is on the JUDGE-SCORED instrument (runs/2026-05-27-abliteration*), so it cannot enter a paper whose premise is no language model in the scoring path. Its data is intact and is not superseded by this -- it is a different measurement of the same question.",
+  "ablation_pairs": [
+    {
+      "ablated": [
+        "hf.co/OBLITERATUS/Gemma-4-12B-OBLITERATED:Q4_K_M",
+        "hf.co/culturerevolt/gemma-4-12b-heretic-abliterated-GGUF:Q4_K_M"
+      ],
+      "base": "gemma-4-12B",
+      "stock": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M"
+    },
+    {
+      "ablated": [
+        "hf.co/OBLITERATUS/Qwen3.8-27B-OBLITERATED:Q4_K_M",
+        "hf.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF:Q4_K_M"
+      ],
+      "base": "qwen3.8-27B",
+      "stock": "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M"
+    },
+    {
+      "ablated": [
+        "huihui_ai/qwen2.5-abliterate:14b"
+      ],
+      "base": "qwen2.5-14B",
+      "stock": "qwen2.5:14b"
+    },
+    {
+      "ablated": [
+        "huihui_ai/phi4-abliterated:latest"
+      ],
+      "base": "phi-4",
+      "stock": "phi4:latest"
+    }
   ],
-  "params": {
-    "temperature": 0.7,
-    "seed_base": 20260830,
-    "seed_sweep": true,
-    "max_tokens": 8192,
-    "template": "T01",
-    "runs": 5
+  "amended": "2026-09-16",
+  "amendment_criterion": "SAME-VERSION SIBLING COVERAGE, declared before collection and never after seeing a number. Added: every OpenRouter model that pairs with a panel member by tier or snapshot at the same version, verified to return a valid sheet on the Ratchet battery. Five added; a sixth (z-ai/glm-5.2:free) was probed and returned 0 of 32 answers, so it is excluded and named here rather than silently dropped. Candidates were taken from the live /api/v1/models list, not guessed -- an earlier pass invented five plausible ids, probed them, and reported their 400s as a finding about availability.",
+  "breadth": [
+    "aion-labs/aion-3.0-mini",
+    "amazon/nova-micro-v1",
+    "cohere/command-a",
+    "deepseek/deepseek-v3.2",
+    "google/gemma-2-27b-it",
+    "ibm-granite/granite-4.2-8b",
+    "inception/mercury-2.5",
+    "meituan/longcat-2.0",
+    "meta-llama/llama-3.3-70b-instruct",
+    "microsoft/phi-4",
+    "minimax/minimax-m2.7",
+    "mistralai/mistral-small-24b-instruct-2501",
+    "moonshotai/kimi-k2-thinking",
+    "nvidia/nemotron-3.5-lightning",
+    "qwen/qwen3.8-2.4t-a95b",
+    "rekaai/reka-flash-3",
+    "stepfun/step-3.5-flash",
+    "tencent/hy4-preview",
+    "upstage/solar-pro4",
+    "writer/palmyra-x5",
+    "xiaomi/mimo-v2.5-pro",
+    "z-ai/glm-5-turbo"
+  ],
+  "breadth_criterion": "PANEL BREADTH COVERAGE, declared before collection and applied by code, never by hand. The newest listing this corpus has never measured from EVERY vendor in the OpenRouter catalogue, subject to: the vendor trains its own weights (fine-tune and merge houses are out); the listing is a general conversational model (coding, agentic-UI, search, retrieval, schema-extraction, moderation and safeguard builds are out); input is text only (the instrument is 32 lines of text, so a multimodal subject is a different subject). NO AGE BOUND -- a first draft cut at 365 days, which excluded seven first-party models from major vendors, and a cutoff chosen because of how many models it yields is a cutoff chosen for its result. Selection is coverage, never outcome: not one of these models had been run on this instrument when the list was fixed.",
+  "breadth_declared": "2026-09-18",
+  "breadth_rejected": {
+    "anthracite-org/magnum-v4-72b": "fine-tune/merge of another vendor's weights",
+    "arcee-ai/trinity-large-thinking": "fine-tune/merge of another vendor's weights",
+    "cognitivecomputations/dolphin-mistral-24b-venice-edition": "fine-tune/merge of another vendor's weights",
+    "gryphe/mythomax-l2-13b": "fine-tune/merge of another vendor's weights",
+    "inclusionai/ling-3.0-flash-fin": "vision-language",
+    "inference-net/schematron-v2-turbo": "schema extraction",
+    "kwaipilot/kat-coder-pro-v2.5": "coding",
+    "mancer/weaver": "fine-tune/merge of another vendor's weights",
+    "morph/morph-v3-large": "code edit apply",
+    "nousresearch/hermes-4-405b": "fine-tune/merge of another vendor's weights",
+    "openai/gpt-oss-safeguard-20b": "not a conversational subject (-safeguard)",
+    "openrouter/fusion": "router / meta-endpoint",
+    "perplexity/sonar-deep-research": "search product",
+    "poolside/laguna-s-2.1": "coding",
+    "relace/relace-search": "code search",
+    "sao10k/l3.3-euryale-70b": "fine-tune/merge of another vendor's weights",
+    "thedrummer/cydonia-24b-v4.1": "fine-tune/merge of another vendor's weights",
+    "undi95/remm-slerp-l2-13b": "fine-tune/merge of another vendor's weights"
   },
-  "note": "Held constant across waves. Adding a model starts a SHORTER series for it; it does not retroactively join the existing one. Removing one because it was retired is a fact about the vendor and must be recorded, not deleted.",
+  "criterion": "present in the corpus under both surviving conditions (D and P) at freeze time. Coverage, never outcome.",
+  "frozen": "2026-09-05",
   "models": [
     "anthropic/claude-fable-5.1",
     "anthropic/claude-opus-4.6",
@@ -56,8 +134,29 @@
     "z-ai/glm-5.3",
     "z-ai/glm-5.3-flash"
   ],
-  "amended": "2026-09-16",
-  "amendment_criterion": "SAME-VERSION SIBLING COVERAGE, declared before collection and never after seeing a number. Added: every OpenRouter model that pairs with a panel member by tier or snapshot at the same version, verified to return a valid sheet on the Ratchet battery. Five added; a sixth (z-ai/glm-5.2:free) was probed and returned 0 of 32 answers, so it is excluded and named here rather than silently dropped. Candidates were taken from the live /api/v1/models list, not guessed -- an earlier pass invented five plausible ids, probed them, and reported their 400s as a finding about availability.",
+  "note": "Held constant across waves. Adding a model starts a SHORTER series for it; it does not retroactively join the existing one. Removing one because it was retired is a fact about the vendor and must be recorded, not deleted. The 2026-09-18 breadth set is NOT part of the frozen time series either: it starts a shorter series of its own and feeds the panel-level and floor statistics, which need coverage rather than a fixed cohort.",
+  "params": {
+    "max_tokens": 8192,
+    "runs": 5,
+    "seed_base": 20260830,
+    "seed_sweep": true,
+    "temperature": 0.7,
+    "template": "T01"
+  },
+  "refusal_conditions": [
+    "A",
+    "B"
+  ],
+  "requant_siblings": [
+    "gemma2:9b-instruct-q8_0",
+    "llama3.2:latest",
+    "llama3.2:3b-instruct-q8_0",
+    "mistral:7b-instruct-q8_0",
+    "llama3.1:8b-instruct-q8_0",
+    "qwen2.5:14b-instruct-q8_0"
+  ],
+  "requant_siblings_criterion": "REQUANTISATION NULL COVERAGE, declared before collection and never after seeing a number. The same base weights served at two quantisations, everything else held: for each local panel member with a q8_0 build available locally, its q8_0 sibling. These are not new models and they do not join the panel series; they exist only to populate the requantisation floor, which is a same-version null. llama3.2 appears because check_arm_match.QUANT_PAIRS gates it as a valid pair and neither of its arms is on the panel, so both are collected. All are local builds: the pass costs nothing but time.",
+  "requant_siblings_declared": "2026-09-17",
   "same_version_pairs": [
     [
       "openai/gpt-5.6-luna",
@@ -95,5 +194,9 @@
       "z-ai/glm-5.3",
       "z-ai/glm-5.3-flash"
     ]
+  ],
+  "series_conditions": [
+    "D",
+    "P"
   ]
 }

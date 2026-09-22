@@ -64,12 +64,12 @@ AGREE_ABOVE = 1.5
 def gradient(run_dir=WAVE, condition="N"):
     """item id -> agreement rate and observation count, at one condition."""
     import position_analysis as P
-    from studypaths import runs_root
+    from studypaths import run_path
     bank = P.load_bank()
     by_id = {i["id"]: i for i in bank["items"]}
     agree = collections.Counter()
     total = collections.Counter()
-    for rec in P.load_records(str(runs_root() / run_dir)):
+    for rec in P.load_records(str(run_path(run_dir))):
         if rec.get("condition") != condition:
             continue
         for qid, pos in rec["answers"].items():

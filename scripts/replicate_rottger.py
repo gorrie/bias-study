@@ -14,8 +14,9 @@ for:
     paraphrase   10 prompt templates x 62 propositions x 8 models   -> C(10,2) x 8 = 360 pairs
     forcing       5 forced-choice prompts x 62 x 10 models          -> C(5,2) x 10 = 100 pairs
 
-For comparison our own presentation-order floor rests on 84 pairs and our same-version null on
-97. NOTE the ceiling-vs-actual gap: 360 is what the design allows, 148 is what coverage
+For comparison our own presentation-order floor rests on 94 pairs and our same-version null on
+24 -- both move with collection, and they read 84 and 97 here until 2026-09-21, so take them
+off the generated floors table rather than from this docstring. NOTE the ceiling-vs-actual gap: 360 is what the design allows, 148 is what coverage
 actually scores under our strict `label` rule at 40 shared items (193 under their rule), and
 135 of those 148 are three models (gpt-3.5 x2, Mistral-v0.1). The other 212 are printed too:
 111 pairs share too few items and 101 have an arm -- Llama-2, all three sizes -- that coded
@@ -753,10 +754,30 @@ def main(argv=None):
         print("ids and codes only -- no proposition text, no completion text")
         print()
 
+    def _our_floor_scale():
+        """Our own two pair counts, read live rather than typed.
+
+        They were typed as "84 pairs ... 97" and both had moved -- to 94 and 24 -- in a line
+        printed to give a reader the scale of the comparison. A scale figure that is wrong is
+        worse than no scale figure, because it is quoted rather than looked up.
+        """
+        try:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            import floor_table as _FT2
+            rows = _FT2.collect()
+            order = (rows.get("presentation order") or {}).get("pairs")
+            null = (rows.get("same-version variants") or {}).get("pairs")
+            if order is None or null is None:
+                return "UNAVAILABLE -- floor_table produced no row to read the scale from"
+            return "order floor %d pairs, same-version null %d pairs" % (order, null)
+        except Exception as exc:                               # noqa: BLE001
+            return "UNAVAILABLE -- could not read the floors table (%s)" % exc
+
     print("ROETTGER ET AL. 2024, RE-SCORED WITH OUR FLOOR STATISTIC")
     print("their completions (CC-BY 4.0); our power calculation; three extraction rules --")
     print("'label' and 'stance' are ours, 'theirs' is a checked port of their published code")
-    print("for scale: our own order floor rests on 84 pairs, our same-version null on 97")
+    print("for scale, from the live floors table: our own order floor and same-version null")
+    print("    %s" % _our_floor_scale())
     print()
     print("pair accounting: every within-model pair the design allows lands in exactly one of")
     print("  scored / lowcov (both arms coded, too few shared items) / noarm (an arm coded")
@@ -799,7 +820,9 @@ def main(argv=None):
 
     # The column that is 0 of 12 in the controls audit, filled from their data.
     print("SAME-VERSION NULL -- two variants of one release, nuisance factor held constant")
-    print("  no external study in the controls audit reports this. Theirs can produce it.")
+    print("  no external study in the controls audit reports this as a DISTRIBUTION -- the")
+    print("  nearest, Toernberg and Schimmel (2026), reports a centre and spread and stops")
+    print("  short of an upper percentile. Theirs can produce the whole thing.")
     print()
     print("  %-7s %-11s %-6s %6s %6s %6s %5s   %-16s %7s %5s" %
           ("mode", "from", "shared", "scored", "lowcov", "noarm", "of",

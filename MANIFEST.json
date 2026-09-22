@@ -12,6 +12,6 @@
   "scrubbed_fields": {
     "response_text": 33
   },
-  "instrument": "SUPERSEDED MANIFEST. These records were exported from the retired 62-item external questionnaire, whose text was licensed third-party work and is not included. The study's instrument since 2026-09-16 is data/ratchet-battery.json -- 32 forced-choice items in 16 mirrored pairs, written by Ian Gorrie, CC BY 4.0 -- and it ships in full with no fetch step. Regenerate this file with scripts/export_scrubbed.py when the battery corpus is exported.",
+  "instrument": "SUPERSEDED MANIFEST. These records were exported from the retired 62-item external questionnaire, whose text was licensed third-party work and is not included. The study's instrument since 2026-09-16 is data/ratchet-battery.json -- 32 forced-choice items in 16 mirrored pairs, written by Ian Gorrie and MIT-licensed with the rest of this repository -- and it ships in full with no fetch step. Regenerate this file with scripts/export_scrubbed.py when the battery corpus is exported.",
   "verification": "Every record was scanned against the release repo's .corpus-fingerprint list after writing; see the exporter's output."
 }

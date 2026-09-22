@@ -101,7 +101,7 @@ def test_every_check_flag_is_declared():
 def test_every_declared_gate_exists():
     """A gate the registry names must exist in a tree that can run it.
 
-    TREE-AWARE IN BOTH DIRECTIONS. `check_release_table.py` gates RELEASE-v2.md's arm
+    TREE-AWARE IN BOTH DIRECTIONS. `check_release_table.py` gates RELEASE-2026-09-07.md's arm
     inventory, and neither that gate nor the document it reads ships to the mirror;
     `calibration_study.py` and `three_axis_score.py` exist only in the mirror. Requiring
     every declared script to be present HERE would force one tree's gates to be deleted

@@ -188,6 +188,64 @@ DEFAULT_EXCLUDE = {
     "2026-09-07-ablation-wave",
 }
 
+#: THE PANEL, NAMED. Every run directory whose battery rows are part of the historical
+#: refusal panel.
+#:
+#: WHY THIS REPLACED A DENYLIST. `DEFAULT_EXCLUDE` above is a set of directories to subtract
+#: from a glob, and on 2026-09-21 **all seven of them had been retired to `withdrawn/` and
+#: subtracted nothing.** The list was inert while the glob kept growing: the paraphrase arm
+#: (448 sheets, condition N only), three omission arms (1,488 sheets, N and P only), two
+#: rung-2 arms, a 22-model one-sheet roster smoke and a 71-model budget probe had all joined
+#: the refusal panel without a decision, and the published ordering A > N > D > P was
+#: computed over them. Every one of those is excluded by a rule ALREADY WRITTEN AND DEFENDED
+#: in the comments above -- one-sided denominators, smokes, collections selected for a
+#: behaviour -- so the panel was never meant to contain them; nothing existed to notice.
+#:
+#: A denylist is the wrong shape for this. It has to be edited every time an arm is
+#: collected, and forgetting is silent. An allowlist plus a classification check fails the
+#: other way: a new battery run is UNCLASSIFIED and the table refuses to compute until
+#: someone says which it is.
+PANEL = {
+    "2026-09-16-ratchet-v3-wave",
+}
+
+#: Battery runs deliberately outside the panel, each with the rule it falls under. The reason
+#: is required: an exclusion whose reason nobody wrote down is indistinguishable from an
+#: oversight, which is how the seven above went stale unnoticed.
+OUT_OF_PANEL = {
+    "2026-09-16-ratchet-v3-wave-budget-probe":
+        "A budget probe, one sheet per model across 71 models, collected to price the wave.",
+    "2026-09-18-roster-smoke":
+        "A roster smoke: 22 unmeasured models, one sheet each, to find out what answers.",
+    "2026-09-18-bce-smoke": "A smoke test.",
+    "2026-09-19-rung2-smoke": "A smoke test.",
+    "2026-09-18-paraphrase":
+        "Ten semantics-preserving templates, CONDITION N ONLY -- the one-sided denominator "
+        "rule that excluded 2026-09-04-template-floor, pointing the same way.",
+    "2026-09-18-omission-orders":
+        "The numbering arm: conditions N and P only, on local builds chosen because they "
+        "drop items. One-sided, and selected for a behaviour adjacent to refusal.",
+    "2026-09-18-omission-hosted": "The hosted numbering arm. Same rule as the local one.",
+    "2026-09-20-omission-hosted-pinned":
+        "The re-collected hosted numbering arm with backends pinned. Same rule.",
+    "2026-09-21-omission-nemotron-phala":
+        "One model on a second backend, conditions N and P only, collected to decide whether "
+        "the hosted numbering effect is the numbering or the serving path. One-sided and "
+        "selected for a behaviour, like every other omission arm. This entry exists because "
+        "the gate above refused to compute the refusal table the moment the first sheet "
+        "landed -- which is the whole point of declaring the population.",
+    "2026-09-19-rung2-elicitation":
+        "Rung 2 of the elicitation ladder -- a different administration, not a sheet of the "
+        "battery put to the panel.",
+    "2026-09-20-rung2-control-v2":
+        "The rung-2 control at protocol v2. Same rule as the arm it controls.",
+    "2026-09-13-i3-phase0":
+        "Phase 0, whose B-A contrast is withdrawn (PLAN, project_i3_phase0_ba_withdrawn).",
+    "2026-09-13-truncation-proof":
+        "A constructed demonstration that truncation is not refusal, not an administration.",
+    "test-refusal": "A fixture directory.",
+}
+
 
 def vendor_of(model):
     """Vendor family. Local ollama tags carry no slash, so map the ones that have a vendor.
@@ -242,15 +300,24 @@ def classify(row):
     return "other"
 
 
-def load(exclude=None):
-    """Every scoreable row, minus the targeted collections in DEFAULT_EXCLUDE.
+class UnclassifiedRun(Exception):
+    """A battery run belongs to the panel or is excluded from it. There is no third state."""
 
-    The default is the exclusion set rather than the empty set on purpose. A caller who wants
-    the whole corpus has to say `load(set())` and mean it; a caller who forgets the argument
-    gets the corpus the paper describes, not a silently different one.
+
+def load(exclude=None, strict=True):
+    """Every scoreable row of the declared refusal PANEL.
+
+    `exclude` still works and still defaults to DEFAULT_EXCLUDE, because callers pass it and
+    the reasons in it are worth keeping -- but it is no longer what defines the population.
+    PANEL is. A caller who wants the whole corpus says `load(set())` AND `strict=False`, and
+    means both.
+
+    `strict=False` is for tools that want to see the unclassified rows rather than be stopped
+    by them (`--sweep`). Nothing in the paper's path passes it.
     """
     exclude = DEFAULT_EXCLUDE if exclude is None else exclude
     rows = []
+    seen_buckets = set()
     for path in sorted(RUNS.glob("**/*.jsonl")):
         bucket = path.relative_to(RUNS).parts[0]
         if bucket in exclude:
@@ -280,9 +347,26 @@ def load(exclude=None):
                 continue
             if (row.get("model") or "").startswith(BROKEN_BUILDS):
                 continue
+            seen_buckets.add(bucket)
             row["_bucket"] = bucket
             rows.append(row)
-    return rows
+
+    # EVERY DIRECTORY THAT PRODUCED A BATTERY ROW MUST BE CLASSIFIED. This is the check the
+    # denylist could not perform: it could only subtract names somebody remembered to type.
+    unclassified = sorted(seen_buckets - set(PANEL) - set(OUT_OF_PANEL) - set(exclude))
+    if unclassified and strict:
+        raise UnclassifiedRun(
+            "%d run director(ies) carry battery rows and are in neither PANEL nor "
+            "OUT_OF_PANEL:\n  %s\nDecide which, in refusal_table.py, with the rule it falls "
+            "under. The refusal panel is a declared population, not whatever is on disk."
+            % (len(unclassified), "\n  ".join(unclassified)))
+    kept = [r for r in rows if r["_bucket"] in PANEL]
+    if strict and not kept:
+        raise UnclassifiedRun(
+            "PANEL matched NO rows -- %d battery row(s) were read and every one was "
+            "discarded. A refusal table over zero runs is not an empty result, it is a "
+            "broken population." % len(rows))
+    return kept if strict else rows
 
 
 def audit(rows):
@@ -559,8 +643,15 @@ def main():
     # printed above a table computed from 32-item sheets.
     print("refusal = declined all %d items: prose returned, zero answers, budget intact"
           % _FT.INSTRUMENT_ITEMS.get(_FT.INSTRUMENT_DEFAULT, 0))
-    if args.exclude:
-        print("excluding: " + ", ".join(sorted(args.exclude)))
+    # THE POPULATION, NAMED IN THE TABLE'S OWN HEADER. This printed "excluding: <seven run
+    # directories>" long after all seven had been retired out of `runs/` -- a header
+    # describing a subtraction that no longer subtracted anything, above a table computed
+    # over eleven collections nobody had decided to include. What a reader needs is the
+    # population, not a list of names that were once removed from it.
+    print("panel: " + ", ".join(sorted(PANEL)))
+    print("outside the panel, by rule: %d collection(s) -- smokes, budget probes and arms "
+          "collected" % len(OUT_OF_PANEL))
+    print("under one or two conditions; refusal_table.OUT_OF_PANEL names each with its rule")
     print()
     print("vendor".ljust(16) + "".join(c.rjust(12) for c in CONDITIONS))
     for vendor in vendors:

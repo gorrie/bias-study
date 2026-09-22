@@ -84,39 +84,44 @@ def _needs_corpus():
         pytest.skip("no runs/ corpus in this tree -- NOT APPLICABLE, not a pass")
 
 
-def test_live_audit_still_runs_and_reports_five_nulls():
+def test_detection_limits_compute_on_the_live_instrument():
+    """The limits table must compute, exit 0, and count in the LIVE bank's units.
+
+    REPLACES test_live_audit_still_runs_and_reports_five_nulls, 2026-09-18. That test
+    asserted `power.main()` returns 2 with NOT AUDITED in its output -- the state of a
+    guard that refused to compare five published observations counted out of 62 items
+    against thresholds counted out of 32. The audit and the guard are deleted, because
+    those five claims are WITHDRAWN and will not be re-measured
+    (CORRECTIONS-2026-09-17-power.md; the constants are kept deleted by
+    scripts/test_correction_gates.py::test_no_audit_of_observations_in_retired_units).
+
+    What is left is the part that was always valid: what the live instrument can
+    resolve. This guards that it still computes rather than quietly returning an empty
+    table -- a report that examines nothing and exits 0 is this project's signature
+    defect and the reason the file it replaces existed.
+    """
     _needs_corpus()
-    """The fix must not change any verdict on the data as it stands today: no published
-    observation currently lands in the band. If this count moves, a real verdict changed and
-    that needs a dated correction, not a green test."""
     out = io.StringIO()
     with redirect_stdout(out):
         rc = power.main([])
-    # REFUSED, NOT AUDITED, since 2026-09-17: every published `observed` is a count out of the
-    # retired instrument's 62 items and every threshold is now a count out of 32. See
-    # CORRECTIONS-2026-09-17-power.md, whose own verdict claims were withdrawn for this.
-    # scripts/test_correction_gates.py holds the refusal; this file holds the limits table,
-    # which is computed entirely from battery floors and is unaffected.
-    assert rc == 2, "an unauditable table is NOT APPLICABLE, not a pass"
     text = out.getvalue()
-    assert "NOT AUDITED" in text
-    return
-    # UPDATED 2026-09-17, DELIBERATELY, WITH A DATED CORRECTION BESIDE IT.
-    #
-    # These were 3 / 1 / 1. This test fired when they moved, which is what it is for -- the
-    # floors are now measured on the author's 32-item battery across four collection passes
-    # rather than on the retired external questionnaire, and two of them changed shape: the
-    # requantisation floor exists again (16 pairs, threshold 10) and the replicate floor
-    # exists on this instrument for the first time (336 pairs).
-    #
-    # The verdicts that moved are recorded in CORRECTIONS-2026-09-17-power.md. Note the
-    # direction: "clears its floor" went 1 -> 3, which does NOT restore three findings. It
-    # means three movements this study declared absent are larger than the instrument can
-    # resolve, so declaring them absent was wrong in the other direction. UNDECIDED, not true.
-    assert "1 of 5 published nulls are underpowered" in text
-    assert "1 is not resolvable at all" in text
-    assert "3 clears its floor" in text
-    assert "INCONCLUSIVE" not in text
-    # The header's item count is derived from the live bank, not typed. It read 62 -- the
-    # retired questionnaire's length -- above a table of limits counted out of 32.
-    assert "of 32 items" in text
+    assert rc == 0, 'the limits table computes on its own and is not NOT APPLICABLE'
+
+    # The header's item count is DERIVED from the live bank, not typed. It read 62 --
+    # the retired questionnaire's length -- above a table of limits counted out of 32.
+    assert 'of %d items' % power.BOUND in text
+    assert power.BOUND == 32, 'the live battery is 32 items; a change here is a new bank'
+
+    # CHECKED NOTHING IS NOT A PASS. Every null this study rests on must appear with a
+    # threshold, or the table is green over an empty computation.
+    for null in ('presentation order', 'run-to-run replicate', 'same-version variants'):
+        assert null in text, '%r is missing from the limits table' % null
+    rows = [ln for ln in text.split(chr(10))
+            if ln.strip() and ('side' in ln or 'endpoint' in ln) and 'statistic' not in ln]
+    assert len(rows) >= 8, (
+        'only %d limit row(s) computed; the table exists to report floors and a nearly '
+        'empty one is the vacuous pass this suite is here to catch' % len(rows))
+
+    # And the audit must NOT have come back by another route.
+    assert 'NOT AUDITED' not in text
+    assert 'published nulls' not in text

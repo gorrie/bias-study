@@ -5,7 +5,7 @@ WHAT CHANGED, 2026-09-17
 ------------------------
 THE STUDY'S INSTRUMENT IS NO LONGER SOMEONE ELSE'S. The live bank is
 `data/ratchet-battery.json` -- 32 items in 16 mirrored pairs, written by Ian Gorrie and
-licensed CC BY 4.0 -- and it ships with the paper. There is nothing to withhold and nothing
+MIT-licensed with the rest of the repository -- and it ships with the paper. There is nothing to withhold and nothing
 for a reader to fetch: `forcing_prompt` stays in the export, because the whole argument of
 this study is that a field should publish what it measures.
 
@@ -67,6 +67,7 @@ import os
 import re
 import shutil
 import sys
+import studypaths as _SP  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
@@ -76,7 +77,7 @@ RUNS = os.path.join(STUDY, "runs")
 # copies of "what counts as instrument text" is how one of them ends up permissive.
 DEFAULT_FINGERPRINTS = os.path.join(STUDY, '.corpus-fingerprint')
 
-SCHEMA = "compass-run/1"
+SCHEMA = _SP.SCHEMA
 
 # Dropped outright. forcing_prompt is the instrument; the rest are recomputable or empty.
 DROP_FIELDS = ("forcing_prompt",)
@@ -403,7 +404,7 @@ def main(argv=None):
         "dropped_fields": list(drop_fields),
         "scrubbed_fields": tally["scrubbed_fields"],
         "instrument": ("The Ratchet battery (data/ratchet-battery.json): 32 forced-choice "
-                       "items in 16 mirrored pairs, written by Ian Gorrie, CC BY 4.0. The "
+                       "items in 16 mirrored pairs, written by Ian Gorrie, MIT. The "
                        "item text SHIPS -- there is no fetch step and no carve-out. This "
                        "field named a retired external questionnaire until 2026-09-17."),
         "verification": ("Every record was scanned against the release repo's "
@@ -454,7 +455,7 @@ def main(argv=None):
               "propositions. Generate .corpus-fingerprint-hashed and re-run.")
         return 1
     print("The answers are keyed by item id, so every published number recomputes from this.")
-    print("The instrument ships with the paper: data/ratchet-battery.json, 32 items, CC BY 4.0.")
+    print("The instrument ships with the paper: data/ratchet-battery.json, 32 items, MIT.")
     return 0
 
 

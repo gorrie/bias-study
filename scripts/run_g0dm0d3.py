@@ -37,7 +37,7 @@ import requests
 SCRIPT_DIR = Path(__file__).parent
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from studypaths import runs_root, LEGACY_SEED  # noqa: E402
+from studypaths import run_path, LEGACY_SEED  # noqa: E402
 sys.path.insert(0, str(SCRIPT_DIR))
 import run_study as rs  # reuse load_questions + safe_filename + STUDY_DIR
 
@@ -129,7 +129,7 @@ def main() -> int:
     if not questions:
         print(f"ERROR: no questions for positions={args.positions}", file=sys.stderr); return 2
 
-    out_dir = runs_root() / args.out_date / "raw"
+    out_dir = run_path(args.out_date) / "raw"
     out_dir.mkdir(parents=True, exist_ok=True)
     started_at = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
     total = len(models) * len(questions) * len(conditions) * args.samples
@@ -220,7 +220,7 @@ def main() -> int:
         "total_calls_planned": total,
         "truncated_by_text_test": truncated,
     }
-    with open(runs_root() / args.out_date / "manifest.json", "w",
+    with open(run_path(args.out_date) / "manifest.json", "w",
               encoding="utf-8", newline="\n") as fh:
         json.dump(manifest, fh, indent=2, sort_keys=True)
         fh.write("\n")

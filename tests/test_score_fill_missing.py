@@ -93,6 +93,13 @@ def _run(tmp_path, monkeypatch, raw, scored_existing, argv):
         return out
 
     monkeypatch.setattr(S, "score_record", fake_score_record)
+    # PATCH WHAT THE CODE CALLS. `score.py` composed `runs_root() / name` until 2026-09-21
+    # and now calls `run_path(name)`, which resolves a run BY NAME across both corpus roots
+    # -- the fix for nineteen analyses that looked for the battery wave inside the retired
+    # May corpus in the public mirror. Patching the old name left this test pointing at the
+    # real tree while asserting against a temp one, so it read "the repaired text was not
+    # judged" when the record it was judging was simply somewhere else.
+    monkeypatch.setattr(S, "run_path", lambda name: tmp_path / name)
     monkeypatch.setattr(S, "runs_root", lambda: tmp_path)
     monkeypatch.setattr(S, "load_env", lambda: {"OPENROUTER_API_KEY": "k"})
     monkeypatch.setattr(sys, "argv", ["score.py", "arun"] + argv)

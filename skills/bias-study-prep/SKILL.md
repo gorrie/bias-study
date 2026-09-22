@@ -77,7 +77,8 @@ inside its own correction would keep the gate red forever.)*
    > instrument passes a collection it did not check.
 
    > **Changed 2026-09-15.** This step used to describe 62 third-party propositions that were
-   > "not in this repository and never will be", fetched by `scripts/fetch_items.py`. That
+   > "not in this repository and never will be", fetched by what is now
+   > `withdrawn/compass-bank/scripts/fetch_items.py`. That
    > instrument has been removed from the study. It could not be republished, which forced an
    > id-only data export and produced the 2026-09-12 leak incident; the whole
    > `fetch_items` / `.corpus-fingerprint` / `check_corpus` apparatus exists to keep it out of

@@ -126,6 +126,24 @@ def _cached_modal_noise():
         return None
     if rec.get("median") is None or rec.get("p90") is None:
         return None
+    # THE SIGNATURE IS WRITTEN AND WAS NEVER READ. `write_cache` records the wave's cell and
+    # run counts precisely so a cache measured over different data is detectable, and nothing
+    # compared them -- so on 2026-09-21 the cache said 34 cells while the live corpus held
+    # 576, and the paper's `modal sampling error` row printed the 34-cell figures under a
+    # table computed from all of them. A provenance field nobody reads is provenance nobody
+    # has. Flagged, not silently recomputed: recomputing here would cost 2000 resamples on
+    # every caller, and the remedy is one `--write`.
+    live = corpus_signature()
+    was = rec.get("signature") or {}
+    if was and (was.get("cells") != live["cells"] or was.get("runs") != live["runs"]):
+        rec = dict(rec)
+        rec["STALE"] = ("cached over %s cell(s) / %s run(s); the corpus now holds %d / %d. "
+                        "Regenerate: python scripts/floor_resolution.py --write"
+                        % (was.get("cells"), was.get("runs"), live["cells"], live["runs"]))
+    if rec.get("instrument") and rec["instrument"] != F.INSTRUMENT_DEFAULT:
+        rec = dict(rec)
+        rec["STALE"] = ("cached on instrument %r, the study's is %r"
+                        % (rec["instrument"], F.INSTRUMENT_DEFAULT))
     return rec
 
 
@@ -371,8 +389,15 @@ def write_cache(boot=BOOT, seed=SEED):
         "endpoint_p90": mn["endpoint_p90"],
         "endpoint_max": mn["endpoint_max"],
         "cells": mn["cells"],
+        # JOINED, NOT `"%s %s" % k`. The cell key gained a third element -- the shuffle seed,
+        # added when pooling item orders was found to contaminate this very measurement -- and
+        # the two-slot format string started raising TypeError. `--write` had therefore been
+        # CRASHING since that change, which is why the cache in the repository was measured
+        # over 34 cells while the corpus held 576: not neglect, a regeneration path that could
+        # not run. Nothing gated the cache's age, so the failure was invisible from both ends.
         "unstable": sorted(
-            ("%s %s" % k) for k, v in mn["per_cell"].items() if v["p90"] >= 7),
+            " ".join(str(part) for part in k)
+            for k, v in mn["per_cell"].items() if v["p90"] >= 7),
     }
     io_open = open(CACHE, "w", encoding="utf-8", newline="\n")
     with io_open as fh:
