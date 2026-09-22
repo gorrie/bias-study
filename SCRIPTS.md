@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-138 script(s). 0 carry no module docstring and are listed at the end.
+139 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -106,6 +106,7 @@
 - **`check_skill_procedures.py`** — Do the skills' documented commands actually RUN, not just exist?
 - **`check_undefined_names.py`** — Names a script uses and never binds -- the NameError that waits for a rare path.
 - **`collection_check.py`** — Is this collection fit to score? Run it BEFORE spending judge calls on a run.
+- **`condition_table.py`** — Every experimental condition, its system prompt and its user suffix, read from the collector.
 - **`constrained_probe.py`** — Score the instrument by CONSTRAINED DECODING: make an invalid answer ungenerable.
 - **`convergent_validity.py`** — Do the judged scale and the mechanical instrument measure the same thing?
 - **`crossover_jurisdiction.py`** — Does a model go easy on ITS OWN state's items, or is some topic hard for everyone?

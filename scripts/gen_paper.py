@@ -47,6 +47,12 @@ BLOCKS = {
     # the refusal population was redeclared. A hand table sitting under a generated one, in
     # the section whose figures had already gone stale once.
     "bycondition": ("refusal_table.py", ["--by-condition"], None),
+    # THE DESIGN SECTION'S CONDITION TABLE. `A` was defined in §1, `P` in §1, `D` and `N` in
+    # §1b, and `B`, `C` and `E` NOWHERE -- while all seven appear as columns of the generated
+    # vendor refusal table. A reader meeting a `C` column had no way to learn what `C` is.
+    # Generated from `run_battery`, which is what was actually sent, so a reworded condition
+    # cannot leave a stale prompt in the paper.
+    "conditions": ("condition_table.py", ["--markdown"], None),
     "null":     ("floor_table.py", [], "same-version"),
     # SECTION 1'S HEADLINE TABLE. It was typed, and it disagreed with `order_floor_position`
     # -- the script the ABSTRACT's figures come from -- on both rows they share: 111 order
@@ -117,7 +123,7 @@ def block_body(name):
     # reviewer reads to see how many tests the paper ran. Found 2026-09-22 by asking of every
     # block whether it contains a table AND a fence, which is a two-line check nobody had run.
     unfenced = ("floors", "controls", "references", "timeline", "position", "bycondition",
-                "training", "intensity", "comparisons")
+                "training", "intensity", "comparisons", "conditions")
     fence = "" if name in unfenced else "```\n"
     close = "" if name in unfenced else "\n```"
     # NO TRAILING WHITESPACE. The fixed-width blocks right-pad their columns, so `power` and

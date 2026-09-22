@@ -1253,6 +1253,33 @@ def build():
          "value": pos.get("ratio", UNAVAILABLE),
          "what": "how many times the instruction's median effect exceeds the order median",
          "phrase": "is **%.1f times** the median produced by"},
+        # THE ABSTRACT. It summarises figures stated with their denominators in the body, so
+        # each key here anchors on the abstract's own wording rather than the section's. An
+        # abstract is the most-quoted part of a paper and was the least-checked part of this
+        # one: it did not exist until 2026-09-22, and the first draft of it carried three
+        # numbers no gate could see.
+        {"key": "abstract_omission_local_asis",
+         "value": (omission["local"] or {}).get("asis_partial", UNAVAILABLE),
+         "what": "as-is partial sheets, local arm, as the abstract states it",
+         # ANCHOR ON ONE LINE. The surface is flattened before comparison, so a phrase carrying
+         # a newline never matches -- the same trap that caught `audit_rows` an hour earlier.
+         "phrase": "loses %d sheets where the renumbered"},
+        {"key": "abstract_omission_local_renum",
+         "value": (omission["local"] or {}).get("renum_partial", UNAVAILABLE),
+         "what": "renumbered partial sheets, local arm, as the abstract states it",
+         "phrase": "renumbered arm loses %d"},
+        {"key": "abstract_nemotron_deepinfra",
+         "value": (omission["pinned"] or {}).get("nemotron_asis", UNAVAILABLE),
+         "what": "nemotron as-is partial sheets on DeepInfra, as the abstract states it",
+         "phrase": "the as-is loss runs %d sheets"},
+        {"key": "abstract_nemotron_phala",
+         "value": (omission["phala"] or {}).get("nemotron_asis", UNAVAILABLE),
+         "what": "nemotron as-is partial sheets on Phala, as the abstract states it",
+         "phrase": "sheets against %d."},
+        {"key": "abstract_order_mde",
+         "value": mde("presentation order"),
+         "what": "the detection limit, as the abstract states it",
+         "phrase": "a minimum detectable effect of %d"},
         # THE EXCLUSION THE PAPER MAKES AND DID NOT STATE. Each denominator is its own key,
         # for the same reason as the omission block below.
         {"key": "unattributable_sheets",

@@ -123,6 +123,9 @@ NOT_A_PROCEDURE = {
     "instantiate_stems.py": "parked -- factions bank construction from the authored stems. "
                             "Companion to faction_lean.py above; PLAN.md Parked owns it and "
                             "the bank does not exist yet",
+    "condition_table.py": "generator -- the paper's GEN:conditions block, read from "
+                          "run_battery so a reworded condition cannot leave a stale prompt in "
+                          "the Design section. Run by gen_paper, never by an operator",
     "ungated_numbers.py": "review aid -- prints the paper's numeric claims that NO gate "
                           "registers, for a human to read. It makes no judgement and cannot "
                           "pass or fail, so it is deliberately not a gate and not a step",

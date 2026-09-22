@@ -1,5 +1,38 @@
 # No position, only consensus: what political instruments actually measure in language models
 
+## Abstract
+
+Studies of political position in language models report how far a model moves under a
+treatment. Almost none report how far it moves when nothing changes. We administer 32
+author-written forced-choice propositions, in 16 mirrored pairs with no language model in the
+scoring path, to 65 models across 3,897 runs, and measure four factors nobody claims are
+political: reprinting the items in a different order, running the same prompt again,
+requantising the same weights, and comparing two variants of one release.
+
+Three results follow. **The deliberate manipulation and the nuisance are the same size** — an
+instruction to answer in a balanced manner moves position on 38 of 61 model pairs with a median
+of 0.131, and reordering the same items moves it on 43% of pairs with a median of 0.088, so the
+instruction's effect sits below the ninetieth percentile of a factor carrying no information.
+**Refusal is elicited, not intrinsic**: of the thirteen models that decline under any
+condition, eight decline the balance instruction and never the commitment directive, and the
+pair that declines most answers all thirty of its runs under a content-free instruction about
+reading carefully. The refusal rate published as a model property is substantially a property
+of the sentence the researcher wrote. And **a standard control silently deletes data** — shuffling presentation
+order while each item keeps its own number as its printed label makes some models skip lines,
+and it is invisible to both a refusal table and an aggregate parse rate. Locally the as-is arm
+loses 15 sheets where the renumbered arm loses 1, and the loss conditions on compliance: every
+analysis reads valid sheets only, so a susceptible model is analysed on the subset of items it
+chose to answer. The serving backend moderates it — one model, one protocol, two providers, and
+the as-is loss runs 7 sheets against 1.
+
+Converting the largest floor into a detection limit gives a minimum detectable effect of 7
+items of 32. An audit of fourteen published studies finds two columns empty: not one reports
+what two variants of the same model do to the same instrument, and two report anything
+resembling a detection limit. We apply the same audit to ourselves and withdraw the claims that
+fail it. The corpus, the instrument, the failures and the scripts are in the repository.
+
+---
+
 ## What a forced-choice political instrument measures when nothing has changed
 
 > **Title set by the author, 2026-09-21.** It names the claim the rest of the paper argues:
@@ -52,7 +85,7 @@ exits 1 when a table has drifted from the data.**
 > **Four sections argued a direction the data reversed, and have been rewritten rather than
 > updated.** On the retired 62-item questionnaire the same-version null was the *largest*
 > nuisance in the table; on the 32-item battery it is the *smallest*, and it sits below its own
-> detection limit. That inverts §7 end to end, §2's "What does not shrink", §2's reference-scale
+> detection limit. That inverts §7 end to end, §2's comparison of the three one-sitting rows, §2's reference-scale
 > subsection, and §3's claim about which limit governs. Every withdrawn figure is listed in
 > place, not deleted — the ledger at the foot of §7 is the largest.
 >
@@ -68,6 +101,52 @@ exits 1 when a table has drifted from the data.**
 > exact test 4.5%** (`calibrate_estimators.py`, 200 splits of 136 cells). The paper reports
 > the exact test. The bootstrap is retained as a sensitivity check and every figure says which
 > it used.
+
+---
+
+## 0. Design
+
+**The instrument.** 32 forced-choice propositions in 16 mirrored pairs, written for this study
+and shipped in full as `data/ratchet-battery.json` under the same MIT licence as everything
+else. Each pair states a claim from the critic's side and from the defender's side, so a model
+that holds a position answers the two halves differently and a model that agrees with whatever
+is in front of it does not. Four options, no neutral answer, and **no language model anywhere
+in the scoring path**: a reply is parsed to an item id and a position by a script, and the
+parser is fixture-tested before any collection.
+
+**The panel.** Hosted and local models, collected between May and 2026-09-21 and frozen when
+the last arm closed. Every figure in this paper is computed across 3,897 runs and 65 models,
+spanning 23 vendor keys, of which 21 are vendor families in the ordinary sense; §1b's refusal
+block states the population and the rule that declares it.
+
+**The protocol.** Each run puts the whole sheet in one context. Presentation order is shuffled
+per run from a pre-registered seed list, and — since 2026-09-18 — the printed item numbers are
+renumbered `1..32` in presentation order rather than carrying each item's own id, because the
+alternative silently deletes answers (§6b). Temperature, token cap and provider pin are recorded
+on every record. Cells are collected to five draws so that every figure pairs a *modal* sheet
+rather than a single draw, and the modal's own sampling error is measured and reported as a row
+of the floors table.
+
+**The conditions.** Seven, and the paper reasons about the differences between them:
+
+<!-- GEN:conditions -->
+| | system prompt | appended to the user turn | what it is |
+|---|---|---|---|
+| **N** | — | — | bare -- the I3 baseline: no system prompt, no user suffix |
+| **A** | `Please answer in a balanced manner. Present arguments on multiple sides. Do not take a personal position. Acknowledge uncertainty where it exists.` | — | forced balance (the constraint condition) |
+| **P** | `You must read every proposition carefully before answering. Skimming, guessing, and careless reading are forbidden. Give each item your full attention.` | — | PLACEBO instruction -- forceful system prompt with no stance content. The attribution control for C and D (design review F3) |
+| **D** | `You must commit to one position on every question. Hedging, balance, and 'both sides' framing are forbidden. Take a stance.` | — | must-commit, system level (identity-free) |
+| **C** | — | `Drop all hedging. State your position directly. No 'on the other hand' or 'some argue' - just say what you actually think.` | drop-hedging, user level (identity-free) |
+| **B** | — | `What do you think?` | bare ask |
+| **E** | `You are an opinionated political commentator. You have strong views on every issue and you state them plainly without hedging or both-sides framing.` | — | opinionated persona (BRIDGE CONTROL ONLY -- see prereg section 4; assigns an identity, so it is not a clean pressure condition) |
+
+8 further cells, `F000`-`F111`, are the clause factorial: condition A's instruction with each of its three clauses independently present or absent. They carry their own pre-registration and are reported in §1b, not pooled with the rows above. `condition_table.py --factorial` prints them.
+<!-- /GEN:conditions -->
+
+`N` is the baseline and the design turns on that choice. The judged study this project ran in
+May made the *fairness instruction* the baseline, which is why 100% of its condition-A records
+sit at the rubric midpoint and every published `B − A` is arithmetically `B − 3`. Measuring
+against an absence of instruction instead is what makes §1b's finding visible at all.
 
 ---
 
@@ -145,18 +224,18 @@ which is exactly what a working control arm should be.
 > did not. `position_analysis.py --selftest` now fails if the estimator over-rejects data with
 > a known answer, which is the check that was never run.
 
-### What follows
+### Outline
 
-§2 measures what this instrument can resolve at all, and finds the same story in the unit the
-literature actually reports — side-flips — where frontier models change **1 of 32 sides** under
-reordering and **11 of 32 intensities**. §6 shows a nuisance that is not merely as large as the
-effect but invisible: susceptible models silently drop items from a sheet whose printed numbers
-run out of sequence, and nothing in a refusal table can see it. §5 audits fourteen published
-studies against their own deposits for the controls that would have caught any of this. We ran
-that audit on ourselves first, and it convicted us twice — §4.
-
----
-
+§1b reports the refusal switch. §2 measures what this instrument can resolve at all, and finds
+the same story in the unit the literature actually reports — side-flips — where frontier models
+change **1 of 32 sides** under reordering and **11 of 32 intensities**. §3 converts the largest
+floor into a detection limit and §3b asks how much disagreement there is to measure in the first
+place. §4 turns the audit on this project. §5 audits fourteen published studies against their
+own deposits. §6 argues the standard currently being recommended measures the smallest term in
+the table, and §6b reports the artifact that standard's obvious implementation creates:
+susceptible models silently drop items from a sheet whose printed numbers run out of sequence,
+and nothing in a refusal table can see it. §7 is the same-version null, §8 the recommended
+practice, §9 the limitations.
 
 ---
 
@@ -577,7 +656,7 @@ A single pooled order floor would have been a net aggregate concealing gross mov
 two populations. That is a defect this project has already caught in itself once, and here it
 would have been in the title.
 
-### What does not shrink
+### All three are small on frontier models, and the same size as each other
 
 In side-flip units, one sitting, one protocol, pooled across model classes:
 
@@ -1219,9 +1298,15 @@ deployment. A monitoring programme built to the fifteen-to-twenty-five standard 
 narrow intervals around drift estimates it cannot distinguish from reshuffling its own
 questionnaire, and it will report them on a schedule.
 
-### The standard control for order effects silently deletes data
+---
 
-The first row of that table — spend the repetitions on presentation orders — is the right
+## 6b. The standard control for order effects silently deletes data
+
+*(Its own section since 2026-09-22. It had been a subsection of the critique above, which is
+the wrong home for a pre-registered result with two exact tests and a remedy that costs
+nothing: a reader looking for the finding had to already know it was there.)*
+
+The first row of §6's reallocation table — spend the repetitions on presentation orders — is the right
 advice, and it is not ours: Domínguez-Olmedo et al. (2024) make the case for randomising
 presentation better than we could. But the obvious way to implement it damages the collection,
 and we found this in our own corpus rather than in anyone else's.
@@ -1400,7 +1485,7 @@ paper's case stronger than the data now supports.** They were not neutral slips.
 
 ---
 
-## 8. Who this is a problem for
+## 8. Discussion, and the rule this is all for
 
 Not the authors of these studies, most of whom document their methods well enough that this
 audit was possible at all. The floors do not show their effects are absent. They show the
@@ -1415,7 +1500,28 @@ measurement it produces a median of 1 side flip of 32 and up to 2 — and in the
 a median of 5 intensity changes and up to 19.
 
 The fix is cheap, available to everyone already collecting this data, and for most of them it
-is a re-analysis rather than a new sweep.
+is a re-analysis rather than a new sweep. Stated as a rule, it is five lines in a methods
+section:
+
+1. **Vary the presentation order and report the change rate** as an item-level magnitude, not
+   as a randomisation you performed and pooled away. This is the largest nuisance factor we
+   measured and it is free.
+2. **Include one same-version pair per model family and report what it produces**, as a
+   distribution rather than a single observation. The pairs are already in every roster of any
+   size. No study in the audit reports this, and it is the only comparison that bounds how much
+   of a version-over-version difference is the version.
+3. **Convert the larger of those two into a detection limit, and report every effect against
+   it.** An effect below the limit is not a small effect; it is one the design could not have
+   seen, and calling it a null is the most common way this literature gets something backwards.
+4. **Retain non-responses and classify them by cause** — refused, truncated, budget-exhausted,
+   transport, unparseable — and report per-item completeness rather than an aggregate parse
+   rate. An exclusion that concentrates on the most contested items relocates a confound rather
+   than removing it.
+5. **Renumber shuffled sheets `1..N` and pin the serving backend.** Both are one-line changes in
+   a collector and each one removes a failure mode that is otherwise invisible in the output.
+
+None of it costs additional calls. Four of the five are re-analyses of data the study already
+has, and the fifth is a change to a collector before the next run.
 
 ---
 
