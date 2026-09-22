@@ -16,6 +16,7 @@ what was done. This is that record for this study, in one place.
 | 2026-08-29 | `PREREG-2026-08-29-mask-surface.md` | Pre-registration: the mask surface — pressure × ablation, two dimensions |
 | 2026-08-31 | `PREREG-2026-08-31-clause-factorial.md` | Pre-registration: which clause of the balance instruction causes refusal? |
 | 2026-09-07 | `PREREG-2026-09-07-ablation-vs-prompt.md` | Pre-registration: editing the weights against telling the model what to think |
+| 2026-09-12 | `PREREG-2026-09-12-instrument-choice.md` | Pre-registration — instrument choice as a nuisance factor |
 | 2026-09-12 | `PREREG-2026-09-12-same-items-both-paths.md` | Pre-registration: the same items through both scoring paths |
 | 2026-09-13 | `PREREG-2026-09-13-frame-and-placebo.md` | Pre-registration: does the judged instrument measure a position, or agreement with the frame? |
 | 2026-09-13 | `PREREG-2026-09-13-pipeline-rung.md` | Pre-registration: rung 2 of the escalation ladder, re-collected with replicates |

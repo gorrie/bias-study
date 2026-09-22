@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-136 script(s). 0 carry no module docstring and are listed at the end.
+137 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -124,6 +124,7 @@
 - **`gates.py`** — The one registry of every gate this study has, and where each one runs.
 - **`gen_artifact_manifest.py`** — Checksum the large binaries the study depends on, so they can travel outside git.
 - **`gen_data_dictionary.py`** — Generate DATA-DICTIONARY.md from the corpus, so it cannot describe a corpus that moved.
+- **`gen_deviations.py`** — Generate PROTOCOL-DEVIATIONS.md: what was pre-registered, what was done, what changed.
 - **`gen_readme.py`** — Fill the README's generated blocks from the run data. Nothing in them is hand-written.
 - **`gen_zenodo.py`** — Generate `.zenodo.json` from CITATION.cff, and gate what a Release will mint.
 - **`instantiate_stems.py`** — Build the factions bank from four authored stems and four authored path phrases.
