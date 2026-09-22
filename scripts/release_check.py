@@ -118,20 +118,31 @@ def _corrections_paths():
 
 
 def _corrections_human_check():
+    """Item 4, as a FIXED NUMBER OF ELEMENTS whatever the drift.
+
+    `HUMAN_CHECKS` is counted by `tests/test_release_counts.py` against the split sentence in
+    RELEASE-2026-09-07.md, and it counts list ELEMENTS, which here are lines. So a conditional
+    `append` changes the stated size of the checklist whenever CORRECTIONS.md moves -- the
+    first version of this function did exactly that and turned a document-drift warning into a
+    failing release gate. The drift line rides inside the head element instead.
+    """
     now = _corrections_now()
+    drift = ""
     if now is None:
-        return ["4  CORRECTIONS covers every withdrawal -- CORRECTIONS.md is not in this tree,",
-                "   so the read cannot be confirmed from here."]
-    head = ("4  CORRECTIONS covers every withdrawal -- READ %s, PASSES for the %d entries that "
-            "existed then." % (CORRECTIONS_READ_ON, CORRECTIONS_READ_COUNT))
-    lines = [head]
-    if now > CORRECTIONS_READ_COUNT:
-        lines.append("   ** %d entries now: %d ADDED SINCE THE READ AND NOT COVERED BY IT. **"
+        head = ("4  CORRECTIONS covers every withdrawal -- READ %s. CORRECTIONS.md is not in "
+                "this tree, so its" % CORRECTIONS_READ_ON)
+        drift = "\n   current entry count cannot be confirmed from here."
+    else:
+        head = ("4  CORRECTIONS covers every withdrawal -- READ %s, PASSES for the %d entries "
+                "that existed then." % (CORRECTIONS_READ_ON, CORRECTIONS_READ_COUNT))
+        if now > CORRECTIONS_READ_COUNT:
+            drift = ("\n   ** %d entries now: %d ADDED SINCE THE READ AND NOT COVERED BY IT. **"
                      % (now, now - CORRECTIONS_READ_COUNT))
-    elif now < CORRECTIONS_READ_COUNT:
-        lines.append("   ** %d entries now, FEWER than the %d read -- an entry was removed. **"
+        elif now < CORRECTIONS_READ_COUNT:
+            drift = ("\n   ** %d entries now, FEWER than the %d read -- an entry was removed. **"
                      % (now, CORRECTIONS_READ_COUNT))
-    lines += [
+    return [
+        head + drift,
         "   Six of STATUS's ten withdrawals correctly have no public entry because they were",
         "   never published (verified zero occurrences across the mirror and website, not",
         "   assumed). VERIFICATION-%s-corrections-read.md. Still listed here because it stays"
@@ -139,7 +150,6 @@ def _corrections_human_check():
         "   a human read: two attempts to mechanise it produced false positives on sound"
         " entries.",
     ]
-    return lines
 
 
 HUMAN_CHECKS = [

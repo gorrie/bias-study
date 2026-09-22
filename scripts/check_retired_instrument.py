@@ -141,6 +141,11 @@ ALLOWED = {
         "a third-party finding ABOUT it, which is evidence for retiring it.",
     "scripts/check_retired_instrument.py":
         "this file. The markers have to be written down somewhere to be searched for.",
+    "LEARNINGS.md":
+        "the rule file. Entry 88 names the withdrawn i3 bank and its unsigned read sheet "
+        "because the lesson IS that those two files were deleted and had to be restored -- "
+        "a rule that cannot name what went wrong is an anecdote. No entry here proposes "
+        "using any of them; they are named as evidence, past tense.",
 
     # 2026-09-21: two entries removed, their files no longer match.
 

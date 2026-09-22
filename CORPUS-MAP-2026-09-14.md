@@ -7,11 +7,13 @@
 > derived was computed on the damaged corpus. The export landed on **2026-09-15** (`4d734dd`)
 > and the banner was not updated: thirteen `2026-09-14-recollect-*` repair runs and ten
 > `*-spliced` derived corpora have been in this tree ever since, including
-> `2026-09-14-full-spliced`, the repaired main run. For a week this document told readers to
-> discount figures it was already shipping the fix for. The withdrawn wording is quoted in
-> full, once, in `CORRECTIONS.md` entry 27 — which is the only place it belongs, because
-> `tests/test_corpus_map_presence_claim.py` now fails this file if it asserts an absence the
-> filesystem contradicts.
+> `2026-09-14-full-spliced`, the repaired main run. For a week this file carried an instruction
+> to discount figures the tree was already shipping the fix for. It never reached a reader —
+> `origin/main` is at 2026-09-13 and both commits are unpushed — and the correction is recorded
+> anyway, because what this repository asserted is its history, not its push log. The full
+> account is `CORRECTIONS.md` entry 27. The withdrawn wording is not restated here or there,
+> because `tests/test_corpus_map_presence_claim.py` now fails this file if it asserts an
+> absence the filesystem contradicts, in either direction.
 >
 > **What is still true.** The May runs remain in this repository **unmodified**, because a
 > repair applied over its own evidence destroys the evidence. They are the damaged version, and

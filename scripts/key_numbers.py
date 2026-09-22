@@ -639,12 +639,19 @@ def item_gradient_bounds():
     28.9%, and the three items nearest the middle were quoted as a band "24-30%" whose upper
     bound no item reaches. A script asserting a gate that does not exist is worse than one
     asserting nothing, because it tells the next reader the checking is done.
+
+    THE `except Exception` THAT USED TO BE HERE SWALLOWED A REAL DEFECT. On 2026-09-22 the
+    suite left `studypaths` reloaded against a temporary corpus, `IG.gradient()` read zero
+    records, and every key in this group arrived at the gate as `None` -- reported as "an
+    uncaught failure" in a function that had in fact caught it and thrown it away. A bare
+    except turns a broken resolver into a missing measurement, which is the one substitution
+    this repository cannot afford. Only an ABSENT input is tolerated now, and it is named.
     """
     import item_gradient as IG
     try:
         rows = IG.gradient()
-    except Exception:
-        return {}
+    except FileNotFoundError:
+        return {}          # no bank or no wave in this tree -- an absent input, not a failure
     if not rows:
         return {}
     halves = collections.defaultdict(list)

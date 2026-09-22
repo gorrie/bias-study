@@ -862,9 +862,10 @@ not a request to delete or rescore original evidence.
 
 This entry exists because the narrative correction that first reported the defect,
 `CORRECTIONS-2026-09-08.md`, was deleted from this repository on 2026-09-22 in a pass removing
-the retired questionnaire — which it was not about. The ledger and the inventory it pointed at
-both survived, unlinked from anything, and this file claims to list every withdrawn or narrowed
-claim. It does now.
+the retired questionnaire — which it was not about. That file had already been published, so
+the deletion would have removed a public correction record; it was restored the same day with a
+banner saying so. The ledger and the inventory it pointed at had survived either way, unlinked
+from anything, and this file claims to list every withdrawn or narrowed claim. It does now.
 
 ### 26. Thirteen vendor "version arcs", ten of which were not arcs — corrected 2026-09-12
 
@@ -903,8 +904,15 @@ published; no run record was touched and no model was called.
 
 ### 27. "The repaired corpora are not in this repository yet" — false for a week, corrected 2026-09-22
 
-**Published:** 2026-09-14, as the opening banner of `CORPUS-MAP-2026-09-14.md`.
+**Committed:** 2026-09-14 (`7e027a3`), as the opening banner of `CORPUS-MAP-2026-09-14.md`.
 **False from:** 2026-09-15. **Corrected:** 2026-09-22.
+
+**This one never reached a reader, and the entry says so rather than letting the file imply
+otherwise.** `origin/main` is at 2026-09-13; `7e027a3` and the repair export `4d734dd` are both
+in the unpushed history, so no published version of this repository has ever carried the
+banner. It is recorded here because the defect is identical whether or not the push happened —
+the record of what this repository asserted is the git history, not the push log — and because
+an entry that quietly omits its own reach is the kind of shading this file exists to refuse.
 
 The banner told readers that the 2026-09-14 repair was "pending export", that the runs named
 below it "will not resolve for you", and — in bold — that **"every original run in this
@@ -915,7 +923,7 @@ The export landed on **2026-09-15** in `4d734dd`. Thirteen `2026-09-14-recollect
 and ten `*-spliced` derived corpora have been in this tree since, `2026-09-14-full-spliced`
 among them — the repaired main run, thirteen scored files, exactly matching
 `2026-05-25-full`. The map was edited the following day, 2026-09-16, and the banner survived
-the edit. For a week a public document discounted figures this repository was already shipping
+the edit. For a week this document discounted figures the repository was already shipping
 the repair for.
 
 **What was wrong was the availability claim, not the damage.** The May runs really are the

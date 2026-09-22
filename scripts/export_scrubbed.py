@@ -116,8 +116,15 @@ def instrument_texts():
 
 #: Instrument names the export is NOT entitled to republish and no longer holds the text for.
 #: Matched case-insensitively against each record's `instrument` field.
-RETIRED_IN_EXPORT = ("politicalcompass", "political compass", "ratchet-battery-i3",
-                     "ratchet-propositions-i3")
+#:
+#: TAKEN FROM THE GATE, NOT RETYPED. A literal copy here would be a second list of retired
+#: instrument names that `check_retired_instrument` then has to exempt -- and a file exempted
+#: from the name scan is one missing argument from using those names as data, which is the
+#: exact route by which the retired bank came back twice. Importing them means a marker added
+#: to the gate is refused by the export in the same commit, and the export needs no exemption.
+import check_retired_instrument as _CRI  # noqa: E402
+
+RETIRED_IN_EXPORT = _CRI.RETIRED_MARKERS
 
 
 def _no_retired_text_to_scrub(records):
