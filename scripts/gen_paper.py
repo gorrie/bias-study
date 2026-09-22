@@ -120,7 +120,13 @@ def block_body(name):
                 "training", "intensity", "comparisons")
     fence = "" if name in unfenced else "```\n"
     close = "" if name in unfenced else "\n```"
-    return fence + text + close
+    # NO TRAILING WHITESPACE. The fixed-width blocks right-pad their columns, so `power` and
+    # friends emitted lines ending in spaces. The public mirror's pre-commit hook trims them,
+    # which made the two trees' copies of the paper differ on every sync and would put this
+    # gate in a loop against that hook: `--check` sees the trimmed block as stale, regenerating
+    # re-adds the spaces, the hook strips them again. Invisible in rendering, so the only thing
+    # it can ever do is cost somebody an afternoon.
+    return "\n".join(l.rstrip() for l in (fence + text + close).split("\n"))
 
 
 def _diff(have, want, context=1):
