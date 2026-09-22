@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-139 script(s). 0 carry no module docstring and are listed at the end.
+138 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -134,7 +134,6 @@
 - **`item_omission.py`** — Do models skip particular PROPOSITIONS, or particular PLACES ON THE PAGE?
 - **`jurisdiction_gradient.py`** — Is the instruction's effect the same size on every subject, or does it pick its targets?
 - **`lineage_exchangeability.py`** — STATS-LINEAGE-NULL-001 — are the four same-version sub-classes exchangeable?
-- **`logit_probe.py`** — Score the forced-choice instrument by LOGPROB instead of parsing prose, and test whether the two agree.
 - **`model_cards.py`** — One card per model: can this model carry a claim at all, and on what evidence?
 - **`monitor_experiment.py`** — monitor_experiment.py — the durable, cross-platform half of the experiment-monitor agent.
 - **`multiple_comparisons.py`** — How many hypothesis tests does this study actually run, and which are corrected?

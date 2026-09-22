@@ -27,7 +27,7 @@ breaks, or only along with it. **Needs:** the above.
 **Scoring by logprob instead of parsing prose — PROTOTYPED 2026-09-07, AND IT FAILED ITS
 AGREEMENT CHECK.** Full measurement in
 [`results/RESULTS-2026-09-07-logit-scoring-fails-agreement.md`](results/RESULTS-2026-09-07-logit-scoring-fails-agreement.md);
-the prototype is `scripts/logit_probe.py`.
+the prototype is retired with the instrument it probed.
 
 Three findings, because the entry below was written as though this were a small change:
 

@@ -1,8 +1,7 @@
 # Logit scoring: feasible, and it fails its own pre-registered agreement check
 
 **Measured** 2026-09-07 on local models, no API spend.
-**Reproduce:** `python scripts/logit_probe.py --separability` then
-`python scripts/logit_probe.py --model qwen2.5:14b --letter-bias --agreement`.
+**Reproduce:** the logit probe is retired with the instrument it was written against and is not in this repository; the measurements below stand as recorded.
 
 ## What was being tested
 
@@ -98,7 +97,7 @@ way.
 ## The decision, by the rule that was written first
 
 Logit scoring goes to **v3, with the prototype built** — which is exactly the fallback
-`RELEASE-v2` specified. The prototype is `scripts/logit_probe.py` and it is the useful artifact:
+`RELEASE-v2` specified. The prototype is retired with the instrument it probed, and the useful artifact is the finding:
 the next attempt starts from a measured account of why the obvious design fails.
 
 **And the framing in `RELEASE-v2` needs correcting.** "It is free" is true of API spend and

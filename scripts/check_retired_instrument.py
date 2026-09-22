@@ -43,6 +43,14 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
 
+# MODULE LEVEL, not inside the function that uses it. A local import is exercised only on the
+# path that reaches it, so a missing name surfaces at runtime rather than at import --
+# tests/test_schema_name.py enforces that and caught this on 2026-09-22. Guarded because this
+# gate must still run in a tree where studypaths is absent; it then reports nothing about the
+# live corpus rather than crashing, and the vacuity check below says so.
+sys.path.insert(0, HERE)
+import studypaths as _SP  # noqa: E402
+
 #: Strings that identify a retired instrument. Matched case-insensitively.
 #:
 #: `compass-run` is deliberately NOT here: it is the record SCHEMA name, carried by every sheet
@@ -147,14 +155,8 @@ ALLOWED = {
         "Wright, Bucan). The paper's statement of ITS OWN instrument was corrected on "
         "2026-09-17 and names the author's battery; the remaining hits are citations and a "
         "dated changelog line recording the swap that has since been reversed.",
-    "JUDGEMENT-TOOL-PLAN.md":
-        "rubric method 8 is defined by anchoring to an external framework's axes. Naming it "
-        "is what makes the EXCLUSION of that method reviewable.",
 
     # ---- dated records of what happened. Editing these falsifies the record ----
-    "PREREG-2026-08-29-mask-surface-v2.md":
-        "a dated pre-registration for a wave collected on the retired instrument. A prereg is "
-        "a fixed document; amending it after the fact is the defect it exists to prevent.",
     "PLAN-2026-09-13-I3.md":
         "the dated plan under which the substituted bank was built. Superseded, kept as the "
         "record of a decision that had to be reversed.",
@@ -211,8 +213,6 @@ ALLOWED = {
     "PRIOR-WORK-CORRECTIONS.md":
         "corrections issued to OTHER people's published work, each naming the instrument "
         "that work used.",
-    "prereg/PREREG-2026-08-29-mask-surface-v2.md":
-        "a dated pre-registration for a wave on the retired instrument. Fixed document.",
     "prereg/PREREG-2026-09-12-instrument-choice.md":
         "the dated record of the instrument decision itself. It cannot be written without "
         "naming what was chosen against.",
@@ -374,6 +374,99 @@ def scan():
     return hits, n_files, allowed_used
 
 
+#: Scripts that have ever lived under `withdrawn/`. Generated once from git history by
+#: `git log --all --diff-filter=A --name-only -- withdrawn/`, filtered to `.py`, and written
+#: here so the control SURVIVES the quarantine directory being deleted from the working tree.
+#:
+#: Data records are deliberately not listed. A withdrawn run and a live one hold files with the
+#: same basename -- `anthropic__claude-opus-4.6__A.jsonl` exists in both -- so matching records
+#: by name would flag the live corpus. The poisoning this guards against happens in CODE, which
+#: is what the docstring above already says: "It came back as NAMES, and a name in a default is
+#: one missing argument away from being data again."
+QUARANTINED_SCRIPTS = {
+    "build_item_bank.py",
+    "fetch_items.py",
+    "logit_probe.py",
+    "test_item_bank.py",
+}
+
+
+def _retired_data_in_the_live_root():
+    """No record in the LIVE `runs/` root may carry a retired instrument.
+
+    THE SECOND ONE-WAY BOUNDARY, and it was open for the same reason as the first. `runs` is in
+    SKIP_DIRS above -- put there because the name scan would read 6,000 answer sheets looking
+    for prose -- so this gate's claim, in its own opening docstring, that "no record under
+    `runs/` has carried a retired instrument since 2026-09-16" was an assertion and not a
+    check. A top-up into a live directory is one wrong `--instrument` flag away, and the
+    collector's own guard is the only thing between here and there.
+
+    `data/` is exempt and must be: it IS the archived judge-scored corpus, it is declared as
+    such in the README and the data dictionary, and flagging it would make this permanently red
+    for holding what it exists to hold. The live root is the one where a retired record would
+    be a new fact rather than a kept one.
+    """
+    import glob as _glob
+    import json as _json
+    live = [r for r in _SP.run_roots() if os.path.basename(str(r)) == "runs"]
+    out, seen = [], 0
+    for root in live:
+        for p in _glob.glob(os.path.join(str(root), "**", "*.jsonl"), recursive=True):
+            for line in io.open(p, encoding="utf-8", errors="replace"):
+                line = line.strip()
+                if not line:
+                    continue
+                seen += 1
+                try:
+                    rec = _json.loads(line)
+                except ValueError:
+                    continue
+                blob = "%s %s" % (rec.get("schema") or "", rec.get("instrument") or "")
+                low = blob.lower()
+                if low.startswith("compass") or any(m in low for m in RETIRED_MARKERS):
+                    out.append((os.path.relpath(p, STUDY), 0,
+                                "RETIRED INSTRUMENT IN THE LIVE CORPUS: a record declares %r. "
+                                "runs/ is where the paper's figures come from." % blob.strip()))
+                    break
+    # A SCAN THAT OPENED NOTHING MUST NOT REPORT CLEAN -- the same house rule the file already
+    # applies to its prose walk. Zero records here means the resolver missed the corpus.
+    if live and not seen:
+        out.append(("runs/", 0, "CHECKED NOTHING -- the live run root resolved to no records. "
+                                "That is not a pass; check run_roots()."))
+    return out
+
+
+def _resurrected_from_quarantine():
+    """A file that was withdrawn must not reappear in a live path.
+
+    THE GAP THIS CLOSES, and it is one this gate had. `withdrawn/` is in SKIP_DIRS by design --
+    it is the quarantine, and scanning it would flag the thing it exists to hold. But that made
+    the boundary one-way: the gate refuses a retired instrument NAME anywhere in the live tree,
+    and says nothing about a retired FILE being copied out of quarantine into `scripts/`.
+
+    On 2026-09-22 exactly that happened. `logit_probe.py` was lifted out of
+    `withdrawn/compass-bank/scripts/` into `scripts/` to satisfy the named-scripts gate, which
+    was complaining that three shipped documents named a file that no longer existed. Moving
+    retired material into live tooling to quiet a check is the wrong direction, and the
+    compass references inside it were repointed at the live bank on the way -- which made it
+    INVISIBLE to the name scan above. A control that can be defeated by tidying is not a
+    control.
+
+    The correct fix for that gate was the other one: the documents describe the retired tool
+    without a backticked path, because a reader following one gets nothing.
+    """
+    out = []
+    for name in sorted(QUARANTINED_SCRIPTS):
+        for d in ("scripts", "."):
+            p = os.path.join(STUDY, d, name)
+            if os.path.isfile(p):
+                out.append((os.path.relpath(p, STUDY), 0,
+                            "RESURRECTED FROM QUARANTINE: this file was withdrawn and is "
+                            "live again. If a gate is asking for it, the gate wants the "
+                            "DOCUMENT changed, not the file restored."))
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--list", action="store_true",
@@ -393,6 +486,8 @@ def main(argv=None):
 
     hits, n_files, allowed_used = scan()
     hits += _our_own_audit_row()
+    hits += _resurrected_from_quarantine()
+    hits += _retired_data_in_the_live_root()
 
     # A SCAN THAT OPENED NOTHING MUST NOT REPORT CLEAN. The house rule, and this gate is
     # exactly the kind that would sit green over an empty walk.

@@ -117,6 +117,10 @@ from run_battery import CLASSIFIER_VERSION, classify_failure  # noqa: E402
 # The instrument guard belongs to ONE module. A second copy of "is this our instrument" is how
 # this file spent the instrument change reading a substring of the retired questionnaire's name.
 import floor_table as _FT  # noqa: E402
+# MODULE LEVEL, not inside the one function that uses it: a local import is only exercised on
+# the path that reaches it, so a missing name surfaces at runtime instead of at import.
+# tests/test_schema_name.py enforces this, and caught exactly that here on 2026-09-22.
+import studypaths as _SP  # noqa: E402
 
 # The collector's default before it was measured, and after. A row that predates the
 # max_tokens field was collected under one of these; the smaller one is the conservative
@@ -240,7 +244,14 @@ OUT_OF_PANEL = {
     "2026-09-20-rung2-control-v2":
         "The rung-2 control at protocol v2. Same rule as the arm it controls.",
     "2026-09-13-i3-phase0":
-        "Phase 0, whose B-A contrast is withdrawn (PLAN, project_i3_phase0_ba_withdrawn).",
+        "A DIFFERENT DESIGN, not a withheld one: open questions scored by an LLM judge against "
+        "rubric v2, neutral and reversed framings. It has no forced-choice sheet and therefore "
+        "no refusal of one, so this table structurally cannot include it -- which is a stronger "
+        "reason than the one recorded here until 2026-09-22, which was 'Phase 0, whose B-A "
+        "contrast is withdrawn'. That was true and it made a sound exclusion look like a "
+        "convenient one: dropping a collection because its conclusion died is the defect "
+        "section 5 convicts Liu of, and this is not that. The contrast is separately withdrawn "
+        "-- see project_i3_phase0_ba_withdrawn -- but the exclusion does not rest on it.",
     "2026-09-13-truncation-proof":
         "A constructed demonstration that truncation is not refusal, not an administration.",
     "test-refusal": "A fixture directory.",
@@ -561,6 +572,35 @@ def print_switch(per_model, totals):
     return 0
 
 
+def _out_of_panel_records():
+    """How many records the panel rule removes, and which collection is the biggest.
+
+    Counted rather than asserted, because the header used to report a count of DIRECTORIES and
+    a reader has no way to turn 14 into a volume. It is 5,647 against 3,897 kept: the rule
+    excludes more than it analyses, which is a fact a reader is entitled to before they quote a
+    refusal rate off this table.
+    """
+    import glob as _glob
+    import os as _os
+    out, largest = 0, None
+    for name in OUT_OF_PANEL:
+        d = _os.path.join(_SP.STUDY_DIR, "runs", name)
+        n = 0
+        for p in _glob.glob(_os.path.join(d, "**", "*.jsonl"), recursive=True):
+            with open(p, encoding="utf-8", errors="replace") as fh:
+                n += sum(1 for line in fh if line.strip())
+        out += n
+        if n and (largest is None or n > largest[1]):
+            largest = (name, n)
+    panel = 0
+    for name in PANEL:
+        d = _os.path.join(_SP.STUDY_DIR, "runs", name)
+        for p in _glob.glob(_os.path.join(d, "**", "*.jsonl"), recursive=True):
+            with open(p, encoding="utf-8", errors="replace") as fh:
+                panel += sum(1 for line in fh if line.strip())
+    return {"records": out, "largest": largest, "panel_records": panel}
+
+
 def label_counts(rows):
     """What `--audit` partitions: rows audited, and how many carry a superseded label.
 
@@ -727,9 +767,25 @@ def main():
     # over eleven collections nobody had decided to include. What a reader needs is the
     # population, not a list of names that were once removed from it.
     print("panel: " + ", ".join(sorted(PANEL)))
-    print("outside the panel, by rule: %d collection(s) -- smokes, budget probes and arms "
-          "collected" % len(OUT_OF_PANEL))
-    print("under one or two conditions; refusal_table.OUT_OF_PANEL names each with its rule")
+    # COUNT THE RECORDS, NOT THE DIRECTORIES. This said "14 collection(s) -- smokes, budget
+    # probes and arms collected under one or two conditions", and both halves understated it.
+    # Fourteen sounds small; the rule removes MORE RECORDS THAN IT KEEPS. And the
+    # characterisation did not cover its largest member: `2026-09-13-i3-phase0` is 3,200
+    # records, 57% of the excluded volume, and is not a smoke, a probe, or a one-condition
+    # arm -- it is a full collection whose contrast was withdrawn.
+    #
+    # An exclusion rule whose SIZE a reader cannot see is the defect this paper convicts Liu
+    # of in §5. Every rule here is declared and sound; the disclosure was the weak part.
+    # THE VOLUME IS NOT PRINTED HERE, and that is deliberate. It is tree-dependent: the study
+    # holds all 14 excluded collections, the public mirror holds 11 of them, so the same block
+    # renders 5,647 in one tree and 2,437 in the other -- and this block goes into a paper that
+    # must be byte-identical in both. The count of COLLECTIONS is stable, so it is what the
+    # generated line carries; the volume is stated once in prose in section 1b, where it can
+    # say which corpus it describes.  prints it for whichever tree you are
+    # standing in; _out_of_panel_records is the function that measures it.
+    print("outside the panel, by rule: %d collection(s); refusal_table.OUT_OF_PANEL names each"
+          % len(OUT_OF_PANEL))
+    print("with the rule it falls under, and the rule removes more records than it keeps.")
     print()
     print("vendor".ljust(16) + "".join(c.rjust(12) for c in CONDITIONS))
     for vendor in vendors:

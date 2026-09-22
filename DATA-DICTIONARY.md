@@ -11,7 +11,7 @@ silently.
 
 ## `raw` records
 
-7,441 records across 180 files, 42 distinct fields.
+9,041 records across 184 files, 42 distinct fields.
 
 | field | coverage | types | meaning |
 |---|---:|---|---|
@@ -26,41 +26,41 @@ silently.
 | `question_text` | 100.0% | `str` | The item as administered. Present for the institutional-framing instrument. The retired 62-item external questionnaire is third-party licensed text and is NOT in this repository, nor is the script that retrieved it; MANIFEST.json carries the hash. The LIVE instrument, data/ratchet-battery.json, ships in full under MIT with no fetch step. |
 | `topic` | 100.0% | `str` | Topic grouping of the item, T01..T18. Items within a topic are not independent; cluster on this, not on rows. |
 | `user_prompt` | 100.0% | `str` | The full user turn as sent, question text included. |
-| `response_text` | 99.0% | `str`, `null` | The model's reply verbatim, or null on a failed call. An EMPTY string is not a refusal and not a null -- see `scoring_status` and the eligibility rule in scripts/eligibility.py. |
-| `system_prompt` | 93.8% | `str`, `null` | The system turn as sent, or null where none was used. The presence or absence of a directive here is the manipulation in most arms. |
-| `tokens_in` | 89.3% | `int`, `null` | Prompt tokens as the provider counted them. |
-| `tokens_out` | 89.3% | `int`, `null` | Completion tokens as the provider counted them. |
-| `vendor_response_id` | 86.1% | `str`, `null` | The provider's own id for the response, where it returned one. Absent for local channels. |
-| `sample_idx` | 52.3% | `int` | Replicate index within a cell, where the run collected replicates. Absent means one draw. |
-| `word_count_total` | 33.7% | `int` | Words in the response. Descriptive only. |
-| `max_tokens` | 25.4% | `int` | Output cap requested. Load-bearing: an 800-token cap severed 21.5% of the May corpus mid-argument and the truncation was differential by model. |
-| `confidence` | 24.1% | `str` | Rubric-independent register label: `definitive`, `hedging`, or `refusing-then-answering`. |
-| `hedge_ratio` | 24.1% | `float` | Share of hedging markers in the response. Descriptive; it is not the outcome any published claim rests on. |
-| `original_called_at` | 24.1% | `str` | The timestamp of the record this one replaces, for recollected rows. |
-| `recollect_reason` | 24.1% | `str` | Why it was recollected. |
-| `recollected_from` | 24.1% | `str` | The run this record was recollected from, for rows replacing capped or failed originals. |
-| `refusal_class` | 24.1% | `null` | Refusal taxonomy where one applies: `recovery` (refuses then answers), `empty-response`. |
-| `score_classifier` | 24.1% | `null`, `int` | Panel score on the 1-5 rubric: the MEDIAN of the judges, so it can be a half-integer (4.5) where the panel split evenly. null where scoring was skipped. |
-| `scoring_status` | 24.1% | `str` | `ok`, or why scoring was skipped: `skipped-failed-call`, `skipped-empty-response`. The skip reasons are the DATA-EMPTY-SCORES-002 rule made visible in the record. |
-| `judge_reasoning` | 23.0% | `null`, `str` | The judge's stated reasoning, where retained. |
-| `score_classifier_judges` | 22.6% | `null`, `list` | Per-judge breakdown, one object per judge with its own score. Present on 93.6% of scored records, NOT all -- check before dividing by it. |
-| `replaces_vendor_response_id` | 21.5% | `str`, `null` | The provider response id this row supersedes. |
-| `score_classifier_disagreement` | 21.0% | `int`, `null` | Spread across the panel for this record. |
-| `score_classifier_method` | 21.0% | `str` | Which judging method produced the score: `ultraplinian` (the four-judge panel) or `reversed-rubric` (the inverted-rubric control). |
-| `score_classifier_n_judges` | 21.0% | `int` | Judges asked. |
-| `score_classifier_n_valid` | 21.0% | `int` | Judges that returned a parseable score. Less than n_judges means the panel was thinner than it looks. |
-| `error` | 9.9% | `null`, `str` | Transport or provider error string where the call failed. |
-| `study_call_metadata` | 9.7% | `dict` | Free-form collector state at call time. Shape varies by collector and it is not safe to index blindly. |
-| `transient` | 8.8% | `null` | Marked where the collector judged a failure retryable. |
-| `finish_reason` | 5.4% | `str` | The provider's stop reason. NOT trustworthy through a proxy: the G0DM0D3 proxy returned `stop` for ten responses severed mid-word. |
-| `truncated` | 5.4% | `bool` | Collector's truncation verdict. Prefer eligibility.looks_truncated_text, which was written because finish_reason lies. |
-| `usage` | 5.4% | `dict` | The provider's raw usage object, where returned. |
-| `called_at_unrecorded` | 2.6% | `str` | Set where the original timestamp was lost and had to be reconstructed; the value says how. |
-| `temperature` | 1.3% | `float` | Sampling temperature where the collector recorded it. Absent does not mean zero. |
+| `response_text` | 99.1% | `str`, `null` | The model's reply verbatim, or null on a failed call. An EMPTY string is not a refusal and not a null -- see `scoring_status` and the eligibility rule in scripts/eligibility.py. |
+| `system_prompt` | 94.9% | `str`, `null` | The system turn as sent, or null where none was used. The presence or absence of a directive here is the manipulation in most arms. |
+| `tokens_in` | 91.2% | `int`, `null` | Prompt tokens as the provider counted them. |
+| `tokens_out` | 91.2% | `int`, `null` | Completion tokens as the provider counted them. |
+| `vendor_response_id` | 88.5% | `str`, `null` | The provider's own id for the response, where it returned one. Absent for local channels. |
+| `sample_idx` | 60.7% | `int` | Replicate index within a cell, where the run collected replicates. Absent means one draw. |
+| `max_tokens` | 38.6% | `int` | Output cap requested. Load-bearing: an 800-token cap severed 21.5% of the May corpus mid-argument and the truncation was differential by model. |
+| `word_count_total` | 27.8% | `int` | Words in the response. Descriptive only. |
+| `confidence` | 19.8% | `str` | Rubric-independent register label: `definitive`, `hedging`, or `refusing-then-answering`. |
+| `hedge_ratio` | 19.8% | `float` | Share of hedging markers in the response. Descriptive; it is not the outcome any published claim rests on. |
+| `original_called_at` | 19.8% | `str` | The timestamp of the record this one replaces, for recollected rows. |
+| `recollect_reason` | 19.8% | `str` | Why it was recollected. |
+| `recollected_from` | 19.8% | `str` | The run this record was recollected from, for rows replacing capped or failed originals. |
+| `refusal_class` | 19.8% | `null` | Refusal taxonomy where one applies: `recovery` (refuses then answers), `empty-response`. |
+| `score_classifier` | 19.8% | `null`, `int` | Panel score on the 1-5 rubric: the MEDIAN of the judges, so it can be a half-integer (4.5) where the panel split evenly. null where scoring was skipped. |
+| `scoring_status` | 19.8% | `str` | `ok`, or why scoring was skipped: `skipped-failed-call`, `skipped-empty-response`. The skip reasons are the DATA-EMPTY-SCORES-002 rule made visible in the record. |
+| `judge_reasoning` | 18.9% | `null`, `str` | The judge's stated reasoning, where retained. |
+| `temperature` | 18.8% | `float` | Sampling temperature where the collector recorded it. Absent does not mean zero. |
+| `score_classifier_judges` | 18.6% | `null`, `list` | Per-judge breakdown, one object per judge with its own score. Present on 93.6% of scored records, NOT all -- check before dividing by it. |
+| `replaces_vendor_response_id` | 17.7% | `str`, `null` | The provider response id this row supersedes. |
+| `score_classifier_disagreement` | 17.3% | `int`, `null` | Spread across the panel for this record. |
+| `score_classifier_method` | 17.3% | `str` | Which judging method produced the score: `ultraplinian` (the four-judge panel) or `reversed-rubric` (the inverted-rubric control). |
+| `score_classifier_n_judges` | 17.3% | `int` | Judges asked. |
+| `score_classifier_n_valid` | 17.3% | `int` | Judges that returned a parseable score. Less than n_judges means the panel was thinner than it looks. |
+| `error` | 8.1% | `null`, `str` | Transport or provider error string where the call failed. |
+| `study_call_metadata` | 8.0% | `dict` | Free-form collector state at call time. Shape varies by collector and it is not safe to index blindly. |
+| `transient` | 7.3% | `null` | Marked where the collector judged a failure retryable. |
+| `finish_reason` | 4.4% | `str` | The provider's stop reason. NOT trustworthy through a proxy: the G0DM0D3 proxy returned `stop` for ten responses severed mid-word. |
+| `truncated` | 4.4% | `bool` | Collector's truncation verdict. Prefer eligibility.looks_truncated_text, which was written because finish_reason lies. |
+| `usage` | 4.4% | `dict` | The provider's raw usage object, where returned. |
+| `called_at_unrecorded` | 2.1% | `str` | Set where the original timestamp was lost and had to be reconstructed; the value says how. |
 
 ## `scored` records
 
-12,172 records across 265 files, 45 distinct fields.
+13,772 records across 269 files, 45 distinct fields.
 
 | field | coverage | types | meaning |
 |---|---:|---|---|
@@ -81,49 +81,49 @@ silently.
 | `topic` | 100.0% | `str` | Topic grouping of the item, T01..T18. Items within a topic are not independent; cluster on this, not on rows. |
 | `user_prompt` | 100.0% | `str` | The full user turn as sent, question text included. |
 | `word_count_total` | 100.0% | `int` | Words in the response. Descriptive only. |
-| `response_text` | 98.8% | `str`, `null` | The model's reply verbatim, or null on a failed call. An EMPTY string is not a refusal and not a null -- see `scoring_status` and the eligibility rule in scripts/eligibility.py. |
-| `system_prompt` | 96.2% | `str`, `null` | The system turn as sent, or null where none was used. The presence or absence of a directive here is the manipulation in most arms. |
-| `score_classifier_judges` | 93.6% | `list`, `null` | Per-judge breakdown, one object per judge with its own score. Present on 93.6% of scored records, NOT all -- check before dividing by it. |
-| `tokens_in` | 92.8% | `int`, `null` | Prompt tokens as the provider counted them. |
-| `tokens_out` | 92.8% | `int`, `null` | Completion tokens as the provider counted them. |
-| `score_classifier_disagreement` | 91.9% | `int`, `null` | Spread across the panel for this record. |
-| `score_classifier_method` | 91.9% | `str` | Which judging method produced the score: `ultraplinian` (the four-judge panel) or `reversed-rubric` (the inverted-rubric control). |
-| `score_classifier_n_judges` | 91.9% | `int` | Judges asked. |
-| `score_classifier_n_valid` | 91.9% | `int` | Judges that returned a parseable score. Less than n_judges means the panel was thinner than it looks. |
-| `vendor_response_id` | 88.9% | `str`, `null` | The provider's own id for the response, where it returned one. Absent for local channels. |
-| `sample_idx` | 51.4% | `int` | Replicate index within a cell, where the run collected replicates. Absent means one draw. |
-| `judge_reasoning` | 33.0% | `str`, `null` | The judge's stated reasoning, where retained. |
-| `max_tokens` | 28.7% | `int` | Output cap requested. Load-bearing: an 800-token cap severed 21.5% of the May corpus mid-argument and the truncation was differential by model. |
-| `recollect_reason` | 27.9% | `str` | Why it was recollected. |
-| `recollected_from` | 27.9% | `str` | The run this record was recollected from, for rows replacing capped or failed originals. |
-| `original_called_at` | 26.4% | `str` | The timestamp of the record this one replaces, for recollected rows. |
-| `replaces_vendor_response_id` | 25.2% | `str`, `null` | The provider response id this row supersedes. |
-| `spliced_base_exclusion` | 13.2% | `str`, `null` | For derived corpora: why the base record was excluded, where it was. |
-| `spliced_from` | 13.2% | `str` | For derived corpora: the run this record was taken from. |
-| `spliced_replaces` | 13.2% | `str` | For derived corpora: the record it stands in for. |
-| `error` | 11.5% | `null`, `str` | Transport or provider error string where the call failed. |
-| `transient` | 10.3% | `null` | Marked where the collector judged a failure retryable. |
-| `study_call_metadata` | 5.9% | `dict` | Free-form collector state at call time. Shape varies by collector and it is not safe to index blindly. |
-| `finish_reason` | 3.3% | `str` | The provider's stop reason. NOT trustworthy through a proxy: the G0DM0D3 proxy returned `stop` for ten responses severed mid-word. |
-| `truncated` | 3.3% | `bool` | Collector's truncation verdict. Prefer eligibility.looks_truncated_text, which was written because finish_reason lies. |
-| `usage` | 3.3% | `dict` | The provider's raw usage object, where returned. |
-| `called_at_unrecorded` | 1.1% | `str` | Set where the original timestamp was lost and had to be reconstructed; the value says how. |
-| `temperature` | 0.8% | `float` | Sampling temperature where the collector recorded it. Absent does not mean zero. |
+| `response_text` | 98.9% | `str`, `null` | The model's reply verbatim, or null on a failed call. An EMPTY string is not a refusal and not a null -- see `scoring_status` and the eligibility rule in scripts/eligibility.py. |
+| `system_prompt` | 96.7% | `str`, `null` | The system turn as sent, or null where none was used. The presence or absence of a directive here is the manipulation in most arms. |
+| `score_classifier_judges` | 94.3% | `list`, `null` | Per-judge breakdown, one object per judge with its own score. Present on 93.6% of scored records, NOT all -- check before dividing by it. |
+| `tokens_in` | 93.7% | `int`, `null` | Prompt tokens as the provider counted them. |
+| `tokens_out` | 93.7% | `int`, `null` | Completion tokens as the provider counted them. |
+| `score_classifier_disagreement` | 92.8% | `int`, `null` | Spread across the panel for this record. |
+| `score_classifier_method` | 92.8% | `str` | Which judging method produced the score: `ultraplinian` (the four-judge panel) or `reversed-rubric` (the inverted-rubric control). |
+| `score_classifier_n_judges` | 92.8% | `int` | Judges asked. |
+| `score_classifier_n_valid` | 92.8% | `int` | Judges that returned a parseable score. Less than n_judges means the panel was thinner than it looks. |
+| `vendor_response_id` | 90.2% | `str`, `null` | The provider's own id for the response, where it returned one. Absent for local channels. |
+| `sample_idx` | 57.1% | `int` | Replicate index within a cell, where the run collected replicates. Absent means one draw. |
+| `max_tokens` | 37.0% | `int` | Output cap requested. Load-bearing: an 800-token cap severed 21.5% of the May corpus mid-argument and the truncation was differential by model. |
+| `judge_reasoning` | 29.2% | `str`, `null` | The judge's stated reasoning, where retained. |
+| `recollect_reason` | 24.6% | `str` | Why it was recollected. |
+| `recollected_from` | 24.6% | `str` | The run this record was recollected from, for rows replacing capped or failed originals. |
+| `original_called_at` | 23.3% | `str` | The timestamp of the record this one replaces, for recollected rows. |
+| `replaces_vendor_response_id` | 22.3% | `str`, `null` | The provider response id this row supersedes. |
+| `temperature` | 12.3% | `float` | Sampling temperature where the collector recorded it. Absent does not mean zero. |
+| `spliced_base_exclusion` | 11.6% | `str`, `null` | For derived corpora: why the base record was excluded, where it was. |
+| `spliced_from` | 11.6% | `str` | For derived corpora: the run this record was taken from. |
+| `spliced_replaces` | 11.6% | `str` | For derived corpora: the record it stands in for. |
+| `error` | 10.2% | `null`, `str` | Transport or provider error string where the call failed. |
+| `transient` | 9.1% | `null` | Marked where the collector judged a failure retryable. |
+| `study_call_metadata` | 5.2% | `dict` | Free-form collector state at call time. Shape varies by collector and it is not safe to index blindly. |
+| `finish_reason` | 2.9% | `str` | The provider's stop reason. NOT trustworthy through a proxy: the G0DM0D3 proxy returned `stop` for ten responses severed mid-word. |
+| `truncated` | 2.9% | `bool` | Collector's truncation verdict. Prefer eligibility.looks_truncated_text, which was written because finish_reason lies. |
+| `usage` | 2.9% | `dict` | The provider's raw usage object, where returned. |
+| `called_at_unrecorded` | 1.0% | `str` | Set where the original timestamp was lost and had to be reconstructed; the value says how. |
 
 ## Categorical vocabularies
 
 Measured from the corpus, most frequent first. A value not listed here does not
 occur in the published data.
 
-- **`channel`** — `openrouter` (6,480), `g0dm0d3` (460), `transformers-local` (260), `ollama` (241)
-- **`condition`** — `B` (3,370), `A` (3,292), `B-Layered` (120), `B-Parseltongue` (120), `B-STM` (120), `D` (110), `C` (108), `E` (101), `B-Proxy` (100)
+- **`channel`** — `openrouter` (8,080), `g0dm0d3` (460), `transformers-local` (260), `ollama` (241)
+- **`condition`** — `B` (3,770), `A` (3,692), `B-prime` (400), `P` (400), `B-Layered` (120), `B-Parseltongue` (120), `B-STM` (120), `D` (110), `C` (108), `E` (101), `B-Proxy` (100)
 - **`confidence`** — `definitive` (1,572), `hedging` (218)
 - **`finish_reason`** — `stop` (400)
-- **`position`** — `neutral` (4,354), `mild` (1,070), `pointed` (1,061), `ood` (266), `para3` (185), `para2` (181), `para1` (180), `reversed` (144)
+- **`position`** — `neutral` (5,154), `mild` (1,070), `pointed` (1,061), `reversed` (944), `ood` (266), `para3` (185), `para2` (181), `para1` (180)
 - **`refusal_class`** — `None` (1,790)
 - **`score_classifier_method`** — `ultraplinian` (907), `reversed-rubric` (656)
 - **`scoring_status`** — `pending-rescore` (1,599), `ok` (191)
-- **`topic`** — `T08` (728), `T04` (723), `T07` (718), `T10` (717), `T05` (716), `T06` (716), `T09` (716), `T02` (714), `T03` (714), `T01` (713), `T13` (35), `T11` (34)
+- **`topic`** — `T08` (888), `T04` (883), `T07` (878), `T10` (877), `T05` (876), `T06` (876), `T09` (876), `T02` (874), `T03` (874), `T01` (873), `T13` (35), `T11` (34)
 
 ## What is deliberately absent
 

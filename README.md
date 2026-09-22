@@ -190,13 +190,12 @@ above are the promise; `key_numbers.py --check` is what holds the prose to them.
 ### What is not shipped, and what that costs you
 
 Everything the paper's floors, detection limits and headline figures rest on is in `runs/`.
-Seventeen run directories are not, and a reader is entitled to know which claims that puts
+Sixteen run directories are not, and a reader is entitled to know which claims that puts
 out of reach:
 
 | not shipped | why | what cannot be recomputed here |
 |---|---|---|
 | `2026-09-15-g0dm0d3-decomposition` | a pipeline rung this release does not ship | **The decomposition run is NOT in this repository.** `pipeline_decomposition.py` exits 2, so the B-Godmode / B-Autotune split cannot be recomputed from shipped data |
-| `2026-09-13-i3-phase0` | its B−A contrast is withdrawn | nothing the paper claims |
 | `refusal-ablation`, `mask-gradient` | carry 450 verbatim XSTest prompts from Röttger et al. — a third party's text | the dose series. `RESULTS-2026-09-19-dose-response.md` is named in the paper's provenance table and is **not in this repository** for the same reason: `check_corpus.py` matched ten hashed 6-grams of the retired instrument in it. It is in the private tree, and a scrubbed version is owed |
 | eight smoke and probe directories | one sheet per model, collected to price a run or find what answers | nothing: they are excluded from the refusal panel by rule (`refusal_table.OUT_OF_PANEL`) |
 | the May 2026 judge-scored corpus | retired instrument | it *is* here, under `data/` — see the archive note below |
@@ -242,7 +241,7 @@ top. `DEVELOPER.md` documents that method and says so in its first paragraph.
 
 **Two measurements from that era are worth keeping, because they are the argument for the
 design that replaced it.** Scoring free text with a panel of model judges puts the judges' own
-lean in the result: our judges spanned 0.3054 points between the most and least
+lean in the result: our judges spanned 0.3108 points between the most and least
 institution-skeptical of them, on the same responses. And the pipeline rung — a system prompt
 plus a sampling change — produced no effect that survived its own control: all 8 intervals span
 zero. The present study has no model anywhere in the scoring path, and its rung-2 re-collection

@@ -48,9 +48,11 @@ fail it. The corpus, the instrument, the failures and the scripts are in the rep
 > politics against 99.0% for documented matters of record.
 >
 > *Same Version, Different Answers* was the previous title and is withdrawn. It named a
-> same-version null this corpus measures, on the same-name-later-snapshot subset a drift claim
-> actually needs, at **median 0, p90 1, max 1 side-flips of 32** over three pairs (§7) — the
-> finding it advertised is not there. `CITATION.cff` is written against the title above.
+> same-version null this corpus does not support. The subset a drift claim actually sits on --
+> same model name, later snapshot -- is **three pairs**, and all three move 0 or 1 side of 32.
+> Three pairs is a count, not a distribution, and §7 refuses to read a floor off it. The title
+> is withdrawn for the absence of support, not because the opposite was shown: an instrument
+> that cannot resolve a difference has not demonstrated sameness either. `CITATION.cff` is written against the title above.
 
 **Draft. Every table is generated from `runs/` by the scripts named in Reproduction. Nothing
 between `<!-- GEN:x -->` and `<!-- /GEN:x -->` is hand-written; `scripts/gen_paper.py --check`
@@ -74,11 +76,16 @@ exits 1 when a table has drifted from the data.**
 > and a community fine-tuner of other people's weights, kept as rows because their builds are
 > subjects here and excluded from any claim about vendors.
 >
-> **That population is declared, not swept.** `refusal_table.PANEL` names the run directories
-> the panel consists of and `OUT_OF_PANEL` names every other battery collection with the rule
-> it falls under — smokes, budget probes, and arms collected under one or two conditions,
-> whose one-sided denominators would move a refusal rate without a single new observation
-> about refusal. Until 2026-09-21 the population was a glob minus a list of seven directories
+> **That population is declared, not swept, and it excludes more than it analyses.**
+> `refusal_table.PANEL` names the run directories the panel consists of and `OUT_OF_PANEL`
+> names every other battery collection with the rule it falls under — smokes, budget probes,
+> arms collected under one or two conditions whose one-sided denominators would move a refusal
+> rate without a single new observation about refusal, and one collection that is a different
+> design entirely. **In the working corpus that rule sets aside 5,647 records against the
+> 3,897 it keeps**, the largest single exclusion being a 3,200-record judge-scored collection
+> that has no forced-choice sheet and so cannot refuse one. A reader is entitled to that ratio
+> before quoting any rate off the table, and until 2026-09-22 the disclosure counted
+> directories rather than records, which made fourteen sound small. Until 2026-09-21 the population was a glob minus a list of seven directories
 > that had all been retired, so the list subtracted nothing and every arm collected after it
 > was written had joined the panel unasked. Those figures read 6,286 runs and 71 models.
 >
@@ -381,8 +388,8 @@ observation about refusal.
 REFUSAL RATE BY VENDOR AND CONDITION -- recomputed from runs/
 refusal = declined all 32 items: prose returned, zero answers, budget intact
 panel: 2026-09-16-ratchet-v3-wave
-outside the panel, by rule: 14 collection(s) -- smokes, budget probes and arms collected
-under one or two conditions; refusal_table.OUT_OF_PANEL names each with its rule
+outside the panel, by rule: 14 collection(s); refusal_table.OUT_OF_PANEL names each
+with the rule it falls under, and the rule removes more records than it keeps.
 
 vendor                     N           A           B           C           D           E           P
 google              61% (59)    61% (59)    67% (15)    67% (15)    32% (56)    40% (15)    32% (56)
@@ -942,7 +949,14 @@ sentence in the running text for the rhythm.)*
 
 ### And a third: we validated our judges five ways, none of them for lean
 
-The scored arm of this project uses a four-model judge panel, and validates it five ways —
+**Nothing in §§1-3 or §§6-7 depends on any of this.** The scored arm is the May 2026 design --
+open questions, an LLM panel reading the answers against a rubric -- and it is the design this
+paper replaced, for the reason §5 gives: a judge is a model, a model has a lean, and scoring a
+political answer with one puts the thing under test into the measuring apparatus. It is audited
+here rather than reported as a result, and every headline in this paper is forced-choice with
+no model anywhere in the scoring path. What follows is the audit, and it is unflattering.
+
+The scored arm uses a four-model judge panel, and validates it five ways —
 a solo low-RLHF judge, an adversarial pair, an inverted rubric, blind conditions, and a judge
 with the refusal direction cut out of its weights. They agree with the panel on the exact score
 84–91% of the time.
@@ -967,9 +981,9 @@ If cutting that direction does not move a subject's
 stance, it does not move a judge's. **The anchor removes a reflex we ourselves proved is not
 the lean.**
 
-Measured properly (`scripts/judge_lean.py` over the 3,809 scored records carrying a per-judge
-breakdown): the panel's internal spread is **0.3054 points**, gemini-2.5-flash most
-institution-skeptical at +0.181, deepseek-v3.2 most deferential at −0.124. It sits below all
+Measured properly (`scripts/judge_lean.py` over the 5,408 scored records carrying a per-judge
+breakdown): the panel's internal spread is **0.3108 points**, gemini-2.5-flash most
+institution-skeptical at +0.179, deepseek-v3.2 most deferential at −0.132. It sits below all
 three of this project's CI-clean judged findings — +0.90, +0.45, +0.43 — and it was in no
 floors table, which is the complaint: a nuisance term nobody had measured is not a small one,
 it is an unmeasured one, and it only turned out to be smaller than the effects after somebody
@@ -992,18 +1006,20 @@ the lean to be the same SIZE in both arms:
 
 | judge | lean in A | lean in B | B − A |
 |---|---:|---:|---:|
-| gemini-2.5-flash | +0.033 | +0.275 | **+0.242** |
-| gpt-4.1 | −0.003 | +0.146 | **+0.149** |
-| claude-haiku-4.5 | −0.003 | −0.035 | −0.032 |
-| deepseek-v3.2 | −0.060 | −0.162 | **−0.102** |
+| gemini-2.5-flash | +0.027 | +0.272 | **+0.244** |
+| gpt-4.1 | −0.004 | +0.144 | **+0.148** |
+| claude-haiku-4.5 | −0.002 | −0.059 | −0.057 |
+| deepseek-v3.2 | −0.054 | −0.170 | **−0.115** |
 
 *(Every figure in this subsection was hand-typed and stale until 2026-09-22 — 4,668 records
-against 3,809, a spread of 0.29 against 0.3054, and all twelve cells above. The conclusion was
-never in doubt: the column that would be zero if the lean cancelled spans 0.344.*
-*They are quoted from the PUBLISHED corpus rather than the working one, which holds 5,369 such
-records and gives a spread of 0.3127. The published figure is the one a reader can reproduce,
-and a paper that states a number its own released data cannot produce is making a claim about
-a machine nobody else has.)*
+against a live 5,408, a spread of 0.29, and all twelve cells above. The conclusion was never in
+doubt: the column that would be zero if the lean cancelled spans 0.359.*
+*For most of that day these numbers also differed between the working tree and the released
+one, and the paper quoted the released figure because a reader can only reproduce that. The
+gap is closed rather than annotated: the run that caused it, a 3,200-record judge-scored
+collection whose contrast is withdrawn, is now published. Withholding data because its
+conclusion died is the defect §5 convicts Liu of, and the fix was to publish it, not to
+explain it.)*
 
 The panel fans out between the arms and the fanning rides into the delta. (Condition A scores
 92% threes, which explains *why* the lean is compressed there. It does not make it cancel; a
