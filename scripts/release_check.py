@@ -80,14 +80,72 @@ def _checks():
 CHECKS = _checks()
 
 
+#: The date the CORRECTIONS read was performed, and the number of entries read that day.
+#: BOTH ARE FROZEN ON PURPOSE. The count of entries in the file today is measured, not typed,
+#: so the two numbers can disagree -- and when they do, the disagreement is the finding.
+CORRECTIONS_READ_ON = "2026-09-12"
+CORRECTIONS_READ_COUNT = 14
+
+
+def _corrections_now():
+    """Numbered entries in the mirror's CORRECTIONS.md, counted from its own headings.
+
+    THE HUMAN ITEM USED TO SAY "All 14 entries read" AS A FIXED STRING, and it went on saying
+    it while the file grew to 27. A human-review note that states its own coverage without
+    measuring what it covers is the same two-copies-of-a-fact defect the rest of this
+    repository has corrected repeatedly -- and it is worse here, because it appears under a
+    heading that tells the reader these items are outstanding, which makes a stale one read
+    as diligence.
+    """
+    for path in _corrections_paths():
+        if os.path.exists(path):
+            with open(path, encoding="utf-8", errors="replace") as fh:
+                return sum(1 for line in fh if line.startswith("### "))
+    return None
+
+
+def _corrections_paths():
+    """This tree's CORRECTIONS.md, then the sibling mirror's.
+
+    CORRECTIONS.md IS A PUBLIC-FACING DOCUMENT and lives in the mirror; the private study
+    carries dated `CORRECTIONS-*.md` files instead. Looking only beside this script returns
+    None from the tree the work is done in, which turns a measured number back into a shrug --
+    the same defect `key_numbers._corrections_entries` was fixed for on 2026-09-21. `MIRROR`
+    is already resolved above for exactly this, and resolves to `STUDY` when this IS the
+    mirror, so the two candidates collapse to one there.
+    """
+    return (os.path.join(STUDY, "CORRECTIONS.md"), os.path.join(MIRROR, "CORRECTIONS.md"))
+
+
+def _corrections_human_check():
+    now = _corrections_now()
+    if now is None:
+        return ["4  CORRECTIONS covers every withdrawal -- CORRECTIONS.md is not in this tree,",
+                "   so the read cannot be confirmed from here."]
+    head = ("4  CORRECTIONS covers every withdrawal -- READ %s, PASSES for the %d entries that "
+            "existed then." % (CORRECTIONS_READ_ON, CORRECTIONS_READ_COUNT))
+    lines = [head]
+    if now > CORRECTIONS_READ_COUNT:
+        lines.append("   ** %d entries now: %d ADDED SINCE THE READ AND NOT COVERED BY IT. **"
+                     % (now, now - CORRECTIONS_READ_COUNT))
+    elif now < CORRECTIONS_READ_COUNT:
+        lines.append("   ** %d entries now, FEWER than the %d read -- an entry was removed. **"
+                     % (now, CORRECTIONS_READ_COUNT))
+    lines += [
+        "   Six of STATUS's ten withdrawals correctly have no public entry because they were",
+        "   never published (verified zero occurrences across the mirror and website, not",
+        "   assumed). VERIFICATION-%s-corrections-read.md. Still listed here because it stays"
+        % CORRECTIONS_READ_ON,
+        "   a human read: two attempts to mechanise it produced false positives on sound"
+        " entries.",
+    ]
+    return lines
+
+
 HUMAN_CHECKS = [
     "3  every arm at final n or cut  -- ablation arm now n=5; wave 0 has 12 short cells,",
     "   disclosed and unrepairable without breaking the one-sitting rule",
-    "4  CORRECTIONS covers every withdrawal -- READ 2026-09-12, PASSES. All 14 entries read;",
-    "   six of STATUS's ten withdrawals correctly have no public entry because they were never",
-    "   published (verified zero occurrences across the mirror and website, not assumed).",
-    "   VERIFICATION-2026-09-12-corrections-read.md. Still listed here because it stays a",
-    "   human read: two attempts to mechanise it produced false positives on sound entries.",
+] + _corrections_human_check() + [
     "6  the ours row is generated -- key_numbers --sync-ours writes it. NOT mechanised on\n"
     "     purpose: --sync-ours WRITES, and a release gate that mutates the tree it is\n"
     "     judging cannot be trusted to have judged it. Verified by hand 2026-09-12: no\n"

@@ -205,7 +205,8 @@ ALLOWED = {
     "prereg/PREREG-2026-09-14-i3-phase4.md":
         "a dated pre-registration whose own opening amendment records that the bank it "
         "names was WITHDRAWN -- written by an assistant session, never signed off, and "
-        "moved to withdrawn/i3/. The name has to stay so the withdrawal is legible.",
+        "quarantined under withdrawn/i3/, then purged with the rest of the retired corpus "
+        "on 2026-09-22. The name has to stay so the withdrawal is legible.",
     "prereg/PREREG-2026-09-18-paraphrase.md":
         "quotes Roettger et al.'s published figures ('14 of 62 and 23 of 62 on the Political "
         "Compass') to state what this arm compares against. A citation to somebody else's "

@@ -822,6 +822,116 @@ publication decision and is not settled by this entry.
 absent the README must carry the disclaimer, and if the run is ever exported the disclaimer must
 go. A sentence about what ships cannot drift from what ships when a test reads both.
 
+### 25. Judge scores on responses that were empty — corrected 2026-09-08, ledgered 2026-09-12
+
+**Published:** from the May collection onward, in every reader over the judge-scored corpus.
+**Corrected:** 2026-09-08. **Per-run ledger:** 2026-09-12.
+
+The primary `data/*/scored/*.jsonl` corpus holds 5,051 records. Of the 561 unusable responses
+in it, **466 carry classifier scores although their response text is empty and `ok` is true** —
+a judge scoring a blank. Every aggregate, confidence interval and paired estimate computed
+before the correction included them.
+
+`score.py` now skips empty and whitespace-only responses before calling any judge, and the
+CI, FDR and paired readers share one eligibility loader that discloses its exclusions on
+stderr and keeps substantive refusals as their own category rather than folding them in with
+blanks. A run with no eligible A/B pairs returns nonzero instead of reporting on nothing.
+Historical scores are **not** rewritten: the corrected views sit beside the originals, because
+a correction applied on top of its own evidence destroys the evidence.
+
+**What moved, and it is less than the defect's size suggests.** On the main run 33 empty
+records drop out; five models still have bootstrap intervals excluding zero and four still
+survive FDR. Judge agreement moves from 0.824 to 0.827 exact-pairwise over 715 contributing
+items rather than 740. Across all fourteen judge-scored runs — 466 records excluded, the same
+466 the 2026-09-08 audit inventoried independently — **not one significance verdict flips.**
+No interval that excluded zero now includes it, and none that included zero now excludes it.
+That "unchanged" is itself the result: the defect was real and was not load-bearing.
+
+**What it did break.** The GLM result on the main run now rests on **three** eligible A/B
+pairs, which cannot establish equivalence or the absence of bias, and four `not-distinguishable`
+rows vanish outright when their model loses its last eligible cell — `openai/gpt-5` in the
+augmentation, unmask-gradient and variance runs, `z-ai/glm-4.7` in the OOD run. Missingness may
+be systematic; excluding it removes a scoring artefact, not selection bias.
+
+**The receipts ship.** `results/response-quality-2026-09-08.json` names every affected file,
+line, question, model, condition and source SHA-256.
+`corrections/2026-09-12-eligibility/LEDGER.md` carries the per-run table with historical and
+strict columns side by side. `scripts/audit_response_quality.py --check` **intentionally exits
+1** while historical empty records retain their scores — that inventory is a correction record,
+not a request to delete or rescore original evidence.
+
+This entry exists because the narrative correction that first reported the defect,
+`CORRECTIONS-2026-09-08.md`, was deleted from this repository on 2026-09-22 in a pass removing
+the retired questionnaire — which it was not about. The ledger and the inventory it pointed at
+both survived, unlinked from anything, and this file claims to list every withdrawn or narrowed
+claim. It does now.
+
+### 26. Thirteen vendor "version arcs", ten of which were not arcs — corrected 2026-09-12
+
+**Published:** `data/_aggregated/vendor_arcs.md`, "Per-vendor intra-family version arcs".
+**Corrected:** 2026-09-12, into `corrections/2026-09-12-vendor-arc/`.
+
+`drift_timeseries.py` computed each family's arc as `deltas[-1] - deltas[0]` and printed it as
+"delta from oldest to newest". `deltas` was a list of measurement **rows**, and a row is a
+`(version, run)` pair. On any family measured more than once at a single version, the statistic
+subtracted one arbitrary run of a model from another arbitrary run of **the same model** and
+published the difference as version drift.
+
+The headings said so in plain sight and nobody read them as a count of rows: `xai-grok`
+"8 versions" is `grok-4.3` measured eight times. **Four families had exactly one version and
+every one of them published an arc direction** — `xai-grok`, `mistral`, `meta-llama` and
+`microsoft-phi`, joined by `openai-gpt` at two versions with six measurements of `4.1`.
+
+**Withdrawn:** five families' arcs, which do not exist — the corrected reader prints **NO ARC**
+and refuses to report a direction on one version. `moonshot-kimi` reverses from a published
+**decreasing (−0.30)** to **stable (−0.08)**; that direction is withdrawn.
+
+**Narrowed:** the corrected reader also prints the within-version spread, the run-to-run
+variation an arc has to clear to mean anything, and says so when the arc is narrower than its
+own noise. `google-gemini`'s increasing 0.35 sits inside a 0.62 spread and is noise-dominated.
+`xai-grok` is the clean illustration of the original defect: one version whose repeat
+measurements span 0.90, while arcs of ±0.2 were being labelled directional — a threshold an
+order of magnitude below the noise, with nothing in the output saying so.
+
+**What survives: three of thirteen.** `claude-opus` (0.47 against 0.40), `qwen` (0.35 against
+0.13) and `zhipuai-glm` (0.40 against 0.25) remain directional claims. The rest were stable
+already or were never arcs.
+
+The correction was generated with `--out` into its own directory.
+`data/_aggregated/vendor_arcs.md` is **unchanged** and remains the record of what was
+published; no run record was touched and no model was called.
+
+### 27. "The repaired corpora are not in this repository yet" — false for a week, corrected 2026-09-22
+
+**Published:** 2026-09-14, as the opening banner of `CORPUS-MAP-2026-09-14.md`.
+**False from:** 2026-09-15. **Corrected:** 2026-09-22.
+
+The banner told readers that the 2026-09-14 repair was "pending export", that the runs named
+below it "will not resolve for you", and — in bold — that **"every original run in this
+repository is the damaged version."** It instructed anyone deriving a May figure to treat it as
+computed on a corpus missing about a third of its responses.
+
+The export landed on **2026-09-15** in `4d734dd`. Thirteen `2026-09-14-recollect-*` repair runs
+and ten `*-spliced` derived corpora have been in this tree since, `2026-09-14-full-spliced`
+among them — the repaired main run, thirteen scored files, exactly matching
+`2026-05-25-full`. The map was edited the following day, 2026-09-16, and the banner survived
+the edit. For a week a public document discounted figures this repository was already shipping
+the repair for.
+
+**What was wrong was the availability claim, not the damage.** The May runs really are the
+damaged version and they really do remain here unmodified, because a repair written over its
+own evidence destroys the evidence. The corrected banner says which run to read — the
+`-spliced` view for figures, the bare May run when you mean to see what was originally
+collected — instead of telling readers the fix is somewhere they cannot reach.
+
+**Genuinely absent, and separately disclosed:** the three rung-2 and decomposition runs named
+in the map are not in this tree. That is entry 24, gated by
+`tests/test_decomposition_claim_matches_reality.py`.
+
+This is the defect the map itself is about — a stated corpus that is not the corpus on disk —
+appearing in the banner of the document written to prevent it. A disclosure is a claim, and it
+expires like any other.
+
 ---
 
 
@@ -832,6 +942,13 @@ quoted elsewhere, this file is the first place to look. If a claim you can find 
 history is not listed here and you think it should be,
 [open an issue](https://github.com/gorrie/bias-study/issues) — a missing entry is itself a
 defect of the kind this document exists to record.
+
+Where a correction has its own worked ledger — the per-run table, the historical and corrected
+columns side by side — it is in [`corrections/`](corrections/), one directory per defect, and
+the entry above names it. Those directories are generated **beside** the artifact they correct
+and never over it, so what was published stays readable next to what replaced it. Entries 25
+and 26 were added on 2026-09-22 because their ledgers were shipping and nothing in this file
+pointed at them, which made this file's own opening claim false.
 
 Every numbered entry above sits under **The retracted claims**. This heading used to sit
 *before* entry 19, which filed six corrections — the study's own title among them — under a

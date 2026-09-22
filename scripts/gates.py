@@ -579,8 +579,9 @@ GATES = [
     # substituted for the author's instrument -- against a fresh build. Its central rule,
     # "every pair is the same sentence with one inserted 'not'", CANNOT be applied to the
     # live instrument: the Ratchet battery's mirrored halves are re-worded opposing framings,
-    # authored, not derived. A generator and its gate travel with the bank they serve, and
-    # both are in `withdrawn/i3/`. See LEARNINGS #19 -- verify the mirror, never generate it.
+    # authored, not derived. A generator and its gate travel with the bank they serve: both
+    # went to `withdrawn/i3/` and were purged with the retired corpus on 2026-09-22.
+    # See LEARNINGS #19 -- verify the mirror, never generate it.
     # MOVED OUT OF prerun 2026-09-17. It validates `protocol/three-axis-items-DRAFT.json` in
     # the mirror -- a THIRD assistant-drafted item set whose own header reads "DRAFT -- NOT
     # FROZEN. Collection must not begin against this file." A gate in front of a collection

@@ -1,18 +1,31 @@
 # The corpus after the 2026-09-14 repair: what every run is for
 
-> ## THE REPAIRED CORPORA ARE NOT IN THIS REPOSITORY YET
+> ## THE REPAIRED CORPORA ARE HERE — READ THE `-spliced` RUN, NOT THE MAY RUN
 >
-> The repair was carried out in the working study. The re-collected records and the derived
-> corpora below are **pending export** to this public tree, and until that lands the runs named
-> here will not resolve for you.
+> **Corrected 2026-09-22.** The banner that stood here declared the repaired corpora absent
+> from this repository and still awaiting export, and told readers every May figure they
+> derived was computed on the damaged corpus. The export landed on **2026-09-15** (`4d734dd`)
+> and the banner was not updated: thirteen `2026-09-14-recollect-*` repair runs and ten
+> `*-spliced` derived corpora have been in this tree ever since, including
+> `2026-09-14-full-spliced`, the repaired main run. For a week this document told readers to
+> discount figures it was already shipping the fix for. The withdrawn wording is quoted in
+> full, once, in `CORRECTIONS.md` entry 27 — which is the only place it belongs, because
+> `tests/test_corpus_map_presence_claim.py` now fails this file if it asserts an absence the
+> filesystem contradicts.
 >
-> This document is published now because the alternative is worse: reading a number from a May
-> run without knowing a third of that run is missing. **Every original run in this repository is
-> the damaged version.** The map tells you which, by how much, and what the repaired figure is.
+> **What is still true.** The May runs remain in this repository **unmodified**, because a
+> repair applied over its own evidence destroys the evidence. They are the damaged version, and
+> the losses recorded below are real — heaviest on `mistral-large`, `glm-4.7`, `gemma-3-27b-it`
+> and `claude-opus-4.7`, which had 0, 0, 0 and 1 usable A/B pairs respectively in the main run.
+> So the rule is about **which run you read**, not about what is present: derive figures from
+> the `-spliced` view, and read a bare May run only when you mean to see what was originally
+> collected.
 >
-> Until the export lands, treat any May figure you derive here as computed on a corpus with the
-> losses recorded below — heaviest on `mistral-large`, `glm-4.7`, `gemma-3-27b-it` and
-> `claude-opus-4.7`, which had 0, 0, 0 and 1 usable A/B pairs respectively in the main run.
+> **What is genuinely absent.** The rung-2 decomposition arms —
+> `2026-09-15-g0dm0d3-decomposition`, `2026-09-14-rung2-transform-audit` and
+> `2026-09-15-rung2-decomposed` — are named here and are not in this tree. That absence is
+> disclosed in `CORRECTIONS.md` entry 24 and gated by
+> `tests/test_decomposition_claim_matches_reality.py`.
 
 The May 2026 corpus was collected at an 800-token cap that severed or emptied about a third of
 it, differentially by model. This names every run the repair created, what it repairs, and what

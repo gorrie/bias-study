@@ -89,19 +89,61 @@ def instrument_texts():
     THE LIVE INSTRUMENT IS NOT IN THIS LIST, deliberately. The Ratchet battery is the author's
     own text and ships in full; putting it here would scrub the study's own instrument out of
     its own data release. What belongs here is text this repository is not entitled to
-    republish -- XSTest's prompts, and the retired questionnaire for as long as any record
-    carrying it is exported at all.
+    republish -- XSTest's prompts.
+
+    THE RETIRED QUESTIONNAIRE USED TO BE THE FIRST ENTRY, read from `withdrawn/compass-bank/`,
+    which no longer exists: the retired corpus was purged on 2026-09-22 and nothing carrying
+    that instrument is exported any more. The entry was removed rather than left pointing at a
+    deleted file, because the loop used to `continue` past a missing source -- so a scrubber
+    with nothing to scrub reported success exactly as loudly as one that scrubbed.
+    `_no_retired_text_to_scrub` below is what makes the absence safe: it fails if a retired
+    record ever reaches the export again, at which point the bank has to come back first.
     """
     texts = []
-    for rel, key, field in (("withdrawn/compass-bank/compass-propositions.json", "items", "text"),
-                            ("data/xstest-prompts.json", "prompts", "prompt")):
+    for rel, key, field in (("data/xstest-prompts.json", "prompts", "prompt"),):
         path = os.path.join(STUDY, rel)
         if not os.path.exists(path):
-            continue
+            raise SystemExit("export_scrubbed: %s is missing; refusing to export an "
+                             "unscrubbed release rather than skipping a source" % rel)
         payload = json.load(io.open(path, encoding="utf-8"))
         rows = payload[key] if isinstance(payload, dict) and key in payload else payload
         texts += [r[field] for r in rows if isinstance(r, dict) and r.get(field)]
+    if not texts:
+        raise SystemExit("export_scrubbed: instrument_texts() assembled 0 strings; a scrubber "
+                         "with an empty pattern list passes every record it is handed")
     return texts
+
+
+#: Instrument names the export is NOT entitled to republish and no longer holds the text for.
+#: Matched case-insensitively against each record's `instrument` field.
+RETIRED_IN_EXPORT = ("politicalcompass", "political compass", "ratchet-battery-i3",
+                     "ratchet-propositions-i3")
+
+
+def _no_retired_text_to_scrub(records):
+    """Refuse to export a record whose instrument text this repository no longer holds.
+
+    The scrubber can only redact text it can see. While the retired questionnaire's bank was
+    in the tree, a record carrying that instrument could be exported and its item strings
+    removed. The bank is gone, so such a record would now go out with its third-party
+    sentences intact and every gate green -- the export's field of view narrower than its
+    claim, which is the failure this study keeps paying for.
+    """
+    bad = {}
+    for r in records:
+        name = (r.get("instrument") or "").lower()
+        for marker in RETIRED_IN_EXPORT:
+            if marker in name:
+                key = r.get("instrument")
+                bad[key] = bad.get(key, 0) + 1
+                break
+    if bad:
+        lines = ["export_scrubbed: %d record(s) carry an instrument whose text is no longer in "
+                 "the tree to scrub:" % sum(bad.values())]
+        for k in sorted(bad):
+            lines.append("  %-60s %d record(s)" % (k, bad[k]))
+        lines.append("Restore the bank under withdrawn/ or drop these records from the export.")
+        raise SystemExit(chr(10).join(lines))
 
 
 def redact_instrument(text, fingerprints):
@@ -332,6 +374,7 @@ def main(argv=None):
     tally = {"records": 0, "files": 0, "with_prompt": 0, "scrubbed_fields": {},
              "other_schema_carrying_text": []}
     exported = {}
+    raw = []
 
     for path in sorted(glob.glob(os.path.join(RUNS, "**", "*.jsonl"), recursive=True)):
         rel = os.path.relpath(path, RUNS).replace("\\", "/")
@@ -350,11 +393,16 @@ def main(argv=None):
                 continue
             if rec.get("forcing_prompt"):
                 tally["with_prompt"] += 1
+            raw.append(rec)
             keep.append(scrub_record(rec, fingerprints, tally, drop_fields))
             tally["records"] += 1
         if keep:
             exported[rel] = keep
             tally["files"] += 1
+
+    # Checked on the RAW records, before anything is written: a record whose instrument text
+    # this repository no longer holds cannot be scrubbed, so it must not be exported at all.
+    _no_retired_text_to_scrub(raw)
 
     print("scanned runs/: %d records in %d file(s) carry schema %s; %d of them carried the "
           "instrument" % (tally["records"], tally["files"], SCHEMA, tally["with_prompt"]))
