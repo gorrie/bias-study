@@ -1,5 +1,18 @@
 # Pre-registration: the mask surface — pressure × ablation, two dimensions
 
+
+> **SUPERSEDED — this design plans against an instrument the study REJECTED.**
+>
+> The bank below is a 62-item off-the-shelf left/right questionnaire. It was evaluated and
+> rejected: its axis sorts every proposition onto a two-dimensional map whose poles are the
+> dogma rather than the question, and its scoring algorithm is undisclosed, so an instrument
+> scored by it cannot be judge-free and transparent at once. Everything measured on it is
+> withdrawn.
+>
+> The live instrument is `data/ratchet-battery.json` — 32 author-written propositions in 16
+> mirrored pairs, MIT-licensed, shipped in full with no fetch step. This file is kept because a
+> pre-registration that disappears when its result does is not a pre-registration.
+
 Committed before any model is built or run.
 
 ## The question nobody has asked

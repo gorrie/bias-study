@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Scoring function and constraint checker for the three-axis instrument.
 
-The scoring is deterministic and published — that is the property the compass arm cannot
+The scoring is deterministic and published — that is the property the retired questionnaire's arm cannot
 offer, and the reason this instrument can serve as a transparent anchor as well as a
 measurement. No model anywhere in the path.
 
@@ -26,7 +26,7 @@ STUDY = os.path.dirname(HERE)
 DRAFT = os.path.join(STUDY, "protocol", "three-axis-items-DRAFT.json")
 FROZEN = os.path.join(STUDY, "protocol", "three-axis-items.json")
 
-#: Forced-choice response -> numeric. Identical grammar to the compass arm.
+#: Forced-choice response -> numeric. Identical grammar to the retired questionnaire's arm.
 CHOICES = {
     "strongly disagree": -2,
     "disagree": -1,

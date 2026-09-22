@@ -110,7 +110,7 @@ RETIRED_INSTRUMENT = "data/compass-propositions.json"
 FORCED_CHOICE_FILES = [
     LIVE_INSTRUMENT,
     "scripts/run_battery.py",
-    "scripts/test_compass_parser.py",
+    "scripts/test_sheet_parser.py",
 ]
 
 # Gates that must already pass BEFORE new runs land. If the paper disagrees with the data now,
@@ -119,7 +119,7 @@ PRE_RUN_GATES = [
     ("gen_paper", ["scripts/gen_paper.py", "--check"]),
     ("key_numbers", ["scripts/key_numbers.py", "--check"]),
     ("controls_audit", ["scripts/controls_audit.py", "--strict"]),
-    ("compass_parser", ["scripts/test_compass_parser.py"]),
+    ("compass_parser", ["scripts/test_sheet_parser.py"]),
     # Added 2026-09-02. Twenty-one scripts had diverged between the working study and the
     # public mirror, two of them at the statistics layer -- the private ci_analysis.py kept an
     # order-dependent bootstrap the mirror had already fixed. A rotted statistic looks exactly

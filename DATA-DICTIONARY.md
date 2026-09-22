@@ -23,7 +23,7 @@ silently.
 | `ok` | 100.0% | `bool` | Collector's verdict that the call completed. A record with ok=false is still written, which is why a manifest's completed-call count is lower than its record count. |
 | `position` | 100.0% | `str` | Framing register of the item as administered: `neutral`, `mild`, `pointed`, plus `ood`, `para1..3` and `reversed` for the robustness arms. |
 | `question_id` | 100.0% | `str` | Item identifier within the instrument. Stable across runs; the join key for anything paired. |
-| `question_text` | 100.0% | `str` | The item as administered. Present for the institutional-framing instrument; the 62 forced-choice propositions are third-party licensed text and are NOT in this repository -- see MANIFEST.json and fetch_items.py. |
+| `question_text` | 100.0% | `str` | The item as administered. Present for the institutional-framing instrument. The retired 62-item external questionnaire is third-party licensed text and is NOT in this repository, nor is the script that retrieved it; MANIFEST.json carries the hash. The LIVE instrument, data/ratchet-battery.json, ships in full under MIT with no fetch step. |
 | `topic` | 100.0% | `str` | Topic grouping of the item, T01..T18. Items within a topic are not independent; cluster on this, not on rows. |
 | `user_prompt` | 100.0% | `str` | The full user turn as sent, question text included. |
 | `response_text` | 99.0% | `str`, `null` | The model's reply verbatim, or null on a failed call. An EMPTY string is not a refusal and not a null -- see `scoring_status` and the eligibility rule in scripts/eligibility.py. |
@@ -74,7 +74,7 @@ silently.
 | `ok` | 100.0% | `bool` | Collector's verdict that the call completed. A record with ok=false is still written, which is why a manifest's completed-call count is lower than its record count. |
 | `position` | 100.0% | `str` | Framing register of the item as administered: `neutral`, `mild`, `pointed`, plus `ood`, `para1..3` and `reversed` for the robustness arms. |
 | `question_id` | 100.0% | `str` | Item identifier within the instrument. Stable across runs; the join key for anything paired. |
-| `question_text` | 100.0% | `str` | The item as administered. Present for the institutional-framing instrument; the 62 forced-choice propositions are third-party licensed text and are NOT in this repository -- see MANIFEST.json and fetch_items.py. |
+| `question_text` | 100.0% | `str` | The item as administered. Present for the institutional-framing instrument. The retired 62-item external questionnaire is third-party licensed text and is NOT in this repository, nor is the script that retrieved it; MANIFEST.json carries the hash. The LIVE instrument, data/ratchet-battery.json, ships in full under MIT with no fetch step. |
 | `refusal_class` | 100.0% | `null`, `str` | Refusal taxonomy where one applies: `recovery` (refuses then answers), `empty-response`. |
 | `score_classifier` | 100.0% | `int`, `float`, `null` | Panel score on the 1-5 rubric: the MEDIAN of the judges, so it can be a half-integer (4.5) where the panel split evenly. null where scoring was skipped. |
 | `scoring_status` | 100.0% | `str` | `ok`, or why scoring was skipped: `skipped-failed-call`, `skipped-empty-response`. The skip reasons are the DATA-EMPTY-SCORES-002 rule made visible in the record. |
@@ -127,10 +127,18 @@ occur in the published data.
 
 ## What is deliberately absent
 
-The 62 forced-choice propositions are third-party licensed text and are **not in this
-repository**. Records are keyed by item id, which is all that is needed to recompute a
-result from the answers; `fetch_items.py` retrieves the items from the same source this
-study used, and `MANIFEST.json` carries the hash so a reader can prove they hold the
-same instrument. The export is produced and re-verified against the fingerprint list
-by an operator tool that lives on the development side, not here — deliberately, so
-that the thing which generates a release is not shipped inside it.
+**The live instrument is in this repository in full.** `data/ratchet-battery.json` is
+32 author-written propositions in 16 mirrored pairs, MIT-licensed with everything
+else, with no fetch step and nothing to take on trust.
+
+What is absent is the **retired** 62-item external questionnaire the August arm ran
+on. It is a third party's licensed text, so neither it nor the script that retrieved
+it is here, and the records that used it carry item ids rather than item text —
+which is all that is needed to recompute a result from the answers.
+`MANIFEST.json` carries its hash so a reader can prove they hold the same
+instrument. Everything measured on it is withdrawn; it survives in this study as a
+thing that was evaluated and rejected, and nothing else.
+
+The export is produced and re-verified against the fingerprint list by an operator
+tool that lives on the development side, not here — deliberately, so that the thing
+which generates a release is not shipped inside it.

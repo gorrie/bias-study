@@ -52,7 +52,7 @@ DESCRIPTIONS = {
     "study_call_metadata": "Free-form collector state at call time. Shape varies by collector and it is not safe to index blindly.",
     # the item
     "question_id": "Item identifier within the instrument. Stable across runs; the join key for anything paired.",
-    "question_text": "The item as administered. Present for the institutional-framing instrument; the 62 forced-choice propositions are third-party licensed text and are NOT in this repository -- see MANIFEST.json and fetch_items.py.",
+    "question_text": "The item as administered. Present for the institutional-framing instrument. The retired 62-item external questionnaire is third-party licensed text and is NOT in this repository, nor is the script that retrieved it; MANIFEST.json carries the hash. The LIVE instrument, data/ratchet-battery.json, ships in full under MIT with no fetch step.",
     "topic": "Topic grouping of the item, T01..T18. Items within a topic are not independent; cluster on this, not on rows.",
     "user_prompt": "The full user turn as sent, question text included.",
     "system_prompt": "The system turn as sent, or null where none was used. The presence or absence of a directive here is the manipulation in most arms.",
@@ -176,13 +176,21 @@ def build_text():
             out.append(f"- **`{k}`** — {vals}")
         out.append("")
     out += ["## What is deliberately absent", "",
-            "The 62 forced-choice propositions are third-party licensed text and are **not in this",
-            "repository**. Records are keyed by item id, which is all that is needed to recompute a",
-            "result from the answers; `fetch_items.py` retrieves the items from the same source this",
-            "study used, and `MANIFEST.json` carries the hash so a reader can prove they hold the",
-            "same instrument. The export is produced and re-verified against the fingerprint list",
-            "by an operator tool that lives on the development side, not here — deliberately, so",
-            "that the thing which generates a release is not shipped inside it.", ""]
+            "**The live instrument is in this repository in full.** `data/ratchet-battery.json` is",
+            "32 author-written propositions in 16 mirrored pairs, MIT-licensed with everything",
+            "else, with no fetch step and nothing to take on trust.",
+            "",
+            "What is absent is the **retired** 62-item external questionnaire the August arm ran",
+            "on. It is a third party's licensed text, so neither it nor the script that retrieved",
+            "it is here, and the records that used it carry item ids rather than item text —",
+            "which is all that is needed to recompute a result from the answers.",
+            "`MANIFEST.json` carries its hash so a reader can prove they hold the same",
+            "instrument. Everything measured on it is withdrawn; it survives in this study as a",
+            "thing that was evaluated and rejected, and nothing else.",
+            "",
+            "The export is produced and re-verified against the fingerprint list by an operator",
+            "tool that lives on the development side, not here — deliberately, so that the thing",
+            "which generates a release is not shipped inside it.", ""]
     # EXACTLY ONE TRAILING NEWLINE. The last element of `out` is "", so joining and appending
     # produced a trailing BLANK line. The public mirror's `fix end of files` hook removes it at
     # commit time, which left `--check` reporting this file stale immediately after every sync

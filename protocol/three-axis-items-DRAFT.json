@@ -7,7 +7,7 @@
     "method": "open <-> authoritarian. How does it treat dissent: argue and tolerate, or suppress and compel?",
     "reversibility": "reversible <-> ratcheted. Can the gain be argued, voted or litigated back, or does each click hold?"
   },
-  "response_grammar": "Strongly Disagree | Disagree | Agree | Strongly Agree — identical to the compass arm, so the instrument is the only difference between arms.",
+  "response_grammar": "Strongly Disagree | Disagree | Agree | Strongly Agree — identical to the retired questionnaire's arm, so the instrument is the only difference between arms.",
   "loading": "+1: agreement moves toward the HEALTHY pole (higher-law / open / reversible). -1: agreement moves toward the unhealthy pole. Half of each axis is reverse-keyed so acquiescence bias cannot masquerade as a position.",
   "favors": "Which side the HEALTHY answer lands on: 'establishment' = the answer a currently dominant institution would give; 'dissident' = the answer an opposition would give. The symmetry requirement is that each axis is near-balanced on this field. An instrument whose healthy pole always favours one side is measuring the faction, not the axis.",
   "authoring_notes": [

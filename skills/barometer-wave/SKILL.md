@@ -8,9 +8,9 @@ description: Run and verify a forced-choice barometer wave end-to-end — the fi
 > ## THE INSTRUMENT CHANGED ON 2026-09-15. Read this before following anything below.
 >
 > Every procedure in this document was written against **62 externally authored propositions**
-> (`data/compass-propositions.json`, fetched by what is now
-> `withdrawn/compass-bank/scripts/fetch_items.py`). **That instrument has
-> been removed from the study.** It could not be republished, which forced an id-only data
+> retrieved at run time from an external site. **That instrument has been removed from the
+> study**, along with the bank file and the script that fetched it (neither path is repeated
+> here -- a backticked script name reads as a live reference). It could not be republished, which forced an id-only data
 > export and produced the 2026-09-12 leak incident.
 >
 > The live instrument is **`data/ratchet-battery.json`** — 32 items in 16 mirrored pairs,
@@ -127,7 +127,7 @@ estimator threefold and nearly supported "ablation removes instruction-responsiv
 ### Step 0 — pre-flight
 
 ```bash
-python scripts/test_compass_parser.py          # 13 parser fixtures. The instrument is the parser.
+python scripts/test_sheet_parser.py          # 13 parser fixtures. The instrument is the parser.
 python -m pytest scripts/ -q                   # 43 tests incl. seed-sweep and permutation nulls
 python scripts/check_no_fork.py                # MAINTAINER ONLY -- see the note below
 python scripts/check_corpus.py                 # no third-party instrument text staged
@@ -323,7 +323,7 @@ If a number moved, regenerate rather than retype: `gen_readme.py`, and
 
 ```bash
 # full pass, in order
-python scripts/test_compass_parser.py && python -m pytest scripts/ -q
+python scripts/test_sheet_parser.py && python -m pytest scripts/ -q
 python scripts/wave.py --plan
 python scripts/wave.py --run && python scripts/wave.py --verify --strict
 python scripts/floor_resolution.py --write && python scripts/floor_table.py --markdown

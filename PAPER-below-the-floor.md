@@ -353,7 +353,18 @@ It does, and the translation exposes something §1 cannot see.
 We administer 32 forced-choice propositions in 16 mirrored pairs — four options, no neutral
 answer, **no language model anywhere in the scoring path** — and then measure how far the
 answers move when nothing political changes: a different item order, a different run, the same
-weights requantised, one model against a variant of itself. The corpus behind every row below
+weights requantised, one model against a variant of itself.
+
+**The items are the author's own, and an off-the-shelf left/right questionnaire was evaluated
+and rejected.** It was rejected for the reason that axis is worth rejecting — it sorts every
+proposition onto a two-dimensional map whose poles are the dogma rather than the question — and
+for a second reason that is disqualifying on its own: its scoring algorithm is undisclosed, so
+an instrument scored by it cannot be judge-free and transparent at the same time. This study
+ran on it for three weeks in August and everything measured there is withdrawn. What replaced
+it is thirty-two propositions written for this study, MIT-licensed, in the repository, with no
+fetch step and nothing a reader has to take on trust.
+
+The corpus behind every row below
 is named in Reproduction and every figure regenerates from `runs/`.
 
 Two statistics, and the gap between them is the finding:
@@ -1158,7 +1169,7 @@ study in this audit first published after that date still does not run the contr
 | 2026-06-11 | **naser2026** | ~ | - | - | Mean stance drift Cohen's d = 0.35 (OpenAI) vs 0.02 (Anthropic); 14-fold provider asymmetry |
 | 2026-07-29 | **aipolcom** | Y | - | - | Rolling collection with prompt-variation, access-method, run-to-run stability and question-order |
 | 2026-08-20 | — |  |  |  | Carnegie Endowment (Metaxa and Engler) calls for longitudinal monitoring infrastructure and name |
-| 2026-08-29 | — |  |  |  | This project swaps its instrument to the 62 politicalcompass propositions and begins the forced- |
+| 2026-08-29 | — |  |  |  | This project swaps its instrument to a 62-item external questionnaire and begins the forced-choi |
 | 2026-08-30 | — |  |  |  | First noise floors measured; seven claims withdrawn |
 | 2026-08-31 | — |  |  |  | Same-version null (97 pairs) measured; drift withdrawn; refusal found to be elicited by directiv |
 | 2026-08-31 | **ours** | Y | Y | Y | Presentation order and same-version variation each move as many items as any deliberate manipula |

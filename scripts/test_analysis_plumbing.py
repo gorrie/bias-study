@@ -2,7 +2,7 @@
 
 WHY THIS FILE EXISTS
 --------------------
-This directory had exactly one test file (`test_compass_parser.py`, the answer parser) and
+This directory had exactly one test file (`test_sheet_parser.py`, the answer parser) and
 three gates (`gen_paper --check`, `key_numbers --check`, `controls_audit --strict`). Gates check
 the ARTIFACT against the data. They do not check the tooling's logic, and on 2026-09-01/02 that
 distinction cost three real defects, every one of which a unit test would have caught in a

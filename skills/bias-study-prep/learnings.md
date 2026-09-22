@@ -70,8 +70,9 @@ differed, in the order they are worth doing. **Follow all seven; each one caught
    rather than noise.** Phase 0's single empty response was below the block threshold and still
    printed — it is a missing cell, not a measured one.
 
-**Build a mirrored item bank by VERIFYING, never by GENERATING.** The first version of
-`build_item_bank.py` derived each negation by inserting "not" after the first auxiliary verb.
+**Build a mirrored item bank by VERIFYING, never by GENERATING.** The first version of the
+bank builder (retired with the instrument it served, so the filename is not repeated here --
+a backticked script name reads as a live reference) derived each negation by inserting "not" after the first auxiliary verb.
 On an item whose first auxiliary sat in a subordinate clause it produced *"...a user that their
 data was **not** handed over is an abuse of state power"* — a different proposition, fully
 collectable, and it would have scored cleanly. It also emitted "have not more influence" and

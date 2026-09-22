@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-137 script(s). 0 carry no module docstring and are listed at the end.
+138 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -75,9 +75,9 @@
 - **`selftest_analysis.py`** — selftest_analysis.py — ten assertions over the committed May data. Zero API cost.
 - **`test_ablation_slugs.py`** — Two independent abliterations of one base must never share a directory.
 - **`test_analysis_plumbing.py`** — Regression tests for the analysis plumbing: encoding, run discovery, gate templates.
-- **`test_compass_parser.py`** — Fixtures for the forced-choice parser in run_battery.py. Run before any collection.
 - **`test_correction_gates.py`** — Regression tests for September 8 inference and release-gate defects; no network.
 - **`test_floor_resolution.py`** — Tests for the modal-resolution layer and the per-model verdict.
+- **`test_sheet_parser.py`** — Fixtures for the forced-choice parser in run_battery.py. Run before any collection.
 
 ## Other
 
@@ -133,6 +133,7 @@
 - **`item_omission.py`** — Do models skip particular PROPOSITIONS, or particular PLACES ON THE PAGE?
 - **`jurisdiction_gradient.py`** — Is the instruction's effect the same size on every subject, or does it pick its targets?
 - **`lineage_exchangeability.py`** — STATS-LINEAGE-NULL-001 — are the four same-version sub-classes exchangeable?
+- **`logit_probe.py`** — Score the forced-choice instrument by LOGPROB instead of parsing prose, and test whether the two agree.
 - **`model_cards.py`** — One card per model: can this model carry a claim at all, and on what evidence?
 - **`monitor_experiment.py`** — monitor_experiment.py — the durable, cross-platform half of the experiment-monitor agent.
 - **`multiple_comparisons.py`** — How many hypothesis tests does this study actually run, and which are corrected?

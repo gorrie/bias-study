@@ -392,7 +392,7 @@ def main(argv=None):
     inst = instrument_hashes()
 
     manifest = {
-        "schema": "compass-export/1",
+        "schema": "battery-export/1",
         "source_schema": SCHEMA,
         "instrument_canonical_sha256": inst["canonical"],
         "instrument_normalized_sha256": inst["normalized"],

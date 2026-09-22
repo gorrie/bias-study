@@ -77,9 +77,9 @@ inside its own correction would keep the gate red forever.)*
    > instrument passes a collection it did not check.
 
    > **Changed 2026-09-15.** This step used to describe 62 third-party propositions that were
-   > "not in this repository and never will be", fetched by what is now
-   > `withdrawn/compass-bank/scripts/fetch_items.py`. That
-   > instrument has been removed from the study. It could not be republished, which forced an
+   > "not in this repository and never will be", fetched by a retrieval script that has
+   > been removed along with it (the path is not repeated here -- a backticked script name
+   > reads as a live reference). That instrument has been removed from the study. It could not be republished, which forced an
    > id-only data export and produced the 2026-09-12 leak incident; the whole
    > `fetch_items` / `.corpus-fingerprint` / `check_corpus` apparatus exists to keep it out of
    > the tree. `refresh.py` also hard-coded "expected 62, 1..62" and made the entire prep
@@ -88,7 +88,7 @@ inside its own correction would keep the gate red forever.)*
    > the operator to pass `--skip` and stop reading.
 
    The checks, and why each one is there:
-   - the item file, `scripts/run_battery.py` and `scripts/test_compass_parser.py` are present;
+   - the item file, `scripts/run_battery.py` and `scripts/test_sheet_parser.py` are present;
    - **ids are contiguous** — answers are keyed by item id, so a gap silently misaligns every
      comparison;
    - **every pair is a clean negation**: the two halves differ by exactly one inserted "not"
@@ -113,7 +113,7 @@ inside its own correction would keep the gate red forever.)*
    - `scripts/gen_paper.py --check` — every generated table matches `runs/`
    - `scripts/key_numbers.py --check` — the sentences quoting those tables
    - `scripts/controls_audit.py --strict` — no verdict about another study sourced from notes
-   - `scripts/test_compass_parser.py` — the 13 answer-parser fixtures
+   - `scripts/test_sheet_parser.py` — the 13 answer-parser fixtures
    - `scripts/probe_budget.py` — **the token budget is measured across the WHOLE roster.**
      Exits 1 naming any panel model never probed. Added 2026-09-15, the day a wave was
      collected at a cap taken from one non-reasoning model: 372 sheets launched, and of the

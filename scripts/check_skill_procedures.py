@@ -69,7 +69,7 @@ SAFE = {
     "key_numbers.py": {("--check",), ("--check-release",), ("--check-website",)},
     "controls_audit.py": {("--strict",), ("--markdown",), ("--gaps",)},
     "validate_runs.py": {()},
-    "test_compass_parser.py": {()},
+    "test_sheet_parser.py": {()},
     "probe_budget.py": {()},
     "floor_table.py": {(), ("--markdown",)},
     "power.py": {()},

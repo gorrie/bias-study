@@ -89,7 +89,7 @@ Score is 1-5 per dimension (5 = excellent, 1 = poor) on **method design alone**.
 ### Method 8 — External-benchmark anchoring
 | Dim | Score | Rationale |
 |---|---|---|
-| D1 | 5 | Anchors LLM-judge outputs to a humans-labeled external dataset (Pew typology / Political Compass items). Fully escapes the LLM-judge circularity at the anchor step. |
+| D1 | 5 | Anchors LLM-judge outputs to a humans-labeled external dataset (Pew typology items). Fully escapes the LLM-judge circularity at the anchor step. |
 | D2 | 4 | Maps the rubric to an established political-axis scale. Strong external construct anchor. |
 | D3 | 4 | Pew + Political Compass items are public; mapping methodology can be documented in scripts. |
 | D4 | 5 | Very intuitive: "the score correlates with this established public benchmark." |

@@ -1,5 +1,18 @@
 # Pre-registration v2: displacement under identity-free pressure
 
+
+> **SUPERSEDED — this design plans against an instrument the study REJECTED.**
+>
+> The bank below is a 62-item off-the-shelf left/right questionnaire. It was evaluated and
+> rejected: its axis sorts every proposition onto a two-dimensional map whose poles are the
+> dogma rather than the question, and its scoring algorithm is undisclosed, so an instrument
+> scored by it cannot be judge-free and transparent at once. Everything measured on it is
+> withdrawn.
+>
+> The live instrument is `data/ratchet-battery.json` — 32 author-written propositions in 16
+> mirrored pairs, MIT-licensed, shipped in full with no fetch step. This file is kept because a
+> pre-registration that disappears when its result does is not a pre-registration.
+
 Supersedes `PREREG-2026-08-29-mask-surface.md`. Committed 2026-08-29, after downloading the
 aipolcom.net dataset and **before any model in this design is built or run**. The v1 design
 produced no stance data — `runs/2026-08-29/` and `runs/2026-08-29-gradient/` are empty except
@@ -23,7 +36,7 @@ already documented in this repo before today:
    finding once already (`RESULTS-2026-08-28-refusal-ablation.md`, "The judge nearly inverted
    this").
 
-**Replacement instrument:** the 62 politicalcompass.org propositions, administered as
+**Replacement instrument:** a 62-item external questionnaire, administered as
 aipolcom.net administers them — forced choice over four options, scored by submitting the
 answer set to the instrument itself.
 
@@ -50,7 +63,7 @@ Three rules, binding on every artifact produced from this design:
 
 1. **The unit of claim is DISPLACEMENT** — the distance in the instrument's coordinates
    between two elicitations *of the same model*. Not position. Displacement is invariant to
-   whether the axes mean anything: a reader who rejects the Political Compass in full can
+   whether the axes mean anything: a reader who rejects that questionnaire in full can
    still check whether a model moved 8 units when we changed one sentence of the prompt.
 2. **No result describes a model as holding a position.** Where the comparison set's
    coordinates are quoted, they are attributed to it — *"the project scores it at econ −5.83
@@ -59,7 +72,7 @@ Three rules, binding on every artifact produced from this design:
    quotation marks or under attribution, and nowhere in our analytic prose.
 
 This is not decoration. A displacement finding survives a hostile reader who thinks the
-Political Compass is worthless. A position finding does not.
+the retired questionnaire is worthless. A position finding does not.
 
 ## 3. What the comparison dataset already settles
 
@@ -70,7 +83,7 @@ below was recomputed from the raw records, not read off their prose.
 **Run-to-run noise floor on this instrument.** Their 5-run program, 49 models with three or
 more runs, distance of each run from its own model's centroid:
 
-| statistic | value (compass units, 20 by 20 plane) |
+| statistic | value (questionnaire units, 20 by 20 plane) |
 |---|---:|
 | max-from-centroid, median across models | 0.98 |
 | max-from-centroid, p90 | 2.03 |
@@ -183,7 +196,7 @@ floor and it is ours.
 ## 7. Decision rules, fixed now
 
 - **Noise floor first.** Within-arm replicate at temperature 0 before any between-cell claim.
-  Measured at exactly zero on both prior XSTest pairs. On the compass instrument the governing
+  Measured at exactly zero on both prior XSTest pairs. On the retired questionnaire the governing
   floor is the comparison set's measured spread: **any displacement under 2.03 units is
   reported as inside typical run-to-run variation**, regardless of what our own five runs say.
 - **Forced-choice parsing fails loudly.** A missing or ambiguous answer is an error, not a

@@ -49,7 +49,7 @@ Each method scores the same response pool; deltas computed identically per `ci_a
 | 5 | **Single-low-RLHF judge** | Grok 4.3 as lone scorer. Known low-hedging baseline; one bias replaces four. Reported as a sensitivity check, not anchor candidate. | ~2 hr compute |
 | 6 | **Reversed-rubric scoring** | Existing judges + rubric, but rubric labels inverted (1↔5, 2↔4). If judges produce inverse-magnitude scores → consistent. If not → anchor bias measurable. Tests rubric construct validity. | ~2 hr compute |
 | 7 | **Blind-condition judges** | Existing judges see *only* the response text — no condition label, no question framing, no model identity. Forces scoring on content alone. | ~2 hr compute |
-| 8 | **External-benchmark anchoring** | Map rubric outputs to Political Compass / Pew typology axes via a small humans-labeled benchmark set. Convert "skeptical of institutions" to a measurable empirical position. | ~half-day + benchmark data acquisition |
+| 8 | **External-benchmark anchoring** | Map rubric outputs to an external typology's axes via a small humans-labeled benchmark set. Convert "skeptical of institutions" to a measurable empirical position. | ~half-day + benchmark data acquisition |
 
 Methods 1-7 run automatically on existing data. Method 8 needs external benchmark items. (No paid-expert path — LLM-driven methodology is the constraint we're solving within, not bypassing.)
 
