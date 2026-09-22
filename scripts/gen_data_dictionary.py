@@ -183,7 +183,13 @@ def build_text():
             "same instrument. The export is produced and re-verified against the fingerprint list",
             "by an operator tool that lives on the development side, not here — deliberately, so",
             "that the thing which generates a release is not shipped inside it.", ""]
-    return "\n".join(out) + "\n", undescribed
+    # EXACTLY ONE TRAILING NEWLINE. The last element of `out` is "", so joining and appending
+    # produced a trailing BLANK line. The public mirror's `fix end of files` hook removes it at
+    # commit time, which left `--check` reporting this file stale immediately after every sync
+    # -- the generator and the hook disagreeing forever about one byte, with the remedy
+    # (regenerate) re-creating exactly what the hook had just removed. Same loop as the
+    # trailing whitespace in gen_paper's fixed-width blocks, one file over.
+    return "\n".join(out).rstrip("\n") + "\n", undescribed
 
 
 def main(argv):
