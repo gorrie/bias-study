@@ -40,6 +40,13 @@ BLOCKS = {
     # script's own default -- naming a run dir here made this the third copy of the same fact,
     # and on 2026-09-04 a new arm needed withholding from all three.
     "refusal":  ("refusal_table.py", [], None),
+    # SECTION 1b'S BY-CONDITION TABLE. Hand-typed until 2026-09-22 and stale in every cell --
+    # 1622 runs under N against a live 673, 1163 under P against 665, a pooled A rate of
+    # 12.2% against 11.6%. Worse than the cells: the sentence above it claimed the ordering
+    # "A > N > D > P holds under both weightings", and pooled it had become A > N > P > D when
+    # the refusal population was redeclared. A hand table sitting under a generated one, in
+    # the section whose figures had already gone stale once.
+    "bycondition": ("refusal_table.py", ["--by-condition"], None),
     "null":     ("floor_table.py", [], "same-version"),
     # SECTION 1'S HEADLINE TABLE. It was typed, and it disagreed with `order_floor_position`
     # -- the script the ABSTRACT's figures come from -- on both rows they share: 111 order
@@ -102,7 +109,15 @@ def block_body(name):
         lines = text.split("\n")
         keep = [l for l in lines if l.strip().startswith("factor") or trim in l]
         text = "\n".join(keep) if keep else text
-    unfenced = ("floors", "controls", "references", "timeline", "position")
+    # A MARKDOWN TABLE INSIDE A CODE FENCE RENDERS AS LITERAL PIPES. The fence is right for the
+    # blocks that emit fixed-width text (the vendor table, the power table, the gaps tally) and
+    # wrong for every block that emits a real table. `training`, `intensity` and `comparisons`
+    # were fenced, so §3b's training-class split, §3b's intensity table and §9.1's
+    # multiple-comparison accounting all shipped as raw `|` characters -- §9.1 being the one a
+    # reviewer reads to see how many tests the paper ran. Found 2026-09-22 by asking of every
+    # block whether it contains a table AND a fence, which is a two-line check nobody had run.
+    unfenced = ("floors", "controls", "references", "timeline", "position", "bycondition",
+                "training", "intensity", "comparisons")
     fence = "" if name in unfenced else "```\n"
     close = "" if name in unfenced else "\n```"
     return fence + text + close

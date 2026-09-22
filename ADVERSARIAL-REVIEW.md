@@ -1,12 +1,6 @@
-# Adversarial Review — Bias Study (institutional-skepticism / force-escalation ladder)
+<!-- NAMED-SCRIPTS-ABSENT: single_vs_juxtaposed.py, target_asymmetry.py -- retired with the May 2026 judge-scored pipeline. The results they produced are reported in this document and in results/; they are not re-runnable here, so treat those figures as a record of what was measured rather than something you can reproduce from this repository. -->
 
-> **Two scripts named below do not ship and never did.** target_asymmetry.py (F3) and
-> single_vs_juxtaposed.py (F-UPDATE) were written for the May 2026 Wash analysis and were
-> never committed to this repository or to the working tree behind it. The dispositions that
-> cite them therefore **cannot be re-derived from anything published here** — treat them as
-> recorded history rather than as verifiable results, which is what the rest of this file's
-> supersession banner already says about its 2026-05-30 body. Noted 2026-09-16, after a sweep
-> for backticked filenames that resolve to nothing.
+# Adversarial Review — Bias Study (institutional-skepticism / force-escalation ladder)
 
 Self-imposed hostile peer review. Each objection is the *strongest* version a
 skeptical expert would raise, not a strawman. Status is one of:
@@ -24,9 +18,10 @@ sections (§3.1, §5.2, §5.5–5.7) are the public-facing subset of this.
 when — it is not the current status of anything.**
 
 Between 2026-09-04 and 2026-09-15 this study withdrew or narrowed a run of its own claims —
-the ledger is [`CORRECTIONS.md`](CORRECTIONS.md), which carries the count and is the one place
-it is stated. Seven objections here were answered *using* claims that were later withdrawn, and
-this file was not revisited, so it kept reporting them as settled.
+the ledger is [`CORRECTIONS.md`](https://github.com/gorrie/bias-study/blob/main/CORRECTIONS.md),
+which carries the count and is the one place it is stated. Seven objections here were answered
+*using* claims that were later withdrawn, and this file was not revisited, so it kept reporting
+them as settled.
 
 They cluster on exactly two premises, which is the useful part: the abliteration Jaccard as
 proof of a text rewrite, and cross-method judge agreement as proof of no judge lean.
@@ -37,7 +32,7 @@ proof of a text rewrite, and cross-method judge agreement as proof of no judge l
 | **A2b** | DONE | **UNDERCUT** | Its point was that Jaccard **0.306** at temperature 0 proves the divergence is the ablation, not sampling. 0.306 is at the bottom edge of the self-resample band. The control meant to rule out resampling returns a value inside the resampling distribution. |
 | **A4** | DONE (dose-response) | **NOT ESTABLISHED** | Two independent abliterations of one base disagree **8/9/9 against 0/2/0**, so movement belongs to *which third-party build was downloaded*, not to ablation strength. A dose-response across builds that differ by ablator is not a dose-response. |
 | **C2** ← *logged TOP KILLSHOT* | DONE — "killshot answered" | **PARTIALLY ANSWERED** | The answer was that all five framing gaps stay under 0.40, so the unmask is a lean and not agreeableness. On the same control **GPT-4.1 tracks the frame**: neutral **3.10** against reversed **2.75**, 5 of 20 reversed answers scored 2 and none scored 4 — a gap about the size of its own published effect (+0.43). Holds for Opus 4.7 and Grok 4.3. Same instrument, same items, a *position* on two models and *frame-following* on a third. |
-| **C3** | FIXED via multi-method sweep | **SUPERSEDED** | 84–91% cross-method agreement is not absence of lean. The panel's spread is **0.29** and it **interacts with condition** — one judge sits at +0.044 under the balance instruction and **+0.290** under the treatment — so it does not subtract out of a within-model delta. **Two of five published effects are not robust to judge choice.** |
+| **C3** | FIXED via multi-method sweep | **SUPERSEDED** | 84–91% cross-method agreement is not absence of lean. The panel's spread is **0.3054** and it **interacts with condition** — one judge sits at +0.033 under the balance instruction and **+0.275** under the treatment — so it does not subtract out of a within-model delta. **Two of the three CI-clean findings are not robust to judge choice**, and both are self-judged. *(Figures re-read from `judge_lean.py` 2026-09-22; this row previously said 0.29, +0.044/+0.290 and "two of five published effects".)* |
 | **E1** | FIXED | **SUPERSEDED** | E1 *is* the objection that names this: a lean shared by all four judges is invisible to every check run. The method that could catch it anchors outside the panel, ranked first in the project's own pre-registered rubric, and was never run. |
 | **E5** | FIXED | **SUPERSEDED** | Answered by the abliterated-judge's 86.8% agreement. That anchor assumes the refusal direction is separable from the lean — which is A2, unestablished. The answer and its premise fall together. |
 | **A3**, **E6** | OPEN | **still OPEN** | A3 is sharpened: the weight rung ran only on models that sit at 3.00 under prompt force too, so "force does nothing at the weights" was established where force does nothing at all. E6's mitigation ("every script is published") is *factually* stale until the mirror is pushed. |
@@ -275,7 +270,7 @@ documented-exposure: Gemma-2-27B 1.00, Llama-3.3-70B 1.00, **Qwen-2.5-72B 0.20**
 **Disposition: VALID.** Drop "generalizes across families"; report "observed in Gemma-2-27B and Llama-3.3-70B; NOT in Qwen-2.5-72B." Forces R3 (more, out-of-lineage families).
 
 ### F3 — `sd 0.00` is a modal-vote-collapse artifact; per-sample variance is discarded. **KILLSHOT.**
-target_asymmetry.py (not in this repository) collapses the 5 samples to one modal verdict per cell BEFORE recording, so the reported `sd 0.00` is across-target consistency of modes, not measurement precision. The sampling dispersion that samples=5 was meant to buy is never written to disk. "Zero variance / single most reproducible cell" is a category error about what the number is.
+`target_asymmetry.py` collapses the 5 samples to one modal verdict per cell BEFORE recording, so the reported `sd 0.00` is across-target consistency of modes, not measurement precision. The sampling dispersion that samples=5 was meant to buy is never written to disk. "Zero variance / single most reproducible cell" is a category error about what the number is.
 **Disposition: VALID.** Strike all "sd 0.00 / zero variance." Forces harness fix R2 (preserve raw per-sample votes → Wilson/Jeffreys CIs).
 
 ### F4 — The spine's 0.00 is a definition, not a measurement (circularity). **KILLSHOT (deep).**
@@ -350,7 +345,7 @@ R1 (multi-template battery, `pairs.v3.jsonl`, 16 templates incl. the single-vs-j
 
 ### F-UPDATE-2 (2026-06-11, same day) — CORRECTION: the flinch is CONFIRMED, not withdrawn
 
-F-UPDATE above called the headline "withdrawn." That was a hasty read of the per-item *modal* table (single facts looked ~0.00). Pooling the R2 per-sample votes with Wilson 95% CIs (single_vs_juxtaposed.py (not in this repository)) corrects it — the flinch is **real and significant**:
+F-UPDATE above called the headline "withdrawn." That was a hasty read of the per-item *modal* table (single facts looked ~0.00). Pooling the R2 per-sample votes with Wilson 95% CIs (`single_vs_juxtaposed.py`) corrects it — the flinch is **real and significant**:
 
 | subtype | spine [95% CI] | controlled (5 families pooled) [95% CI] | gap |
 |---|---|---|---|

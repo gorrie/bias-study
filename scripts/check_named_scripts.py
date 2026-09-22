@@ -48,7 +48,53 @@ FOREIGN = {
 def tracked_markdown():
     r = subprocess.run(["git", "ls-files", "*.md"], cwd=ROOT,
                        capture_output=True, text=True, timeout=120)
-    return [p for p in r.stdout.splitlines() if p.strip()]
+    out = []
+    for p in r.stdout.splitlines():
+        if not p.strip():
+            continue
+        # `withdrawn/` IS AN ARCHIVE AND ITS SCRIPTS WERE RETIRED WITH IT. This gate's
+        # remedy -- "ship the script, or say in the document that it does not ship" -- cannot
+        # apply to a frozen record: shipping the script would un-retire it, and editing the
+        # document would rewrite history that is kept precisely so a reader can see what was
+        # believed. 16 of this gate's 24 hits were withdrawn plans and results naming tools
+        # that went to withdrawn/ in the same commit. The 8 that remain are LIVE documents
+        # and are real dead references.
+        if p.startswith("withdrawn/"):
+            continue
+        out.append(p)
+    return out
+
+
+#: A document may declare that a script it names is not in the repository, in the document
+#: itself, with a reason:
+#:
+#:     <!-- NAMED-SCRIPTS-ABSENT: foo.py, bar.py -- retired with the May pipeline; the
+#:          analysis they produced is reported below and is not re-runnable here -->
+#:
+#: THIS EXISTS BECAUSE THE GATE PROMISED IT AND COULD NOT SEE IT. The failure message has
+#: always read "Ship the script, or say in the document that it does not ship and what that
+#: costs them" -- and saying so cleared nothing, because nothing parsed it. A remedy a gate
+#: names and cannot honour is a remedy that gets ignored, and then the gate does.
+#:
+#: The reason is REQUIRED. A bare list is an exemption; a list with a reason is a disclosure
+#: a reader of that document actually sees, which is the point.
+ABSENT_DECL = re.compile(
+    r"<!--\s*NAMED-SCRIPTS-ABSENT:\s*(?P<names>[^-]+?)\s*--\s*(?P<why>.+?)-->",
+    re.IGNORECASE | re.DOTALL)
+
+
+def declared_absent(text):
+    """{basename: reason} for scripts this document says do not ship."""
+    out = {}
+    for m in ABSENT_DECL.finditer(text):
+        why = " ".join(m.group("why").split())
+        if not why:
+            continue
+        for name in m.group("names").split(","):
+            name = name.strip().strip("`")
+            if name:
+                out[os.path.basename(name)] = why
+    return out
 
 
 def scan():
@@ -61,8 +107,9 @@ def scan():
         except (IOError, OSError, UnicodeDecodeError) as exc:
             dead.append((rel, "<unreadable>", str(exc)))
             continue
+        absent = declared_absent(text)
         for full, base in set(NAMED.findall(text)):
-            if base in FOREIGN:
+            if base in FOREIGN or base in absent:
                 continue
             checked += 1
             # Named with a path, or by basename anywhere in the tree -- a document may

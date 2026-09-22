@@ -331,6 +331,15 @@ ALLOWED_LITERALS = {
 }
 
 
+#: Every conversion a gated phrase may carry: `%d`, `%s`, and a float with a precision spec.
+#: `%%` is an escaped literal percent sign and is deliberately NOT a placeholder.
+_PLACEHOLDER = re.compile(r"%(?:%|d|s|\.\d+f)")
+
+
+def _placeholders(template):
+    return [m for m in _PLACEHOLDER.findall(template) if m != "%%"]
+
+
 def test_no_phrase_template_hides_a_second_number():
     """A gated phrase may name ONE measured quantity: the one it checks.
 
@@ -345,7 +354,18 @@ def test_no_phrase_template_hides_a_second_number():
     offenders = []
     for row in K.build():
         template = row["phrase"]
-        stripped = template.replace("%d", "").replace("%s", "")
+        # `%.3f` IS A PLACEHOLDER, and this stripped only %d and %s -- so every float phrase
+        # read its own precision spec as a hidden literal ("**%.3f**" reported a stray 3) and
+        # the sibling test counted it as ZERO placeholders. Both fired on correct phrases the
+        # moment §1's medians and §4's judge spread were registered, which is a guard failing
+        # a true statement: the most expensive kind, because the tempting fix is the phrase.
+        stripped = _PLACEHOLDER.sub("", template)
+        # A BACKTICKED IDENTIFIER IS NOT A QUANTITY. `gpt-6-astra-pro` carries a 6 that names
+        # a model generation, and flagging it pushed toward the worst available fix: dropping
+        # the model name out of the anchor, which is the thing that makes the anchor unique.
+        # Code spans are removed before the scan; anything outside them still has to be a
+        # placeholder or a listed constant.
+        stripped = re.sub(r"`[^`]*`", " ", stripped)
         for literal in re.findall(r"\d+", stripped):
             if literal not in ALLOWED_LITERALS:
                 offenders.append((row["key"], literal, template))
@@ -353,9 +373,35 @@ def test_no_phrase_template_hides_a_second_number():
         "phrase template(s) assert a number nothing checks: %s" % offenders)
 
 
+def test_no_generated_markdown_table_ships_inside_a_code_fence():
+    """A markdown table inside a code fence renders as literal pipe characters.
+
+    `gen_paper`'s `unfenced` tuple decides per block. The fence is right for the blocks that
+    emit fixed-width text -- the vendor refusal table, the power table, the gaps tally -- and
+    wrong for every block that emits a real table. Three were wrong until 2026-09-22: §3b's
+    training-class split, §3b's intensity table, and §9.1's multiple-comparison accounting,
+    which is the table a reviewer opens to see how many tests the paper ran. All three had
+    shipped as raw pipes since they were added, and `gen_paper --check` could not see it,
+    because it compares each block against the generator and the generator was producing the
+    fence. A gate that regenerates the artifact cannot catch a defect in the regeneration.
+    """
+    import io
+    import os
+    paper = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                         "PAPER-below-the-floor.md")
+    text = io.open(paper, encoding="utf-8").read().replace("\r\n", "\n")
+    blocks = re.findall(r"<!-- GEN:(\w+) -->(.*?)<!-- /GEN:\1 -->", text, re.S)
+    assert blocks, "no generated blocks found -- this test would check nothing"
+    fenced = [name for name, body in blocks
+              if "```" in body and re.search(r"^\|[-: |]+\|\s*$", body, re.M)]
+    assert not fenced, (
+        "generated block(s) emit a markdown table inside a code fence, so they render as "
+        "literal pipes: %s. Add them to `unfenced` in gen_paper.py." % fenced)
+
+
 def test_every_gated_phrase_has_exactly_one_placeholder():
     for row in K.build():
-        n = row["phrase"].count("%d") + row["phrase"].count("%s")
+        n = len(_placeholders(row["phrase"]))
         assert n == 1, "%s has %d placeholders: %r" % (row["key"], n, row["phrase"])
 
 

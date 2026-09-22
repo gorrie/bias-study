@@ -12,17 +12,27 @@
 > is no facts arm — nothing here varies the truth of a proposition. The comparison the study
 > actually ran is against the balance instruction, so *instruction* is what the title claims.
 > The nearby true statement about facts is in §3b, where it belongs: 97.1% on contested
-> politics against 98.9% on matters of record.
+> politics against 99.0% for documented matters of record.
 >
 > *Same Version, Different Answers* was the previous title and is withdrawn. It named a
-> same-version null this corpus measures at **0 / 1 / 1 side-flips of 32** — the finding it
-> advertised is not there. `CITATION.cff` is written against the title above.
+> same-version null this corpus measures, on the same-name-later-snapshot subset a drift claim
+> actually needs, at **median 0, p90 1, max 1 side-flips of 32** over three pairs (§7) — the
+> finding it advertised is not there. `CITATION.cff` is written against the title above.
 
 **Draft. Every table is generated from `runs/` by the scripts named in Reproduction. Nothing
 between `<!-- GEN:x -->` and `<!-- /GEN:x -->` is hand-written; `scripts/gen_paper.py --check`
 exits 1 when a table has drifted from the data.**
 
-> **STATE OF THIS DRAFT, 2026-09-19. Read this before quoting any number.**
+> **STATE OF THIS DRAFT, 2026-09-22. Read this before quoting any number.**
+>
+> **The prose was audited against the data on 2026-09-22 and twenty figures were wrong.** Both
+> build gates were green throughout, because both check the claims somebody registered and
+> nothing counted the claims nobody had. `ungated_numbers.py` now prints that remainder. The
+> pass found six hand-typed tables sitting beside generated ones, five of them stale — the §1b
+> refusal-by-condition table wrong in every cell, and a second copy of it sixty lines lower
+> disagreeing with the first — plus an overstated line of self-criticism in §4 that the tool
+> it cited refutes in its own output. Every one is corrected in place with a dated note.
+> Registered numbers went from 59 to 92.
 >
 > **The corpus, and it has stopped moving.** Every figure in this paper is computed across
 > 3,897 runs and 65 models, collected between May and 2026-09-21 and frozen when the pinned
@@ -150,7 +160,7 @@ that audit on ourselves first, and it convicted us twice — §4.
 
 ---
 
-## 1b. A switch — RE-MEASURE BEFORE PUBLICATION
+## 1b. Refusal is a switch the prompt throws
 
 > **Recomputed on the Ratchet battery, 2026-09-18.** This section previously reported the
 > asymmetry on the withdrawn 62-item instrument. It reproduces on the study's own instrument
@@ -159,13 +169,13 @@ that audit on ourselves first, and it convicted us twice — §4.
 > over the full corpus and is marked where its denominators differ.
 
 Put the thirty-two propositions to `openai/gpt-6-astra` with a system prompt asking it to
-answer in a balanced manner. It declines, **8 times out of 8**, across three presentation
-orders. Its larger sibling `gpt-6-astra-pro` declines 8 of 8 as well.
+answer in a balanced manner. It declines, **17 times out of 18**, across three presentation
+orders. Its larger sibling `gpt-6-astra-pro` declines 15 of the same 18.
 
 Now replace the instruction with one that has no political content in it at all — read each
-item carefully, answer precisely, use one of the four labels. Both answer, **0 refusals in 7**.
-So does an explicit demand to commit to a position: 0 in 7. So does asking with no system
-prompt at all: 0 in 8.
+item carefully, answer precisely, use one of the four labels. Both answer, **0 refusals in
+30**. So does an explicit demand to commit to a position: 0 refusals in 30 runs. So does
+asking with no system prompt at all: 0 in 30 sheets.
 
 The instruction that produces the refusals is the one asking for balance, and it is the only
 one of the four that mentions politics without demanding a position.
@@ -173,19 +183,30 @@ one of the four that mentions politics without demanding a position.
 Across the panel, by condition, with transport failures excluded from both halves of every
 rate:
 
+<!-- GEN:bycondition -->
 | condition | runs | refusals | rate | equal-weighted |
 |---|---:|---:|---:|---:|
-| **A — answer in a balanced manner** | 650 | 79 | **12.2%** | 7.3% |
-| N — no system prompt | 1622 | 70 | 4.3% | 5.6% |
-| D — commit to a position | 650 | 27 | 4.2% | 3.2% |
-| **P — content-free instruction** | 1163 | 29 | **2.5%** | 2.4% |
+| **A — answer in a balanced manner** | 675 | 78 | **11.6%** | 7.0% |
+| N — no system prompt | 673 | 40 | 5.9% | 3.5% |
+| **P — content-free instruction** | 665 | 28 | **4.2%** | 2.3% |
+| D — commit to a position | 659 | 27 | 4.1% | 3.1% |
+<!-- /GEN:bycondition -->
 
 The equal-weighted column averages each model's own rate rather than pooling runs, because the
 panel is unbalanced across conditions and a pooled rate lets the models with the most sheets
-set it. **The ordering A > N > D > P holds under both weightings**, which is the claim; the
-gap's size does not survive the choice and is quoted as a range above.
+set it. **What holds under both weightings is that the balance instruction is first, and that
+the content-free instruction and the commitment directive are the bottom two**; that is the
+claim. Which of those two is last does not hold between the columns — pooled they are 4.2% and
+4.1% and are not distinguishable, and equally weighted they swap. Neither the gap's size nor
+the order of the tail survives the choice of weighting, which is why the claim is made at the
+resolution that does.
 
-**Eighteen** models decline under some condition. **Nine of them decline the balance instruction
+*(This table was hand-typed until 2026-09-22 and stale in every cell — 1622 runs under N
+against a live 673 — and the sentence above it claimed the strict ordering A > N > D > P held
+under both weightings, which stopped being true when the refusal population was redeclared.
+It is generated now.)*
+
+**13 models decline under some condition**, and **8 of them decline the balance instruction
 and never the commitment one.**
 
 **Refusal is elicited, not intrinsic.** Across 64 models measured under both arms, there are
@@ -213,35 +234,38 @@ declines **every** condition — 18/18, 18/18, 18/18, 18/18. It is a total refus
 it with the switches is what makes a vendor-level rate unreadable.
 
 **A pooled rate is the wrong summary for this, and an earlier version of this section reached
-for one anyway.** Fifty-one refusals under the balance instruction come from nine models, and
-**42 of the 51 come from four of them** — `gemini-3.8-flash` 13, `gemini-3.7-flash` 13,
-`gpt-6-astra-pro` 8, `gpt-6-astra` 8. A rate computed over runs is therefore mostly a
+for one anyway.** Seventy-eight refusals under the balance instruction come from nine models, and
+**68 of the 78 come from four of them** — `gemini-3.7-flash` 18, `gemini-3.8-flash` 18,
+`gpt-6-astra` 17, `gpt-6-astra-pro` 15. A rate computed over runs is therefore mostly a
 statement about four models' denominators.
 
-So it is computed both ways, and the ordering is the claim rather than either figure:
+So it is computed both ways, and the ordering is the claim rather than either figure. Both
+columns are in the generated table above.
 
-| condition | pooled over runs | each model weighted equally |
-|---|---:|---:|
-| A — balanced manner | 15.3% | **11.4%** |
-| N — no system prompt | 8.4% | 6.0% |
-| D — commit to a position | 6.6% | 5.1% |
-| P — content-free | 5.2% | 3.6% |
+*(A SECOND hand-typed copy of that table stood here until 2026-09-22, sixty lines below the
+first one and disagreeing with it — 15.3% against 12.2% under the balance instruction, and
+both wrong. Two hand copies of one measurement in one section is the defect this paper spends
+§5 describing in other people's work, and neither copy was checked by anything. There is one
+table now and a script writes it.)*
 
-**Both weightings put the balance instruction first and the content-free instruction last**,
-and the gap between them is roughly three-fold either way. This is worth stating plainly
-because the same comparison on the study's earlier, withdrawn corpus gave the two weightings
+The gap from top to bottom is roughly three-fold under either weighting. That it survives the
+choice at all is worth stating plainly, because the same comparison on the study's earlier,
+withdrawn corpus gave the two weightings
 **opposite signs** — pooled, a directive cut refusals tenfold; equally weighted, refusals rose.
 That corpus had three models contributing one directive run each, so each carried a rate of
-1.0. The present ordering is not fragile in that way, and the reason it is not is that every
-model here has between 7 and 17 runs per condition. A pooled rate is safe exactly when it is
+1.0. The present ordering is not fragile in that way, because no model here rests on a single
+run: among the thirteen models that decline at all, the smallest holds 3 runs in a condition,
+and 44 of their 52 cells hold 11 runs or more. A pooled rate is safe exactly when it is
 boring, and the paper should not be read as saying pooling is always wrong — it is saying that
 nothing tells you which case you are in except computing both.
 
 **The paired per-model statement is cleaner than either rate**, and it is the form the finding
 should be quoted in: *of the thirteen models that decline at all, eight decline the balance
 instruction and never the commitment directive; three decline the commitment directive or the
-placebo and never the balance instruction; one declines everything.* No weighting choice can
-move that, because it counts models rather than runs.
+placebo and never the balance instruction; one declines only the bare question; and one
+declines everything.* No weighting choice can move that, because it counts models rather than
+runs. *(That sentence accounted for twelve of the thirteen until 2026-09-22 — `deepseek-v4-flash`
+declines under no system prompt and under nothing else, and had no clause.)*
 
 So the mechanism is unchanged and the absolute claim is gone: a firm instruction reliably
 silences the models that refuse, and separately there exist small local models that refuse only
@@ -421,9 +445,8 @@ rests on more pairs than models: 61 pairs answer both arms. The other 2 decline 
 instruction outright, contributing no pair at all — a refusal is not a position, and a model
 that will not answer one arm cannot be differenced across two.
 
-It
-sits beside the order floor in §1 and the comparison is made there, on the live corpus, with
-both sides measured by the same estimator.
+That row sits beside the order floor in §1, and the comparison is made there, on the live
+corpus, with both sides measured by the same estimator.
 
 Two things were learned while the comparison was still being argued about, and neither depends
 on the numbers that went away.
@@ -457,12 +480,15 @@ underlying rule — *check what an estimator was fed, not that it was called* �
 belongs in `LEARNINGS.md`, not in a results section as an argument about numbers that no longer
 exist.
 
-Like-for-like, modal against modal on both sides, one protocol:
+Like-for-like, modal against modal on both sides, one protocol: the rows are `presentation
+order, one sitting` and `prompt condition A->D, one sitting` in the generated floors table
+above, at **107** and **61** pairs.
 
-| row | pairs | median | p90 | max | p90 95% CI |
-|---|---:|---:|---:|---:|---|
-| presentation order, one sitting | 85 | **1** | **10** | 21 | [3, 12] |
-| prompt condition A→D, one sitting | 25 | **3** | **7** | 14 | [4, 12] |
+*(A hand copy of those two rows stood here until 2026-09-22 and had gone stale in every
+column — 85 pairs against 107, a p90 of 10 against 3, 25 pairs against 61, a p90 of 7 against
+4. It was the third such copy found in this paper in one pass, and the argument it was
+supporting survives without it because the argument is about which rows to compare, not about
+their values.)*
 
 **Those pooled p90s are still the wrong comparison, and this paper had already said why.** §2
 argues that the pooled order row is a net aggregate concealing two populations, and calls
@@ -476,12 +502,12 @@ the *same* cell under the *same* condition): **median 0, p90 1** over 576 cells.
 table as `modal sampling error`, and it is the denominator every other row needed.
 
 **Second: split by model class, and neither factor survives the split on frontier models.**
-Read the four class rows of the generated table above:
-
-| | pairs | order med / p90 | pairs | manipulation med / p90 |
-|---|---:|---|---:|---|
-| frontier API, 2026 | 84 | 0 / **1** | 44 | 0 / **2** |
-| local open-weight, 2024 | 23 | 3 / **6** | 17 | 3 / **9** |
+Read it off the four class rows of the generated table above — `presentation order, one
+sitting, frontier API` and `prompt condition A->D, one sitting, frontier API`, then the same
+two arms on `local open-weight`. A copy of those rows stood here until 2026-09-22, three lines
+after a sentence telling the reader to consult the generated table instead of a copy, which is
+the defect §7 was carrying in its ranking paragraph on the same day. The comparison the copy
+existed to make is made in prose below, where the figures are gated.
 
 Paired within each model over the 36 measured in both arms, the median difference is **0 items**
 and the sign balance over the 22 that differ gives **p = 0.83**: order is larger on 12 models,
@@ -511,13 +537,15 @@ modal-based measurement of those cells means anything at all.
 
 ### The order row is two numbers, not one
 
-Splitting presentation order by model class is the single most important thing in this paper,
-and we nearly missed it by reporting the pooled figure:
+Splitting presentation order by model class changes the result, and the pooled figure conceals
+it. The two class rows of the generated floors table are `presentation order, one sitting,
+local open-weight` at 23 pairs and `presentation order, one sitting, frontier API` at 84.
+Order's p90 on the 2024-generation builds is 6; on the 2026 frontier it is 1, which is the
+modal's own sampling error.
 
-| presentation order | pairs | side-flip med / p90 / max |
-|---|---:|---|
-| 7–14B open-weight models, 2024 generation | 19 | 5 / 11 / 12 |
-| frontier API models, 2026 | 75 | **1 / 3 / 6** |
+*(This paragraph also carried a hand copy until 2026-09-22, reading 19 pairs against 23 and a
+p90 of 11 against 6 on the local row, and 75 against 84 with a p90 of 3 against 1 on the
+frontier row. Both copies overstated the split they were printed to demonstrate.)*
 
 **Reordering the questionnaire is a large effect on the models this literature was mostly
 built on, and a small one on the models being shipped now.** Röttger et al. predicted this in
@@ -540,13 +568,20 @@ would have been in the title.
 
 ### What does not shrink
 
-On those same frontier models, in side-flip units:
+In side-flip units, one sitting, one protocol, pooled across model classes:
 
-| factor, frontier models only | p90 |
+| factor, one sitting | p90 |
 |---|---:|
 | presentation order | 3 |
 | two models of the same version — size, tier, snapshot or mode | 1 |
 | deliberate manipulation, forced balance against forced commitment | 4 |
+
+**Pooled across classes, and not frontier-only — this table said "frontier models only" until
+2026-09-22 while carrying the pooled rows.** The label was wrong rather than the numbers: 3
+and 4 are `presentation order, one sitting` and `prompt condition A->D, one sitting` in the
+generated table, both across all classes. It cannot be made frontier-only, because the
+same-version row is 24 pairs and splitting it by class leaves nothing to measure — which is
+itself the limitation §7 states.
 
 **This table's conclusion is reversed from the version published before 2026-09-19, and the
 reversal is the honest result.** It read: presentation order 6, same-version **12**,
@@ -663,7 +698,6 @@ testable here, because the panel contains models trained outside the consensus i
 different ways — and one of them, abliteration, removes the consensus from the weights directly.
 
 <!-- GEN:training -->
-```
 | how the model was trained | models | contested normative | matters of record | gap |
 |---|---:|---:|---:|---:|
 | abliterated / uncensored | 5 | **100.0%** | 100.0% | +0.0 |
@@ -672,12 +706,11 @@ different ways — and one of them, abliteration, removes the consensus from the
 | local open-weight, 2024 | 12 | **94.9%** | 96.4% | -1.4 |
 
 41 of 61 models agree with **every** normative proposition in the bank.
-```
 <!-- /GEN:training -->
 
 **The agreement does not weaken outside the consensus. It is strongest there.** Builds with the
 refusal direction projected out of their weights agree with *every* normative proposition.
-Chinese-jurisdiction vendors, trained under a different regulatory regime, sit at 99.6%. The
+Chinese-jurisdiction vendors, trained under a different regulatory regime, sit at 99.7%. The
 class that agrees least is US/EU frontier at 95.4% — and it is the only class with a real gap
 between contested politics and matters of record, which is to say the most heavily aligned
 models are the most likely to hedge, not the least.
@@ -694,7 +727,6 @@ arguable proposition, reserve "strongly agree" for the one with court filings an
 text behind it.
 
 <!-- GEN:intensity -->
-```
 | claim type | answers | agree | strongest answer |
 |---|---:|---:|---:|
 | documented — matters of record | 3594 | 99.0% | **36.6%** |
@@ -703,7 +735,6 @@ text behind it.
 Per model rather than pooled: of **56** models carrying at least 20 answers in each class, the strongest answer is used more often on documented claims by **14** and on contested normative claims by **36** (6 tied). Median gap **-3.3** points, sign test **p = 0.0026**.
 
 **This split is near-collinear with jurisdiction, by construction.** 9 of the 10 critic-framed generic items are normative (the rest carry a third claim type) and 6 of the 6 jurisdiction-tagged items are documented, so "has a public record behind it" and "names a specific country" are very nearly one variable with two labels. Nothing crosses the diagonal, so no quantity of data separates the readings — this is not a confound collection shrinks but one the instrument forecloses, and it is fixed by authoring items that break the alignment, not by collecting more.
-```
 <!-- /GEN:intensity -->
 
 The sign is backwards. The panel commits hardest where it has least to go on, and it holds
@@ -729,11 +760,13 @@ priors, and an intervention aimed at the refusal mechanism cannot see it. Separa
 corpus needs a contrast this study does not have.
 
 **Nor does it establish that the questions are hard.** §3 already showed the bank is bimodal:
-defender-framed items run 0.5–29.8%, critic-framed items 92.3–100%, and **not one of the
-thirty-two falls between 30% and 70%**, where a panel would actually divide. An instrument with
+defender-framed items run 0.5–28.9%, critic-framed items 92.3–100%, and **not one of the
+thirty-two falls between 30% and 70%**, where a panel would actually divide — 0 of the 32 sit
+in that band, and `item_gradient.py` prints the count rather than asserting it. An instrument with
 no contested middle cannot tell a model that holds a position from a proposition that is not
 really arguable. The three items nearest that middle — surveillance export, state funding of
-flagging research, international policy forums — sit at 24–30%, which is where the next version
+flagging research, international policy forums — sit at 23.9%, 26.5% and 28.9%, which is where
+the next version
 of this bank should be authored.
 
 **This section is exploratory and uncorrected.** It was computed after the data was seen, in
@@ -800,22 +833,22 @@ that a later collection invalidated, published at 43%, regenerating at 27%. A po
 published without its scope, true on four local models and wrong by a factor of two on the
 frontier.
 
-Every defect found in this work **up to 2026-09-11** was a number typed into a document. Not one
-was in the code.
+Every defect found in this work **before 2026-09-12** was a number typed into a document. The
+review of 2026-09-12 then found four in the code itself: an arc statistic that subtracted one
+run from another and called it version drift; a minimum-detectable-effect that ignored the
+instrument's 62-item bound and returned a
+sensitivity the barometer cannot have; a collector that kept only the last row each floor
+function emitted, silently dropping a 10-pair floor behind a 75-pair one; and four gates that
+printed failure and exited zero.
 
-> **That stopped being true on 2026-09-12, and the sentence is left standing because the
-> correction is more useful than the aphorism.** That day's review found defects in the code
-> itself: an arc statistic that subtracted one run from another and called it version drift; a
-> minimum-detectable-effect that ignored the instrument's 62-item bound and returned a
-> sensitivity the barometer cannot have; a collector that kept only the last row each floor
-> function emitted, silently dropping a 10-pair floor behind a 75-pair one; and four gates that
-> printed failure and exited zero.
->
-> The document defects were all found by reading. **Not one of the code defects was**, and they
-> had survived longer. They were found by running the thing and comparing its output to what it
-> claimed — which is the method this paper recommends for models, applied to ourselves.
+The document defects were all found by reading. **Not one of the code defects was**, and they
+had survived longer. They were found by running the thing and comparing its output to what it
+claimed — which is the method this paper recommends for models, applied to ourselves.
+
 That is why every table here is generated, and why the paper refuses to build when they go
-stale.
+stale. *(This passage carried the sentence "not one was in the code" as a standing claim with
+its own refutation quoted beneath it, until 2026-09-22. A methods paper cannot keep a retracted
+sentence in the running text for the rhythm.)*
 
 ### And a third: we validated our judges five ways, none of them for lean
 
@@ -844,11 +877,19 @@ If cutting that direction does not move a subject's
 stance, it does not move a judge's. **The anchor removes a reflex we ourselves proved is not
 the lean.**
 
-Measured properly (`scripts/judge_lean.py`, 4,668 scored records, per-judge scores were retained
-all along): the panel's internal spread is **0.29 points**, gemini-2.5-flash most
-institution-skeptical at +0.175, deepseek-v3.2 most deferential at −0.117. That is a nuisance
-factor larger than one of the five effects this project published, and it was in no floors
-table.
+Measured properly (`scripts/judge_lean.py` over the 3,809 scored records carrying a per-judge
+breakdown): the panel's internal spread is **0.3054 points**, gemini-2.5-flash most
+institution-skeptical at +0.181, deepseek-v3.2 most deferential at −0.124. It sits below all
+three of this project's CI-clean judged findings — +0.90, +0.45, +0.43 — and it was in no
+floors table, which is the complaint: a nuisance term nobody had measured is not a small one,
+it is an unmeasured one, and it only turned out to be smaller than the effects after somebody
+computed it.
+
+*(This read "larger than one of the five effects this project published" until 2026-09-22.
+Both halves were wrong. `judge_lean.py` prints the comparison itself — "the study's CI-clean
+findings are +0.90, +0.45, +0.43. A judge-composition spread of 0.3127 is larger than none of
+them" — and there are three such findings, not five. A self-criticism that overstates is still
+a number the paper cannot support, and this one had the refutation printed by its own command.)*
 
 The principle that would rescue it is real: **an instrument does not have to be unbiased, it has
 to be biased CONSTANTLY across the comparison being made.** A ruler 2% short measures differences
@@ -861,29 +902,44 @@ the lean to be the same SIZE in both arms:
 
 | judge | lean in A | lean in B | B − A |
 |---|---:|---:|---:|
-| gemini-2.5-flash | +0.044 | +0.290 | **+0.246** |
-| gpt-4.1 | +0.019 | +0.148 | **+0.129** |
-| claude-haiku-4.5 | −0.004 | −0.038 | −0.034 |
-| deepseek-v3.2 | −0.068 | −0.171 | **−0.104** |
+| gemini-2.5-flash | +0.033 | +0.275 | **+0.242** |
+| gpt-4.1 | −0.003 | +0.146 | **+0.149** |
+| claude-haiku-4.5 | −0.003 | −0.035 | −0.032 |
+| deepseek-v3.2 | −0.060 | −0.162 | **−0.102** |
+
+*(Every figure in this subsection was hand-typed and stale until 2026-09-22 — 4,668 records
+against 3,809, a spread of 0.29 against 0.3054, and all twelve cells above. The conclusion was
+never in doubt: the column that would be zero if the lean cancelled spans 0.344.*
+*They are quoted from the PUBLISHED corpus rather than the working one, which holds 5,369 such
+records and gives a spread of 0.3127. The published figure is the one a reader can reproduce,
+and a paper that states a number its own released data cannot produce is making a claim about
+a machine nobody else has.)*
 
 The panel fans out between the arms and the fanning rides into the delta. (Condition A scores
 92% threes, which explains *why* the lean is compressed there. It does not make it cancel; a
 lean suppressed by a floor in one arm and expressed in the other is an interaction.)
 
 So the question is settled by re-scoring rather than by argument — each finding under each judge
-alone. **The two large effects are robust to any judge composition**: every single judge returns
-a substantial positive delta for claude-opus-4.7 (+0.80 to +1.50) and grok-4.3 (+0.80 to +1.30).
-**Two are not**: deepseek-v3.2's delta ranges +0.03 to +0.60 depending on which judge reads it,
-the low end being deepseek-v3.2 scoring itself; and openai/gpt-4.1's ranges +0.21 to +0.73, a
-factor of 3.5. `judge_lean.py --per-finding` computes the table and marks both. They are
-reported as suggestive with their ranges, not as findings of the same standing as the two
-large ones.
+alone. Three findings survive the interval, and the largest is robust to judge composition:
+every single judge returns a substantial positive delta for `x-ai/grok-4.3`, from +0.80 to
++1.30. **Two are not.** `openai/gpt-4.1` ranges +0.21 to +0.69 depending on which judge reads
+it, and `deepseek/deepseek-v3.2` ranges +0.14 to +0.86 — a factor of three in each case, and in
+both the extreme cell is a judge scoring its own vendor. `judge_lean.py --per-finding` computes
+the table and marks every same-vendor cell with a star. Those two are reported as suggestive
+with their ranges, not at the standing of the first.
+
+*(Until 2026-09-22 this paragraph named `claude-opus-4.7` as one of two robust effects, at
++0.80 to +1.50. That finding is not in the per-finding table at all — there are three CI-clean
+findings and it is not among them — and the two ranges beside it were stale in both directions,
++0.03 to +0.60 against a live +0.14 to +0.86.)*
 
 **Absolute scores were never safe** and are not now: "this model scores a flat 3.00" is a
 statement about a model and the panel that read it.
 
-Two further disclosures. **Two of the five published effects are self-judged** — `gpt-4.1`
-(+0.433) and `deepseek-v3.2` (+0.233) sat on the panel that scored them. And **a lean shared by
+Two further disclosures. **Two of the three CI-clean findings are self-judged** — `gpt-4.1`
+(panel +0.45) and `deepseek-v3.2` (panel +0.43) each sat on the panel that scored them, and
+they are the same two that fail the robustness check above. That is not a coincidence to be
+explained away; it is what a self-judged finding looks like when you check it. And **a lean shared by
 all four judges is invisible to every check above**, because each is measured against the median
 of the same panel; a panel that agreed and was wrong together scores a spread of zero and looks
 ideal. The only method that could catch it anchors outside the panel — ranked **first** in our
@@ -1110,7 +1166,7 @@ study in this audit first published after that date still does not run the contr
 | 2026-09-01 | — |  |  |  | Priority search: the OpenReview paper feared to contain a same-version null DOES NOT EXIST -- a  |
 <!-- /GEN:timeline -->
 
-That is not a claim about anyone diligence. It is a fact about uptake, and it is why this
+That is not a claim about anyone's diligence. It is a fact about uptake, and it is why this
 paper contributes a decision rule rather than a discovery. The discovery was already made.
 
 ---
@@ -1253,9 +1309,11 @@ a *Strongly* answer — the same-version row is not small at all. Ranked against
 nuisance factor this study measures, on the same pairs and the same sheets:
 
 Read the right-hand column of §2's generated floors table rather than a copy of it. Ranked by
-endpoint median, `same-version variants` is **5**; nothing else in the table reaches 4. The
-three-way tie beneath it at 3 is requantisation, one-sitting presentation order and the local
-open-weight order arm; run-to-run replication is 2 and pooled presentation order is 1.
+endpoint median, `same-version variants` is **5**, and **no other nuisance row reaches 4** —
+the three prompt-condition rows above it, at 8, 9 and 9, are the deliberate manipulation and
+are not nuisance. Beneath the same-version row, four arms tie at 3: requantisation and
+presentation order in one sitting, pooled and split both ways, local open-weight and frontier
+API. Run-to-run replication is 2 and presentation order pooled across protocols is 1.
 
 A hand-typed copy of that ranking stood here until 2026-09-21 and had drifted on five of its
 six rows — 28 pairs against 23, 115 against 107, 5,998 against 6,240, 106 against 94, and
@@ -1280,15 +1338,20 @@ and not as a magnitude.
 **This rescue is the reason the withdrawn figures above are listed rather than deleted.** A
 claim measured in the wrong unit is not a claim that was wrong about the world.
 
-The control is not merely overlooked. In at least one case it is removed on purpose. Rozado,
-selecting 24 models for an eleven-instrument study, writes:
+The control is not merely overlooked. In at least one case it is excluded by a stated design
+choice. Rozado, selecting 24 models for an eleven-instrument study, writes:
 
 > "Specifically, I avoid including different versions of similar models, such as GPT-3.5-1106
 > and GPT-3.5-0613, to ensure a more varied sample."
 > — Rozado (2024), PLOS ONE, Methods
 
-Those two snapshots are the null. Excluding them makes the model sample look more varied and
-makes the resulting spread look more like a property of models. The same paper does carry one
+Those two snapshots are the null. The rationale is given openly and it is a sampling rationale,
+not a concealment; the consequence is that the one comparison capable of bounding
+model-to-model difference is the one the analysis leaves out. *(This read "removed on purpose"
+and said the exclusion "makes the model sample look more varied" until 2026-09-22. The
+controls audit had already been reworded on 2026-09-06 for exactly that reason — it imputes a
+motive to a rationale he states — and §7 never received the correction. The methodological
+point does not need it.)* The same paper does carry one
 perfect same-version pair without remarking on it — `grok-fun-mode` and `grok-regular-mode`,
 identical weights, identical snapshot, differing only in mode, both fully scored in the
 published data, neither mentioned in the text.
@@ -1359,7 +1422,7 @@ is a re-analysis rather than a new sweep.
 2. **The order floor rests on 94 pairs.** That is enough to establish the split between
    classes and not enough to characterise either one precisely; the frontier arm is seven
    models from seven vendors across four shuffled orders plus the canonical one. Per-class
-   pair counts are in the generated floors table (§3), not restated here.
+   pair counts are in the generated floors table (§2), not restated here.
 3. **The estimator behind every interval here is anti-conservative at these sample sizes, and
    we can now say by how much.** Against a null built by splitting real cells in half
    (`calibrate_estimators.py`, 200 splits, 136 eligible cells), the sheet bootstrap rejects
@@ -1382,7 +1445,7 @@ is a re-analysis rather than a new sweep.
    collected to depth.*
 4. **The controls audit covers fourteen external studies, 13 of them read in full**, main
    text and appendices and deposited code where it exists, and `controls_audit.py --strict`
-   passes. **The twelfth, Sclar, was consulted rather than read end to end** and its row
+   passes. **The fourteenth, Sclar, was consulted rather than read end to end** and its row
    carries `partial` in the provenance column. Sakhawat and Messing were in that category
    until 2026-09-12 and are not any more; reading them resolved fifteen `unknown` cells, two
    of which had been read aloud in prose as absences. Sclar and Messing are cited for general findings rather than audited for controls,
@@ -1401,6 +1464,20 @@ is a re-analysis rather than a new sweep.
    as exploratory where it appears rather than only here — a figure a reader meets in §3 and
    discovers is uncorrected in §9 has already done its work.
 
+9. **Some sheets are excluded because the record does not say what they answer, and this
+   paper did not state it until 2026-09-21.** The items are presented in a shuffled order
+   while each keeps its own id as its printed number, so a model may answer by item id or
+   straight down the page, and the two readings scramble each other. The 16 mirrored pairs
+   settle it for almost every sheet: one mapping scores consistently and the other at chance.
+   For **79 sheets** the two readings are both at chance, which makes them unlabelled rather
+   than noisy, and `floor_table.py` drops them from every row that depends on item identity.
+   That is **of 5591 valid shuffled sheets**, 1.4%, **across 12 models** — every one a small
+   or quantised build, with no frontier model contributing a single sheet, so the exclusion
+   falls on the local rows. The per-model counts are in `data/unattributable-sheets.json` and
+   `check_sheet_attribution.py` fails if they move. A silent exclusion is the defect §5
+   objects to in Liu and in Barmettler; the filter here was correct and the disclosure was
+   missing, which is half of the same failure.
+
 ### 9.1 How many tests this paper runs
 
 This table is **generated**, which is the point of it. The pre-registered family size was
@@ -1409,7 +1486,6 @@ copy understating the correction burden, which is the direction that flatters. I
 from the analysis at build time and nothing in the prose holds a second copy.
 
 <!-- GEN:comparisons -->
-```
 | family | tests | correction | command |
 |---|---:|---|---|
 | pre-registered condition contrasts | 246 | **BH-FDR across the family** | `position_analysis.py <run> --prereg` |
@@ -1424,7 +1500,6 @@ from the analysis at build time and nothing in the prose holds a second copy.
 | group-attribute comparisons | 0 | n/a | `scripts/group_power.py` |
 
 Every row below the first is **uncorrected and exploratory**. They are not thereby wrong, and they are not a second family that a correction was forgotten on: they were not pre-registered, and the requirement this study holds other papers to is that each is marked as exploratory *at its point of use* rather than only in Limitations. The `multiple_comparisons` column of the controls audit scores twelve other studies on exactly this.
-```
 <!-- /GEN:comparisons -->
 
 The corrected family covers the condition contrasts and nothing else. **We are not claiming the
@@ -1432,7 +1507,7 @@ exploratory families need no correction** — we are declining to pool tests fro
 designs into one family after the fact, which would change the threshold on the pre-registered
 results according to how much exploratory work happened to be done. The honest version is to
 report both counts and let a reader discount the exploratory rows as they see fit, which the
-`multiple_comparisons` column of §6's audit asks of fourteen other papers and which none of them
+`multiple_comparisons` column of §5's audit asks of fourteen other papers and which none of them
 does.
 
 ---
@@ -1508,7 +1583,7 @@ the filter's logic and by deleting them and recomputing to an identical pair set
 fixed by loosening the check.
 
 `refusal_table.py --audit` **passed as of 2026-09-04, and it had been failing for a bad
-reason.** It was comparing today's derivation against 27 stored labels written by rules this
+reason.** It was comparing today's derivation against stored labels written by rules this
 project deliberately replaced — 5ecf8a1 swapped lexical refusal detection for the structural
 test because the lexical one undercounted, 96e5fa5 stopped truncation being read as refusal —
 so a gate whose job is to catch the recomputed rule *drifting* from the collector's could not
@@ -1519,10 +1594,15 @@ current rule are held to exact agreement, rows labelled by a superseded one are 
 transition as history. That partition alone would have been a way around the failure rather
 than a fix, and it made the strict half **vacuous** — no row carried the new version yet, so
 it reported agreement over zero rows. So the collector's rule is now a callable
-(`run_battery.classify_failure`) and the audit runs both implementations of it over all 1,657
+(`run_battery.classify_failure`) and the audit runs both implementations of it over all 3,897
 rows and compares them to each other, needing no stored label and no re-collection. That is
-what the gate always claimed to test. The two agree on every row; the 27 superseded labels are
-printed, and if that count grows someone changed a rule without bumping the version.
+what the gate always claimed to test. The two agree on every row; the 197 rows carrying a
+superseded label are printed, and if that count grows someone changed a rule without bumping
+the version.
+
+*(Those two counts read "1,657 rows" and "27 superseded labels" until 2026-09-22, from a corpus
+three collections smaller. The audit prints both every time it runs, and neither had been
+re-read since the wave closed.)*
 
 Three gates must pass before this is circulated: `gen_paper.py --check` that the tables are
 current, `key_numbers.py --check` that the prose quoting them is current, and

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Can each answer be attributed to the proposition it belongs to? For 44 sheets, no.
+"""Can each answer be attributed to the proposition it belongs to? For some sheets, no.
 
 THE PROBLEM
 -----------
@@ -25,13 +25,22 @@ two halves of a pair differently. So map each sheet BOTH ways and score pair-con
   consistency under slot-mapping high, id-mapping low    -> answered by slot, REMAP or drop
   both near chance                                       -> UNATTRIBUTABLE
 
-Measured 2026-09-18: 342 genuinely re-sorted (0.93-1.00 by id against ~0.45 by slot -- the
-frontier models do this routinely), and **44 unattributable**, of which 31 are one model,
-89% of its valid corpus. Those 44 sit inside a published order-floor row.
+The frontier models re-sort routinely and unambiguously -- 0.93-1.00 by id against ~0.45 by
+slot -- and not one of them has ever produced an unattributable sheet. The ones that do are
+small and quantised builds.
 
 An unattributable sheet is not noise. It is unlabelled data being scored, and the honest
 treatment is to exclude it from the rows that depend on item identity and say how many were
-excluded -- which is what this gate makes possible.
+excluded. `floor_table.py` does the first half. This gate is the second: the live count and
+its per-model breakdown live in `data/unattributable-sheets.json`, and the gate fails when the
+corpus and that file disagree, when a model joins the list, or when the declaration is absent.
+
+NO COUNT IS QUOTED IN THIS DOCSTRING, deliberately. It said "for 44 sheets" in its first line
+and "44 unattributable, of which 31 are one model, 89% of its valid corpus" in its body, both
+measured 2026-09-18 on a smaller corpus. By 2026-09-21 the real figures were 79 across twelve
+models with the worst at 24%, and the stale ones had been republished in the mirror's generated
+`SCRIPTS.md`, which is built from this text. A tool that measures a number should not also
+carry a hand-typed copy of it (LEARNINGS 69).
 
     python scripts/check_sheet_attribution.py
     python scripts/check_sheet_attribution.py --run <dir> --list
@@ -162,11 +171,104 @@ def selftest():
     return 0
 
 
+#: The declaration this gate reads. Same shape and same rule as data/empty-records.json and
+#: data/collection-limitations.json: an undeclared fact blocks, a declared one is a decision
+#: somebody made and can be read back.
+DECL = os.path.join(_SP.STUDY_DIR, "data", "unattributable-sheets.json")
+
+
+def _load_declaration():
+    try:
+        with io.open(DECL, encoding="utf-8") as fh:
+            return json.load(fh)
+    except (OSError, ValueError):
+        return None
+
+
+def _against_declaration(measured, bad):
+    """Exit 0 only when the declaration and the corpus say the same thing.
+
+    THE POINT IS NOT THAT THE NUMBER IS SMALL. 79 sheets cannot be attributed to the
+    propositions they answer, and that is unlabelled data being scored unless something
+    removes it -- `floor_table` does, and counts the drop. What was missing was the other
+    half: nothing stated the count, so a reader had no way to know an exclusion happened and
+    a change in it moved silently.
+
+    A gate that can only ever be red is a gate somebody deletes, taking the real check with
+    it. So this one goes green on a corpus whose exclusions are declared and MATCH, and red
+    the moment the count moves, a model joins the list, or the declaration is absent -- which
+    is the event worth catching. This is the convention the docstring above has promised since
+    the file was written: "1 unattributable sheets present AND NOT DECLARED".
+    """
+    d = _load_declaration()
+    if d is None:
+        print("")
+        print("  NOT DECLARED. %s does not exist or does not parse, so these %d sheet(s) are"
+              % (os.path.relpath(DECL, _SP.STUDY_DIR), bad))
+        print("  an unexplained hole rather than a stated limitation. Seed it with")
+        print("  `check_sheet_attribution.py --write`, then write the reasons in by hand.")
+        return 1
+    declared = {str(k): int(v) for k, v in (d.get("by_model") or {}).items()}
+    total = d.get("total")
+    problems = []
+    if total != bad:
+        problems.append("declares %r unattributable sheet(s); the corpus holds %d"
+                        % (total, bad))
+    for m in sorted(set(measured) | set(declared)):
+        if measured.get(m, 0) != declared.get(m, 0):
+            problems.append("%s: declared %d, measured %d"
+                            % (m, declared.get(m, 0), measured.get(m, 0)))
+    print("")
+    if problems:
+        print("  THE DECLARATION AND THE CORPUS DISAGREE:")
+        for p in problems:
+            print("    %s" % p)
+        print("  Re-seed with --write, then say in the file WHY the count moved. A stale")
+        print("  declaration is worse than none: it reads as though somebody checked.")
+        return 1
+    print("  DECLARED: all %d are recorded in %s, per model, and floor_table excludes them"
+          % (bad, os.path.relpath(DECL, _SP.STUDY_DIR)))
+    print("  from every row that depends on item identity. Exit 0 -- stated, not hidden.")
+    return 0
+
+
+def _seed(measured, bad, examined):
+    """Write the measured counts out for a human to annotate. Never overwrites the prose."""
+    old = _load_declaration() or {}
+    doc = {
+        "_what": ("Sheets whose answers cannot be attributed to the propositions they "
+                  "answer: pair-consistency is at chance under BOTH the item-id mapping and "
+                  "the slot mapping, so the record does not say which proposition each "
+                  "answer belongs to. DECLARED here so the exclusion is a stated limitation "
+                  "rather than an unexplained hole. check_sheet_attribution.py reads this "
+                  "file; an undeclared sheet blocks and a moved count blocks."),
+        "_why_this_is_not_loosening_the_gate": old.get(
+            "_why_this_is_not_loosening_the_gate",
+            "floor_table.py already drops these sheets from every row that depends on item "
+            "identity and counts the drop. Declaring them changes no published number; it "
+            "makes the exclusion readable, and makes a CHANGE in it fail."),
+        "_measured_by": "scripts/check_sheet_attribution.py --write",
+        "sheets_examined": examined,
+        "total": bad,
+        "by_model": {m: measured[m] for m in sorted(measured, key=lambda k: (-measured[k], k))},
+    }
+    with io.open(DECL, "w", encoding="utf-8", newline="\n") as fh:
+        json.dump(doc, fh, indent=1, ensure_ascii=False)
+        fh.write("\n")
+    print("")
+    print("  wrote %s -- %d sheet(s) across %d model(s)."
+          % (os.path.relpath(DECL, _SP.STUDY_DIR), bad, len(measured)))
+    print("  NOW WRITE THE REASONS IN. A seeded declaration nobody edited declares nothing.")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--run", default=None, help="one run dir; default is every wave")
     ap.add_argument("--list", action="store_true", help="name every unattributable sheet")
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--write", action="store_true",
+                    help="seed %s from what is measured now, for editing" % os.path.basename(DECL))
     a = ap.parse_args(argv)
     if a.selftest:
         return selftest()
@@ -233,7 +335,11 @@ def main(argv=None):
     print("  and same-version floors above all -- and the exclusion COUNTED where it is used.")
     print("  A model contributing mostly unattributable sheets is not a near-random responder;")
     print("  it is a model whose sheets were read under the wrong mapping.")
-    return 1
+
+    measured = {m: c["UNATTRIBUTABLE"] for m, c in by_model.items() if c["UNATTRIBUTABLE"]}
+    if a.write:
+        return _seed(measured, bad, examined)
+    return _against_declaration(measured, bad)
 
 
 if __name__ == "__main__":

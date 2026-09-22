@@ -215,6 +215,10 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--write", action="store_true", help="write manifest.derived.json")
     ap.add_argument("--check", action="store_true",
                     help="verify every freeze against disk; exit 1 on drift or absence")
+    ap.add_argument("--refreeze", action="store_true",
+                    help="replace an existing freeze that disagrees with the records. "
+                         "Without it --write refuses, because re-freezing drifted data "
+                         "erases the only record that it drifted.")
     args = ap.parse_args(argv)
 
     runs = candidates()
@@ -258,6 +262,29 @@ def main(argv: list[str]) -> int:
         print(f"  {d.name:38s} {layout:7s} {new['records_total']:5d} rec, "
               f"{new['file_count']:3d} file(s), cfg={len(new['config'])}/{len(CONFIG_FIELDS)}{note}")
         if args.write:
+            # THE REMEDY MUST NOT DESTROY THE EVIDENCE. `--write` overwrote any existing
+            # freeze unconditionally, so the command this tool and validate_runs both print
+            # as the fix -- `derive_manifest.py --write` -- would re-freeze a run whose
+            # records had CHANGED and report it as a clean write. The freeze's entire purpose
+            # is that a later `--check` can say a record file moved; a writer that silently
+            # agrees with whatever is on disk is the vacuous pass with a hash attached.
+            #
+            # An existing freeze is now compared first and a disagreement REFUSES. Clearing
+            # it takes `--refreeze`, which is deliberate and leaves a flag in the shell
+            # history saying a freeze was replaced rather than written.
+            if target.is_file() and not args.refreeze:
+                old = json.loads(target.read_text(encoding="utf-8"))
+                o = {f["path"]: (f["sha256"], f["records"]) for f in old.get("files", [])}
+                n = {f["path"]: (f["sha256"], f["records"]) for f in new["files"]}
+                bad = ([f"{k}: GONE" for k in o if k not in n]
+                       + [f"{k}: NEW" for k in n if k not in o]
+                       + [f"{k}: CHANGED" for k in set(o) & set(n) if o[k] != n[k]])
+                if bad:
+                    drift.append((d.name, "; ".join(bad[:4])))
+                    print(f"  {d.name:38s} {layout:7s} REFUSED -- an existing freeze "
+                          f"disagrees with the records: {'; '.join(bad[:3])}. Find out why "
+                          f"the data moved; pass --refreeze only once you know.")
+                    continue
             target.write_text(json.dumps(new, indent=2, sort_keys=False) + "\n", encoding="utf-8")
             wrote += 1
 
@@ -286,6 +313,14 @@ def main(argv: list[str]) -> int:
         return 0
     if args.write:
         print(f"\nwrote {wrote} × {DERIVED}")
+        if drift:
+            # A refused write is not a quiet skip. It exits 1 so a caller that chained this
+            # after a failing gate does not read "wrote N" as "the problem is handled".
+            print(f"{len(drift)} run(s) REFUSED -- their records disagree with a freeze "
+                  f"already on disk:")
+            for name, why in drift:
+                print(f"  {name}: {why}")
+            return 1
     else:
         print("\nreport only; pass --write to freeze, --check to verify")
     return 0

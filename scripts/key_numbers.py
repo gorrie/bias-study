@@ -615,6 +615,148 @@ def _resolve(rows):
     return rows
 
 
+def classifier_audit():
+    """What `refusal_table.py --audit` compares, and how much of it carries an old label.
+
+    The Reproduction section describes this audit in prose and quoted "all 1,657 rows" and
+    "the 27 superseded labels" -- both from a corpus three collections smaller, and both
+    printed by the audit itself on every run. A paragraph explaining why a gate is trustworthy
+    is the last place a stale number should sit.
+    """
+    import refusal_table as RT
+    try:
+        return RT.label_counts(RT.load())
+    except Exception:
+        return {}
+
+
+def item_gradient_bounds():
+    """The bank's bimodality, in the numbers §3b states.
+
+    `item_gradient.py` prints "the prose that states it is gated by key_numbers.py against
+    this command's output, so there is one copy of it." That was not true -- no key registered
+    any of it -- and the prose had drifted: the defender ceiling read 29.8% against a live
+    28.9%, and the three items nearest the middle were quoted as a band "24-30%" whose upper
+    bound no item reaches. A script asserting a gate that does not exist is worse than one
+    asserting nothing, because it tells the next reader the checking is done.
+    """
+    import item_gradient as IG
+    try:
+        rows = IG.gradient()
+    except Exception:
+        return {}
+    if not rows:
+        return {}
+    halves = collections.defaultdict(list)
+    for r in rows.values():
+        halves[r["item"].get("frame")].append(100.0 * r["rate"])
+    if "defender" not in halves or "critic" not in halves:
+        return {}
+    middle = [v for vs in halves.values() for v in vs if 30.0 <= v <= 70.0]
+    return {"defender_max": round(max(halves["defender"]), 1),
+            "defender_min": round(min(halves["defender"]), 1),
+            "critic_min": round(min(halves["critic"]), 1),
+            "middle": len(middle),
+            "items": sum(len(v) for v in halves.values())}
+
+
+def switch_denominators():
+    """How much data each declining model actually rests on, in §1b.
+
+    §1b argues its ordering is not fragile the way the retired corpus's was -- there, three
+    models contributed ONE directive run each and carried a rate of 1.0. The sentence making
+    that argument said "every model here has between 7 and 17 runs per condition", which is
+    false in both directions: the smallest cell holds 3 and the largest 20. Nothing checked
+    it, in the section that had already shipped six stale figures.
+    """
+    import refusal_table as RT
+    per, _totals = RT.switch_table(RT.load())
+    declining = {m for m, c in per.items() if any(v[0] for v in c.values())}
+    sizes = sorted(v[1] for m in declining for v in per[m].values())
+    if not sizes:
+        return {}
+    out = {"models": len(declining), "cells": len(sizes), "min": sizes[0], "max": sizes[-1],
+           "ge11": sum(1 for s in sizes if s >= 11)}
+    # THE WORKED EXAMPLE §1b OPENS ON. Two sibling models, four conditions, and the whole
+    # switch claim rests on the pair: they decline the balance instruction and answer
+    # everything else, including a control with no political content in it. Every one of
+    # these six numbers was stale on 2026-09-21 ("8 times out of 8", "0 refusals in 7") and
+    # none was registered, in the section whose heading said RE-MEASURE BEFORE PUBLICATION.
+    pair = ["openai/gpt-6-astra", "openai/gpt-6-astra-pro"]
+    if all(m in per for m in pair):
+        for label, model in (("astra", pair[0]), ("astra_pro", pair[1])):
+            ref, n = per[model]["A"]
+            out[label + "_balance"], out[label + "_balance_runs"] = ref, n
+        for cond in ("P", "D", "N"):
+            cells = [per[m][cond] for m in pair]
+            out["pair_" + cond] = sum(c[0] for c in cells)
+            out["pair_" + cond + "_runs"] = sum(c[1] for c in cells)
+    return out
+
+
+def position_floor():
+    """§1's lead figures, PARSED from the generated table rather than recomputed.
+
+    The four numbers §1 states in prose -- 38 of 61 pairs, median 0.131, 43% of pairs, median
+    0.088 -- are cells of the `GEN:position` table printed directly above them. `gen_paper
+    --check` verifies the table. Nothing verified the sentences, so the paper's LEAD FINDING
+    was the least-gated claim in it: regenerate the block after a corpus change and the prose
+    keeps the old numbers, one paragraph away from the new ones.
+
+    Read from `data/position-floor.json`, which is what the block itself is served from and is
+    signature-checked against the corpus by `order_floor_position.py --check-cache`. Parsing
+    the rendered row is deliberate: recomputing here would put a second 4,000-draw bootstrap in
+    the tree and two implementations of one number is how they stop agreeing.
+    """
+    path = os.path.join(STUDY, "data", "position-floor.json")
+    try:
+        with io.open(path, encoding="utf-8") as fh:
+            rows = json.load(fh).get("rows") or []
+    except (OSError, ValueError):
+        return {}
+    out = {}
+    for line in rows:
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) != 6 or not cells[1].isdigit():
+            continue
+        key = "manip" if "instruction" in cells[0] else "order" if "order" in cells[0] else None
+        if key is None:
+            continue
+        m = re.match(r"(\d+)\s*\((\d+)%\)", cells[5])
+        out[key + "_pairs"] = int(cells[1])
+        out[key + "_median"] = float(cells[2].strip("*"))
+        if m:
+            out[key + "_clear"] = int(m.group(1))
+            out[key + "_pct"] = int(m.group(2))
+    # The ratio §1 states in words. Derived here so it cannot disagree with its own operands.
+    if out.get("manip_median") and out.get("order_median"):
+        out["ratio"] = round(out["manip_median"] / out["order_median"], 1)
+    return out
+
+
+def unattributable_sheets():
+    """The sheets dropped because the record does not say which proposition each answer is.
+
+    READ FROM THE DECLARATION, not recomputed here -- `check_sheet_attribution.py` is the
+    measurement and its gate already fails when the declaration and the corpus disagree.
+    Recomputing would put a second implementation of the same classifier in the tree, and two
+    implementations of one rule is how one of them ends up permissive.
+
+    Gated because §9 states these counts in prose. `floor_table` has excluded these sheets
+    since the filter was written; until 2026-09-21 nothing said so, so the exclusion was
+    correct and invisible -- which is the shape of the deletion rules this paper spends §5
+    objecting to in other people's work.
+    """
+    path = os.path.join(STUDY, "data", "unattributable-sheets.json")
+    try:
+        with io.open(path, encoding="utf-8") as fh:
+            d = json.load(fh)
+    except (OSError, ValueError):
+        return None
+    return {"total": d.get("total"), "examined": d.get("sheets_examined"),
+            "models": len(d.get("by_model") or {})}
+
+
 def build():
     f = floors()
     pairs = P.collect()
@@ -622,6 +764,11 @@ def build():
     audit = audit_scale()
     arms = matched_arms()
     omission = omission_arms()
+    unattr = unattributable_sheets() or {}
+    pos = position_floor()
+    switch = switch_denominators()
+    grad = item_gradient_bounds()
+    audit_labels = classifier_audit()
     headline = contested_vs_documented()
     # The control-arm result. A stale cache is reported as a FAILURE rather than skipped:
     # silently dropping the lead finding's keys is how a headline ends up ungated.
@@ -662,6 +809,13 @@ def build():
     manip_sitting = _floor(f, "prompt condition A->D, one sitting")
     order_sitting = _floor(f, "presentation order, one sitting")
     order_frontier = _floor(f, "presentation order, one sitting, frontier API")
+    # THE CLASS SPLIT §2 ARGUES FROM. Its four rows stood in the paper as a hand-typed copy
+    # of the generated floors table, three lines under a sentence telling the reader to read
+    # the generated table rather than a copy. The copy is gone; these are the figures the
+    # prose keeps, so they are gated against the arms they came from.
+    manip_frontier = _floor(f, "prompt condition A->D, one sitting, frontier API")
+    manip_local = _floor(f, "prompt condition A->D, one sitting, local open-weight")
+    order_local = _floor(f, "presentation order, one sitting, local open-weight")
     abl = _floor(f, "refusal-direction ablation")
     null = _floor(f, "same-version variants")
 
@@ -740,6 +894,21 @@ def build():
          "what": "presentation-order p90 on 2026 frontier models under the wave protocol -- "
                  "equal to the modal's own sampling error, so unmeasurable",
          "phrase": "Its p90 of %d is exactly the modal's own sampling error"},
+        # Same false positive as `order_p90_frontier_sitting` above: gitleaks' generic-api-key
+        # rule reads a long identifier after a literal `"key":` as a secret.
+        {"key": "manip_p90_frontier_sitting",   # gitleaks:allow
+         "value": manip_frontier["side"][1],
+         "what": "manipulation p90 on 2026 frontier models, one sitting -- barely above the "
+                 "modal's own sampling error, which is why §2 reports both as unmeasurable",
+         "phrase": "the manipulation's p90 of %d is"},
+        {"key": "manip_p90_local_sitting",
+         "value": manip_local["side"][1],
+         "what": "manipulation p90 on 2024-generation local open-weight builds, one sitting",
+         "phrase": "p90 %d against order's"},
+        {"key": "order_p90_local_sitting",
+         "value": order_local["side"][1],
+         "what": "presentation-order p90 on 2024-generation local open-weight builds",
+         "phrase": "against order's %d"},
         {"key": "manip_p90_sitting",
          "value": manip_sitting["side"][1],
          "what": "deliberate manipulation p90 under one protocol in one sitting, side-flips",
@@ -957,6 +1126,148 @@ def build():
          "value": audit["political_instrument"],
          "what": "external studies that actually administer a political instrument",
          "phrase": "%d political-instrument studies"},
+        # §1b's OWN DENOMINATORS. The section argues from them and stated them wrongly.
+        # THE REPRODUCTION SECTION'S OWN FIGURES. It explains why the classifier audit is
+        # trustworthy and quoted a corpus three collections old while doing it.
+        {"key": "audit_rows",
+         # Rendered with the thousands separator the prose uses. A phrase carrying a newline
+         # never matches -- the surface is flattened before comparison -- so the anchor stops
+         # at the line break rather than spanning it.
+         "value": (UNAVAILABLE if audit_labels.get("rows") is None
+                   else "{:,}".format(audit_labels["rows"])),
+         "what": "rows the classifier mirror-check compares, both implementations",
+         "phrase": "over all %s"},
+        {"key": "audit_superseded",
+         "value": audit_labels.get("superseded", UNAVAILABLE),
+         "what": "audited rows carrying a superseded classifier label",
+         "phrase": "the %d rows carrying a"},
+        # §4'S JUDGE PARAGRAPH, gated against the PUBLISHED corpus. `surface_numbers()`
+        # already gates these three for the website; the paper needed its own registration
+        # because `--check` reads the paper and `--check-website` does not, and §4 had been
+        # quoting the WORKING tree: 4,668 records against a published 3,809, a spread of 0.29
+        # against 0.3054, and twelve stale cells in the fan-out table beneath it. The paper
+        # ships inside the mirror, so a figure its own released corpus cannot produce is a
+        # claim about a machine nobody else has -- which is the same rule
+        # `_mirror_judge_records` states for the website, applied to the document.
+        {"key": "paper_judge_records",
+         "value": (None if _mirror_judge_records() is None
+                   else "{:,}".format(_mirror_judge_records())),
+         "what": "scored records carrying a per-judge breakdown, in the PUBLISHED corpus",
+         "phrase": "over the %s scored records carrying"},
+        {"key": "paper_judge_spread", "value": _judge_spread(),
+         "what": "the panel's internal spread, as §4 states it",
+         "phrase": "internal spread is **%.4f points**"},
+        {"key": "paper_judge_top", "value": _mirror_judge_lean_extremes()[0],
+         "what": "mean deviation of the most institution-skeptical judge, as §4 states it",
+         "phrase": "institution-skeptical at +%.3f"},
+        # §3b'S BIMODALITY. item_gradient.py said these were gated here; they were not.
+        {"key": "gradient_defender_min",
+         "value": grad.get("defender_min", UNAVAILABLE),
+         "what": "lowest agreement rate among defender-framed items",
+         "phrase": "defender-framed items run %.1f–"},
+        {"key": "gradient_defender_max",
+         "value": grad.get("defender_max", UNAVAILABLE),
+         "what": "highest agreement rate among defender-framed items -- the bank's ceiling "
+                 "below the contested middle. The paper read 29.8% here until 2026-09-22",
+         "phrase": "%.1f%%, critic-framed items"},
+        {"key": "gradient_critic_min",
+         "value": grad.get("critic_min", UNAVAILABLE),
+         "what": "lowest agreement rate among critic-framed items",
+         "phrase": "critic-framed items %.1f–"},
+        {"key": "gradient_middle",
+         "value": grad.get("middle", UNAVAILABLE),
+         "what": "items whose agreement falls between 30% and 70%, where a panel would divide",
+         "phrase": "%d of the 32 sit in that band"},
+        {"key": "astra_balance",
+         "value": switch.get("astra_balance", UNAVAILABLE),
+         "what": "gpt-6-astra refusals under the balance instruction",
+         "phrase": "It declines, **%d times out of"},
+        {"key": "astra_balance_runs",
+         "value": switch.get("astra_balance_runs", UNAVAILABLE),
+         "what": "gpt-6-astra runs under the balance instruction",
+         "phrase": "%d**, across three presentation orders"},
+        {"key": "astra_pro_balance",
+         "value": switch.get("astra_pro_balance", UNAVAILABLE),
+         "what": "gpt-6-astra-pro refusals under the balance instruction",
+         "phrase": "sibling `gpt-6-astra-pro` declines %d of"},
+        {"key": "astra_pro_balance_runs",
+         "value": switch.get("astra_pro_balance_runs", UNAVAILABLE),
+         "what": "gpt-6-astra-pro runs under the balance instruction",
+         "phrase": "of the same %d"},
+        {"key": "astra_pair_placebo",
+         "value": switch.get("pair_P", UNAVAILABLE),
+         "what": "refusals by the two astra models under the content-free instruction",
+         "phrase": "Both answer, **%d refusals in"},
+        {"key": "astra_pair_placebo_runs",
+         "value": switch.get("pair_P_runs", UNAVAILABLE),
+         "what": "runs by the two astra models under the content-free instruction",
+         "phrase": "refusals in %d**. So does an explicit"},
+        {"key": "astra_pair_commit_runs",
+         "value": switch.get("pair_D_runs", UNAVAILABLE),
+         "what": "runs by the two astra models under the commitment directive",
+         "phrase": "refusals in %d runs. So does asking"},
+        {"key": "astra_pair_bare_runs",
+         "value": switch.get("pair_N_runs", UNAVAILABLE),
+         "what": "runs by the two astra models with no system prompt",
+         "phrase": "in %d sheets"},
+        {"key": "switch_declining_models",
+         "value": switch.get("models", UNAVAILABLE),
+         "what": "models declining under at least one condition -- the switch table's rows. "
+                 "The paper read `Eighteen` here until 2026-09-22",
+         "phrase": "**%d models decline under some condition**"},
+        {"key": "switch_min_cell",
+         "value": switch.get("min", UNAVAILABLE),
+         "what": "smallest per-condition run count among the declining models",
+         "phrase": "smallest holds %d runs"},
+        {"key": "switch_cells_ge11",
+         "value": switch.get("ge11", UNAVAILABLE),
+         "what": "their per-condition cells holding 11 runs or more",
+         "phrase": "and %d of their"},
+        {"key": "switch_cells",
+         "value": switch.get("cells", UNAVAILABLE),
+         "what": "their per-condition cells in total",
+         "phrase": "of their %d cells hold"},
+        # §1's LEAD, in prose. The table above it is generated and checked; these sentences
+        # repeat four of its cells and were checked by nothing.
+        {"key": "position_manip_clear",
+         "value": pos.get("manip_clear", UNAVAILABLE),
+         "what": "pairs where the balance instruction's movement clears the bootstrap and BH",
+         "phrase": "Across **%d of"},
+        {"key": "position_manip_pairs",
+         "value": pos.get("manip_pairs", UNAVAILABLE),
+         "what": "pairs answering both the bare and the balance-instruction arm",
+         "phrase": "%d pairs** the movement clears"},
+        {"key": "position_manip_median",
+         "value": pos.get("manip_median", UNAVAILABLE),
+         "what": "median |effect| of the balance instruction, position units",
+         "phrase": "The median movement is **%.3f**"},
+        {"key": "position_order_pct",
+         "value": pos.get("order_pct", UNAVAILABLE),
+         "what": "percentage of order pairs clearing the same bootstrap and correction",
+         "phrase": "The position moves on %d%% of pairs"},
+        {"key": "position_order_median",
+         "value": pos.get("order_median", UNAVAILABLE),
+         "what": "median |effect| of reprinting the same items in a different order",
+         "phrase": "with a median of %.3f"},
+        {"key": "position_ratio",
+         "value": pos.get("ratio", UNAVAILABLE),
+         "what": "how many times the instruction's median effect exceeds the order median",
+         "phrase": "is **%.1f times** the median produced by"},
+        # THE EXCLUSION THE PAPER MAKES AND DID NOT STATE. Each denominator is its own key,
+        # for the same reason as the omission block below.
+        {"key": "unattributable_sheets",
+         "value": unattr.get("total", UNAVAILABLE),
+         "what": "valid shuffled sheets that cannot be attributed to the propositions they "
+                 "answer, and are therefore dropped from every row depending on item identity",
+         "phrase": "%d sheets"},
+        {"key": "unattributable_examined",
+         "value": unattr.get("examined", UNAVAILABLE),
+         "what": "valid shuffled sheets examined by the attribution classifier",
+         "phrase": "of %d valid shuffled sheets"},
+        {"key": "unattributable_models",
+         "value": unattr.get("models", UNAVAILABLE),
+         "what": "models contributing at least one unattributable sheet",
+         "phrase": "across %d models"},
         # THE NUMBERING ARTIFACT. Absent from the paper until 2026-09-21 and present in the
         # collector since 2026-09-18, which is the wrong way round: a fix shipped and the
         # finding that motivated it unpublished.
@@ -1118,7 +1429,11 @@ SURFACES = {
             "corpus_models": "runs, %d models",
             # The page's own wording, bold markers and line wrap included -- the phrase is a
             # literal grep, so it has to be the sentence as written rather than as summarised.
-            "order_mde": "of %d items of 62** at 80%% power",
+            # "of 62" WAS BAKED INTO THIS TEMPLATE -- the retired external questionnaire,
+            # inside the gate that exists to stop the website quoting retired figures. It
+            # would have held the page to a denominator the instrument has not had since
+            # 2026-09-16. The live count is its own claim key, checked in the same sentence.
+            "order_mde": "of %(order_mde)d items of %(instrument_items)d** at 80%% power",
             "arms_models": "Across the %d models measured under both arms",
             "arms_nodir_refusals": "%(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
             "arms_nodir_runs": "%(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
@@ -1134,12 +1449,17 @@ SURFACES = {
             "replicate_max": "and up to %d.**",
             "order_max_all": "Reorder the questions and up to %d move",
             # The floors table on the research page, cell by cell.
+            # THE ROW NOW CARRIES ITS PAIR COUNT. A floor with no n beside it cannot be read
+            # -- the same-version row rests on 24 pairs and the replicate row on 6,240, and a
+            # reader comparing their maxima without that is comparing two different kinds of
+            # claim. The anchors follow the table rather than the table following the anchors.
             "order_max_pooled":
-                "| presentation order of the questions | %(order_med_pooled)d | "
-                "%(order_p90_pooled)d | **%(order_max_pooled)d** |",
+                "| presentation order of the items, pooled | %(order_pairs)d | "
+                "%(order_med_pooled)d | %(order_p90_pooled)d | **%(order_max_pooled)d** |",
             "null_max_sideflips":
-                "| two same-version models (different size, mode or snapshot) | "
-                "%(null_median)d | %(null_p90_sideflips)d | **%(null_max_sideflips)d** |",
+                "| two models of the same version (size, tier, snapshot or mode) | "
+                "%(null_pairs)d | %(null_median)d | %(null_p90_sideflips)d | "
+                "**%(null_max_sideflips)d** |",
             "same_version_max": "two variants of one release and up to %d move",
             "manipulation_p90": "moves %d at its 90th percentile",
             # The audit block, added 2026-09-04. These were prose ("two columns come back
@@ -1164,9 +1484,14 @@ SURFACES = {
             "audit_yes_same_version_dist":
                 "the null a drift claim needs | **%(audit_yes_same_version_dist)d of "
                 "%(audit_applicable_same_version_dist)d** (%(audit_na_same_version_dist)d n/a) |",
+            # NO LITERAL NEWLINE IN A PHRASE. Surface text is unwrapped before matching now
+            # -- a gated phrase that straddled a hand-wrapped line break was invisible, and
+            # that cost four statements on the mirror README. So a template carrying its own
+            # line break can never match anything. Where the author wraps is the author's
+            # business; the phrase is one line.
             "audit_no_same_version_dist":
-                "**%(audit_no_same_version_dist)d of the %(audit_external)d\nexternal studies "
-                "are scored `no` on it",
+                "**%(audit_no_same_version_dist)d of the %(audit_external)d external "
+                "studies are scored `no` on it",
             "audit_yes_quantisation":
                 "controls for quantisation | **%(audit_yes_quantisation)d of "
                 "%(audit_resolved_quantisation)d** fully, %(audit_partial_quantisation)d "
@@ -1226,7 +1551,11 @@ SURFACES = {
             "arms_dir_runs": "against %(arms_dir_refusals)d refusals in %(arms_dir_runs)d runs",
             "arms_silenced": "%d of them stop",
             "order_max_all": "moves up to %d answers",
-            "same_version_max": "a median of five and up to %d",
+            # "median of five" WAS A LITERAL, and a retired one: the same-version median is
+            # 1 on the battery and was 5 on the 62-item questionnaire. The template held a
+            # figure from the old instrument while checking the max against the new corpus,
+            # so a correct sentence could not satisfy it. The median is its own claim key.
+            "same_version_max": "a median of %(null_median)d and up to %(same_version_max)d",
         },
     },
     # THE CORRECTED DISPATCH AND THE DISCOVERY PAGE, added 2026-09-12, for the reason stated
@@ -1750,10 +2079,24 @@ def _pipeline_rung():
         return None, None
 
 
+def _instrument_items():
+    """How many propositions the LIVE instrument has. One source, read not typed."""
+    import json as _json
+    path = os.path.join(STUDY, "data", "ratchet-battery.json")
+    if not os.path.exists(path):
+        return None
+    return len(_json.load(io.open(path, encoding="utf-8"))["items"])
+
+
 def surface_numbers():
     a = audit_scale()
     fl = floors()
     out = [
+        # THE DENOMINATOR EVERY "N items of M" SENTENCE USES. It was the literal 62 inside a
+        # phrase template -- the retired questionnaire's length, in the gate that guards the
+        # website against retired figures.
+        {"key": "instrument_items", "value": _instrument_items(),
+         "what": "propositions in the live instrument, from data/ratchet-battery.json"},
         {"key": "audit_yes_same_version_dist", "value": a["yes_same_version_dist"],
          "what": "external studies that DO report a same-version distribution"},
         {"key": "audit_no_same_version_dist", "value": a["no_same_version_dist"],
@@ -2069,6 +2412,17 @@ RETRACTED = [
     # updated when a retraction happens reports the absence of the claims it
     # already knows about, which is exactly the vacuous pass this project keeps
     # finding elsewhere.
+    # THE TITLE FORM, registered 2026-09-21 after a positive control failed. The entry below
+    # is "the hedge is the bias SIGNATURE" -- the sentence as it appeared in the writeup --
+    # and the claim also ran as a bare title: it was this study's name, the repository's
+    # name, the book chapter's "the finding", and the `title:` of the public research page.
+    # None of those contain "signature", so none of them matched, and the withdrawn claim sat
+    # as the H1 of evilrobots.lol/research/ai-bias-audit/ for nine days after being
+    # registered here. A retraction keyed to the long form retracts the long form.
+    ("the hedge is the bias",
+     "FINDINGS #13, withdrawn 2026-09-13, in its TITLE form -- the study's name, the "
+     "repository's name and a public page's H1. Quote it to describe the withdrawal; do not "
+     "assert it. The mechanism entry is immediately below"),
     ("the hedge is the bias signature",
      "FINDINGS #13, withdrawn 2026-09-13. Score-3 responses do carry a higher hedge ratio, "
      "but rubric score 3 IS 'does not commit' and the hedge lexicon measures non-commitment: "
@@ -2724,7 +3078,18 @@ def scan_every_document_for_retractions():
     findings = []
     archived = []
     scanned = 0
-    for base, dirs, files in os.walk(STUDY):
+    # AND THE WEBSITE, WHICH IS A DIFFERENT TREE AND THE MOST PUBLIC ONE. This walked STUDY
+    # only. The withdrawn claim "The Hedge Is the Bias" was FINDINGS #13, registered here on
+    # 2026-09-15 -- and it was still the `title:` of evilrobots.lol/research/ai-bias-audit/,
+    # the H1 of the page, for nine days after, because the scan could not reach the
+    # directory. A retraction gate that stops at the repository boundary protects the
+    # documents nobody reads and not the page that ranks.
+    roots = [STUDY]
+    site = os.path.join(os.path.dirname(os.path.dirname(STUDY)), "website", "content")
+    if os.path.isdir(site):
+        roots.append(site)
+    for root in roots:
+      for base, dirs, files in os.walk(root):
         # Skip machinery and history; scan what a reader can open.
         dirs[:] = [d for d in sorted(dirs)
                    if d not in (".git", "__pycache__", ".pytest_cache", "node_modules",
@@ -2733,7 +3098,9 @@ def scan_every_document_for_retractions():
             if not fn.lower().endswith(".md"):
                 continue
             path = os.path.join(base, fn)
-            rel = os.path.relpath(path, STUDY).replace("\\", "/")
+            rel = os.path.relpath(path, root).replace("\\", "/")
+            if root is not STUDY:
+                rel = "website/content/" + rel
             try:
                 text = io.open(path, encoding="utf-8", newline="").read().replace("\r\n", "\n")
             except (IOError, OSError, UnicodeDecodeError) as exc:
@@ -2743,7 +3110,17 @@ def scan_every_document_for_retractions():
                 findings.append((rel, "COULD NOT BE READ, so it was not scanned: %s" % exc, ""))
                 continue
             scanned += 1
-            bucket = archived if _is_marked_superseded(text) else findings
+            # A DATED PRE-REGISTRATION IS A FIXED RECORD, like a document marked superseded.
+            # It states what was believed on the day it was committed, before the data
+            # existed, and this study's own rule is that it may not be edited afterwards --
+            # an amendment is dated and appended, never a silent rewrite. So a withdrawn
+            # claim inside one is history by construction, and the only way to "fix" it would
+            # be to break the thing that makes a pre-registration worth anything.
+            # `check_retired_instrument` already reasons this way about the same files.
+            # Routed to `archived`, which is PRINTED rather than dropped, so it stays visible.
+            fixed_record = (_is_marked_superseded(text)
+                            or re.match(r"^PREREG-\d{4}-\d{2}-\d{2}-", os.path.basename(rel)))
+            bucket = archived if fixed_record else findings
             for phrase, why in RETRACTED:
                 for occurrence in _unquoted_occurrences(text, phrase):
                     bucket.append((rel, why, occurrence))

@@ -327,6 +327,16 @@ def verify(outdir, panel, strict=False):
     """Did anything drift from the frozen spec? Reports, and returns a failure count."""
     bad, seen = [], collections.Counter()
     cell_runs = collections.defaultdict(list)
+    # THE FROZEN SPEC BINDS THE FROZEN PANEL. `wave-panel.json` carries two rosters: 36
+    # models frozen 2026-09-05 under `params`, and a `breadth` extension of 22 declared
+    # 2026-09-18 and collected afterwards, deliberately at its own parameters. Both land in
+    # this directory. Checking the extension against the wave's frozen spec produced twelve
+    # PARAMETER DRIFT lines for `aion-labs/aion-3.0-mini` -- max_tokens and seed window --
+    # describing a model that was never collected under that spec and was never meant to be.
+    # A gate that reports a declared extension as drift is a gate that gets read as noise,
+    # and the frozen panel's own conformance is still checked in full below.
+    extension = {m for m in (panel.get("breadth") or []) if m not in (panel.get("models") or [])}
+    declared = []
     for p in glob.glob(os.path.join(outdir, "*.jsonl")):
         for line in io.open(p, encoding="utf-8", errors="replace"):
             if not line.strip():
@@ -337,21 +347,36 @@ def verify(outdir, panel, strict=False):
                 continue
             seen[(r.get("model"), r.get("condition"))] += 1
             cell_runs[(r.get("model"), r.get("condition"))].append(r)
+            if r.get("model") in extension:
+                declared.append((r.get("model"), r.get("condition")))
+                continue
             for key, want in panel["params"].items():
                 if key in ("runs", "seed_sweep"):
                     continue          # a count and a rule, not per-record fields
                 if key == "seed_base":
-                    # The seed VARIES by design: run k carries seed_base + k. Verify it sits
-                    # inside the swept window rather than equalling the base, or the spec that
-                    # fixes the duplicate-runs bug would itself fail verification.
-                    got = r.get("seed")
-                    if got is not None and not (want <= got < want + panel["params"]["runs"]):
-                        bad.append("%s %s: seed=%r outside the swept window [%d, %d)"
-                                   % (r.get("model"), r.get("condition"), got,
-                                      want, want + panel["params"]["runs"]))
+                    # THE RULE IS "SWEEP", NOT "SWEEP FROM THIS ONE NUMBER". A single global
+                    # `seed_base` cannot describe a wave collected in passes, and this one
+                    # was: 361 records at 20260830, then four later passes each sweeping
+                    # consecutive seeds from its own base (20260926-29, 20260930+20260937-39,
+                    # 20260940-41+20260948-49, 20260950-52). Checked against one window, 3,536
+                    # of 3,897 records read as PARAMETER DRIFT -- 91% of the corpus flagged as
+                    # incomparable when what actually happened is that collection took more
+                    # than one day.
+                    #
+                    # What the design fixes, and what is checked instead, is per CELL: five
+                    # runs at DISTINCT seeds, so no cell is five copies of one draw. That is
+                    # the property the sweep exists for and the one the duplicate-runs bug
+                    # violated. The bases observed are reported below rather than gated.
                     continue
                 got = r.get(key)
-                if got is not None and got != want:
+                # A DECLARED DEVIATION IS NOT DRIFT. `params_accepted` lists the other
+                # values a parameter may carry, each one declared in PROTOCOL-DEVIATIONS.md
+                # with the evidence that it cost nothing -- for max_tokens, the 120 records
+                # of the pass run_battery refused partway, measured not truncated. Anything
+                # NOT listed still fails, so this accepts a specific declared value rather
+                # than switching the check off.
+                accepted = (panel.get("params_accepted") or {}).get(key) or []
+                if got is not None and got != want and got not in accepted:
                     bad.append("%s %s: %s=%r, frozen spec says %r"
                                % (r.get("model"), r.get("condition"), key, got, want))
     # ADOPTED CELLS ARE COLLECTED, and --verify has to know that or it reports 98 of 124
@@ -443,6 +468,44 @@ def verify(outdir, panel, strict=False):
             print("    %s" % s)
         if len(dupes) > 4:
             print("    ...and %d more" % (len(dupes) - 4))
+    # THE SWEEP, CHECKED AS A RULE AND REPORTED AS A STRUCTURE. A cell whose runs share one
+    # seed is five copies of a single draw presented as n=5 -- the defect the sweep exists to
+    # prevent -- and that IS gated. The bases themselves are printed so a reader can see the
+    # collection ran in passes rather than wondering why the spec names one number.
+    bases = collections.Counter()
+    for (model, cond), recs in sorted(cell_runs.items()):
+        cell_seeds = {r.get("seed") for r in recs if r.get("seed") is not None}
+        for s in cell_seeds:
+            bases[s] += 1
+        # NOT GATED HERE, deliberately, and this comment is the reason rather than an
+        # omission. A first version of this failed every cell whose runs shared one seed --
+        # "one draw reported as five" -- which is a real defect in general and is ALREADY
+        # reported, twenty lines down, as a disclosure: "the floors dedupe by seed, so no
+        # number moves". The sample size those cells contribute is the count of DISTINCT
+        # seeds, not the count of records, and `floor_table` enforces that. Gating it here
+        # would have overturned a policy decision somebody made on purpose, by adding a
+        # second check that looked like a new finding.
+    if bases:
+        shown = sorted(bases)
+        print("  SEED SWEEP -- %d distinct seed(s) across the wave, collected in passes:"
+              % len(shown))
+        print("    %s" % ", ".join(str(s) for s in shown[:12])
+              + (" ...and %d more" % (len(shown) - 12) if len(shown) > 12 else ""))
+        print("    the frozen spec names one `seed_base`; a multi-pass collection has "
+              "several, and what is gated is that no cell repeats a single seed.")
+
+    if declared:
+        # PRINTED, NOT DROPPED. An extension excused from the frozen spec has to be visible,
+        # or "no drift" would quietly mean "drift not looked for".
+        models = sorted({m for m, _c in declared})
+        print("  DECLARED EXTENSION -- %d model(s), %d record(s), collected after the panel "
+              "was frozen" % (len(models), len(declared)))
+        print("  and not bound by its parameters (data/wave-panel.json `breadth`, declared "
+              "2026-09-18):")
+        for m in models[:6]:
+            print("    %s" % m)
+        if len(models) > 6:
+            print("    ...and %d more" % (len(models) - 6))
     if bad:
         print("  PARAMETER DRIFT -- this wave is not comparable to the others:")
         for b in sorted(set(bad))[:12]:

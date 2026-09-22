@@ -272,14 +272,41 @@ def inspect(d: Path) -> dict:
     # ever clear, which is how a report teaches its reader to skim. This validator
     # checks the bias-study collection discipline, and says so when a run is not
     # one rather than judging it against a rule it was never written to.
+    #
+    # `battery-run` IS THIS STUDY. The allowlist named the retired instrument and nothing
+    # else, so when the bank was replaced on 2026-09-17 the collector began writing
+    # `battery-run/1` and the panel wave -- 3,897 records, the corpus every published figure
+    # in the paper is computed from -- started reading as ANOTHER WORKSTREAM. It was exempted
+    # from every collection rule below, with the printed reason "no published number depends
+    # on it", which is the exact opposite of true. It stayed that way because an exemption
+    # prints as a tidy dash rather than a failure. An allowlist keyed on a name that changed
+    # is a check whose field of view is narrower than its claim.
+    #
+    # AND AN UNKNOWN SCHEMA NOW BLOCKS. Exempting whatever does not match the allowlist means
+    # the failure above could only ever be found by reading a dash. "This data is not ours" is
+    # a claim with an owner, so each foreign schema is named in FOREIGN_SCHEMAS with whose it
+    # is; anything else is a LIVE finding. Under this rule `battery-run/1` would have failed
+    # on the day the collector started writing it, instead of being waved through for five
+    # days with a reason that was the opposite of true.
     foreign = m.get("schema") or m.get("kind")
-    if foreign and not str(foreign).startswith(("compass-run", "bias-study")):
+    if foreign and not str(foreign).startswith(OURS):
+        owner = next((v for k, v in FOREIGN_SCHEMAS.items() if str(foreign).startswith(k)),
+                     None)
+        if owner is None:
+            out["findings"].append({
+                "code": "unknown-schema",
+                "detail": "manifest declares schema %r, which is neither this study's "
+                          "(%s) nor any workstream named in validate_runs.FOREIGN_SCHEMAS. "
+                          "Say whose it is: an unrecognised schema is exempted from every "
+                          "rule below, so leaving it unnamed silently un-checks a run."
+                          % (foreign, ", ".join(OURS)),
+            })
+            return out
         out["findings"].append({
             "code": "other-workstream",
             "severity": "unvalidated",
-            "detail": "manifest declares schema %r -- this run belongs to another "
-                      "workstream and is NOT VALIDATED by the bias-study collection "
-                      "rules, rather than failing them." % (foreign,),
+            "detail": "manifest declares schema %r -- %s. NOT VALIDATED by the bias-study "
+                      "collection rules, rather than failing them." % (foreign, owner),
         })
         return out
 
@@ -415,6 +442,24 @@ KNOWN = {
 }
 
 
+#: Schema prefixes THIS study writes. Every collector that has ever stamped a record belongs
+#: here, including retired ones, because a retired corpus is still ours to validate.
+OURS = ("compass-run", "bias-study", "battery-run")
+
+#: Schema prefixes that belong to a NAMED other workstream, with whose they are. A run
+#: declaring one of these is exempted from the collection rules; a run declaring anything
+#: outside both this map and OURS is a live finding, because an exemption nobody claimed is
+#: how the panel wave went five days unvalidated (LEARNINGS 77).
+FOREIGN_SCHEMAS = {
+    "evidence-collection": "the evidence-use collector's own fixtures -- a fake backend for "
+                           "retry tests, a pilot and an export. No battery record",
+    "bias-residency-probe": "the residency probe, which measures where a request is served "
+                            "from and administers no instrument",
+    "offline_review_export": "an offline review export keyed by `kind`, carrying answer keys "
+                             "for human scoring rather than a collection",
+}
+
+
 def _split_known(reports):
     """Partition each report's findings into (known, live). Also returns stale registry keys."""
     seen = set()
@@ -530,9 +575,15 @@ def main(argv: list[str]) -> int:
             # either is how 38 layout mismatches buried 5 real findings.
             if all(f.get("severity") == "unvalidated" for f in r["findings"]):
                 unvalidated.append(r)
+                # NAME THE REASON IN THE DASH. Three different exemptions printed the same
+                # "[flat layout, not validated]", so a run skipped because it belongs to
+                # another workstream was indistinguishable from one skipped for having no
+                # manifest discipline -- and the panel wave hid in that column for five days
+                # (LEARNINGS 78). A reader cannot agree with an exemption they cannot see.
                 tag = ("inventoried, not validated" if r.get("inventoried")
                        else "not validated")
-                print(f"  --   {head}   [{r.get('layout')} layout, {tag}]")
+                why = ", ".join(sorted({f["code"] for f in r["findings"]}))
+                print(f"  --   {head}   [{r.get('layout')} layout, {tag}: {why}]")
                 continue
             print(f"  {'FLAG' if r['_live'] else 'known'}  {head}")
             for f in r["_live"]:

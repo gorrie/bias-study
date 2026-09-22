@@ -110,6 +110,22 @@ NOT_A_PROCEDURE = {
     "rung2_contrast.py": "analysis -- arm minus control across two run directories, the "
                          "registered rung-2 analysis that had no script until 2026-09-21. "
                          "Reported in RESULTS-2026-09-21-rung2-control-v2.md",
+    # ---- ADDED 2026-09-21, second pass. Named by a study-side skill and by none in the
+    # mirror, so the mirror's coverage report carried them while the study's did not -- the
+    # same split the eight entries above were added to close. The declaration belongs here
+    # for the same reason it did then: what a script IS does not depend on which tree you
+    # are standing in, and a rule that answers differently per tree is a rule with a blind
+    # side.
+    "exact_vs_bootstrap.py": "analysis -- the sheet bootstrap against an exact permutation "
+                             "test on every published contrast. It is the measurement behind "
+                             "§9's anti-conservatism limitation, run when the family changes "
+                             "size, not a workflow step",
+    "instantiate_stems.py": "parked -- factions bank construction from the authored stems. "
+                            "Companion to faction_lean.py above; PLAN.md Parked owns it and "
+                            "the bank does not exist yet",
+    "ungated_numbers.py": "review aid -- prints the paper's numeric claims that NO gate "
+                          "registers, for a human to read. It makes no judgement and cannot "
+                          "pass or fail, so it is deliberately not a gate and not a step",
     "jurisdiction_gradient.py": "analysis -- cited in step 6's command list",
     "strong_shift.py": "analysis -- cited in step 6's command list",
     "pipeline_decomposition.py": "analysis of a rung this release does not ship",

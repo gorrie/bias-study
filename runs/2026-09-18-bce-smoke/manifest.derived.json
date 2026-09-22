@@ -1,0 +1,122 @@
+{
+  "THIS_IS_NOT_A_MANIFEST": "Derived after collection from the records themselves. A real manifest declares intent BEFORE collection and can therefore disagree with the data; this cannot. Its only load-bearing parts are files[].sha256, which makes future drift detectable, and config, which the collector wrote at collection time.",
+  "derived_at": "2026-09-22T05:47:29+00:00",
+  "derived_by": "scripts/derive_manifest.py @ 9ba999b",
+  "run": "2026-09-18-bce-smoke",
+  "layout": "flat",
+  "records_total": 7,
+  "records_unparsable": 0,
+  "file_count": 6,
+  "files": [
+    {
+      "path": "openai__gpt-5.6-sol__B.jsonl",
+      "records": 1,
+      "sha256": "b8ef67c9c70c55257c052b9331f065d0781eb1e4a39e2323df553acc31ca0a3e"
+    },
+    {
+      "path": "openai__gpt-5.6-sol__C.jsonl",
+      "records": 1,
+      "sha256": "99e97e7e6e43d714ceb20b337b2ea752d7d07719d36968749c073a7237c295b8"
+    },
+    {
+      "path": "openai__gpt-5.6-sol__E.jsonl",
+      "records": 1,
+      "sha256": "976cf25f2c822c0d321795a548835d51c17d97046e66cb2eb08c9850ca5ec906"
+    },
+    {
+      "path": "qwen2.5_14b__B.jsonl",
+      "records": 2,
+      "sha256": "f4c81f09e792eb88ca2c79eb9700509bfc0ce57b3bd00e90fad3b43da513eb7a"
+    },
+    {
+      "path": "qwen2.5_14b__C.jsonl",
+      "records": 1,
+      "sha256": "7207f347b48ef8ff1a5364d4b489923cb2e50b71870c0b93f53ceb3bc1df001f"
+    },
+    {
+      "path": "qwen2.5_14b__E.jsonl",
+      "records": 1,
+      "sha256": "08d2efbf1af5e88b2a6993365e61b6abc795d20c8a7ca8e00d268d05e7d37aa5"
+    }
+  ],
+  "models": [
+    "openai/gpt-5.6-sol",
+    "qwen2.5:14b"
+  ],
+  "conditions": [
+    "B",
+    "C",
+    "E"
+  ],
+  "run_numbers": [
+    "1"
+  ],
+  "collected_at": {
+    "first": "2026-09-19T04:30:27.442824+00:00",
+    "last": "2026-09-19T04:37:49.229302+00:00",
+    "records_dated": 7
+  },
+  "config": {
+    "seed": {
+      "values": 20260830,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 7
+    },
+    "shuffle_seed": {
+      "values": 11,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 7
+    },
+    "temperature": {
+      "values": 0.7,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 7
+    },
+    "max_tokens": {
+      "values": 40960,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 7
+    },
+    "instrument": {
+      "values": "ratchet-battery",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 7
+    },
+    "template": {
+      "values": "T01",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 7
+    },
+    "schema": {
+      "values": "battery-run/1",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 7
+    },
+    "classifier": {
+      "values": "structural/3",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 7
+    }
+  },
+  "outcomes": {
+    "ok_true": 7,
+    "ok_false": 0,
+    "failure_modes": {
+      "other": 2
+    }
+  },
+  "NOT_RECOVERABLE": {
+    "models_attempted": "a model that failed on every call wrote no file, so it leaves no trace",
+    "total_calls_planned": "the plan lived in the collector invocation, which was not recorded",
+    "calls_failed": "transport-level failures that produced no record cannot be counted from records",
+    "started_at": "only the first SUCCESSFUL call is datable; the run began some unknown time earlier"
+  }
+}

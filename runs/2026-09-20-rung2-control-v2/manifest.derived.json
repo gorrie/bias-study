@@ -1,0 +1,143 @@
+{
+  "THIS_IS_NOT_A_MANIFEST": "Derived after collection from the records themselves. A real manifest declares intent BEFORE collection and can therefore disagree with the data; this cannot. Its only load-bearing parts are files[].sha256, which makes future drift detectable, and config, which the collector wrote at collection time.",
+  "derived_at": "2026-09-22T05:47:29+00:00",
+  "derived_by": "scripts/derive_manifest.py @ 9ba999b",
+  "run": "2026-09-20-rung2-control-v2",
+  "layout": "flat",
+  "records_total": 70,
+  "records_unparsable": 0,
+  "file_count": 7,
+  "files": [
+    {
+      "path": "anthropic__claude-fable-5.1__B.jsonl",
+      "records": 10,
+      "sha256": "ca81268876a160a0579d650d55000e375826e599e7a67e5b9048adfd839d80ad"
+    },
+    {
+      "path": "google__gemini-3.7-flash__B.jsonl",
+      "records": 10,
+      "sha256": "38b8e402c51bb92b84ae2bad85df01fae4d585b23f6335b7c44c87021fac024f"
+    },
+    {
+      "path": "google__gemini-3.8-flash__B.jsonl",
+      "records": 10,
+      "sha256": "ccbacf09f0896c7a703f4c97d7831f0033c7d0fad9f96ee6b09bae0c2f347d37"
+    },
+    {
+      "path": "moonshotai__kimi-k2.5__B.jsonl",
+      "records": 10,
+      "sha256": "0281a2adcdd6d52fcdd9f586074f9357075f19e50508b2876938f68e0b268257"
+    },
+    {
+      "path": "openai__gpt-6-astra-pro__B.jsonl",
+      "records": 10,
+      "sha256": "65ff91be29f70d138de6e746f804e89b872826c1a71b6f5a3d7099ef3b309b76"
+    },
+    {
+      "path": "openai__gpt-6-astra__B.jsonl",
+      "records": 10,
+      "sha256": "5dcf833723e394674436fc1631dfdde48bc01f675dba0723465c66a978809aa3"
+    },
+    {
+      "path": "x-ai__grok-4.3__B.jsonl",
+      "records": 10,
+      "sha256": "4d0364f600694493efc7d2584bf159f44e886763ae24a4db340c2a8f111de680"
+    }
+  ],
+  "models": [
+    "anthropic/claude-fable-5.1",
+    "google/gemini-3.7-flash",
+    "google/gemini-3.8-flash",
+    "moonshotai/kimi-k2.5",
+    "openai/gpt-6-astra",
+    "openai/gpt-6-astra-pro",
+    "x-ai/grok-4.3"
+  ],
+  "conditions": [
+    "B"
+  ],
+  "run_numbers": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5"
+  ],
+  "collected_at": {
+    "first": "2026-09-21T01:22:21.340091+00:00",
+    "last": "2026-09-21T02:06:28.823996+00:00",
+    "records_dated": 70
+  },
+  "config": {
+    "seed": {
+      "values": [
+        20260926,
+        20260927,
+        20260928,
+        20260929,
+        20260930
+      ],
+      "unanimous": false,
+      "distinct": 5,
+      "records_declaring": 70
+    },
+    "shuffle_seed": {
+      "values": [
+        11,
+        22
+      ],
+      "unanimous": false,
+      "distinct": 2,
+      "records_declaring": 70
+    },
+    "temperature": {
+      "values": 0.7,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 70
+    },
+    "max_tokens": {
+      "values": 40960,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 70
+    },
+    "instrument": {
+      "values": "ratchet-battery",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 70
+    },
+    "template": {
+      "values": "T01",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 70
+    },
+    "schema": {
+      "values": "battery-run/1",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 70
+    },
+    "classifier": {
+      "values": "structural/3",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 70
+    }
+  },
+  "outcomes": {
+    "ok_true": 70,
+    "ok_false": 0,
+    "failure_modes": {
+      "refused": 20
+    }
+  },
+  "NOT_RECOVERABLE": {
+    "models_attempted": "a model that failed on every call wrote no file, so it leaves no trace",
+    "total_calls_planned": "the plan lived in the collector invocation, which was not recorded",
+    "calls_failed": "transport-level failures that produced no record cannot be counted from records",
+    "started_at": "only the first SUCCESSFUL call is datable; the run began some unknown time earlier"
+  }
+}

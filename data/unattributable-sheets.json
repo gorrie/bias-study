@@ -1,0 +1,24 @@
+{
+ "_what": "Sheets whose answers cannot be attributed to the propositions they answer: pair-consistency is at chance under BOTH the item-id mapping and the slot mapping, so the record does not say which proposition each answer belongs to. DECLARED here so the exclusion is a stated limitation rather than an unexplained hole. check_sheet_attribution.py reads this file; an undeclared sheet blocks and a moved count blocks.",
+ "_why_this_is_not_loosening_the_gate": "floor_table.py already drops these sheets from every row that depends on item identity and counts the drop. Declaring them changes no published number; it makes the exclusion readable, and makes a CHANGE in it fail.",
+ "_who_loses_sheets_this_way": "Every one of the twelve is a small or quantised build. Eight are local Ollama builds and four are small hosted models; not one frontier model contributes a single unattributable sheet. That is the same split every other defect in this corpus shows, and it is a reason to distrust the LOCAL rows of any table computed without this filter -- not a reason to distrust the filter.",
+ "_what_it_is_not": "It is not refusal, not truncation and not a parse failure: these sheets arrive complete and well-formed. The record simply does not say whether the model answered by printed item id or straight down the page, and the two readings disagree. A sheet is only ever classified this way when BOTH readings score at chance on the 16 mirrored pairs, so a model holding any position at all is never caught by it.",
+ "_denominator": "79 of 5591 valid shuffled sheets, 1.4%. The worst single model is llama3.2:latest at 6 of 13, and the counts per model are below so a reader can drop any model they think is too damaged and recompute.",
+ "_measured_by": "scripts/check_sheet_attribution.py --write",
+ "sheets_examined": 5591,
+ "total": 79,
+ "by_model": {
+  "mistral:latest": 25,
+  "ibm-granite/granite-4.2-8b": 12,
+  "llama3.1:8b": 9,
+  "llama3.2:latest": 6,
+  "nvidia/nemotron-3.5-lightning": 6,
+  "amazon/nova-micro-v1": 5,
+  "llama3.2:3b-instruct-q8_0": 4,
+  "qwen2.5:14b": 4,
+  "llama3.1:8b-instruct-q8_0": 3,
+  "phi4:latest": 3,
+  "aion-labs/aion-3.0-mini": 1,
+  "hf.co/OBLITERATUS/Qwen3.8-27B-OBLITERATED:Q4_K_M": 1
+ }
+}

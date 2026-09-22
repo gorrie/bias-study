@@ -1,0 +1,124 @@
+{
+  "THIS_IS_NOT_A_MANIFEST": "Derived after collection from the records themselves. A real manifest declares intent BEFORE collection and can therefore disagree with the data; this cannot. Its only load-bearing parts are files[].sha256, which makes future drift detectable, and config, which the collector wrote at collection time.",
+  "derived_at": "2026-09-22T05:47:29+00:00",
+  "derived_by": "scripts/derive_manifest.py @ 9ba999b",
+  "run": "2026-09-21-omission-nemotron-phala",
+  "layout": "flat",
+  "records_total": 48,
+  "records_unparsable": 0,
+  "file_count": 4,
+  "files": [
+    {
+      "path": "nvidia__nemotron-3.5-lightning__N__asis.jsonl",
+      "records": 12,
+      "sha256": "1c051c9f0b78060bf96bdec9bda581d665bebc8fcae6ab673dc66fd560a4bf97"
+    },
+    {
+      "path": "nvidia__nemotron-3.5-lightning__N__renum.jsonl",
+      "records": 12,
+      "sha256": "eef17a970811c34e746e9f2674849af7526eef573de3f7cc6f01952e17dff80a"
+    },
+    {
+      "path": "nvidia__nemotron-3.5-lightning__P__asis.jsonl",
+      "records": 12,
+      "sha256": "6b4338877cee008b56788ea66d00bfd65b90a119717541fdb60216ba177fd787"
+    },
+    {
+      "path": "nvidia__nemotron-3.5-lightning__P__renum.jsonl",
+      "records": 12,
+      "sha256": "3346b0dbefcf856a1263ab7d9c91b18c30f11f56ca01c6adb370e0375158c72b"
+    }
+  ],
+  "models": [
+    "nvidia/nemotron-3.5-lightning"
+  ],
+  "conditions": [
+    "N",
+    "P"
+  ],
+  "run_numbers": [
+    "1"
+  ],
+  "collected_at": {
+    "first": "2026-09-22T01:57:42.978232+00:00",
+    "last": "2026-09-22T02:50:17.254116+00:00",
+    "records_dated": 48
+  },
+  "config": {
+    "seed": {
+      "values": null,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 48
+    },
+    "shuffle_seed": {
+      "values": [
+        52,
+        158,
+        316,
+        361,
+        442,
+        622,
+        633,
+        823,
+        841,
+        890,
+        902,
+        938
+      ],
+      "unanimous": false,
+      "distinct": 12,
+      "records_declaring": 48
+    },
+    "temperature": {
+      "values": 0.7,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 48
+    },
+    "max_tokens": {
+      "values": 40960,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 48
+    },
+    "instrument": {
+      "values": "ratchet-battery",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 48
+    },
+    "template": {
+      "values": "T01",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 48
+    },
+    "schema": {
+      "values": "battery-run/1",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 48
+    },
+    "classifier": {
+      "values": "structural/3",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 48
+    }
+  },
+  "outcomes": {
+    "ok_true": 48,
+    "ok_false": 0,
+    "failure_modes": {
+      "other": 1,
+      "budget-exhausted": 1
+    }
+  },
+  "NOT_RECOVERABLE": {
+    "models_attempted": "a model that failed on every call wrote no file, so it leaves no trace",
+    "total_calls_planned": "the plan lived in the collector invocation, which was not recorded",
+    "calls_failed": "transport-level failures that produced no record cannot be counted from records",
+    "started_at": "only the first SUCCESSFUL call is datable; the run began some unknown time earlier"
+  }
+}

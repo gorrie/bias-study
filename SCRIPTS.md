@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-130 script(s). 0 carry no module docstring and are listed at the end.
+136 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -28,6 +28,7 @@
 - **`drift_report.py`** — Generate the human-readable drift summary for one run.
 - **`drift_timeseries.py`** — Cross-run aggregator for longitudinal drift analysis.
 - **`floor_table.py`** — Generate every measured floor, in BOTH statistics, from raw runs only.
+- **`group_power.py`** — What could a between-GROUP comparison on this panel detect? Asked BEFORE any effect.
 - **`power.py`** — What effect is this instrument actually able to detect? And which of our nulls are real?
 
 ## Scoring and the judge panel
@@ -100,7 +101,7 @@
 - **`check_no_key_repro.py`** — Checklist item 10, made mechanical: can a reader re-derive the numbers with no API key?
 - **`check_outcomes_computable.py`** — Refuse to collect until every pre-registered outcome can be COMPUTED from a run directory.
 - **`check_release_table.py`** — Does RELEASE-2026-09-07's arm inventory still match runs/?
-- **`check_sheet_attribution.py`** — Can each answer be attributed to the proposition it belongs to? For 44 sheets, no.
+- **`check_sheet_attribution.py`** — Can each answer be attributed to the proposition it belongs to? For some sheets, no.
 - **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
 - **`check_skill_procedures.py`** — Do the skills' documented commands actually RUN, not just exist?
 - **`check_undefined_names.py`** — Names a script uses and never binds -- the NameError that waits for a rare path.
@@ -113,8 +114,10 @@
 - **`dose_figure.py`** — The dose figure: outcome against MEASURED perturbation, not the knob setting.
 - **`dose_smoke_gate.py`** — Post-abliteration quality gate.
 - **`eligibility.py`** — One rule for whether a scored record may enter an aggregate — DATA-EMPTY-SCORES-002.
+- **`exact_vs_bootstrap.py`** — Does the bootstrap disagree with an exact test on the PUBLISHED contrasts?
 - **`export_analysis_ready.py`** — One flat, eligibility-flagged table of every scored record, for people who are not us.
 - **`export_repairs.py`** — Copy the repaired corpus into the public mirror, deriving the list rather than typing it.
+- **`faction_lean.py`** — The factions estimator: two-way centred sector lean, with an exact permutation null.
 - **`floor_resolution.py`** — What a modal-vs-modal floor can actually resolve, and which factor is bigger ON THE SAME MODELS.
 - **`frame_gap.py`** — Does the judged instrument measure a POSITION, or agreement with the FRAME?
 - **`frontier_extend.py`** — Extend the one-sitting arms onto the CURRENT frontier, which the frozen panel excludes.
@@ -123,6 +126,7 @@
 - **`gen_data_dictionary.py`** — Generate DATA-DICTIONARY.md from the corpus, so it cannot describe a corpus that moved.
 - **`gen_readme.py`** — Fill the README's generated blocks from the run data. Nothing in them is hand-written.
 - **`gen_zenodo.py`** — Generate `.zenodo.json` from CITATION.cff, and gate what a Release will mint.
+- **`instantiate_stems.py`** — Build the factions bank from four authored stems and four authored path phrases.
 - **`intensity_by_claim.py`** — Does the panel reserve its strongest answer for claims with a record behind them?
 - **`item_gradient.py`** — Per-item agreement at baseline: where the panel is saturated and where it divides.
 - **`item_omission.py`** — Do models skip particular PROPOSITIONS, or particular PLACES ON THE PAGE?
@@ -131,6 +135,7 @@
 - **`model_cards.py`** — One card per model: can this model carry a claim at all, and on what evidence?
 - **`monitor_experiment.py`** — monitor_experiment.py — the durable, cross-platform half of the experiment-monitor agent.
 - **`multiple_comparisons.py`** — How many hypothesis tests does this study actually run, and which are corrected?
+- **`null_audit.py`** — What effect could each of OUR nulls have detected? The audit we apply to everyone else.
 - **`omission_arms.py`** — The as-is vs renumbered arm contrast, with the exact test that decides it.
 - **`order_floor_position.py`** — Does the instruction move position further than REORDERING THE ITEMS does?
 - **`pair_consistency.py`** — Agreeing with BOTH halves of a mirrored pair: incoherence, or a contested subject?
@@ -155,5 +160,6 @@
 - **`splice_holes.py`** — Which cells are STILL missing after splicing existing re-collections in?
 - **`strong_shift.py`** — How hard does a model state its answer, and what moves that? Two findings, one command.
 - **`supervised_dose_series.py`** — Supervised wrapper around run_dose_series.py.
+- **`ungated_numbers.py`** — Every numeric claim in the paper that NO gate is checking.
 - **`validate_claim.py`** — Pre-publication gate. Refuses a claim until the data behind it passes every check.
 - **`validate_runs.py`** — validate_runs.py — does each run directory say what it actually contains?

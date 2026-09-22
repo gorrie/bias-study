@@ -1,0 +1,104 @@
+{
+  "THIS_IS_NOT_A_MANIFEST": "Derived after collection from the records themselves. A real manifest declares intent BEFORE collection and can therefore disagree with the data; this cannot. Its only load-bearing parts are files[].sha256, which makes future drift detectable, and config, which the collector wrote at collection time.",
+  "derived_at": "2026-09-22T05:47:29+00:00",
+  "derived_by": "scripts/derive_manifest.py @ 9ba999b",
+  "run": "2026-09-19-rung2-smoke",
+  "layout": "flat",
+  "records_total": 3,
+  "records_unparsable": 0,
+  "file_count": 3,
+  "files": [
+    {
+      "path": "x-ai__grok-4.3__G-Boost.jsonl",
+      "records": 1,
+      "sha256": "6cf59e6021f639a77c3e7cac89181142943d9c75878116939081c50cec80e34b"
+    },
+    {
+      "path": "x-ai__grok-4.3__G-Directive.jsonl",
+      "records": 1,
+      "sha256": "1cc36f60f04b44db614a4511752d58436f022e8cf836a564ffb96e36385604dd"
+    },
+    {
+      "path": "x-ai__grok-4.3__G-Persona.jsonl",
+      "records": 1,
+      "sha256": "4339802bbc7eec49a501b5172c5a53fefdd1ed3edf4ebaf6d6a130c912f37d10"
+    }
+  ],
+  "models": [
+    "x-ai/grok-4.3"
+  ],
+  "conditions": [
+    "G-Boost",
+    "G-Directive",
+    "G-Persona"
+  ],
+  "run_numbers": [
+    "1"
+  ],
+  "collected_at": {
+    "first": "2026-09-19T08:23:05.596443+00:00",
+    "last": "2026-09-19T08:23:19.436926+00:00",
+    "records_dated": 3
+  },
+  "config": {
+    "seed": {
+      "values": null,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 3
+    },
+    "shuffle_seed": {
+      "values": 11,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 3
+    },
+    "temperature": {
+      "values": 0.8,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 3
+    },
+    "max_tokens": {
+      "values": 8192,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 3
+    },
+    "instrument": {
+      "values": "ratchet-battery",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 3
+    },
+    "template": {
+      "values": "T01",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 3
+    },
+    "schema": {
+      "values": "battery-run/1",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 3
+    },
+    "classifier": {
+      "values": "structural/3",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 3
+    }
+  },
+  "outcomes": {
+    "ok_true": 3,
+    "ok_false": 0,
+    "failure_modes": {}
+  },
+  "NOT_RECOVERABLE": {
+    "models_attempted": "a model that failed on every call wrote no file, so it leaves no trace",
+    "total_calls_planned": "the plan lived in the collector invocation, which was not recorded",
+    "calls_failed": "transport-level failures that produced no record cannot be counted from records",
+    "started_at": "only the first SUCCESSFUL call is datable; the run began some unknown time earlier"
+  }
+}

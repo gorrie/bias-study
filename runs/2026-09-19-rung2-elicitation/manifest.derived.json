@@ -1,0 +1,324 @@
+{
+  "THIS_IS_NOT_A_MANIFEST": "Derived after collection from the records themselves. A real manifest declares intent BEFORE collection and can therefore disagree with the data; this cannot. Its only load-bearing parts are files[].sha256, which makes future drift detectable, and config, which the collector wrote at collection time.",
+  "derived_at": "2026-09-22T05:47:29+00:00",
+  "derived_by": "scripts/derive_manifest.py @ 9ba999b",
+  "run": "2026-09-19-rung2-elicitation",
+  "layout": "flat",
+  "records_total": 280,
+  "records_unparsable": 0,
+  "file_count": 41,
+  "files": [
+    {
+      "path": "anthropic__claude-fable-5.1__G-Boost.jsonl",
+      "records": 10,
+      "sha256": "6af22b47aa41b49a353e3531adad8dd616ea46f41045b60c559554510b256cc2"
+    },
+    {
+      "path": "anthropic__claude-fable-5.1__G-Directive.jsonl",
+      "records": 10,
+      "sha256": "4b93cd93dd2e18ce68c76487e125e36d89d7fb127e1e63713fed198c3ff8184d"
+    },
+    {
+      "path": "anthropic__claude-fable-5.1__G-Persona.jsonl",
+      "records": 10,
+      "sha256": "54fb8d891dd60b7e1fbbc9f8885b4d489cf7e75c221ea99ea6c295cbc6146304"
+    },
+    {
+      "path": "anthropic__claude-fable-5.1__S-Balanced.jsonl",
+      "records": 5,
+      "sha256": "fcda76cab17af5c2d018dcdd914e48f905ff082c83942ad20ce1240bed87ee6c"
+    },
+    {
+      "path": "anthropic__claude-fable-5.1__S-Chaotic.jsonl",
+      "records": 5,
+      "sha256": "ba3d0068153b38f7c316158f73650be5c2cc8b1e18ff8d7dfddeaa7369f8d121"
+    },
+    {
+      "path": "anthropic__claude-fable-5.1__S-Creative.jsonl",
+      "records": 5,
+      "sha256": "90a8d39b5bd4d1d821a982a80936be180411278b217a6156a04cbadb8385f2a3"
+    },
+    {
+      "path": "anthropic__claude-fable-5.1__S-Precise.jsonl",
+      "records": 5,
+      "sha256": "1808fc480779c7c3bf1a438fdb3b5ebf25746f4bfe61045568c1626019594d15"
+    },
+    {
+      "path": "google__gemini-3.7-flash__G-Boost.jsonl",
+      "records": 5,
+      "sha256": "d0cfba57e0902f487df7c96e97a54830bc19b278a29bc44143e2b89f204f4d41"
+    },
+    {
+      "path": "google__gemini-3.7-flash__G-Directive.jsonl",
+      "records": 5,
+      "sha256": "1381175d173fd91ab95a7c7f8476d1a2b07679fcbe601ba5f45cbd128a5e4921"
+    },
+    {
+      "path": "google__gemini-3.7-flash__G-Persona.jsonl",
+      "records": 5,
+      "sha256": "38eb17a1f29382bf6ee962c548ba26eb5557ec920ac9e08d35cb9ed47ff97dd1"
+    },
+    {
+      "path": "google__gemini-3.8-flash__G-Boost.jsonl",
+      "records": 5,
+      "sha256": "b974514ff3c8c1c44d419a26d7f996a76dd19458ecb4152064c6fe7fcaec9674"
+    },
+    {
+      "path": "google__gemini-3.8-flash__G-Directive.jsonl",
+      "records": 5,
+      "sha256": "5fee49d6a9dcf1aefc10190ac7e27b9304db52230fea83c689ae2fba0cf54cc4"
+    },
+    {
+      "path": "google__gemini-3.8-flash__G-Persona.jsonl",
+      "records": 5,
+      "sha256": "78c207e99b6173bcf6faeb517be9472e57d1addcaa1e25e2c54ee638f3a82fb3"
+    },
+    {
+      "path": "moonshotai__kimi-k2.5__G-Boost.jsonl",
+      "records": 10,
+      "sha256": "f1a8a0d564e0932f803225ea1524b05ca5ef5fc7a20f110ef68f727165947fba"
+    },
+    {
+      "path": "moonshotai__kimi-k2.5__G-Directive.jsonl",
+      "records": 10,
+      "sha256": "272f9152f55bd584ec1c20af4619ac7cdc08a49c9306d8bf43524825c81116c0"
+    },
+    {
+      "path": "moonshotai__kimi-k2.5__G-Persona.jsonl",
+      "records": 10,
+      "sha256": "2a0a33d22db5f6e1824951a13223ede6e40a20d64d1f3977ff2de7e4befc7a88"
+    },
+    {
+      "path": "moonshotai__kimi-k2.5__S-Balanced.jsonl",
+      "records": 5,
+      "sha256": "f2472b2c0e85f492f7786bab5a1298419f8f28b9a0eb9b9256aecdc6e8126eef"
+    },
+    {
+      "path": "moonshotai__kimi-k2.5__S-Chaotic.jsonl",
+      "records": 5,
+      "sha256": "6a8f253508e7a8428bf935bd9867321b3ee3cac60e134d7f54d59d9c7d752e21"
+    },
+    {
+      "path": "moonshotai__kimi-k2.5__S-Creative.jsonl",
+      "records": 5,
+      "sha256": "4efbc62c89af8e3d2293a302f3cb2f4b98a0648f5ecefb706a328bffc5b21917"
+    },
+    {
+      "path": "moonshotai__kimi-k2.5__S-Precise.jsonl",
+      "records": 5,
+      "sha256": "5f902ff34a9fa617dd92b665e549617faabe927348bd77cf05e4e8dae4be4d6a"
+    },
+    {
+      "path": "openai__gpt-6-astra-pro__G-Boost.jsonl",
+      "records": 10,
+      "sha256": "31be5a8162c8dfd1cd330cdee245d20ca229b7c60664d60e99a87a173b1c8592"
+    },
+    {
+      "path": "openai__gpt-6-astra-pro__G-Directive.jsonl",
+      "records": 10,
+      "sha256": "9070e5203e4380ada5ccca35a624d0ca56eaeb8ecc4289abf95a5e3ff9f5fd73"
+    },
+    {
+      "path": "openai__gpt-6-astra-pro__G-Persona.jsonl",
+      "records": 10,
+      "sha256": "f91f45957231c847d90c97ae08f1c9bd176737499c9261bf5ff415db56b98f68"
+    },
+    {
+      "path": "openai__gpt-6-astra-pro__S-Balanced.jsonl",
+      "records": 5,
+      "sha256": "ba982888a65b9b2fe9b5ae0670487f4963ce34dbd46f45eb3c12be2794113077"
+    },
+    {
+      "path": "openai__gpt-6-astra-pro__S-Chaotic.jsonl",
+      "records": 5,
+      "sha256": "18809a239711db2d2bd186283f8f7f37db3306d027ed36d50fef3bfbc47db48c"
+    },
+    {
+      "path": "openai__gpt-6-astra-pro__S-Creative.jsonl",
+      "records": 5,
+      "sha256": "8a3f949c79744e784197e2ab677cbdcce18cb7598534238db88b478bb2af1e11"
+    },
+    {
+      "path": "openai__gpt-6-astra-pro__S-Precise.jsonl",
+      "records": 5,
+      "sha256": "ab926e0b1ac0c61373aafdb719de0627427ec989135d50890d4c14f3ceb3440b"
+    },
+    {
+      "path": "openai__gpt-6-astra__G-Boost.jsonl",
+      "records": 10,
+      "sha256": "1ded644928e42ebc6753fcb4a62eaa6b083df9b125ff42bc8f74bc94d4572baa"
+    },
+    {
+      "path": "openai__gpt-6-astra__G-Directive.jsonl",
+      "records": 10,
+      "sha256": "7b199c752c7268634cb37addd34c1ab93eee0e7cda68cfa4488a734d0c9cec2a"
+    },
+    {
+      "path": "openai__gpt-6-astra__G-Persona.jsonl",
+      "records": 10,
+      "sha256": "dfa8a8ff2421d98623c15f2ae13adfc3fce085d7263fc265aeaec27f8964cf42"
+    },
+    {
+      "path": "openai__gpt-6-astra__S-Balanced.jsonl",
+      "records": 5,
+      "sha256": "195f492ad47b45501d8627bfa238be554b995b7e8426a2c5e299b8828798e041"
+    },
+    {
+      "path": "openai__gpt-6-astra__S-Chaotic.jsonl",
+      "records": 5,
+      "sha256": "ec519c34ec99e075c2706f67ff2034c099479e48d3ce316d16cc8bab093cea06"
+    },
+    {
+      "path": "openai__gpt-6-astra__S-Creative.jsonl",
+      "records": 5,
+      "sha256": "6c5033cf455665dc0486d4edbe504ed4643e5cccf3d7b89d0c5945aac763cc61"
+    },
+    {
+      "path": "openai__gpt-6-astra__S-Precise.jsonl",
+      "records": 5,
+      "sha256": "949076e77ef28f6cdc808e010078cf5d46f427c0a926a3524f1a194093b7a8e4"
+    },
+    {
+      "path": "x-ai__grok-4.3__G-Boost.jsonl",
+      "records": 10,
+      "sha256": "8fe5d5c88b1025eb3039dab7f0cbcfdbb3985bb4ae4ce743290aa066701745a5"
+    },
+    {
+      "path": "x-ai__grok-4.3__G-Directive.jsonl",
+      "records": 10,
+      "sha256": "9de5a7edb4c0c49f03f4fcb222f69803f01ecaf828b250861aec1a376628be75"
+    },
+    {
+      "path": "x-ai__grok-4.3__G-Persona.jsonl",
+      "records": 10,
+      "sha256": "6538b93fecc4f9af24c69f10a836a50e491dcdee0c4bca4957845c488d7fbbf8"
+    },
+    {
+      "path": "x-ai__grok-4.3__S-Balanced.jsonl",
+      "records": 5,
+      "sha256": "ae8b71787d9b1a2108ed005efd268318f7aed45661bbe7e1f47a907eab284104"
+    },
+    {
+      "path": "x-ai__grok-4.3__S-Chaotic.jsonl",
+      "records": 5,
+      "sha256": "14ec462016b0fb9bec7be67c9561578e821a543c2e04a8775c44e82c39556a9f"
+    },
+    {
+      "path": "x-ai__grok-4.3__S-Creative.jsonl",
+      "records": 5,
+      "sha256": "3f76ed9a0bbf80594941154f66d66c06184f3c950a46cc42de9634d7ef6603be"
+    },
+    {
+      "path": "x-ai__grok-4.3__S-Precise.jsonl",
+      "records": 5,
+      "sha256": "477b8403a6b258e1a2711c4da0d1f7476cd3e190533a416b4ebbbb4338bda78e"
+    }
+  ],
+  "models": [
+    "anthropic/claude-fable-5.1",
+    "google/gemini-3.7-flash",
+    "google/gemini-3.8-flash",
+    "moonshotai/kimi-k2.5",
+    "openai/gpt-6-astra",
+    "openai/gpt-6-astra-pro",
+    "x-ai/grok-4.3"
+  ],
+  "conditions": [
+    "G-Boost",
+    "G-Directive",
+    "G-Persona",
+    "S-Balanced",
+    "S-Chaotic",
+    "S-Creative",
+    "S-Precise"
+  ],
+  "run_numbers": [
+    "1",
+    "10",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9"
+  ],
+  "collected_at": {
+    "first": "2026-09-19T11:40:16.604755+00:00",
+    "last": "2026-09-20T07:04:17.300429+00:00",
+    "records_dated": 280
+  },
+  "config": {
+    "seed": {
+      "values": null,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 280
+    },
+    "shuffle_seed": {
+      "values": 11,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 280
+    },
+    "temperature": {
+      "values": [
+        0.8,
+        0.7,
+        1.6,
+        1.1,
+        0.2
+      ],
+      "unanimous": false,
+      "distinct": 5,
+      "records_declaring": 280
+    },
+    "max_tokens": {
+      "values": 8192,
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 280
+    },
+    "instrument": {
+      "values": "ratchet-battery",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 280
+    },
+    "template": {
+      "values": "T01",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 280
+    },
+    "schema": {
+      "values": "battery-run/1",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 280
+    },
+    "classifier": {
+      "values": "structural/3",
+      "unanimous": true,
+      "distinct": 1,
+      "records_declaring": 280
+    }
+  },
+  "outcomes": {
+    "ok_true": 280,
+    "ok_false": 0,
+    "failure_modes": {
+      "refused": 27,
+      "truncated": 2,
+      "budget-exhausted": 1,
+      "other": 1
+    }
+  },
+  "NOT_RECOVERABLE": {
+    "models_attempted": "a model that failed on every call wrote no file, so it leaves no trace",
+    "total_calls_planned": "the plan lived in the collector invocation, which was not recorded",
+    "calls_failed": "transport-level failures that produced no record cannot be counted from records",
+    "started_at": "only the first SUCCESSFUL call is datable; the run began some unknown time earlier"
+  }
+}

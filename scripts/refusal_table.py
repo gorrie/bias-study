@@ -561,6 +561,75 @@ def print_switch(per_model, totals):
     return 0
 
 
+def label_counts(rows):
+    """What `--audit` partitions: rows audited, and how many carry a superseded label.
+
+    ONE IMPLEMENTATION, because the paper's Reproduction section states both figures in prose
+    and had them as "1,657 rows" and "27 superseded labels" -- a corpus three collections old.
+    `key_numbers` gates them against this, and a first attempt at gating recomputed the
+    partition and got 1015 instead of 197, because it counted every row carrying a classifier
+    rather than the audited rows (those with a stored `failure_mode`). Two implementations of
+    one partition is how one of them ends up wrong, which is the same rule the mirror check
+    below exists to enforce on the classifier itself.
+    """
+    audited = [r for r in rows if r.get("failure_mode") is not None]
+    return {"rows": len(rows),
+            "audited": len(audited),
+            "superseded": sum(1 for r in audited
+                              if r.get("classifier") != CLASSIFIER_VERSION)}
+
+
+#: How §1b names each switch condition. One place, so the table and the prose agree.
+CONDITION_LABELS = {
+    "A": "**A — answer in a balanced manner**",
+    "N": "N — no system prompt",
+    "D": "D — commit to a position",
+    "P": "**P — content-free instruction**",
+}
+
+
+def print_by_condition(rows):
+    """The four switch conditions, pooled and equal-weighted, as the paper's markdown table.
+
+    BOTH WEIGHTINGS, ALWAYS, because they order the conditions differently and the difference
+    is the point. Pooling lets whichever models carry the most sheets set the rate; averaging
+    per-model rates gives a three-run model the same vote as a twenty-run one. §1b argues from
+    the ORDERING rather than from either figure, so printing one column would be choosing the
+    answer.
+
+    Sorted by pooled rate, descending -- not by a hardcoded condition order, which is what let
+    a stale ordering claim sit above a table that no longer supported it.
+    """
+    agg = collections.defaultdict(lambda: [0, 0])
+    per_model = collections.defaultdict(lambda: collections.defaultdict(lambda: [0, 0]))
+    for row in rows:
+        cond = row.get("condition")
+        if cond not in SWITCH_CONDITIONS:
+            continue
+        kind = classify(row)
+        if kind == "transport":
+            continue
+        agg[cond][1] += 1
+        per_model[cond][row.get("model") or "?"][1] += 1
+        if kind == "refused":
+            agg[cond][0] += 1
+            per_model[cond][row.get("model") or "?"][0] += 1
+    if not agg:
+        print("NO SWITCH-CONDITION RUNS FOUND -- this table would describe nothing.")
+        return 1
+    print("| condition | runs | refusals | rate | equal-weighted |")
+    print("|---|---:|---:|---:|---:|")
+    for cond in sorted(agg, key=lambda c: -agg[c][0] / agg[c][1]):
+        ref, n = agg[cond]
+        cells = per_model[cond].values()
+        eq = sum(r / t for r, t in cells) / len(cells)
+        pooled = "**%.1f%%**" % (100.0 * ref / n) if cond in ("A", "P") else \
+                 "%.1f%%" % (100.0 * ref / n)
+        print("| %s | %d | %d | %s | %.1f%% |"
+              % (CONDITION_LABELS.get(cond, cond), n, ref, pooled, 100.0 * eq))
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--exclude", nargs="*", default=sorted(DEFAULT_EXCLUDE),
@@ -585,9 +654,18 @@ def main():
                          "They are NOT columns in the main table -- different prereg, "
                          "different decision rule -- but they were being dropped from it "
                          "silently, which is worse than either.")
+    ap.add_argument("--by-condition", action="store_true",
+                    help="the four switch conditions as a markdown table -- runs, refusals, "
+                         "pooled rate and equal-weighted rate. This is the paper's §1b "
+                         "table, which was HAND-TYPED until 2026-09-22 and had drifted in "
+                         "every cell: it read 1622 runs under N against a live 673, and its "
+                         "stated ordering A > N > D > P had stopped holding under the pooled "
+                         "weighting when the refusal population was redeclared.")
     args = ap.parse_args()
 
     rows = load(set(args.exclude))
+    if args.by_condition:
+        return print_by_condition(rows)
     if args.audit:
         rc = audit(rows)
         print()

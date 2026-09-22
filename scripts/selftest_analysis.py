@@ -201,6 +201,25 @@ def _known_manifest_findings():
 
 KNOWN_MANIFEST_FINDINGS = _known_manifest_findings()
 
+#: CLASSIFICATIONS, NOT DEFECTS -- and therefore not named per run.
+#:
+#: `KNOWN` names a (run, code) pair for every defect that is understood and not going to be
+#: fixed. These two codes are a different kind of thing: they say what KIND of directory this
+#: is, and they attach to every run of that kind. Naming them per run means every new
+#: collection adds a line to a registry in another file before a green gate is possible --
+#: which is the stale-exemption machine this project has dismantled twice, and it would
+#: reward the wrong action: a reader facing a red gate would add a name rather than freeze
+#: the run.
+#:
+#: Waiving them here costs nothing because each is gated at full strength elsewhere:
+#:   `inventoried-not-validated` -- the freeze itself is `derive_manifest.py --check`, which
+#:       re-derives every hash and fails on any drift. A run with NO freeze reports
+#:       `not-manifest-layout` instead, which is NOT waived and still fails here.
+#:   `other-workstream`         -- the allowlist that decides whose data a run is, held by
+#:       test_validate_runs_layouts.py after it exempted this study's own panel wave for
+#:       five days by naming the retired instrument and nothing else.
+STRUCTURAL_CODES = {"inventoried-not-validated", "other-workstream"}
+
 ROW = re.compile(r"^\s{2}(\S+)\s+(\d+)\s+([+-][\d.]+)\s+\[([+-][\d.]+), ([+-][\d.]+)\]\s+(.*)$")
 
 
@@ -429,7 +448,7 @@ def g8():
     # side is untouched, because an UNDECLARED finding is a defect in either tree.
     scanned = {r["run"] for r in reports}
     expected = {k for k in KNOWN_MANIFEST_FINDINGS if k[0] in scanned}
-    extra = found - KNOWN_MANIFEST_FINDINGS
+    extra = {k for k in found - KNOWN_MANIFEST_FINDINGS if k[1] not in STRUCTURAL_CODES}
     missing = expected - found
     if extra or missing:
         return False, f"unexpected={sorted(extra)} missing={sorted(missing)}"
