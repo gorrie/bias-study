@@ -1,0 +1,19 @@
+{
+  "an_lost": 6,
+  "boot_survive": 108,
+  "compared": 241,
+  "exact_kind": 112,
+  "exact_survive": 83,
+  "gained": 0,
+  "lost": 25,
+  "lost_with_degenerate_arm": 7,
+  "mc_kind": 129,
+  "provenance": {
+    "WHY_CACHED": "this run takes >30 minutes; read the cache, and rebuild it when key_numbers refuses it for drift",
+    "computed_at": "2026-09-23T20:41:28+00:00",
+    "family": "P.CONTRASTS x models with >=2 sheets in both arms",
+    "n_records_read": 3316,
+    "q": 0.05,
+    "run": "2026-09-16-ratchet-v3-wave"
+  }
+}

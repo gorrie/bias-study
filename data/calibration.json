@@ -1,0 +1,28 @@
+{
+  "bar": 0.1,
+  "cells_eligible": 151,
+  "draws": 300,
+  "exact_permutation": {
+    "false_positives": 10,
+    "rate": 0.03333333333333333,
+    "tested": 300
+  },
+  "nominal": 0.05,
+  "provenance": {
+    "WHY_CACHED": "this run takes >30 minutes; read the cache, and rebuild it when key_numbers refuses it for drift",
+    "computed_at": "2026-09-23T20:27:28+00:00",
+    "draws": 300,
+    "estimator": "sheet-bootstrap vs exact-permutation, halves of one cell",
+    "n_records_read": 3316,
+    "run": "2026-09-16-ratchet-v3-wave",
+    "seed": 20260919
+  },
+  "run": "2026-09-16-ratchet-v3-wave",
+  "sheet_bootstrap": {
+    "degenerate_rate": 0.0,
+    "degenerate_tested": 3,
+    "false_positives": 29,
+    "rate": 0.09666666666666666,
+    "tested": 300
+  }
+}

@@ -446,9 +446,18 @@ def test_gated_values_are_not_none():
     #
     # The release gate is where this must NOT be absent, and that is enforced separately:
     # a release runs against a frozen corpus, so the cache is rebuildable and fresh.
+    # The same exemption, for the same reason, extended 2026-09-23 to the two caches whose
+    # scripts run for over half an hour: `calibrate_estimators.py` and `exact_vs_bootstrap.py`.
+    # Their figures head the paper and were four days stale across a corpus freeze with every
+    # gate green, so they are now cached with provenance and REFUSED when the record count
+    # moves. A refused cache surfaces here as None, which is a stated absence -- the
+    # alternative, quoting a figure whose corpus has changed underneath it, is the failure
+    # this whole group exists to prevent.
     cache_derived = {"placebo_panel", "placebo_moves_models", "placebo_both_move",
                      "placebo_only", "placebo_median_effect", "placebo_sig_positive",
-                     "placebo_sig_negative"}
+                     "placebo_sig_negative",
+                     "calib_boot_fpr", "calib_exact_fpr", "calib_cells",
+                     "evb_boot_survive", "evb_exact_survive", "evb_lost", "evb_an_lost"}
     stale_cache = False
     try:
         K.placebo_control()

@@ -48,6 +48,53 @@ AUDIT = os.path.join(STUDY, "data", "controls-audit.json")
 #: so it is computed once by `position_analysis --placebo-table --json` and cached here.
 PLACEBO_CACHE = os.path.join(STUDY, "data", "placebo-control.json")
 
+#: Two figures that HEAD THE PAPER and that nothing checked until 2026-09-23.
+#:
+#: `calibrate_estimators.py` and `exact_vs_bootstrap.py` each run for over half an hour, so
+#: their output is read from prose and never re-run casually. The paper carried 10.5% / 4.5%
+#: over 200 splits of 136 cells, and 104 / 84 / 20-lost -- a 2026-09-19 run taken BEFORE the
+#: corpus froze on 09-21 and never repeated. Live: 9.7% / 3.3% over 300 splits of 151 cells,
+#: and 108 / 83 / 25-lost. Four days stale, in the abstract, the STATE note, §1 and §9.3.
+#:
+#: Nothing caught it. `calibrate_estimators.py --check` exits 0 when the rate clears a 10%
+#: bar, and it clears at 9.7% exactly as it cleared at 10.5% -- a check that cannot tell the
+#: number the paper prints from a different number is checking the design, not the paper. And
+#: neither figure was registered here, so `--check` was green throughout.
+CALIBRATION_CACHE = os.path.join(STUDY, "data", "calibration.json")
+EXACT_VS_BOOT_CACHE = os.path.join(STUDY, "data", "exact-vs-bootstrap.json")
+
+
+def _slow_cache(path, label, rebuild):
+    """A cached figure from a >30-minute script, refused when the corpus has moved under it.
+
+    Same contract as `placebo_control()`: the cache must name the run it read and how many
+    records it read, and if the corpus no longer holds that many the figure is not about this
+    corpus and must not be quoted. Absent is UNAVAILABLE, not zero -- a missing cache is a
+    stated absence, and a stale one is a false measurement.
+    """
+    if not os.path.exists(path):
+        return None
+    try:
+        data = json.load(io.open(path, encoding="utf-8"))
+    except ValueError as exc:
+        raise StaleCache("%s is not valid JSON (%s). Rebuild:\n  %s" % (label, exc, rebuild))
+    prov = (data or {}).get("provenance") or {}
+    run = prov.get("run")
+    if not run:
+        raise StaleCache("%s carries no provenance -- rebuild:\n  %s" % (label, rebuild))
+    run_dir = os.path.join(STUDY, "runs", run)
+    if not os.path.isdir(run_dir):
+        raise StaleCache("%s names run %r, which is not on disk" % (label, run))
+    import position_analysis as _PA
+    now = len(_PA.load_records(run_dir))
+    was = prov.get("n_records_read")
+    if now != was:
+        raise StaleCache(
+            "the corpus moved: %s held %s analysable records when %s was computed (%s) and "
+            "holds %d now. Rebuild:\n  %s"
+            % (run, was, label, prov.get("computed_at", "unknown"), now, rebuild))
+    return data
+
 #: Estimators whose placebo figures this paper is willing to report.
 #:
 #: `pair-bootstrap` is deliberately absent and must stay absent: it resampled the 16
@@ -795,6 +842,21 @@ def build():
     except StaleCache as exc:
         placebo, placebo_error = None, str(exc)
 
+    # Same contract for the two >30-minute caches: a stale one is UNAVAILABLE and says so,
+    # never a quietly different number.
+    try:
+        _calib = _slow_cache(CALIBRATION_CACHE, "data/calibration.json",
+                             "python scripts/calibrate_estimators.py --json "
+                             "> data/calibration.json")
+    except StaleCache:
+        _calib = None
+    try:
+        _evb = _slow_cache(EXACT_VS_BOOT_CACHE, "data/exact-vs-bootstrap.json",
+                           "python scripts/exact_vs_bootstrap.py --json "
+                           "> data/exact-vs-bootstrap.json")
+    except StaleCache:
+        _evb = None
+
     def mde(name, stat="side"):
         # The pair store is built from the same arms; an arm with no data is absent here too,
         # and an MDE against a floor that does not exist is not a smaller number, it is no
@@ -1066,6 +1128,38 @@ def build():
         # printed table. Two hand copies of the count were already disagreeing (PLAN.md said
         # 15, THESES.md said 14, the corpus says 16), which is the drift these keys exist to
         # stop and which had reached the study's own lead finding.
+        # THE ESTIMATOR CALIBRATION, registered 2026-09-23 after four days of a stale figure
+        # heading the paper with every gate green. See CALIBRATION_CACHE above.
+        {"key": "calib_boot_fpr",
+         "value": None if not _calib else round(100 * _calib["sheet_bootstrap"]["rate"], 1),
+         "what": "false-positive rate of the SHEET BOOTSTRAP, measured on split halves of "
+                 "real cells -- the estimator §1's per-model counts are computed with",
+         "phrase": "rejects **%s%%** of true nulls"},
+        {"key": "calib_exact_fpr",
+         "value": None if not _calib else round(100 * _calib["exact_permutation"]["rate"], 1),
+         "what": "the same, for the exact permutation test used as the sensitivity check",
+         "phrase": "the exact test %s%%"},
+        {"key": "calib_cells",
+         "value": None if not _calib else _calib["cells_eligible"],
+         "what": "cells with enough sheets to split in half; the calibration's population",
+         "phrase": "splits of %s cells"},
+        {"key": "evb_boot_survive",
+         "value": None if not _evb else _evb["boot_survive"],
+         "what": "contrasts surviving BH-FDR under the bootstrap, of the compared family",
+         "phrase": "bootstrap returns %s surviving BH-FDR"},
+        {"key": "evb_exact_survive",
+         "value": None if not _evb else _evb["exact_survive"],
+         "what": "the same under the exact test",
+         "phrase": "exact permutation test returns **%s**"},
+        {"key": "evb_lost",
+         "value": None if not _evb else _evb["lost"],
+         "what": "contrasts the bootstrap calls significant and the exact test does not; "
+                 "none are gained in the other direction",
+         "phrase": "%s lost"},
+        {"key": "evb_an_lost",
+         "value": None if not _evb else _evb["an_lost"],
+         "what": "of those, A-N contrasts -- the lead's own comparison",
+         "phrase": "%s A−N contrasts are among them"},
         {"key": "placebo_panel",
          "value": None if not placebo else placebo["panel"],
          "what": "models with BOTH a placebo and a baseline arm -- the panel this rests on",
@@ -3660,8 +3754,19 @@ def main(argv=None):
             unresolved.append(r)
             continue
         expected = r["phrase"] % r["value"]
+        # THE SPELLED ALTERNATIVE, which the SURFACE checker has had since it was written and
+        # this one never did. House style spells small numbers, and a paper that opens a
+        # clause with "six A-N contrasts" is correctly written -- but a digit-only template
+        # can never match it, so the gate reports a sentence that is right as a sentence that
+        # is missing. Found 2026-09-23 while registering `evb_an_lost`, whose value is 6.
+        #
+        # The NUMBER is what is gated; the notation is not. Same rule, same helper, as the
+        # surface path -- the two checkers disagreeing about that was the defect.
         if expected not in text:
-            bad.append(r)
+            spelled = _spell(r["value"])
+            alt = (r["phrase"] % spelled) if spelled is not None else None
+            if not (alt and alt in text):
+                bad.append(r)
     if unresolved:
         print("NOT GATED -- %d number(s) this checkout cannot compute:" % len(unresolved))
         for r in unresolved:

@@ -31,6 +31,7 @@ Exit 0 all calibrated, 1 an estimator is anti-conservative, 2 NOT APPLICABLE.
 from __future__ import annotations
 
 import argparse
+import datetime as _dt
 import itertools
 import json
 import math
@@ -131,6 +132,42 @@ def calibrate_exact(cells, draws, seed):
     return {"tested": n, "false_positives": hits, "rate": (hits / n) if n else None}
 
 
+def _provenance(a):
+    """What a reader needs to know whether this figure still describes the corpus.
+
+    WHY IT IS HERE. This script takes over half an hour, so its output is read from a cache
+    and nobody re-runs it casually. On 2026-09-23 the paper was found carrying 10.5% / 4.5%
+    over 200 splits of 136 cells -- a 2026-09-19 run, taken BEFORE the corpus froze on 09-21
+    and never re-run. The live figures are 9.7% / 3.3% over 300 splits of 151 cells. Every
+    gate was green throughout, because `--check` tests whether the rate clears a 10% bar and
+    it clears at 9.7% exactly as it cleared at 10.5%. A check that cannot tell the number the
+    paper prints from a different number is checking the design, not the paper.
+
+    So the output now carries what `data/placebo-control.json` carries: the run, the number of
+    records that were read, and when. `key_numbers` refuses a cache whose record count no
+    longer matches the corpus, which is what makes a stale figure loud instead of invisible.
+    """
+    n = None
+    try:
+        sys.path.insert(0, HERE)
+        import position_analysis as _PA
+        run_dir = os.path.join(STUDY, "runs", a.run)
+        if os.path.isdir(run_dir):
+            n = len(_PA.load_records(run_dir))
+    except Exception:
+        n = None
+    return {
+        "run": a.run,
+        "n_records_read": n,
+        "seed": a.seed,
+        "draws": a.draws,
+        "estimator": "sheet-bootstrap vs exact-permutation, halves of one cell",
+        "computed_at": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
+        "WHY_CACHED": ("this run takes >30 minutes; read the cache, and rebuild it when "
+                       "key_numbers refuses it for drift"),
+    }
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--run", default=WAVE)
@@ -151,7 +188,8 @@ def main(argv=None):
     boot = calibrate_bootstrap(cells, a.draws, a.seed)
     exact = calibrate_exact(cells, a.draws, a.seed)
     res = {"run": a.run, "cells_eligible": len(cells), "draws": a.draws,
-           "bar": BAR, "nominal": NOMINAL, "sheet_bootstrap": boot, "exact_permutation": exact}
+           "bar": BAR, "nominal": NOMINAL, "sheet_bootstrap": boot, "exact_permutation": exact,
+           "provenance": _provenance(a)}
 
     if a.json:
         print(json.dumps(res, indent=2, sort_keys=True))

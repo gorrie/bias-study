@@ -15,21 +15,21 @@ of 0.131, and reordering the same items moves it on 43% of pairs with a median o
 instruction's effect sits below the ninetieth percentile of a factor carrying no information.
 **Refusal is elicited, not intrinsic**: of the thirteen models that decline under any
 condition, eight decline the balance instruction and never the commitment directive, and the
-pair that declines most answers all thirty of its runs under a content-free instruction about
-reading carefully. The refusal rate published as a model property is substantially a property
+OpenAI pair, which declines 32 of its 36 runs under the balance instruction, answers all
+thirty of its runs under a content-free instruction about reading carefully. The refusal rate published as a model property is substantially a property
 of the sentence the researcher wrote. And **a standard control silently deletes data** — shuffling presentation
 order while each item keeps its own number as its printed label makes some models skip lines,
 and it is invisible to both a refusal table and an aggregate parse rate. Locally the as-is arm
-loses 15 sheets where the renumbered arm loses 1, and the loss conditions on compliance: every
-analysis reads valid sheets only, so a susceptible model is analysed on the subset of items it
-chose to answer. The serving backend moderates it — one model, one protocol, two providers, and
+loses 15 sheets where the renumbered arm loses 1, and the loss conditions on compliance: a
+partial sheet fails validity and is dropped whole, so a susceptible model is analysed on the
+runs it chose to complete. The serving backend moderates it — one model, one protocol, two providers, and
 the as-is loss runs 7 sheets against 1.
 
 Converting the order floor into a detection limit gives a minimum detectable effect of 7
 items of 32. An audit of fourteen published studies finds the column that matters empty: not
 one reports what two variants of the same model do to the same instrument as a distribution
-an observed shift could be scored against, and only two report anything resembling a
-detection limit. We apply the same audit to ourselves and withdraw the claims that
+an observed shift could be scored against, and only two report a detection limit outright,
+with two more reporting something adjacent to one. We apply the same audit to ourselves and withdraw the claims that
 fail it. The corpus, the instrument, the failures and the scripts are in the repository.
 
 ---
@@ -105,8 +105,10 @@ exits 1 when a table has drifted from the data.**
 > author call until 2026-09-19 — sheet bootstrap or exact permutation, disagreeing on 20 of
 > 241 pre-registered contrasts, all in the same direction. Rather than choose, we measured
 > both against a null built by splitting real cells in half, where no treatment exists and
-> every rejection is therefore false: **the bootstrap rejects 10.5% of true nulls and the
-> exact test 4.5%** (`calibrate_estimators.py`, 200 splits of 136 cells). The per-model counts
+> every rejection is therefore false: **the bootstrap rejects 9.7% of true nulls and the
+> exact test 3.3%** (`calibrate_estimators.py --check`, 300 splits of 151 cells, 2026-09-23;
+> it read 10.5% and 4.5% over 200 splits of 136 cells from 2026-09-19 until 2026-09-23, a
+> measurement taken before the corpus froze and never re-run after). The per-model counts
 > this paper reports are the sheet bootstrap, and each figure says so; the exact test is the
 > sensitivity check, and §9.3 carries what it does to the lead count. *(This read "the paper
 > reports the exact test" until 2026-09-23, which §1 and §9.3 both contradicted.)*
@@ -210,12 +212,14 @@ what a summary statistic near zero is reporting.
 The comparison that makes those numbers mean anything is the estimator's own false-positive
 rate, measured the same way the contrast is: split a real cell in half at random and contrast
 one half against the other, where no treatment exists and every rejection is a false positive.
-Over 200 such splits of 136 cells the sheet bootstrap rejects **10.5%** of true nulls, so on a
-panel of 61 about **6.4 models are expected to clear by chance**. Six is at or below that. The
+Over 300 such splits of 151 cells the sheet bootstrap rejects **9.7%** of true nulls, so on a
+panel of 61 about **5.9 models are expected to clear by chance**. Six is that figure. *(10.5%
+and 6.4 until 2026-09-23, from a 2026-09-19 run on 136 cells; `calibrate_estimators.py
+--check` prints today's.)* The
 placebo arm is not merely small — **it is indistinguishable from the estimator's own noise**,
 which is exactly what a working control arm should be.
 
-> **That 10.5% replaces a 6.2% this paper published until 2026-09-19, and the 6.2% was never
+> **That 9.7% replaces a 6.2% this paper published until 2026-09-19, and the 6.2% was never
 > measured.** It was a docstring at `position_analysis.py:285`. The estimator's `--selftest`
 > reports a third figure, 12.5%, on synthetic nulls it generates itself — a detector validated
 > against input it chose. The figure above is the first one in this study derived from a
@@ -304,9 +308,19 @@ against 1284 runs where it carries one — 55 of those runs are refusals. 9 mode
 those same models a firm instruction and 8 of them stop. The ninth is
 `google/gemini-3.7-flash`, which declines under every condition and is not a switch at all.
 Separately, 3 other models
-decline only when told to commit. What suppresses refusal is not the content
+decline only when told to commit or, for one of the three, only under the content-free
+placebo — the next paragraph names them. What suppresses refusal is not the content
 of the instruction — a placebo with no stance content works as well as a demand to commit —
 but the presence of a firm instruction at all.
+
+*(Three directive-arm denominators appear in this section and they are three populations,
+not a disagreement. 1284 is this matched subset — the 64 models present in both arms, counting
+refusals and valid answer sheets and nothing else (`key_numbers.matched_arms()`). The vendor
+table's `D and P pooled: 55 refusals in 1292 runs` is the whole panel on the same count. The
+by-condition table's 659 + 665 = 1324 is the whole panel excluding transport failures only, so
+the 32 budget-exhausted and unparseable runs collected under D or P stay in its denominators.
+All three carry the same 55 refusals. Stated 2026-09-23; until then the three sat sixty lines
+apart with nothing between them.)*
 
 **Three models run the pattern backwards, and the previous version of this section had no room
 for them.** `llama3.1:8b` declines only when told to commit (7 of 20), its quantised sibling
@@ -545,11 +559,17 @@ one-sitting row reports p90 4.**
 
 The panel behind it is the frozen wave's 36 panel models together with the roster collected
 after the freeze, one modal pair per model, and 61 pairs answer both arms — sixty-one models,
-not sixty-one seeds. The other 2 decline the balance instruction outright, contributing no
-pair at all — a refusal is not a position, and a model that will not answer one arm cannot be
-differenced across two. *(Until 2026-09-23 this paragraph explained the 61 as seed pairs from
-the 36 — "because each contributes several seeds the row rests on more pairs than models". The
-floors table's own row note counts 61 models. The pairs are models.)*
+not sixty-one seeds: 34 of the frozen 36 and 27 collected after the freeze. Of the frozen 36,
+34 contribute a pair. The other 2 decline the balance instruction outright —
+`gemini-3.7-flash`, which declines every arm, and `gemini-3.8-flash` — contributing no pair at
+all: a refusal is not a position, and a model that will not answer one arm cannot be
+differenced across two. One post-freeze model, `huihui_ai/qwen2.5-abliterate:14b`, has a D
+cell and no valid A sheet for a reason other than refusal, and contributes no pair either; the
+row's own note names both unpaired models. *(Until 2026-09-23 this paragraph explained the 61
+as seed pairs from the 36 — "because each contributes several seeds the row rests on more
+pairs than models" — and then read the gated "2" as two refusers in the arm, when the arm
+holds one refuser and one unusable cell and the 2 are the frozen panel's. The pairs are
+models.)*
 
 That row sits beside the order floor in §1, and the comparison is made there, on the live
 corpus, with both sides measured by the same estimator.
@@ -559,22 +579,30 @@ on the numbers that went away.
 
 **One. A pooled p90 can be one model, and modal scoring hides it.** Removing `x-ai/grok-4.5`
 from the pooled arm moved it from 15 to **8**, while the per-model median was unchanged at 3 —
-one model went from 18 to 2. Its answers under the commitment instruction are
-**bimodal** — within its wave cell, four of five runs land within 3–4 items of each other and
-the fifth lands 15–18 away. A modal sheet cannot represent that. It reports whichever mode the
+one model went from 18 to 2. Those three figures are the retired arm's and no longer
+recompute. What does recompute is the mechanism: its answers under the commitment instruction
+are **bimodal in endpoint units** in one of its three battery D cells — four of five runs land
+within 0–4 endpoint changes of each other and the fifth 14–18 away — while in side flips every
+pair in that cell is 0 or 1 apart. *(Until 2026-09-23 this read "3–4 items" and "15–18
+away" without naming the statistic, in the section that exists to keep the two apart.)* A
+modal sheet cannot represent that. It reports whichever mode the
 sampler favoured, which was one mode on one collection and the other on the next, and this
 project's floor tables have recorded the same model at 3 on one date and 18 on another.
 
-**Two. "At temperature 0 the runs are near-identical" is false on this corpus**, and it was the
-mechanism the draft offered. Measured over the temp-0 A and D cells: 263 within-cell run pairs,
-median 1, **p90 5, max 32**, and only 10 of 57 cells are byte-identical. The `run-to-run
-replicate` row three lines up says the same thing. There is no regime here in which averaging
-five draws merely removes noise and leaves a position.
+**Two. "At temperature 0 the runs are near-identical" was false on the retired arm**, and it
+was the mechanism the draft offered. Measured over its temp-0 A and D cells: 263 within-cell
+run pairs, median 1, **p90 5, max 32**, and only 10 of 57 cells byte-identical. Those figures
+no longer recompute — the battery holds no temperature-0 cell; every wave record is collected
+at 0.7 — and the live statement is the `run-to-run replicate` row above, which says the same
+thing on this corpus. There is no regime here in which averaging five draws merely removes
+noise and leaves a position. *("Is false on this corpus" until 2026-09-23.)*
 
 **And the argument was settled by collecting the missing half, not by winning it.** Two
 shuffled item orders across the same fixed panel, same frozen parameters, same swept seeds,
-condition D. Condition D and not A because A is 28.2% invalid on that wave against D's 2.9%:
-an order floor measured under the balance instruction is computed on whichever models happen
+condition D. Condition D and not A because A loses far more sheets than D does — on the wave
+as it stands, 18.2% of A runs are invalid against 7.0% of D's; the "28.2% against 2.9%"
+quoted here until 2026-09-23 was the wave at an earlier date, and neither pair is gated: an
+order floor measured under the balance instruction is computed on whichever models happen
 not to refuse it, which is a sample selected by §1's finding. That selection hazard is general
 and is the reason every floor in this paper names its condition.
 
@@ -666,7 +694,9 @@ statistic is a **union**: a proposition counts if it is contradicted anywhere ac
 paraphrases. Ours is a pairwise 90th percentile. A union over ten comparisons is larger than
 any one of them by construction, so setting 14 beside our 14 compares two different
 quantities that happen to agree. The like-for-like figure is their data re-scored with our
-statistic — p90 9 — and that is the number to use.
+statistic — p90 9 — and that is the number to use. *(That figure comes from
+`replicate_rottger.py`, which needs their repository cloned under `external/rottger2024/`; it
+is recorded nowhere else in this tree and is not gated, so recompute it rather than quote it.)*
 
 A single pooled order floor would have been a net aggregate concealing gross movement between
 two populations. That is a defect this project has already caught in itself once, and here it
@@ -876,10 +906,10 @@ defender-framed items run 0.5–28.9%, critic-framed items 92.3–100%, and **no
 thirty-two falls between 30% and 70%**, where a panel would actually divide — 0 of the 32 sit
 in that band, and `item_gradient.py` prints the count rather than asserting it. An instrument with
 no contested middle cannot tell a model that holds a position from a proposition that is not
-really arguable. The three items nearest that middle — surveillance export, state funding of
-flagging research, international policy forums — sit at 23.9%, 26.5% and 28.9%, which is where
-the next version
-of this bank should be authored.
+really arguable. The three items nearest that middle — state funding of flagging research,
+surveillance export, international policy forums — sit at 23.9%, 26.5% and 28.9%
+(`item_gradient.py`, items 2, 30 and 20), which is where the next version of this bank should
+be authored. *(The first two names were swapped against their figures until 2026-09-23.)*
 
 **This section is exploratory and uncorrected.** It was computed after the data was seen, in
 answer to the objection above, and it is counted that way in §9.1. Independent support exists —
@@ -989,8 +1019,14 @@ with the refusal direction cut out of its weights. They agree with the panel on 
 Read what each one tests and none of them is a test for political lean. The last is the case
 that matters: the abliterated judge is the executed anchor, scored 5 of 5 on circularity-
 reduction in the pre-registered rubric as "the direct answer to *judges share RLHF lean*". But
-this project's own weight-rung result, across five open-weight families, is that abliteration
-moves stance by **≤0.2** — refusal direction and institutional lean are *dissociable*.
+this project's own weight-rung measurement, across five open-weight families on the judged
+1–5 scale, put abliteration's stance shift at **≤0.2** with intervals including zero — refusal
+direction and institutional lean are *dissociable*. That is a bound, not a demonstrated
+absence: the side-flip form of the same null — *ablation does not move stance, on arm-matched
+pairs* — is **withdrawn** (`power-null-ablation-stance`, entry 28), because no battery-era
+ablation arm exists for it to clear a floor on, and the judged-scale bound has never had a
+detection limit computed for it either. *(Until 2026-09-23 this passage stated the null as a
+result, in words the registry had not banned.)*
 
 > The companion claim, that abliteration also **rewrites most of the political wording**, is
 > **withdrawn** and this argument does not use it. Narrowed 2026-09-13 to one family of five,
@@ -1002,9 +1038,9 @@ moves stance by **≤0.2** — refusal direction and institutional lean are *dis
 > unaffected, was re-measured at temperature 0 where a greedy model reproduces itself exactly,
 > and is the half carrying the sentence above.
 
-If cutting that direction does not move a subject's
-stance, it does not move a judge's. **The anchor removes a reflex we ourselves proved is not
-the lean.**
+If cutting that direction leaves a subject's stance
+inside 0.2 of a point, it is not the lever that would move a judge's. **The anchor removes a
+reflex we have no evidence is the lean.**
 
 Measured properly (`scripts/judge_lean.py` over the 5,408 scored records carrying a per-judge
 breakdown): the panel's internal spread is **0.3108 points**, gemini-2.5-flash most
@@ -1040,11 +1076,17 @@ the lean to be the same SIZE in both arms:
 against a live 5,408, a spread of 0.29, and all twelve cells above. The conclusion was never in
 doubt: the column that would be zero if the lean cancelled spans 0.359.*
 *For most of that day these numbers also differed between the working tree and the released
-one, and the paper quoted the released figure because a reader can only reproduce that. The
-gap is closed rather than annotated: the run that caused it, a 3,200-record judge-scored
-collection whose contrast is withdrawn, is now published. Withholding data because its
-conclusion died is the defect §5 convicts Liu of, and the fix was to publish it, not to
-explain it.)*
+one, and the paper quotes the released figure because a reader can only reproduce that. One
+gap was closed — the 3,200-record judge-scored collection whose contrast is withdrawn is now
+published, because withholding data whose conclusion died is the defect §5 convicts Liu of.
+A second remains and is stated rather than closed: the same script over the working tree
+reads 5,369 records and a spread of 0.3127, and the 39-record difference is exactly one scored
+run, `2026-05-27-abliteration-gemma2`, present in the release corpus and absent from this
+tree's `runs/`. The selection is one — `judge_lean.scored_records()` and
+`key_numbers._mirror_judge_stats()` apply the same eligibility rule and the same supersession
+list — and the corpora are two. Every figure in this subsection is the release's; the 0.3127
+quoted in the note above is the working tree's, and the two are not a disagreement about the
+panel. Until 2026-09-23 this note said the gap was closed.)*
 
 The panel fans out between the arms and the fanning rides into the delta. (Condition A scores
 92% threes, which explains *why* the lean is compressed there. It does not make it cancel; a
@@ -1323,9 +1365,9 @@ standard:
 
 Repeating one prompt measures sampling variability and nothing else, and on this instrument
 that is the smallest term in the table: the run-to-run replicate floor is a median of 0 side
-flips over 6,240 pairs, p90 3. It is *not* zero — at temperature 0 only 10 of 57 within-cell
-groups come back byte-identical (§2) — but it is the one nuisance a study of this shape can
-already see. A 2026
+flips over 6,240 pairs, p90 3. It is *not* zero — on the retired temperature-0 arm only 10 of
+57 within-cell groups came back byte-identical (§2), and the battery's own replicate row sits
+above zero at 0.7 — but it is the one nuisance a study of this shape can already see. A 2026
 study of moral drift reports the same thing from the other direction — 82.2% of its
 model-probe cells were byte-identical across ten trials — and concludes from it that
 within-model noise is negligible and the differences it measures are therefore real.
@@ -1372,13 +1414,31 @@ count is 1**. Fisher exact, one-sided: **p = 1.8 × 10⁻⁴**. Repeated on eigh
 each pinned to a single backend, so that the serving path cannot carry the contrast: **9
 incomplete of 190 as-is sheets**, against **0 of 192 renumbered, p = 0.0017**.
 
+**The main wave carries the same loss, and this paper did not count it until 2026-09-23.** The
+3,897-record panel every figure here rests on was collected across the renumbering: 239 of its
+records are renumbered, 2,300 carry the as-is numbering and 1,358 predate the flag. In it, 104
+sheets came back with some but not all 32 items answered, from 13 models, and every one is
+excluded as invalid — 93 of the 104 from six local builds (`qwen2.5-abliterate:14b` 27,
+`qwen2.5:14b` 27, `mistral:latest` 16, `llama3.1:8b` 11, `gemma-4-12B` 7,
+`mistral:7b-instruct-q8_0` 5) and 11 from hosted models. Whether any floor would move under a
+renumbered re-collection cannot be established from this corpus, because a dropped sheet has
+no value to compare; what the count establishes is where the loss falls — on the local rows,
+which is where §2's class split already puts the instability — and that a cell's depth is
+lower than the protocol's five wherever it fell. These counts are read from the wave's
+`n_answers` and `renumbered` fields and are **not gated**; `ungated_numbers.py` will list this
+paragraph until a key is registered for them.
+
 **The loss is invisible from every direction a collection normally checks.** The sheet is not
 refused. It is not truncated — it ends with a well-formed final answer and uses a fraction of
 its token budget. It arrives looking complete, and a refusal table counting whole-sheet
-declines cannot see it. What it produces is a **discard that conditions on compliance**: every
-analysis in this study reads valid sheets only, so a susceptible model's analysed sample is
-exactly the subset of items it chose to answer. That is a non-random subset of the instrument,
-selected by the model, on the axis being measured.
+declines cannot see it. What it produces is a **discard that conditions on compliance**: a
+partial sheet fails validity (`run_battery.py` sets `valid` to *no problems*) and every analysis
+in this study reads valid sheets only, so a susceptible model's analysed sample is exactly the
+set of runs it chose to complete. That is a non-random subset of its administrations, selected
+by the model; whether the selection tracks the item or the slot it was printed in is the
+three-way test below, which resolves only on the local arm. *(Until 2026-09-23 this read "the
+subset of items it chose to answer", describing an item-level exclusion the pipeline does not
+perform — a partial sheet is dropped whole, not scored on the items it answered.)*
 
 The remedy costs nothing and is in the collector: renumber the presentation `1..32`, record the
 map from printed label to item id, remap the answers back. The randomisation is unchanged.
@@ -1596,18 +1656,22 @@ has, and the fifth is a change to a collector before the next run.
    and are not yet gated.)*
 3. **The estimator behind every interval here is anti-conservative at these sample sizes, and
    we can now say by how much.** Against a null built by splitting real cells in half
-   (`calibrate_estimators.py`, 200 splits, 136 eligible cells), the sheet bootstrap rejects
-   **10.5%** of true nulls where an exact permutation test rejects **4.5%** — nominal is 5%.
-   That is a factor of two, not an order of magnitude, and it is measured on cells of the
-   sizes this corpus has rather than at an asymptotic n; it does not transfer to an arm
-   collected at a different depth.
-   Measured 2026-09-19 against a family that at the time held 241 pre-registered contrasts
-   (`exact_vs_bootstrap.py`; §9.1 carries the current size, which has grown since): the
-   sheet bootstrap returns 104 surviving BH-FDR where an exact permutation test returns **84**
-   — 20 lost, none gained, so **about one in five of its significant findings does not hold
-   up**. Seven of the twenty involve a cell whose sheets barely differ from each other; the
-   other thirteen are ordinary. The losses concentrate at small n and this study's cells are
-   depth 5. Four A−N contrasts are among them, so §1's count is about 34 of 61 rather than 38.
+   (`calibrate_estimators.py --check`, 300 splits, 151 eligible cells, 2026-09-23), the sheet
+   bootstrap rejects **9.7%** of true nulls where an exact permutation test rejects **3.3%** —
+   nominal is 5%. That is a factor of three, not an order of magnitude, and it is measured on
+   cells of the sizes this corpus has rather than at an asymptotic n; it does not transfer to
+   an arm collected at a different depth. *(Read 10.5% against 4.5% over 200 splits of 136
+   cells until 2026-09-23 — the 2026-09-19 run, taken before the corpus froze.)*
+   Run on 2026-09-23 over the 241 contrasts of the 246-contrast family that carry two
+   scoreable arms (`exact_vs_bootstrap.py`; §9.1 carries the family size): the sheet
+   bootstrap returns 108 surviving BH-FDR where an exact permutation test returns **83** —
+   25 lost, none gained, so **about one in four of its significant findings does not hold
+   up**. Seven of the twenty-five involve a cell whose sheets barely differ from each other;
+   the other eighteen are ordinary. The losses concentrate at small n and this study's cells
+   are depth 5, and six A−N contrasts are among them, so §1's count is about 32 of 61 rather
+   than 38. *(This read 104 / 84 / 20 lost / "one in five" / four A−N / 34 of 61 until
+   2026-09-23, from the 2026-09-19 run; the only other record of those figures is
+   `RESEARCH-BACKLOG.md`, and neither run is gated.)*
    The *comparison* in §1 is unaffected — the order floor is computed by the same estimator and
    moves with it — but any single per-model claim in this paper should be read as bootstrap,
    not exact.
@@ -1618,9 +1682,14 @@ has, and the fifth is a change to a collector before the next run.
    text and appendices and deposited code where it exists, and `controls_audit.py --strict`
    passes. **The fourteenth, Sclar, was consulted rather than read end to end** and its row
    carries `partial` in the provenance column. Sakhawat and Messing were in that category
-   until 2026-09-12 and are not any more; reading them resolved fifteen `unknown` cells, two
-   of which had been read aloud in prose as absences. Sclar and Messing are cited for general findings rather than audited for controls,
-   which is the lighter use, but the distinction was not previously stated. The Cen citation
+   until 2026-09-12 and are not any more; reading them resolved twenty-one of their twenty-two
+   `unknown` cells (`operations/2026-09-08/claim-review/controls-audit-before.json` against
+   `data/controls-audit.json`; the one left is Messing's `open_raw`), two of which had been
+   read aloud in prose as absences. *("Fifteen" until 2026-09-23.)* Sclar is cited for a
+   general finding rather than audited for controls, which is the lighter use. Messing is
+   both: audited in full with every column scored, and cited in §3 for its correction factor.
+   *(This sentence grouped Messing with Sclar as "cited rather than audited" until 2026-09-23,
+   contradicting the row above it.)* The Cen citation
    was confirmed only after being carried for days with no author list or venue.
 5. **The external replication is half-internal.** One of the two corpora we would replicate on
    is this project's own public observatory, disclosed wherever it is used.
@@ -1749,10 +1818,20 @@ python scripts/references.py               # the reference list below
 ```
 
 **One of those exits 1 by design and a reader should not read it as a broken build.**
-`validate_claim.py` fails on the lineage sweep over 12 persisted transport rows and one
-all-one-answer sheet from grok-4.3, both of which every analysis already excludes — verified by
-the filter's logic and by deleting them and recomputing to an identical pair set. It is not
-fixed by loosening the check.
+Run against the wave (`--runs runs/2026-09-16-ratchet-v3-wave`, 2026-09-23) `validate_claim.py`
+fails five of its gates: 85 persisted transport rows; duplicate seeds in 82 cells; 9 valid
+all-one-answer sheets on three models (`Qwen3.8-27B-OBLITERATED:Q4_K_M`, `glm-5.1`,
+`mistral:7b-instruct-q8_0`); identical outputs across seeds at temperature 0.7 in 55 cells,
+which it reads as provider caching; and net movement concealing gross flips on three local
+models. The transport rows are excluded by the failure classifier every rate here runs
+through, and `position_analysis.load_records` drops the degenerate sheets before the
+bootstrap; the duplicate-seed cells are collapsed by `dedupe_by_seed` in the one-sitting
+floors. **The 55 identical-across-seeds cells are not excluded by anything and this paper
+does not yet say what they do to the run-to-run and modal-sampling rows, which are seed-based
+floors.** Its order-control line also reports the worst between-order disagreement as `14/62`,
+a denominator from the retired instrument. It is not fixed by loosening the check. *(Until
+2026-09-23 this paragraph described a different run — "12 persisted transport rows and one
+all-one-answer sheet from grok-4.3" — which is what the tool printed on the retired corpus.)*
 
 `refusal_table.py --audit` **passed as of 2026-09-04, and it had been failing for a bad
 reason.** It was comparing today's derivation against stored labels written by rules this

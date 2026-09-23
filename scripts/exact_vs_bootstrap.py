@@ -22,7 +22,9 @@ p-values are bootstrap or exact below n≈15 — has to be re-checkable after th
 Exact where the arms are small enough to enumerate (C(na+nb, na) <= 20000), Monte-Carlo
 permutation otherwise. Same statistic either way: difference of arm means over pair positions.
 """
+import datetime as _dt
 import itertools
+import json
 import os
 import random
 import statistics as st
@@ -106,6 +108,40 @@ def main():
 
     boot_keep = bh([r["boot_p"] for r in rows])
     exact_keep = bh([r["exact_p"] for r in rows])
+
+    # CACHE IT, WITH PROVENANCE. This run takes over half an hour, so its figures are read
+    # from prose and nobody re-runs them casually. On 2026-09-23 the paper was found carrying
+    # 104 / 84 / 20-lost from a 2026-09-19 run, taken BEFORE the corpus froze on 09-21 and
+    # never re-run; live is 108 / 83 / 25-lost. Nothing caught it, because none of these
+    # figures is registered anywhere -- the only other record of the old ones is a line in
+    # RESEARCH-BACKLOG.md. The cache carries `n_records_read` so `key_numbers` can refuse it
+    # once the corpus moves, which is what makes a stale figure loud rather than invisible.
+    if "--json" in sys.argv or "--write" in sys.argv:
+        deg_all = [i for i, r in enumerate(rows) if min(r["sd_a"], r["sd_b"]) < 0.02]
+        lost_i = boot_keep - exact_keep
+        out = {
+            "compared": len(rows),
+            "exact_kind": sum(1 for r in rows if r["kind"] == "exact"),
+            "mc_kind": sum(1 for r in rows if r["kind"] == "mc"),
+            "boot_survive": len(boot_keep),
+            "exact_survive": len(exact_keep),
+            "lost": len(lost_i),
+            "gained": len(exact_keep - boot_keep),
+            "lost_with_degenerate_arm": len(set(deg_all) & lost_i),
+            "an_lost": sum(1 for i in lost_i if rows[i]["contrast"] == "A-N"),
+            "provenance": {
+                "run": WAVE,
+                "n_records_read": len(recs),
+                "family": "P.CONTRASTS x models with >=2 sheets in both arms",
+                "q": 0.05,
+                "computed_at": _dt.datetime.now(_dt.timezone.utc)
+                                  .isoformat(timespec="seconds"),
+                "WHY_CACHED": ("this run takes >30 minutes; read the cache, and rebuild it "
+                               "when key_numbers refuses it for drift"),
+            },
+        }
+        print(json.dumps(out, indent=2, sort_keys=True))
+        return 0
 
     print("EXACT PERMUTATION vs SHEET BOOTSTRAP on the pre-registered family")
     print("contrasts compared: %d   (exact %d, monte-carlo %d)"
