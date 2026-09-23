@@ -1424,6 +1424,19 @@ def build():
 #: resolves to different places in the two trees, so it would either break in the mirror or
 #: force a fork. Candidate paths, with a missing surface simply not checked, work in both.
 def _find_surface(*relative_parts):
+    """Locate a surface that lives in a SIBLING tree, falling back to this one.
+
+    THE WALK LOOKS FOR A DIRECTORY BY NAME, and the public mirror's name is only its name on
+    this machine. `git clone <url> <dir>` and an unpacked Zenodo archive both land it under
+    something else, and then `_find_surface("bias-study-release", "LESSONS.md")` walked six
+    levels, found no directory of that name, and returned a path that does not exist -- so
+    `LESSONS.md` and `README.md`, sitting in the reader's own checkout, were reported as
+    surfaces "not in this tree" and went unchecked. Measured 2026-09-23 in a copy of the
+    mirror placed outside the workspace: 2 surfaces resolved where this tree resolves 10.
+
+    So when the named sibling is not found, try the same path WITHIN this tree before giving
+    up. If we are the mirror, `bias-study-release/LESSONS.md` is just `LESSONS.md` from here.
+    """
     here = os.path.abspath(STUDY)
     for _ in range(6):
         here = os.path.dirname(here)
@@ -1432,6 +1445,10 @@ def _find_surface(*relative_parts):
         candidate = os.path.join(here, *relative_parts)
         if os.path.exists(candidate):
             return candidate
+    if len(relative_parts) > 1:
+        local = os.path.join(STUDY, *relative_parts[1:])
+        if os.path.exists(local):
+            return local
     return os.path.join(STUDY, *relative_parts)      # non-existent; reported, not crashed
 
 

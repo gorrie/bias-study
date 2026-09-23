@@ -328,6 +328,24 @@ def main(argv=None):
         if matched:
             hits.append((path, matched))
 
+    # ZERO FILES CHECKED IS NOT A CLEAN BILL, and this gate printed one.
+    #
+    # Found 2026-09-23 by running the shipped tooling in a copy of the mirror with `.git`
+    # removed, which is what an unpacked archive looks like. `--all` sources its file list
+    # from `git ls-files`, so with no repository the list is empty and this printed
+    # "0 file(s) checked ... no third-party instrument text" and exited 0 -- the licence
+    # gate for a public release, reporting compliance having opened nothing.
+    #
+    # The same shape as the incident in `tracked_files()` above: there, files the list did
+    # not cover; here, no list at all. Both pass. Neither looked.
+    if not paths:
+        print("check_corpus: NOTHING WAS CHECKED -- the file list is empty.")
+        print("This is NOT a pass. `--all` takes its list from `git ls-files`, so an")
+        print("unpacked archive or a checkout with no .git yields nothing to scan, and a")
+        print("licence gate that reports compliance having opened no files is worse than")
+        print("no gate. Run it inside a git checkout, or pass explicit paths.")
+        return 2
+
     if not hits:
         print("check_corpus: %d file(s) checked against %d plaintext fragment(s) and %d "
               "hashed %s-gram(s), no third-party instrument text"

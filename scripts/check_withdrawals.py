@@ -61,10 +61,31 @@ REGISTRY = os.path.join(STUDY, "data", "withdrawals.json")
 #: Resolved by walking up rather than hardcoding a depth, because this gate runs FROM both
 #: trees and a fixed `../../../` points above the mirror at nothing -- the defect
 #: `release_check.MIRROR` carries its own comment about.
-#: True when THIS checkout is the public mirror. Named by directory, which is the one thing
-#: that is stable in both directions -- the private tree is `research/bias-study`, the public
-#: one is `bias-study-release`.
-IN_MIRROR = os.path.basename(STUDY) == "bias-study-release"
+#: True when THIS checkout is the public mirror, decided by CONTENT rather than by directory
+#: name.
+#:
+#: The first version tested `os.path.basename(STUDY) == "bias-study-release"`, which is true
+#: of this machine and of nothing a reader has. Cloned into any other directory name -- which
+#: is what `git clone <url> <dir>` does, and what a reviewer unpacking a Zenodo archive gets --
+#: the mirror identified itself as the private study, so the evidence clause looked for
+#: `withdrawn/` corpora that are deliberately not published and reported two deletions that had
+#: not happened. Verified 2026-09-23 by running the gate in a copy outside the workspace.
+#:
+#: `PLAN.md` is the private queue and is not published; `CORRECTIONS.md` is the public ledger
+#: and is not in the private tree. Either one alone settles it, and requiring both to agree
+#: means a tree that somehow has both, or neither, says so instead of guessing.
+def _identify():
+    plan = os.path.exists(os.path.join(STUDY, "PLAN.md"))
+    ledger = os.path.exists(os.path.join(STUDY, "CORRECTIONS.md"))
+    if ledger and not plan:
+        return True          # the public mirror
+    if plan and not ledger:
+        return False         # the private study
+    return None              # ambiguous: neither clause may assume which tree this is
+
+
+IS_MIRROR = _identify()
+IN_MIRROR = IS_MIRROR is True
 
 
 def _tree(name):
@@ -77,6 +98,11 @@ def _tree(name):
     conflation in the other direction. Returning None is the honest answer, and every caller
     has to say NOT APPLICABLE rather than pass.
     """
+    if IS_MIRROR is None:
+        # WHICH TREE THIS IS COULD NOT BE ESTABLISHED, so no clause may assume. Returning
+        # None makes every tree-scoped check report NOT APPLICABLE, which is the honest
+        # answer and is what the caller prints.
+        return None
     if name == "study":
         if not IN_MIRROR:
             return STUDY
