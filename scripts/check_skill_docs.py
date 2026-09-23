@@ -68,6 +68,20 @@ NOT_A_PROCEDURE = {
     "check_undefined_names.py": "pre-run gate -- static scan for unbound names",
     "check_skill_procedures.py": "gate on THIS skill's own procedure block",
     "check_mcp_coverage.py": "gate -- whether the factions dataset can supply its design",
+    "check_withdrawals.py": "release gate -- every withdrawal is absent from the gated "
+                            "surfaces, its record reachable in every tree that cites it, "
+                            "ledgered if it was ever pushed, and its evidence still on disk",
+    "gen_provenance.py": "release gate and generator -- PROVENANCE.json per corpus root, "
+                         "naming every run with its instrument, current-vs-previous, and "
+                         "active-vs-withdrawn read from data/withdrawals.json",
+    # ---- ONE-SHOT OPERATOR TOOLS. Run once against a thing that then goes away, so a
+    # standing procedure would describe a step nobody will take again.
+    "extract_backup_uniques.py": "one-shot -- pulled the 73 records a gitignored corpus "
+                                 "backup held and runs/ did not, into "
+                                 "withdrawn/pre-repair-snapshots/, before the 168 MB backup "
+                                 "was deleted. The backup is gone; this cannot run again",
+    "demo_switch.py": "the talk's live demo, driven by TALK.md rather than by a procedure -- "
+                      "it replays the frozen wave and is run from the stage, not the shell",
     # ---- GENERATORS. Run by gen_* gates and by --check; the operator edits the source of
     # truth, never the generated block.
     "gen_deviations.py": "generator -- PROTOCOL-DEVIATIONS.md from the panel, the limitations "

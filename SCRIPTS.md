@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-138 script(s). 0 carry no module docstring and are listed at the end.
+142 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -72,6 +72,7 @@
 
 - **`check_no_fork.py`** — Fail if any script exists in both trees with different content.
 - **`check_retired_instrument.py`** — Refuse a tree that has readopted a retired instrument, anywhere, under any name.
+- **`demo_switch.py`** — The two-call demo: the same model, the same questions, two instructions.
 - **`selftest_analysis.py`** — selftest_analysis.py — ten assertions over the committed May data. Zero API cost.
 - **`test_ablation_slugs.py`** — Two independent abliterations of one base must never share a directory.
 - **`test_analysis_plumbing.py`** — Regression tests for the analysis plumbing: encoding, run discovery, gate templates.
@@ -105,6 +106,7 @@
 - **`check_skill_docs.py`** — Fail if a skill document names a script that does not exist or a flag that was never added.
 - **`check_skill_procedures.py`** — Do the skills' documented commands actually RUN, not just exist?
 - **`check_undefined_names.py`** — Names a script uses and never binds -- the NameError that waits for a rare path.
+- **`check_withdrawals.py`** — A withdrawal is a STATE, not an event. Check that every one of them still holds.
 - **`collection_check.py`** — Is this collection fit to score? Run it BEFORE spending judge calls on a run.
 - **`condition_table.py`** — Every experimental condition, its system prompt and its user suffix, read from the collector.
 - **`constrained_probe.py`** — Score the instrument by CONSTRAINED DECODING: make an invalid answer ungenerable.
@@ -118,6 +120,7 @@
 - **`exact_vs_bootstrap.py`** — Does the bootstrap disagree with an exact test on the PUBLISHED contrasts?
 - **`export_analysis_ready.py`** — One flat, eligibility-flagged table of every scored record, for people who are not us.
 - **`export_repairs.py`** — Copy the repaired corpus into the public mirror, deriving the list rather than typing it.
+- **`extract_backup_uniques.py`** — Extract the records a gitignored corpus backup holds and the live tree does not.
 - **`faction_lean.py`** — The factions estimator: two-way centred sector lean, with an exact permutation null.
 - **`floor_resolution.py`** — What a modal-vs-modal floor can actually resolve, and which factor is bigger ON THE SAME MODELS.
 - **`frame_gap.py`** — Does the judged instrument measure a POSITION, or agreement with the FRAME?
@@ -126,6 +129,7 @@
 - **`gen_artifact_manifest.py`** — Checksum the large binaries the study depends on, so they can travel outside git.
 - **`gen_data_dictionary.py`** — Generate DATA-DICTIONARY.md from the corpus, so it cannot describe a corpus that moved.
 - **`gen_deviations.py`** — Generate PROTOCOL-DEVIATIONS.md: what was pre-registered, what was done, what changed.
+- **`gen_provenance.py`** — One machine-readable index per corpus root: what each run is, and what may be concluded.
 - **`gen_readme.py`** — Fill the README's generated blocks from the run data. Nothing in them is hand-written.
 - **`gen_zenodo.py`** — Generate `.zenodo.json` from CITATION.cff, and gate what a Release will mint.
 - **`instantiate_stems.py`** — Build the factions bank from four authored stems and four authored path phrases.
