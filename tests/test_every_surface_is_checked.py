@@ -37,7 +37,7 @@ def _reachable():
                  or n.startswith("book-")}
     # The individually-named ones. Kept as a literal on purpose: if main() gains
     # another, this list has to gain it too, and the test below is what says so.
-    named = {"release", "versioning", "adversarial_review"}
+    named = {"release", "versioning", "adversarial_review", "talk", "lessons"}
     return by_prefix | named
 
 

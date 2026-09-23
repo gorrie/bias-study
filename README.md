@@ -247,7 +247,7 @@ plus a sampling change — produced no effect that survived its own control: all
 zero. The present study has no model anywhere in the scoring path, and its rung-2 re-collection
 reached the same verdict on better evidence.
 
-**This study has corrected **27** claims of its own**, each recorded in
+**This study has corrected **28** claims of its own**, each recorded in
 [`CORRECTIONS.md`](CORRECTIONS.md) with what was wrong and what replaced it. That file is the
 one a reader should check before quoting anything here.
 

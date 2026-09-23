@@ -87,10 +87,25 @@ produces, and committed to claiming nothing until that number existed. The numbe
 same day: the effect sits inside the quantisation band. Same weights, Q4_0 against Q8_0, same
 instrument, same decoding, no ablation.
 
-## Drift did not replicate at scale
+## A null needs a floor measured on the same instrument, or it is not a null
 
-An early drift result had an underpowered reference. At scale it does not reproduce. Both are on
-the record.
+This section used to be headed with the finding that drift fails to reproduce at scale, and to
+say so flatly: an early drift result had an underpowered reference, and at scale it does not
+reproduce.
+
+**That claim is withdrawn** — 2026-09-18, `CORRECTIONS-2026-09-17-power.md`, ledgered as entry
+28 of `CORRECTIONS.md`. It was one of five nulls whose observations were counted out of the
+retired 62-item questionnaire and judged against detection thresholds counted out of the
+32-item battery. 14 of 62 is 23% of one instrument; 11 of 32 is 34% of another. The two are not
+commensurable and cannot be rescaled into each other, because the *items* differ, not merely
+how many there are. The study asserts nothing about version drift until it is re-collected on
+the live instrument.
+
+The lesson survives its own example, which is why the section stays. A null is a claim that an
+effect is smaller than what the instrument can resolve, so it is only as good as the floor it
+is measured against — and a floor borrowed from a different instrument is not a floor. This
+file carried the withdrawn version at both the pushed and the unpushed head for four days,
+because no gate read it. It is a scanned surface now.
 
 ## The largest effect in this study is which model you ask
 

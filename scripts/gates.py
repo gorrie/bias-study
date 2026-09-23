@@ -456,6 +456,28 @@ GATES = [
                 "grep is falsification -- done here on 2026-09-16, ~121 mangled references",
          why="it answers 'is the collection about to run on the right instrument', which is "
              "a question about a run being written, not about a repository being released"),
+    # A WITHDRAWAL IS A STATE, AND THIS IS WHAT HOLDS IT. Registered 2026-09-22 because
+    # four different failures of the same invariant were live simultaneously: the five
+    # published nulls were withdrawn on the 18th and still asserted on the live research
+    # page and on pushed GitHub on the 22nd; CORRECTIONS-2026-09-17-power.md was cited ten
+    # times inside the mirror and absent from it; the evidence behind two withdrawals had
+    # been deleted and restored from git; and the retired questionnaire had already been
+    # purged twice and come back twice. Each was patched where it surfaced and none of the
+    # patches generalised.
+    #
+    # Stage "release" rather than "prerun": these are questions about what the repository
+    # ASSERTS, not about what a collection is about to do.
+    Gate("check_withdrawals.py", tree="either", stage="release",
+         label="every withdrawal is absent, reachable, ledgered and evidenced",
+         covers="each entry in data/withdrawals.json -- THE record of a withdrawal, which "
+                "key_numbers.RETRACTED now reads its phrases from rather than keeping a "
+                "second hand-maintained list. Four clauses: the claim's wordings appear on "
+                "no gated surface; the dated document that withdrew it exists in every tree "
+                "that cites it; a claim that was ever PUSHED has a numbered CORRECTIONS.md "
+                "entry; and the files justifying the withdrawal are still on disk",
+         why="writing a withdrawal down was being mistaken for doing it. A retraction that "
+             "reaches a correction file, a script, the paper and a test, and does not reach "
+             "the one list that scans surfaces, has not been applied -- it has been filed"),
     Gate("check_arm_match.py", ["--quant-known"], tree="either", stage="prerun",
          label="arm labels match the records",
          covers="a run's declared condition against what its records carry, and the "

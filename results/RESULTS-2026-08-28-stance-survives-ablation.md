@@ -1,5 +1,22 @@
 # The refusal direction is not where political stance lives
 
+> ## SUPERSEDED — Evidence 1 was withdrawn outright on 2026-09-18. Do not cite it.
+>
+> **Banner added 2026-09-22, above the 2026-08-30 one because it supersedes it.** Everything
+> below argues about whether "stance does not move" survived one particular objection. That
+> question is moot: **the null itself is withdrawn**, `CORRECTIONS-2026-09-17-power.md`,
+> ledgered as entry 28 of [`CORRECTIONS.md`](../CORRECTIONS.md).
+>
+> It was judged against a detection limit measured on a different instrument — the observation
+> counted out of the retired 62-item questionnaire, the threshold out of the 32-item battery —
+> and a side-flip count does not convert between banks. There is no battery-era ablation arm,
+> so there is no floor for it to clear either. Entry 8 of the ledger had already withdrawn the
+> *inversion* and left this null "undecided in both directions"; that disposition rested on the
+> same invalid comparison and is withdrawn with it.
+>
+> The page is kept because the argument below is the record of how the claim was defended, and
+> deleting it would leave the withdrawal unexplainable. Do not cite Evidence 1.
+
 > ## THIS PAGE'S CORRECTION WAS ITSELF WRONG — 2026-08-30
 >
 > The correction below withdrew Evidence 1 because the between-arm Jaccard (0.276–0.339) sat

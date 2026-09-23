@@ -698,6 +698,16 @@ def switch_denominators():
             cells = [per[m][cond] for m in pair]
             out["pair_" + cond] = sum(c[0] for c in cells)
             out["pair_" + cond + "_runs"] = sum(c[1] for c in cells)
+    # THE STAGE DEMO'S CELLS, and the four-way pattern count the talk quotes. Registered
+    # 2026-09-22 when TALK.md was rebuilt on the battery: the retired talk carried
+    # "0 / 62, then 62 / 62" for a model that is now a total refuser, and nothing gated it.
+    if RT.DEMO_MODEL in per:
+        for cond, label in (("A", "balance"), ("P", "placebo"), ("N", "bare"), ("D", "commit")):
+            ref, n = per[RT.DEMO_MODEL][cond]
+            out["demo_" + label], out["demo_" + label + "_runs"] = ref, n
+    patterns = RT.switch_patterns(per)
+    out["balance_only"] = len(patterns["switch"])
+    out["total_refusers"] = len(patterns["total_refuser"])
     return out
 
 
@@ -1456,6 +1466,85 @@ SURFACES = {
             "ablation_families_confirmed": "We did the abliteration. %s open-weight",
         },
     },
+    # THE TALK. What gets said to a room is a shipping surface with no errata page, and the
+    # previous TALK.md was written end to end on the retired 62-item questionnaire -- "16 items
+    # of 62", a demo model that is now a total refuser -- while every gate stayed green,
+    # because no gate read it. Rebuilt 2026-09-22 on the battery; every phrase below is a
+    # sentence in the talk, so `--check-talk` fails the morning a slide goes stale, which is
+    # the promise the talk's own pre-flight block makes.
+    "talk": {
+        "path": os.path.join(STUDY, "TALK.md"),
+        "phrases": {
+            # §1, the demo and the switch
+            "demo_balance": "declines %(demo_balance)d of %(demo_balance_runs)d under the "
+                            "balance instruction",
+            "demo_placebo": "%(demo_placebo)d refusals in %(demo_placebo_runs)d runs under "
+                            "the placebo",
+            "demo_bare": "declines the bare question %(demo_bare)d of %(demo_bare_runs)d",
+            "demo_commit": "under the commitment directive it produces %(demo_commit)d "
+                           "refusals in %(demo_commit_runs)d runs",
+            "astra_balance": "%(astra_balance)d of %(astra_balance_runs)d under the balance "
+                             "instruction",
+            "astra_pair_placebo": "%(astra_pair_placebo)d refusals in "
+                                  "%(astra_pair_placebo_runs)d placebo runs",
+            "switch_declining_models": "%(switch_declining_models)d models decline under "
+                                       "some condition",
+            "balance_only": "%(balance_only)d of them decline the balance instruction and "
+                            "never the commitment one",
+            # THE FOUR `arms_*` PHRASES ARE DELIBERATELY NOT HERE. They were registered on
+            # this surface when it was added on 2026-09-22 and the rebuilt talk states none
+            # of them: §1 reaches the same fact through the switch table
+            # (`switch_declining_models`, `balance_only`) rather than through the panel-level
+            # arms paragraph. A gate that demands a surface say something it does not say is
+            # permanently red, and a permanently red gate gets switched off or read past:
+            # `check_arm_match.py` sat in the registry with no arguments until 2026-09-17,
+            # exited 2 on its own usage message, and the preflight counted that as NOT
+            # APPLICABLE -- a gate that had never once run, reported as one that did not
+            # need to.
+            #
+            # They remain gated where they ARE stated: the website, both dispatches and the
+            # release README. Dropping them here costs no coverage; verify with
+            # `key_numbers.SURFACES` before removing any other phrase this way.
+            # §2, the manipulation against the nuisance, and the control arm
+            "position_manip_clear": "moves position on %(position_manip_clear)d of "
+                                    "%(position_manip_pairs)d pairs with a median of "
+                                    "%(position_manip_median).3f",
+            "position_order_pct": "moves it on %(position_order_pct)d%% of pairs with a "
+                                  "median of %(position_order_median).3f",
+            "placebo_moves_models": "moves position on %(placebo_moves_models)d of "
+                                    "%(placebo_panel)d",
+            # §3, the detection limits
+            "order_mde": "%(order_mde)d items of %(instrument_items)d",
+            "null_mde": "same-version limit is %(null_mde)d",
+            "audit_yes_nuisance_magnitude": "%(audit_yes_nuisance_magnitude)d report a "
+                                            "nuisance magnitude",
+            # §4, the ledger and the null
+            "corrections_entries": "%(corrections_entries)d claims withdrawn or narrowed",
+            "null_pairs": "%(null_pairs)d pairs, median %(null_median)d",
+            # §5, the audit
+            "audit_external": "%(audit_external)d studies, %(audit_full_text)d of them read "
+                              "in full",
+            "audit_yes_same_version_dist": "%(audit_yes_same_version_dist)d report a "
+                                           "same-version null as a distribution",
+            # §7, order by model class, and the manipulation for scale
+            "order_p90_local": "p90 %(order_p90_local)d on the 2024-generation open-weight "
+                               "builds and %(order_p90_frontier)d on the 2026 frontier",
+            "order_p90_local_sitting": "one sitting, %(order_p90_local_sitting)d against "
+                                       "%(order_p90_frontier_sitting)d",
+            "manip_p90_sitting": "manipulation in one sitting sits at p90 "
+                                 "%(manip_p90_sitting)d",
+            # §8, the numbering artifact
+            "omission_local_asis": "%(omission_local_asis)d of %(omission_local_asis_sheets)d "
+                                   "local sheets come back incomplete against "
+                                   "%(omission_local_renum)d of "
+                                   "%(omission_local_renum_sheets)d renumbered",
+            # questions
+            "corpus_runs": "%(corpus_runs)s runs and %(corpus_models)d models",
+            "gradient_middle": "%(gradient_middle)d items of %(instrument_items)d sit in the "
+                               "band",
+            "critic_agree_normative": "agree %(critic_agree_normative).1f%% of the time",
+        },
+    },
     "website": {
         "path": _find_surface("website", "content", "research", "ai-bias-audit.md"),
         "phrases": {
@@ -1652,6 +1741,17 @@ SURFACES = {
     # file whose whole job is saying which claims survived.
     "adversarial_review": {
         "path": os.path.join(STUDY, "ADVERSARIAL-REVIEW.md"),
+        "phrases": {},
+    },
+    # THE MIRROR'S LESSONS FILE, UNGATED UNTIL 2026-09-22 AND PUBLIC THE WHOLE TIME.
+    #
+    # It carries a section headed "Drift did not replicate at scale" -- published null 5,
+    # withdrawn 2026-09-18 -- and it carries it at BOTH `origin/main` and `main`, so the
+    # withdrawal never reached it in either the pushed or the unpushed tree. No gate read
+    # the file, so nothing said so. It states no numbers of its own, which is why it was
+    # never added as a numeric surface; a retraction scan does not care about numbers.
+    "lessons": {
+        "path": _find_surface("bias-study-release", "LESSONS.md"),
         "phrases": {},
     },
     "release": {
@@ -2125,7 +2225,33 @@ def _instrument_items():
 def surface_numbers():
     a = audit_scale()
     fl = floors()
+    sw = switch_denominators()
     out = [
+        # THE TALK'S DEMO CELLS AND PATTERN COUNTS. Here rather than in build() because the
+        # paper does not quote them in this form -- it leads on gpt-6-astra -- and a build()
+        # row must carry a paper phrase. TALK.md quotes them, and until 2026-09-22 nothing
+        # gated a talk written entirely in retired denominators.
+        {"key": "demo_balance", "value": sw.get("demo_balance", UNAVAILABLE),
+         "what": "refusals by refusal_table.DEMO_MODEL under the balance instruction"},
+        {"key": "demo_balance_runs", "value": sw.get("demo_balance_runs", UNAVAILABLE),
+         "what": "runs by refusal_table.DEMO_MODEL under the balance instruction"},
+        {"key": "demo_placebo", "value": sw.get("demo_placebo", UNAVAILABLE),
+         "what": "refusals by refusal_table.DEMO_MODEL under the content-free placebo"},
+        {"key": "demo_placebo_runs", "value": sw.get("demo_placebo_runs", UNAVAILABLE),
+         "what": "runs by refusal_table.DEMO_MODEL under the content-free placebo"},
+        {"key": "demo_bare", "value": sw.get("demo_bare", UNAVAILABLE),
+         "what": "refusals by refusal_table.DEMO_MODEL with no system prompt"},
+        {"key": "demo_bare_runs", "value": sw.get("demo_bare_runs", UNAVAILABLE),
+         "what": "runs by refusal_table.DEMO_MODEL with no system prompt"},
+        {"key": "demo_commit", "value": sw.get("demo_commit", UNAVAILABLE),
+         "what": "refusals by refusal_table.DEMO_MODEL under the commitment directive"},
+        {"key": "demo_commit_runs", "value": sw.get("demo_commit_runs", UNAVAILABLE),
+         "what": "runs by refusal_table.DEMO_MODEL under the commitment directive"},
+        {"key": "balance_only", "value": sw.get("balance_only", UNAVAILABLE),
+         "what": "models that decline the balance instruction and never the commitment one "
+                 "(refusal_table.switch_patterns)"},
+        {"key": "total_refusers", "value": sw.get("total_refusers", UNAVAILABLE),
+         "what": "models that decline every switch condition -- not switches"},
         # THE DENOMINATOR EVERY "N items of M" SENTENCE USES. It was the literal 62 inside a
         # phrase template -- the retired questionnaire's length, in the gate that guards the
         # website against retired figures.
@@ -2532,6 +2658,46 @@ RETRACTED = [
      "Grok 4.3 by about half a point and does not move Claude Opus 4.7 at all"),
 ]
 
+
+def _registered_withdrawals():
+    """Phrases from `data/withdrawals.json`, appended to the hand-written list above.
+
+    THE HAND LIST IS NOT THE PROBLEM; BEING THE ONLY LIST WAS. Eighteen phrases were
+    registered here and the five published nulls were not among them, so a README and a live
+    research page asserted all five for four days after the withdrawal with `--check-release`
+    green throughout. A withdrawal reached `CORRECTIONS-2026-09-17-power.md`, `power.py`,
+    the paper and a test, and did not reach the one list that scans surfaces -- because
+    reaching it was a separate act of remembering.
+
+    `data/withdrawals.json` is now THE record of a withdrawal, and this reads it. Registering
+    a withdrawal there bans its wordings here in the same commit, and `check_withdrawals.py`
+    fails if the same withdrawal is missing its record, its ledger entry or its evidence.
+    Nothing has to be remembered twice.
+
+    The entries above stay hand-written: several predate the registry and carry per-phrase
+    reasoning that is worth more as prose than as a JSON field. New withdrawals go in the
+    registry.
+    """
+    path = os.path.join(STUDY, "data", "withdrawals.json")
+    if not os.path.exists(path):
+        return []
+    try:
+        reg = json.load(io.open(path, encoding="utf-8"))
+    except ValueError:
+        # A REGISTRY THAT DOES NOT PARSE MUST NOT SILENTLY BAN NOTHING. Returning [] here
+        # would drop every registered phrase and report a clean scan.
+        raise SystemExit("key_numbers: data/withdrawals.json does not parse; refusing to "
+                         "run a retraction scan with an unknown number of phrases missing")
+    out = []
+    for w in reg.get("withdrawals") or []:
+        for p in w.get("phrases") or []:
+            out.append((p, "%s -- withdrawn %s, see %s"
+                        % (w["claim"].rstrip("."), w["withdrawn"], w["record"])))
+    return out
+
+
+RETRACTED = RETRACTED + _registered_withdrawals()
+
 #: Files scanned for RETRACTED phrases beyond the prose surfaces.
 #:
 #: `data/controls-audit.json` is the record backing "the same table scores us", it is exported
@@ -2551,6 +2717,15 @@ RETRACTED = [
 #: Nothing caught that, because this list held one file. A retraction that reaches
 #: the README and not the document titled "here is why the objections fail" has
 #: reached the wrong surface: a reviewer's first stop is the second one.
+#: READ THE PARAGRAPH ABOUT ADVERSARIAL-REVIEW.md AS HISTORY, NOT AS A LISTING. That file
+#: was added to `SURFACES` on 2026-09-15, not to this tuple -- it is prose, and this scanner
+#: parses JSON. Adding it here does not scan it; it produces the "listed but is not JSON"
+#: finding below.
+#:
+#: Which is not hypothetical: on 2026-09-22 a session read the paragraph above, took
+#: "added 2026-09-15" to mean added HERE, and put both ADVERSARIAL-REVIEW.md and LESSONS.md
+#: into this tuple. The gate refused them in the same words it had been given in September.
+#: Prose goes in SURFACES. This list is for data that ships.
 RETRACTED_ALSO_SCAN = ("data/controls-audit.json",)
 
 
@@ -3125,9 +3300,23 @@ def scan_every_document_for_retractions():
     for root in roots:
       for base, dirs, files in os.walk(root):
         # Skip machinery and history; scan what a reader can open.
+        #
+        # "AND HISTORY" WAS IN THIS COMMENT AND NOT IN THE LIST until 2026-09-22, when
+        # registering the five published nulls turned up five hits inside `withdrawn/` --
+        # `STATUS-through-2026-09-12.md`, `RESULTS-2026-08-28-stance-survives-ablation.md`
+        # and `RESULTS-2026-08-30-withdrawal-was-wrong.md`, all of them archived records of
+        # what was claimed at the time. Banning a withdrawn sentence there does not correct
+        # anything; it falsifies the archive, which is the same offence as rewriting a
+        # third-party title to clear a grep.
+        #
+        # `withdrawn/` is the one directory whose PURPOSE is to hold retired text, and
+        # `check_retired_instrument.SKIP_DIRS` already excludes it for exactly this reason.
+        # The two gates now agree. The consequence is deliberate and worth stating: moving a
+        # document into `withdrawn/` stops its claims being scanned, which is what
+        # withdrawing a document means.
         dirs[:] = [d for d in sorted(dirs)
                    if d not in (".git", "__pycache__", ".pytest_cache", "node_modules",
-                                ".venv", "venv", "htmlcov", ".mypy_cache")]
+                                ".venv", "venv", "htmlcov", ".mypy_cache", "withdrawn")]
         for fn in sorted(files):
             if not fn.lower().endswith(".md"):
                 continue
@@ -3229,6 +3418,10 @@ def main(argv=None):
                     help="do the printed book numbers still match runs/? A printed number "
                          "cannot be corrected after the fact, so this is the surface where "
                          "drift costs most -- and it was the one nothing checked.")
+    ap.add_argument("--check-talk", action="store_true",
+                    help="do TALK.md's sentences still match runs/? The talk is what gets "
+                         "said to a room; its previous version was written entirely in "
+                         "retired denominators and no gate read it.")
     ap.add_argument("--counts", action="store_true",
                     help="the collection's shape, every figure derived and scoped. Quote THIS "
                          "rather than retyping: five model counts and two record counts were "
@@ -3295,7 +3488,7 @@ def main(argv=None):
             print("  verified against a corpus that is not present.")
             return 1
 
-    if args.check_website or args.check_release or args.check_books:
+    if args.check_website or args.check_release or args.check_books or args.check_talk:
         failures = []
         # --check-website covers EVERY website surface, not the one page it was written for.
         # Adding a surface to SURFACES and forgetting to add it here would leave it declared and
@@ -3312,7 +3505,8 @@ def main(argv=None):
                                 # it to check the gate, and the gate passed -- because
                                 # nothing listed it here. Declared and unchecked is the
                                 # same silence as not declared.
-                                ("adversarial_review", args.check_release)]
+                                ("adversarial_review", args.check_release),
+                                ("talk", args.check_talk)]
                              + [(n, args.check_books) for n in SURFACES
                                 if n.startswith("book-")]):
             if wanted:

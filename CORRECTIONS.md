@@ -940,6 +940,65 @@ This is the defect the map itself is about — a stated corpus that is not the c
 appearing in the banner of the document written to prevent it. A disclosure is a claim, and it
 expires like any other.
 
+### 28. The five published nulls, and the audit that judged them — withdrawn 2026-09-18, ledgered 2026-09-22
+
+**Published:** 2026-08-31 (`7fc2ed6`) and 2026-09-02 (`a2509c4`) as the nulls themselves, and
+2026-09-07 (`8d6960e`) as the audit's verdict on them — all three pushed. **Withdrawn:**
+2026-09-18, in the private tree. **Ledgered here:** 2026-09-22, four days later, during which
+the README, `LESSONS.md` and the live research page went on asserting every one of them.
+
+The five claims, quoted as they were published:
+
+1. "position does not move under prompt pressure", on the local weight families;
+2. the same claim, unscoped, on the frontier at temperature 0;
+3. "ablation does not move stance", on arm-matched pairs;
+4. "access tiers of one model are indistinguishable";
+5. "version drift does not replicate".
+
+**All five are withdrawn. Not undecided — withdrawn.** The study asserts none of them.
+
+**What was wrong.** Every observation was a count out of the retired 62-item questionnaire.
+Every detection threshold it was judged against is a count out of the 32-item Ratchet battery.
+14 of 62 is 23% of one instrument; 11 of 32 is 34% of another. Setting them side by side
+because both are integers is not a comparison, and it cannot be repaired by rescaling: a
+side-flip count is not linear in item count, because the *items* differ, not merely how many
+there are. So the audit's outputs — "**3 of 5** published nulls fall below their own detection
+limit", and the "undecided rather than refuted" this repository and the research page both
+built on it — rest on nothing. Entry 8 corrected "four of five" to "three of five" and left the
+three standing. The three do not stand either.
+
+**What replaced it: nothing, deliberately.** `PUBLISHED_NULLS`, `RETIRED_BOUND` and the audit
+are deleted from `power.py`, and `test_no_audit_of_observations_in_retired_units` keeps them
+deleted. The five were **not re-measured**. A later reader must not infer a re-measurement from
+the deletion: anyone reviving one of these claims re-collects it on the 32-item battery first,
+because there is no path from the recorded numbers to any verdict. The detection-limit table
+itself is unaffected — it is computed entirely from battery floors and describes what the live
+instrument can resolve.
+
+**Reach, stated honestly.** Claims 1, 2, 3 and 5 were asserted in the pushed README, in
+`scripts/power.py`, in `LESSONS.md` (5), in `results/RESULTS-2026-09-05-frontier-v3.md` (2) and
+in `results/RESULTS-2026-08-28-stance-survives-ablation.md` (3), and on the live research page.
+Claim 4 was public only as a line of `power.py`: its source document was never in this
+repository, and neither was claim 5's. Both are in the private tree's `withdrawn/results/` and
+are named here so the record of what was claimed stays traceable — not because a reader of this
+repository could ever open them.
+
+**Why it survived, and this is the part worth reading.** The correction that withdrew the five
+was written in the private tree and never copied to this one, while `power.py` and
+`PAPER-below-the-floor.md` here were updated to *cite* it — seven references to a file a reader
+of this repository could not open. Separately, `key_numbers.RETRACTED` gates withdrawn phrases
+against every surface, and it was never handed "3 of 5 published nulls", "undecided rather than
+refuted", or "Drift did not replicate at scale". So `--check-release` passed, repeatedly, over a
+README and a research page that asserted all three. A retraction that reaches a correction file,
+a script, the paper and a test, and does not reach the one list that scans surfaces, has not
+been applied — it has been *filed*.
+
+Both are fixed structurally rather than by hand. `data/withdrawals.json` is now the single
+record of a withdrawal; `key_numbers.RETRACTED` reads its phrases, and
+`scripts/check_withdrawals.py` fails when a withdrawal's record is missing from a tree that
+cites it, when a published claim has no entry in this file, or when the evidence behind a
+withdrawal has been deleted. Registering a withdrawal in one place now does all four.
+
 ---
 
 

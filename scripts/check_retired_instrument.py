@@ -97,6 +97,11 @@ NUMERIC_SURFACES = (
     "README.md",
     "CITATION.cff",
     "PLAN.md",
+    # THE TALK. Added 2026-09-22, the day it was rebuilt on the battery. It is what gets
+    # said out loud to a room, which is a shipping surface with no errata page -- and its
+    # previous version was written end to end in retired denominators ("0 / 62, then
+    # 62 / 62", "16 items of 62") and passed every gate green because nothing listed it here.
+    "TALK.md",
 )
 
 NUMERIC_MARKERS = (

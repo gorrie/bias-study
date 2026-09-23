@@ -1,0 +1,245 @@
+{
+  "schema": "withdrawals/1",
+  "purpose": "One record per withdrawn claim. THE source; every other surface is derived.",
+  "why": [
+    "A withdrawal was being treated as an EVENT and patched where it surfaced, instead of a",
+    "STATE with an invariant. The same withdrawal was recorded in up to six places that could",
+    "and did disagree: a dated CORRECTIONS-*.md, the mirror's numbered CORRECTIONS.md, a",
+    "WITHDRAWN block in FINDINGS.md, a hand-typed phrase in key_numbers.RETRACTED, a row in",
+    "PROTOCOL-DEVIATIONS.md, and a banner on the RESULTS file. Nothing reconciled them.",
+    "",
+    "The cost, all of it measured on 2026-09-22: the retired questionnaire was purged twice and",
+    "came back twice (commit 42133649); a retired collector was lifted out of quarantine into",
+    "scripts/ to quiet a gate; the five published nulls were withdrawn on 2026-09-18 and were",
+    "still asserted four days later on the live research page and on pushed GitHub, because no",
+    "phrase for them had ever been registered; CORRECTIONS-2026-09-17-power.md is cited ten",
+    "times inside the public mirror and is not in it; and the evidence for two withdrawals was",
+    "deleted outright and had to be restored from git.",
+    "",
+    "So the rule this file exists to enforce: a withdrawal is not done when it is written down.",
+    "It is done when the claim is absent from every surface, its record is reachable from every",
+    "tree that cites it, its evidence is still on disk, and -- if it was ever pushed -- a reader",
+    "can find it in the public ledger."
+  ],
+  "fields": {
+    "id": "stable slug; never reused, never renamed",
+    "claim": "what was asserted, in one sentence",
+    "withdrawn": "ISO date the study stopped asserting it",
+    "record": "the dated document that withdrew it, relative to the study root",
+    "record_must_reach": "trees that cite the record and must therefore contain it",
+    "phrases": "surface wordings to ban; fed to key_numbers.RETRACTED",
+    "published": "true if the claim was ever PUSHED to a public surface (git merge-base --is-ancestor), not merely committed",
+    "published_in": "the public surfaces that carried it, with the ref that settles each",
+    "public_entry": "CORRECTIONS.md entry number, or null if owed, or \"n/a\" when never published",
+    "evidence": "paths that must still exist for the withdrawal to be checkable",
+    "supersedes": "ids this withdrawal replaces"
+  },
+  "withdrawals": [
+    {
+      "id": "power-null-position-local",
+      "claim": "Position does not move under prompt pressure on the local weight families.",
+      "withdrawn": "2026-09-18",
+      "record": "CORRECTIONS-2026-09-17-power.md",
+      "record_must_reach": [
+        "study",
+        "mirror"
+      ],
+      "phrases": [
+        "position does not move under prompt pressure",
+        "3 of 5 published nulls",
+        "published nulls fall below their own detection limit"
+      ],
+      "published": true,
+      "published_in": [
+        "bias-study-release README.md (origin/main, since 7fc2ed6 2026-08-31)",
+        "bias-study-release scripts/power.py PUBLISHED_NULLS (origin/main, since a2509c4 2026-09-02)",
+        "evilrobots.lol research/ai-bias-audit.md (origin/master)"
+      ],
+      "public_entry": "28",
+      "evidence": [
+        "withdrawn/docs/STATUS-through-2026-09-12.md"
+      ],
+      "supersedes": []
+    },
+    {
+      "id": "power-null-position-frontier",
+      "claim": "Position does not move under prompt pressure on the frontier at temperature 0.",
+      "withdrawn": "2026-09-18",
+      "record": "CORRECTIONS-2026-09-17-power.md",
+      "record_must_reach": [
+        "study",
+        "mirror"
+      ],
+      "phrases": [
+        "their position under pressure does not move"
+      ],
+      "published": true,
+      "published_in": [
+        "bias-study-release results/RESULTS-2026-09-05-frontier-v3.md (origin/main, unbannered)",
+        "evilrobots.lol research/ai-bias-audit.md (origin/master)"
+      ],
+      "public_entry": "28",
+      "evidence": [
+        "withdrawn/results/RESULTS-2026-09-05-frontier-v3.md"
+      ],
+      "supersedes": []
+    },
+    {
+      "id": "power-null-ablation-stance",
+      "claim": "Ablation does not move stance, on arm-matched pairs.",
+      "withdrawn": "2026-09-18",
+      "record": "CORRECTIONS-2026-09-17-power.md",
+      "record_must_reach": [
+        "study",
+        "mirror"
+      ],
+      "phrases": [
+        "stance does not move"
+      ],
+      "published": true,
+      "published_in": [
+        "bias-study-release README.md (origin/main)",
+        "bias-study-release results/RESULTS-2026-08-28-stance-survives-ablation.md (origin/main)",
+        "evilrobots.lol research/ai-bias-audit.md (origin/master)"
+      ],
+      "public_entry": "28",
+      "note": "Entry 8 withdrew the INVERSION and left the null 'undecided in both directions'. That is not this withdrawal: no battery-era ablation arm exists, so there is no floor for it to clear.",
+      "evidence": [
+        "withdrawn/results/RESULTS-2026-08-28-stance-survives-ablation.md"
+      ],
+      "supersedes": []
+    },
+    {
+      "id": "power-null-access-tiers",
+      "claim": "Access tiers of one model are indistinguishable.",
+      "withdrawn": "2026-09-18",
+      "record": "CORRECTIONS-2026-09-17-power.md",
+      "record_must_reach": [
+        "study",
+        "mirror"
+      ],
+      "phrases": [
+        "access tiers of one model are indistinguishable"
+      ],
+      "published": true,
+      "published_in": [
+        "bias-study-release scripts/power.py PUBLISHED_NULLS (origin/main) -- the ONLY public carrier; its source RESULTS document was never in the mirror"
+      ],
+      "public_entry": "28",
+      "evidence": [
+        "withdrawn/results/RESULTS-2026-08-30-access-tier.md"
+      ],
+      "supersedes": []
+    },
+    {
+      "id": "power-null-version-drift",
+      "claim": "Version drift does not replicate.",
+      "withdrawn": "2026-09-18",
+      "record": "CORRECTIONS-2026-09-17-power.md",
+      "record_must_reach": [
+        "study",
+        "mirror"
+      ],
+      "phrases": [
+        "Drift did not replicate at scale",
+        "version drift does not replicate"
+      ],
+      "published": true,
+      "published_in": [
+        "bias-study-release LESSONS.md (present at BOTH origin/main and main on 2026-09-22)",
+        "bias-study-release README.md (origin/main)",
+        "evilrobots.lol research/ai-bias-audit.md (origin/master)"
+      ],
+      "public_entry": "28",
+      "evidence": [
+        "withdrawn/results/RESULTS-2026-08-31-drift-does-not-replicate.md"
+      ],
+      "supersedes": []
+    },
+    {
+      "id": "power-audit-disposition",
+      "claim": "The five published nulls are undecided rather than refuted, three of them below their own detection limit.",
+      "withdrawn": "2026-09-18",
+      "record": "CORRECTIONS-2026-09-17-power.md",
+      "record_must_reach": [
+        "study",
+        "mirror"
+      ],
+      "phrases": [
+        "undecided rather than refuted",
+        "undecided, not refuted",
+        "three of five of our own null results",
+        "three of the five null results"
+      ],
+      "published": true,
+      "published_in": [
+        "bias-study-release README.md (origin/main, since 8d6960e 2026-09-07)",
+        "evilrobots.lol research/ai-bias-audit.md (origin/master)"
+      ],
+      "public_entry": "28",
+      "note": "The disposition is not a milder version of the claims -- it is the OUTPUT of the same invalid comparison, and it keeps the 62-item detection limit alive. Withdrawing the nulls without withdrawing this leaves the arithmetic standing.",
+      "evidence": [
+        "CORRECTIONS-2026-09-17-power.md"
+      ],
+      "supersedes": []
+    },
+    {
+      "id": "bootstrap-placebo-16-of-37",
+      "claim": "A content-free placebo significantly moves measured position on 16 of 37 models.",
+      "withdrawn": "2026-09-18",
+      "record": "CORRECTIONS-2026-09-18-bootstrap.md",
+      "record_must_reach": [
+        "study"
+      ],
+      "phrases": [],
+      "published": false,
+      "published_in": [],
+      "public_entry": "n/a",
+      "note": "Entered the mirror at 9ba999b, which is NOT an ancestor of origin/main. It was the paper's lead finding for about nine hours and never reached a reader. The calibrated figure is 4 of 39 against a 6.2% false-positive rate: absence of evidence, not evidence of inertness.",
+      "evidence": [
+        "CORRECTIONS-2026-09-18-bootstrap.md"
+      ],
+      "supersedes": []
+    },
+    {
+      "id": "labels-llama-refusals",
+      "claim": "meta-llama refuses the balance instruction outright, 100% at condition A.",
+      "withdrawn": "2026-09-17",
+      "record": "CORRECTIONS-2026-09-17-labels.md",
+      "record_must_reach": [
+        "study"
+      ],
+      "phrases": [],
+      "published": false,
+      "published_in": [],
+      "public_entry": "n/a",
+      "note": "Caught before publication. Four llama3.1:8b sheets answered every item with the number and the option on separate lines; the parser read zero answers and classify_failure called it a refusal. Corrected figures 0% and 67%.",
+      "evidence": [
+        "withdrawn/pre-repair-snapshots/2026-09-16-ratchet-v3-wave/llama3.1_8b__N.jsonl"
+      ],
+      "supersedes": []
+    },
+    {
+      "id": "empty-response-judge-scores",
+      "claim": "Aggregates, intervals and paired estimates over the May corpus, computed including 466 records judged on empty response text.",
+      "withdrawn": "2026-09-08",
+      "record": "CORRECTIONS-2026-09-08.md",
+      "record_must_reach": [
+        "study",
+        "mirror"
+      ],
+      "phrases": [],
+      "published": true,
+      "published_in": [
+        "bias-study-release CORRECTIONS-2026-09-08.md (origin/main, since 072db15)"
+      ],
+      "public_entry": "25",
+      "note": "Not one significance verdict flips. The GLM on the main run drops to three eligible A/B pairs and four not-distinguishable rows vanish.",
+      "evidence": [
+        "CORRECTIONS-2026-09-08.md",
+        "withdrawn/backend-split-precollection/README.md"
+      ],
+      "supersedes": []
+    }
+  ]
+}
