@@ -103,6 +103,86 @@ def sha256(p: Path) -> str:
     return h.hexdigest()
 
 
+#: The instrument the CURRENT study is computed from. One definition, shared with
+#: `run_inventory.LIVE_INSTRUMENT_PREFIX` -- imported rather than repeated, because two
+#: copies of "which instrument is live" is how a retired bank came back twice.
+def _live_prefix() -> str:
+    try:
+        import run_inventory
+        return run_inventory.LIVE_INSTRUMENT_PREFIX
+    except Exception:
+        return "ratchet-battery"
+
+
+def _withdrawal_for(run: str) -> dict | None:
+    """The registry entry naming this run DIRECTORY, or None.
+
+    Reads `data/withdrawals.json`, which is THE record of a withdrawal.
+
+    MATCHED ON PATH SEGMENTS, NEVER AS A SUBSTRING. The first version searched a blob of the
+    entry's fields for the run name and immediately labelled `2026-09-16-ratchet-v3-wave` --
+    the paper's entire corpus -- as withdrawn, because an unrelated entry cites
+    `withdrawn/pre-repair-snapshots/2026-09-16-ratchet-v3-wave/llama3.1_8b__N.jsonl`. That
+    path is an archived copy of seven superseded records, not the live run, and it contains
+    the run's name only incidentally.
+
+    So an evidence path counts only when it is rooted at a CORPUS root and names this run as
+    its first element: `runs/<run>` or `data/<run>`. Anything under `withdrawn/` is an
+    archive of records and never labels the live directory it was copied from.
+    """
+    path = HERE.parent / "data" / "withdrawals.json"
+    if not path.exists():
+        return None
+    try:
+        reg = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        # A REGISTRY THAT DOES NOT PARSE MUST NOT SILENTLY MARK EVERYTHING ACTIVE.
+        raise SystemExit("derive_manifest: data/withdrawals.json does not parse; refusing to "
+                         "label runs `active` on the strength of a file I could not read")
+    for w in reg.get("withdrawals") or []:
+        for rel in w.get("evidence") or []:
+            parts = str(rel).replace("\\", "/").strip("/").split("/")
+            if len(parts) >= 2 and parts[0] in ("runs", "data") and parts[1] == run:
+                return w
+    return None
+
+
+def _provenance(run: str, instruments: collections.Counter) -> dict:
+    """`instrument`, `corpus` and `status` for one run directory."""
+    prefix = _live_prefix()
+    live = sum(n for k, n in instruments.items() if str(k).startswith(prefix))
+    total = sum(instruments.values())
+    if not total:
+        corpus = "empty"
+    elif live == total:
+        corpus = "current"
+    elif live == 0:
+        corpus = "previous"
+    else:
+        corpus = "MIXED"
+
+    out = {
+        "instrument": dict(instruments.most_common()),
+        "corpus": corpus,
+        "status": "active",
+    }
+    w = _withdrawal_for(run)
+    if w:
+        out["status"] = "withdrawn"
+        out["withdrawn"] = {
+            "claim": w.get("claim"),
+            "date": w.get("withdrawn"),
+            "record": w.get("record"),
+            "public_entry": w.get("public_entry"),
+            "READ_THIS_FIRST": (
+                "A conclusion drawn from this run has been withdrawn by the study that "
+                "collected it. The records are published so the withdrawal is checkable, "
+                "not so the claim can be recomputed. See the record named above."
+            ),
+        }
+    return out
+
+
 def derive(d: Path) -> dict | None:
     paths, layout = record_paths(d)
     if not paths:
@@ -115,6 +195,8 @@ def derive(d: Path) -> dict | None:
     ok_true = ok_false = unparsable = 0
     failures: collections.Counter = collections.Counter()
     total = 0
+
+    instruments: collections.Counter = collections.Counter()
 
     for p in paths:
         n = 0
@@ -132,6 +214,7 @@ def derive(d: Path) -> dict | None:
                 if not isinstance(r, dict):
                     unparsable += 1
                     continue
+                instruments[r.get("instrument") or "(none)"] += 1
                 for k in CONFIG_FIELDS:
                     if k in r:
                         cfg[k][json.dumps(r[k], sort_keys=True)] += 1
@@ -170,6 +253,20 @@ def derive(d: Path) -> dict | None:
         "derived_by": f"scripts/derive_manifest.py @ {_git_rev()}",
         "run": d.name,
         "layout": layout,
+        # PROVENANCE, SO THE DATA SAYS WHAT IT IS WITHOUT A READER OPENING OUR PROSE.
+        #
+        # `data/2026-09-13-i3-phase0/` shipped in the public release carrying 3,200 records,
+        # no `instrument` field, and a manifest that reads as a clean success -- 1,600 calls
+        # completed, 0 failed. Its B-A contrast is WITHDRAWN. Nothing on disk said so, so a
+        # reader could compute and publish a withdrawn result from our release without doing
+        # anything wrong. `data/withdrawals.json` governed claims on our surfaces and never
+        # reached the records.
+        #
+        # `instrument` is counted off the records; for the older corpus, whose records carry
+        # no such field, it reports `(none)` honestly rather than guessing. `status` is read
+        # from the withdrawals registry, so there is still exactly one record of a withdrawal
+        # and this derives from it.
+        **_provenance(d.name, instruments),
         "records_total": total,
         "records_unparsable": unparsable,
         "file_count": len(files),

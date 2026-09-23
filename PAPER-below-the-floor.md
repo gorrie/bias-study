@@ -25,10 +25,11 @@ analysis reads valid sheets only, so a susceptible model is analysed on the subs
 chose to answer. The serving backend moderates it — one model, one protocol, two providers, and
 the as-is loss runs 7 sheets against 1.
 
-Converting the largest floor into a detection limit gives a minimum detectable effect of 7
-items of 32. An audit of fourteen published studies finds two columns empty: not one reports
-what two variants of the same model do to the same instrument, and two report anything
-resembling a detection limit. We apply the same audit to ourselves and withdraw the claims that
+Converting the order floor into a detection limit gives a minimum detectable effect of 7
+items of 32. An audit of fourteen published studies finds the column that matters empty: not
+one reports what two variants of the same model do to the same instrument as a distribution
+an observed shift could be scored against, and only two report anything resembling a
+detection limit. We apply the same audit to ourselves and withdraw the claims that
 fail it. The corpus, the instrument, the failures and the scripts are in the repository.
 
 ---
@@ -105,9 +106,10 @@ exits 1 when a table has drifted from the data.**
 > 241 pre-registered contrasts, all in the same direction. Rather than choose, we measured
 > both against a null built by splitting real cells in half, where no treatment exists and
 > every rejection is therefore false: **the bootstrap rejects 10.5% of true nulls and the
-> exact test 4.5%** (`calibrate_estimators.py`, 200 splits of 136 cells). The paper reports
-> the exact test. The bootstrap is retained as a sensitivity check and every figure says which
-> it used.
+> exact test 4.5%** (`calibrate_estimators.py`, 200 splits of 136 cells). The per-model counts
+> this paper reports are the sheet bootstrap, and each figure says so; the exact test is the
+> sensitivity check, and §9.3 carries what it does to the lead count. *(This read "the paper
+> reports the exact test" until 2026-09-23, which §1 and §9.3 both contradicted.)*
 
 ---
 
@@ -295,9 +297,10 @@ It is generated now.)*
 **13 models decline under some condition**, and **8 of them decline the balance instruction
 and never the commitment one.**
 
-**Refusal is elicited, not intrinsic.** Across 64 models measured under both arms, there are
-88 refusals in 837 runs where the prompt carries no directive, against 1284 runs where it
-carries one — 55 of those runs are refusals. 9 models decline it without a directive; give
+**Refusal is elicited, not intrinsic.** Across 64 models measured under both arms — the balance
+instruction and the bare ask on one side, the commitment directive and the content-free
+placebo on the other — there are 88 refusals in 837 runs where the prompt carries no directive,
+against 1284 runs where it carries one — 55 of those runs are refusals. 9 models decline it without a directive; give
 those same models a firm instruction and 8 of them stop. The ninth is
 `google/gemini-3.7-flash`, which declines under every condition and is not a switch at all.
 Separately, 3 other models
@@ -362,13 +365,15 @@ are gated now (`arms_dir_refusals`, `arms_silenced`, `arms_dir_only`).
 
 Refusal rates are published as properties of models. Vendors get ranked by them. On this
 instrument the quantity is substantially a property of the sentence the researcher put in front
-of the model: a prompt that says nothing about politics **cuts it by a factor of three to five**
-— 12.2% under the balance instruction against 2.5% under the content-free placebo pooled, and
-7.3% against 2.4% weighting each model equally.
+of the model: a prompt that says nothing about politics **cuts it by roughly a factor of three**
+— 11.6% under the balance instruction against 4.2% under the content-free placebo pooled, and
+7.0% against 2.3% weighting each model equally, read off the generated table above.
 
 *Read "a factor of ten" here before 2026-09-19. That figure was from the retired questionnaire
 and contradicted this section's own next paragraph, which already said "roughly three-fold
-either way".*
+either way". Then read "three to five — 12.2% against 2.5%, 7.3% against 2.4%" until
+2026-09-23: hand-typed from a snapshot the table no longer matches, and the 12.2% is one of
+the two figures the note above already calls wrong.*
 
 The receipt, by vendor and condition. A is the balance instruction, B a bare ask with no
 system prompt, D an instruction to commit, P the content-free placebo.
@@ -499,8 +504,9 @@ axis. It compresses their conviction — which is exactly what an instruction to
 asks for, and exactly what a side-scored instrument is worst at seeing.
 
 **Local builds fail differently, and the contrast matters.** Where frontier models flip about 1
-side, 2024-generation 7–14B builds at Q4 flip around ten out of thirty-two on reordering alone.
-Their endpoint column is high too. They are not more opinionated; they are less reliable in
+side at the ninetieth percentile, 2024-generation 7–14B builds at Q4 flip six on reordering
+alone, and as many as eleven. Their endpoint column is high too. *("Around ten" until
+2026-09-23 — a 24-pair draft of the row; the generated table above reads p90 6, max 11.)* They are not more opinionated; they are less reliable in
 every direction at once, and pooling them with frontier models produces a floor that describes
 neither.
 
@@ -537,10 +543,13 @@ There is one manipulation row: `prompt condition A→D, one sitting`, collected 
 protocol in one sitting, five runs per cell, all conditions on the same panel. **That
 one-sitting row reports p90 4.**
 
-The panel behind it is 36 panel models, and because each contributes several seeds the row
-rests on more pairs than models: 61 pairs answer both arms. The other 2 decline the balance
-instruction outright, contributing no pair at all — a refusal is not a position, and a model
-that will not answer one arm cannot be differenced across two.
+The panel behind it is the frozen wave's 36 panel models together with the roster collected
+after the freeze, one modal pair per model, and 61 pairs answer both arms — sixty-one models,
+not sixty-one seeds. The other 2 decline the balance instruction outright, contributing no
+pair at all — a refusal is not a position, and a model that will not answer one arm cannot be
+differenced across two. *(Until 2026-09-23 this paragraph explained the 61 as seed pairs from
+the 36 — "because each contributes several seeds the row rests on more pairs than models". The
+floors table's own row note counts 61 models. The pairs are models.)*
 
 That row sits beside the order floor in §1, and the comparison is made there, on the live
 corpus, with both sides measured by the same estimator.
@@ -554,7 +563,7 @@ one model went from 18 to 2. Its answers under the commitment instruction are
 **bimodal** — within its wave cell, four of five runs land within 3–4 items of each other and
 the fifth lands 15–18 away. A modal sheet cannot represent that. It reports whichever mode the
 sampler favoured, which was one mode on one collection and the other on the next, and this
-paper's own floor table already records the same model at 3 on one date and 18 on another.
+project's floor tables have recorded the same model at 3 on one date and 18 on another.
 
 **Two. "At temperature 0 the runs are near-identical" is false on this corpus**, and it was the
 mechanism the draft offered. Measured over the temp-0 A and D cells: 263 within-cell run pairs,
@@ -587,7 +596,7 @@ column — 85 pairs against 107, a p90 of 10 against 3, 25 pairs against 61, a p
 supporting survives without it because the argument is about which rows to compare, not about
 their values.)*
 
-**Those pooled p90s are still the wrong comparison, and this paper had already said why.** §2
+**Those p90s, pooled across classes, are still the wrong comparison, and this paper had already said why.** §2
 argues that the pooled order row is a net aggregate concealing two populations, and calls
 splitting it the most important line here. The comparison against the manipulation then pooled
 it anyway. Two corrections fix that.
@@ -608,8 +617,8 @@ existed to make is made in prose below, where the figures are gated.
 
 Paired within each model over the 36 measured in both arms, the median difference is **0 items**
 and the sign balance over the 22 that differ gives **p = 0.83**: order is larger on 12 models,
-the manipulation on 10, and they tie on 14. The two are indistinguishable at panel level, which
-is §1's claim arriving again in the field's own unit.
+the manipulation on 10, and they tie on 14. At panel level the sign test does not separate them,
+which is §1's claim arriving again in the field's own unit.
 
 **What the paper can defend, stated by class:**
 
@@ -663,7 +672,7 @@ A single pooled order floor would have been a net aggregate concealing gross mov
 two populations. That is a defect this project has already caught in itself once, and here it
 would have been in the title.
 
-### All three are small on frontier models, and the same size as each other
+### All three are small in one sitting, and the same size as each other
 
 In side-flip units, one sitting, one protocol, pooled across model classes:
 
@@ -694,11 +703,13 @@ same model are treated as one. Half of those pairs differ by 1 or more items wit
 Against that, the detection limit for a directional claim is 7 items of 32, against presentation order pooled
 across classes.
 
-What the table still supports is narrower and survives: **on frontier models every one of
-these factors is small, and they are all the same size as each other.** Three, one and four
-side flips of thirty-two, against a detection limit of three. Nothing here separates a
-deliberate manipulation from a shuffled sheet from a sibling checkpoint, which is a different
-and less quotable claim than the one it replaces.
+What the table still supports is narrower and survives: **in one sitting, pooled across
+classes, every one of these factors is small, and they are all the same size as each other.**
+Three, one and four side flips of thirty-two, against detection limits of four for the order
+row and three for the same-version row (§3). Nothing here separates a deliberate manipulation
+from a shuffled sheet from a sibling checkpoint, which is a different and less quotable claim
+than the one it replaces. *(This paragraph and its heading said "on frontier models" until
+2026-09-23 — the label the note above the table had already withdrawn for the table itself.)*
 
 The control is still the one no study in our audit reports. That part never depended on its
 magnitude.
@@ -742,9 +753,13 @@ directional claim has to beat before the word "effect" is doing any work.
 The previous version of this sentence named a different number as the governing one — *"the
 same-version limit of 11, because on frontier models that is the floor a version-over-version
 claim competes with."* **Withdrawn.** On the battery it is the same-version limit of 3 that
-applies — the smallest detection limit in the table rather than the largest, and the observed
+applies — among the smallest detection limits in the table rather than the largest, and the observed
 same-version distribution sits underneath it (§7). The governing limit for a study of this shape is the
-pooled order limit, because that is the largest one a claim must clear — not the smallest.
+pooled order limit, because for a study that pools its panel it is the largest one a claim must
+clear — not the smallest. Two rows in the table are larger and neither governs: the local-only
+order limit applies to a study that reports the 2024 generation by itself, and requantisation's
+rests on sixteen local pairs whose 95th percentile is the sample maximum, which the table's own
+note column says.
 
 Note what that withdrawal does *not* do. It does not make version-over-version comparison safe:
 a limit of 3 means the instrument cannot see a same-version difference smaller than three side
@@ -784,8 +799,8 @@ That is an average, and the floor matters more: taken pair by pair, the lowest i
 1, arm's-length censorship, the most contested subject in the bank. There is no pair on which
 the panel is meaningfully divided.
 
-**Forty of sixty-one models agree with every normative proposition in the bank.** The median
-model's disagreement rate is zero.
+**Forty-one of sixty-one models agree with every normative proposition in the bank.** The median
+model's disagreement rate is zero. *("Forty" until 2026-09-23; the generated table below says 41.)*
 
 ### The first objection, and it does not hold
 
@@ -856,7 +871,7 @@ not a prior. If the field trains on overlapping web text then every model inheri
 priors, and an intervention aimed at the refusal mechanism cannot see it. Separating belief from
 corpus needs a contrast this study does not have.
 
-**Nor does it establish that the questions are hard.** §3 already showed the bank is bimodal:
+**Nor does it establish that the questions are hard.** The bank is bimodal:
 defender-framed items run 0.5–28.9%, critic-framed items 92.3–100%, and **not one of the
 thirty-two falls between 30% and 70%**, where a panel would actually divide — 0 of the 32 sit
 in that band, and `item_gradient.py` prints the count rather than asserting it. An instrument with
@@ -888,17 +903,27 @@ statistic rather than the positional one.
 Then the second conviction, which is the one worth reading.
 
 Every control we ran was aimed at a claim asserting an effect. None was aimed at a claim
-asserting the absence of one. A procedure built that way can only subtract. When the detection
-limit above was finally computed — after the withdrawals were published, on a live page — it
-said three of our five null results sat below their own resolution. The instrument could not
-have seen the effects those nulls were used to rule out. Both nulls that retired this
-project's central claims are among them.
+asserting the absence of one. A procedure built that way can only subtract. When a detection
+limit was finally computed — after the withdrawals were published, on a live page — it said
+three of our five null results sat below their own resolution, and until 2026-09-18 this
+paper called the claims those nulls had retired *undecided*: a third verdict, between refuted
+and restored.
 
-Those claims are not restored. They are undecided, which is a third verdict and the correct
-one, and the distance between *refuted* and *undecided* is what this paper is about.
+That verdict is withdrawn too, for the same defect one layer further in. Every one of the five
+observations was a count out of the retired 62-item questionnaire; every threshold it was
+judged against is a count out of the 32-item battery. Setting the two side by side because
+both are integers is not a comparison, and rescaling cannot repair it — a side-flip count is
+not linear in item count, because the items differ. So the five nulls are withdrawn, not
+undecided: the study asserts none of them, none was re-measured, and anyone reviving one
+collects it on the battery first (`CORRECTIONS-2026-09-17-power.md`; entry 28 of the public
+ledger). The claims they once retired are not restored either. What survives of the second
+conviction is the rule this paper exists to state: a null result needs its detection limit
+computed before it is trusted, and ours were published without one. *(Until 2026-09-23 this
+passage still narrated the audit's verdict as live, in words the withdrawal registry had not
+been handed.)*
 
 **And this passage claimed a fourth defect it did not have.** It read "four of our five" —
-the generated figure is three — and it ended on a null that "inverted outright": an ablated
+the audit, while it stood, said three — and it ended on a null that "inverted outright": an ablated
 model filed as showing no stance movement moving 12 items against a detection limit of 9.
 Both numbers are withdrawn. The 12 came from **a single run per arm**, and a one-run sheet is
 not a modal: this study's own run-to-run replicate floor is p90 5, so a 12 derived from n=1
@@ -1079,7 +1104,12 @@ across plausible formats rather than a point. Different task, same instruction.
 
 On the same class of model our order floor is p90 11, max 12 — a different factor and a
 different laboratory, pointing the same way. And their forecast that newer models would be
-steadier is confirmed: the same measurement on 2026 frontier models gives p90 3.
+steadier is confirmed: the same measurement on 2026 frontier models gives p90 3. Those two are
+the pooled order row split by class, pooled across collections, which §2's floors table does
+not print; the one-sitting class rows it does print, and §2 argues from, read p90 6 and max 11
+on the local class and p90 1 on the frontier. Both splits point the same way. *(The two splits
+were not distinguished until 2026-09-23, so a reader met "11 against 6" in §2 as a corrected
+copy and 11 here as a live figure. Both are true, of different rows.)*
 
 > **The two numbers are not commensurable, and the denominator is the shallow reason.** Their
 > 14 and 23 are counts on their own 62-proposition instrument; ours are out of 32. More
@@ -1100,9 +1130,13 @@ steadier is confirmed: the same measurement on 2026 frontier models gives p90 3.
 > The other direction is `replicate_rottger.py`, which runs our floor statistic on their
 > published completions. What this section claims is corroboration in direction, not in size.
 
-The uptake is the finding. Two years later, two 2026 studies on the same instrument bound
-their error with repeated sampling at temperature zero and report neither a nuisance magnitude
-nor a detection limit.
+The uptake is the finding. Two years later, the 2026 studies on the same instrument still
+bound their error by repeating the prompt — ten administrations at temperature 0.7 in one, a
+single greedy replicate beside three at 1.0 in another — and none of them converts what it
+measured into a threshold an effect must clear. *(This read "two 2026 studies ... at
+temperature zero" and "neither a nuisance magnitude nor a detection limit" until 2026-09-23.
+Sakhawat samples at 0.7, and the audit table below scores Törnberg `yes` on magnitude; the
+sentence contradicted the table it introduces.)*
 
 The field was told three times. Sclar in October 2023, for benchmark tasks. Röttger in
 February 2024, on this exact instrument, with the magnitudes. Messing in April 2026, for
@@ -1417,7 +1451,7 @@ was measured on one instrument and asserted about the phenomenon.
 ### What survives the withdrawal, in the other statistic
 
 The withdrawn claims were all in **side flips**. Measured in **endpoints** — gaining or losing
-a *Strongly* answer — the same-version row is not small at all. Ranked against every other
+a *Strongly* answer — the same-version row leads every nuisance factor in the table. Ranked against every other
 nuisance factor this study measures, on the same pairs and the same sheets:
 
 Read the right-hand column of §2's generated floors table rather than a copy of it. Ranked by
@@ -1434,7 +1468,7 @@ re-read it.
 
 **Two checkpoints of the same model mostly agree on which side to take, and disagree more than
 any other nuisance factor about how strongly to take it.** Median 5 endpoint changes of 32 —
-the largest in the table — against a median of 1 side flip.
+the largest of the nuisance rows — against a median of 1 side flip.
 
 This is §2's finding turned on the null itself. The field scores side, side is the stable
 statistic, and the moving one is discarded. That is exactly why the same-version control looked
@@ -1521,7 +1555,7 @@ section:
 
 1. **Vary the presentation order and report the change rate** as an item-level magnitude, not
    as a randomisation you performed and pooled away. This is the largest nuisance factor we
-   measured and it is free.
+   measured across the whole panel, and it is free.
 2. **Include one same-version pair per model family and report what it produces**, as a
    distribution rather than a single observation. The pairs are already in every roster of any
    size. No study in the audit reports this, and it is the only comparison that bounds how much
@@ -1553,9 +1587,13 @@ has, and the fifth is a change to a collector before the next run.
    designs that administer one item per call with the context cleared. Naser (2026) is such a
    design and the order critique is void against it.
 2. **The order floor rests on 94 pairs.** That is enough to establish the split between
-   classes and not enough to characterise either one precisely; the frontier arm is seven
-   models from seven vendors across four shuffled orders plus the canonical one. Per-class
-   pair counts are in the generated floors table (§2), not restated here.
+   classes and not enough to characterise either one precisely: its frontier class is 25
+   models at three orders each, 75 pairs, and its local class 9 builds carrying the other 19.
+   The one-sitting class rows §2 argues from are in the generated floors table, not restated
+   here. *(Read "seven models from seven vendors across four shuffled orders plus the
+   canonical one" until 2026-09-23 — the 2026-09-01 frontier sweep on the retired
+   questionnaire, not this row. The counts here are read from `floor_table._order_cells()`
+   and are not yet gated.)*
 3. **The estimator behind every interval here is anti-conservative at these sample sizes, and
    we can now say by how much.** Against a null built by splitting real cells in half
    (`calibrate_estimators.py`, 200 splits, 136 eligible cells), the sheet bootstrap rejects
@@ -1632,16 +1670,17 @@ from the analysis at build time and nothing in the prose holds a second copy.
 | elicitation rung (rung 2) | — | BH within itself | `scripts/refusal_table.py --rung2` |
 | group-attribute comparisons | 0 | n/a | `scripts/group_power.py` |
 
-Every row below the first is **uncorrected and exploratory**. They are not thereby wrong, and they are not a second family that a correction was forgotten on: they were not pre-registered, and the requirement this study holds other papers to is that each is marked as exploratory *at its point of use* rather than only in Limitations. The `multiple_comparisons` column of the controls audit scores twelve other studies on exactly this.
+Every row below the first is **uncorrected and exploratory**. They are not thereby wrong, and they are not a second family that a correction was forgotten on: they were not pre-registered, and the requirement this study holds other papers to is that each is marked as exploratory *at its point of use* rather than only in Limitations. **The controls audit does not yet score the other studies on that**, and should.
 <!-- /GEN:comparisons -->
 
 The corrected family covers the condition contrasts and nothing else. **We are not claiming the
 exploratory families need no correction** — we are declining to pool tests from different
 designs into one family after the fact, which would change the threshold on the pre-registered
 results according to how much exploratory work happened to be done. The honest version is to
-report both counts and let a reader discount the exploratory rows as they see fit, which the
-`multiple_comparisons` column of §5's audit asks of fourteen other papers and which none of them
-does.
+report both counts and let a reader discount the exploratory rows as they see fit. §5's audit
+does not yet score the fourteen studies on that, and should. *(Until 2026-09-23 this sentence,
+like the generated block above it, cited a `multiple_comparisons` column of the controls audit
+that asks this of fourteen other papers; `data/controls-audit.json` carries no such column.)*
 
 ---
 

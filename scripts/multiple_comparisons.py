@@ -319,8 +319,8 @@ def markdown(res):
                "thereby wrong, and they are not a second family that a correction was "
                "forgotten on: they were not pre-registered, and the requirement this study "
                "holds other papers to is that each is marked as exploratory *at its point of "
-               "use* rather than only in Limitations. The `multiple_comparisons` column of "
-               "the controls audit scores twelve other studies on exactly this.")
+               "use* rather than only in Limitations. **The controls audit does not yet score "
+               "the other studies on that**, and should.")
     return "\n".join(out)
 
 
@@ -362,8 +362,10 @@ def main(argv=None):
     print()
     print("  Families that are not corrected are not thereby wrong -- they are exploratory,")
     print("  and the requirement is that the paper SAYS SO at each figure rather than only in")
-    print("  Limitations. This is the `multiple_comparisons` column the controls audit scores")
-    print("  twelve other studies on.")
+    print("  Limitations. The controls audit does NOT yet score the other studies on this --")
+    print("  there is no `multiple_comparisons` column in data/controls-audit.json. Both this")
+    print("  line and the generated block claimed there was, which put a false statement about")
+    print("  our own audit into the paper. Add the column, or keep saying it is missing.")
     print()
 
     if res["historical"]:

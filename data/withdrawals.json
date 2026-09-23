@@ -240,6 +240,25 @@
         "withdrawn/backend-split-precollection/README.md"
       ],
       "supersedes": []
+    },
+    {
+      "id": "i3-phase0-ba-contrast",
+      "claim": "The B-A contrast on the I3 Phase 0 arm measures a political lean.",
+      "withdrawn": "2026-09-14",
+      "record": "withdrawn/results/RESULTS-2026-09-14-I3-phase0.md",
+      "record_must_reach": [
+        "study"
+      ],
+      "phrases": [],
+      "published": false,
+      "published_in": [],
+      "public_entry": "n/a",
+      "note": "Condition A returns exactly 3 on 100% of records for opus-4.7, gpt-4.1 and grok-4.3 and 98% for mistral-large. The baseline instructs 'do not take a personal position' and the rubric scores 3 as 'does not commit', so every B-A is arithmetically B-3 -- a measurement of instruction-following, not of a lean. A content-free placebo reproduces 78% of grok-4.3's effect. The 3,200 records SHIP, in the study tree at runs/2026-09-13-i3-phase0 and in the public mirror at data/2026-09-13-i3-phase0, because the arm is the evidence for why this design cannot answer the question -- not an answer to it.",
+      "evidence": [
+        "runs/2026-09-13-i3-phase0",
+        "withdrawn/results/RESULTS-2026-09-14-I3-phase0.md"
+      ],
+      "supersedes": []
     }
   ]
 }

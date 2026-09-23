@@ -156,12 +156,33 @@ def scan(study=STUDY):
                     "conditions": sorted(conditions), "schemas": sorted(schemas),
                     "instruments": dict(instruments),
                     "corpus": _corpus_of(instruments),
+                    "status": _status_of(name),
                     "read_by": readers(name, _globs)})
     return out
 
 
 #: The instrument the CURRENT study is computed from. Everything else is previous work.
 LIVE_INSTRUMENT_PREFIX = "ratchet-battery"
+
+
+def _status_of(run):
+    """`active` or `withdrawn`, from `data/withdrawals.json` via the one shared lookup.
+
+    WHY IT IS HERE AND NOT A SECOND IMPLEMENTATION. `derive_manifest._withdrawal_for` already
+    decides whether a registry entry names a run directory, and it learned the hard way to
+    match on path SEGMENTS rather than as a substring -- the first version labelled
+    `2026-09-16-ratchet-v3-wave`, the paper's whole corpus, as withdrawn because an unrelated
+    entry cites an archived snapshot path containing that name. Importing it means that rule
+    exists once.
+    """
+    try:
+        sys.path.insert(0, HERE)
+        import derive_manifest
+        return "withdrawn" if derive_manifest._withdrawal_for(run) else "active"
+    except SystemExit:
+        raise
+    except Exception:
+        return "unknown"
 
 
 def _corpus_of(instruments):

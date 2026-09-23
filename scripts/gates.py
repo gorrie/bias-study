@@ -467,6 +467,20 @@ GATES = [
     #
     # Stage "release" rather than "prerun": these are questions about what the repository
     # ASSERTS, not about what a collection is about to do.
+    # THE DATA MUST SAY WHAT IT IS. `data/2026-09-13-i3-phase0/` shipped in the public release
+    # with 3,200 records, no instrument field, no status, and a manifest reading as a clean
+    # success -- while the contrast computed on it is withdrawn. A reader could have published
+    # a withdrawn result from our release without doing anything wrong. PROVENANCE.json names
+    # every run in a root with its instrument, its corpus and its status, generated from the
+    # withdrawals registry so there is still one record of a withdrawal.
+    Gate("gen_provenance.py", ["--check"], tree="either", stage="release",
+         label="every run declares its instrument and whether it is withdrawn",
+         covers="one PROVENANCE.json per corpus root, listing every run directory with the "
+                "instrument its records carry, current-vs-previous, and active-vs-withdrawn "
+                "read from data/withdrawals.json",
+         why="the withdrawals registry governed claims on our surfaces and never reached the "
+             "records on disk; a healthy-looking run directory is how a withdrawn result "
+             "gets recomputed by somebody acting in good faith"),
     Gate("check_withdrawals.py", tree="either", stage="release",
          label="every withdrawal is absent, reachable, ledgered and evidenced",
          covers="each entry in data/withdrawals.json -- THE record of a withdrawal, which "
