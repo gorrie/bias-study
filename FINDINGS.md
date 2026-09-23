@@ -241,6 +241,18 @@ outcome its rubric scores as the midpoint — **94% of condition-A records score
 whose items are all framed from one side (movements run 86 toward the questioner against 26 the
 other way).
 
-Whether that instrument measures a position or measures agreement with whoever is asking is
-**being collected now** (`runs/2026-09-13-i3-phase0`, `PREREG-2026-09-13-frame-and-placebo`).
-It is the question that determines how much of the NARROW section survives.
+Whether that instrument measures a position or measures agreement with whoever is asking was
+put to an arm collected on 2026-09-13 (`data/2026-09-13-i3-phase0`,
+`prereg/PREREG-2026-09-13-frame-and-placebo.md`, 3,200 records, in this repository).
+
+**Corrected 2026-09-23.** This sentence read "**being collected now**" and pointed at
+`runs/2026-09-13-i3-phase0`. Both were wrong by the time anyone could read them: collection
+finished on 2026-09-13, and in this repository the arm sits under `data/`, not `runs/` — so
+a reader following the path got nothing. **Its B−A contrast is withdrawn**: condition A is
+pinned at the rubric's midpoint at essentially 100%, and a content-free placebo reproduces
+most of the effect, so the contrast cannot separate position from agreement. The records ship
+because the question is real and the arm is the evidence about why this design cannot answer
+it — not because it answers it.
+
+It remains the question that determines how much of the NARROW section survives, and it is
+not answered here.
