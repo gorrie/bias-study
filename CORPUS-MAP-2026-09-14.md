@@ -86,6 +86,7 @@ variance run silently collected 0 of 20 while reporting success.
 | run | replaces | why |
 |---|---|---|
 | `2026-09-14-g0dm0d3-baseline-4k` | `2026-09-13-g0dm0d3-replicate-baseline` | the original recorded **no token budget** while the arm it is differenced against records 4,000 |
+| `2026-09-05-recollect` | nothing — it is its own collection | an earlier, separate re-collection: **758 records**, conditions A and B, framing-sensitivity per model. It carries its own `ANALYSIS.md` in the directory. Explicitly **out of scope of the 2026-09-14 repair** because it was already clean, so it is not a repair of any run listed above and nothing splices from it |
 
 A baseline capped below its arm measures truncation rather than force. The original W13 baseline
 carried no `max_tokens` field at all, so comparability could not be verified, and it was replaced
@@ -211,6 +212,8 @@ when the field is absent, so an omitted flag is not "off".
 | `2026-09-14-variance-spliced` | 2026-05-26-variance | 883 → **1190** |
 | `2026-09-14-may25-spliced` | 2026-05-25 | 168 → **259** of 260 |
 | `2026-09-14-ood-spliced` | 2026-05-27-ood | 90 → **160 of 160** |
+| `2026-09-15-paraphrase-spliced` | 2026-05-27-paraphrase | 239 → **360 of 360** |
+| `2026-09-15-reversed-premise-spliced` | 2026-05-27-reversed-premise | 139 → **194** of 200 |
 
 `2026-05-25` and `2026-05-25-full` are **different runs**, one character apart. The repair is
 keyed from its own records' `recollected_from`, not from its directory name — which reads

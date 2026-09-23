@@ -76,16 +76,60 @@ FIXTURES = {
 }
 
 
+def _corpus_roots(study):
+    """Every directory that holds run directories: `runs/` here, and `data/` in the mirror.
+
+    HARDCODING `runs/` MADE THIS BLIND IN THE TREE THAT SHIPS. The public mirror keeps the
+    battery under `runs/` and the 42-directory May study under `data/`, so an inventory that
+    walks only `runs/` reports the mirror as holding 12 directories and no previous-instrument
+    records at all -- while 31,713 of them sit one directory over. The corpus-split line added
+    on 2026-09-23 would then have answered "what is old in the release" with "nothing", which
+    is the opposite of true and exactly the kind of confident wrong number this file exists to
+    stop.
+
+    RESOLVED AGAINST THE `study` ARGUMENT, NOT GLOBALLY. The first version called
+    `studypaths.run_roots()`, which answers for the real tree wherever it is -- so
+    `scan(tmp_path)` silently inventoried the live corpus instead of the fixture and four
+    tests went red carrying roles from the wrong directory. A function that takes a root and
+    then ignores it is worse than one that takes none.
+    """
+    roots = []
+    for name in ("data", "runs"):
+        cand = os.path.join(study, name)
+        if not os.path.isdir(cand):
+            continue
+        # `data/` holds config JSON in the private tree and run directories in the mirror, so
+        # it counts as a corpus root only when it actually contains runs.
+        #
+        # THE PREDICATE IS `raw/` OR `scored/`, which is what the scope-disclosure code this
+        # replaced already used and had proved against the mirror's 42. Accepting a bare
+        # `*.jsonl` as well -- the first attempt -- swept in `data/external`, a third-party
+        # dataset of 24,180 records that is not a run, and the study tree's inventory jumped
+        # from 47,537 records to 71,717. A looser predicate does not find more runs; it finds
+        # things that are not runs.
+        if name == "runs" or any(
+                os.path.isdir(os.path.join(cand, d))
+                and (os.path.isdir(os.path.join(cand, d, "raw"))
+                     or os.path.isdir(os.path.join(cand, d, "scored")))
+                for d in os.listdir(cand)):
+            roots.append(cand)
+    return roots or [os.path.join(study, "runs")]
+
+
 def scan(study=STUDY):
     _globs = analysis_globs()
     out = []
-    for path in sorted(glob.glob(os.path.join(study, "runs", "*"))):
+    paths = []
+    for root in _corpus_roots(study):
+        paths += sorted(glob.glob(os.path.join(root, "*")))
+    for path in paths:
         if not os.path.isdir(path):
             continue
         name = os.path.basename(path)
         files = glob.glob(os.path.join(path, "**", "*.jsonl"), recursive=True)
         records = 0
         models, conditions, schemas = set(), set(), set()
+        instruments = collections.Counter()
         for f in files:
             with open(f, encoding="utf-8", errors="replace") as fh:
                 for line in fh:
@@ -102,6 +146,7 @@ def scan(study=STUDY):
                         conditions.add(rec.get("condition"))
                     if rec.get("schema"):
                         schemas.add(rec.get("schema"))
+                    instruments[rec.get("instrument") or "(none)"] += 1
         other = [f for f in glob.glob(os.path.join(path, "**", "*"), recursive=True)
                  if os.path.isfile(f) and not f.endswith(".jsonl")]
         out.append({"run": name, "files": len(files), "records": records,
@@ -109,8 +154,40 @@ def scan(study=STUDY):
                     "has_manifest": any(os.path.basename(f) == "manifest.json" for f in other),
                     "models": len([m for m in models if m]),
                     "conditions": sorted(conditions), "schemas": sorted(schemas),
+                    "instruments": dict(instruments),
+                    "corpus": _corpus_of(instruments),
                     "read_by": readers(name, _globs)})
     return out
+
+
+#: The instrument the CURRENT study is computed from. Everything else is previous work.
+LIVE_INSTRUMENT_PREFIX = "ratchet-battery"
+
+
+def _corpus_of(instruments):
+    """CURRENT, PREVIOUS or MIXED, from the records' own `instrument` field.
+
+    WHY THIS COLUMN EXISTS. "What is in the current study and what is old" was answered four
+    different ways in one session on 2026-09-22, because it was answered from prose each time
+    -- different scopes (files, records, directories), two trees, and a tree that was legitimately
+    changing as material was restored and a duplicate deleted. Every one of those answers was
+    typed. This one is read off the records, so the next person to ask gets the same number as
+    the last, and gets it from a command rather than from somebody's recollection.
+
+    A run is CURRENT when every record in it carries the live battery, PREVIOUS when none does,
+    and MIXED when they disagree -- which is a defect worth seeing rather than a category:
+    no run should straddle two instruments.
+    """
+    if not instruments:
+        return "empty"
+    live = sum(n for k, n in instruments.items()
+               if str(k).startswith(LIVE_INSTRUMENT_PREFIX))
+    total = sum(instruments.values())
+    if live == total:
+        return "current"
+    if live == 0:
+        return "previous"
+    return "MIXED"
 
 
 #: A glob so broad it cannot fail. `runs/**/*.jsonl` matches every directory there can be, so
@@ -297,6 +374,21 @@ def main(argv=None):
         print(json.dumps(rows, indent=1))
         return 1 if (a.check and (orphans or unread)) else 0
     if not a.check:
+        by_corpus = collections.Counter(r["corpus"] for r in rows)
+        cur = [r for r in rows if r["corpus"] == "current"]
+        prev = [r for r in rows if r["corpus"] == "previous"]
+        mixed = [r for r in rows if r["corpus"] == "MIXED"]
+        print("CORPUS SPLIT, read off the records' own instrument field")
+        print("  CURRENT  (%s)  %2d dir(s), %6d record(s)"
+              % (LIVE_INSTRUMENT_PREFIX, len(cur), sum(r["records"] for r in cur)))
+        print("  PREVIOUS            %2d dir(s), %6d record(s)"
+              % (len(prev), sum(r["records"] for r in prev)))
+        if mixed:
+            print("  MIXED               %2d dir(s) -- a run straddling two instruments is a"
+                  " defect, not a category:" % len(mixed))
+            for r in mixed:
+                print("      %-42s %s" % (r["run"], r["instruments"]))
+        print("")
         by_role = collections.Counter(r["role"] for r in rows)
         print("RUN INVENTORY -- %d directories, %d records"
               % (len(rows), sum(r["records"] for r in rows)))
@@ -316,6 +408,22 @@ def main(argv=None):
         print("Roles: DOCUMENTED is named in a study document. COLLECTION INPUT carries the")
         print("collection schema and feeds the floor tools without a write-up of its own --")
         print("not the same as unanalysed. FIXTURE is development data, never a measurement.")
+    # A RUN STRADDLING TWO INSTRUMENTS BLOCKS, in --check and in the listing alike. It is not
+    # a third corpus; it is a directory whose records disagree about what was administered,
+    # and every floor and contrast that globs it averages two instruments into one number.
+    # Checked here rather than only printed above, because the listing is read by a person
+    # and this has to hold when nobody is reading.
+    mixed_runs = [r for r in rows if r["corpus"] == "MIXED"]
+    if mixed_runs:
+        print("MIXED INSTRUMENT IN ONE RUN -- %d directory(ies):" % len(mixed_runs))
+        for r in mixed_runs:
+            print("  %-44s %s" % (r["run"], r["instruments"]))
+        print("")
+        print("  Records in one directory carry different instruments. A side-flip count")
+        print("  does not convert between banks, so any figure computed over this directory")
+        print("  is two instruments averaged together. Split the directory by instrument.")
+        return 1
+
     if unread:
         print("COLLECTED AND UNREACHABLE -- records no analysis glob walks:")
         for r in sorted(unread, key=lambda x: -x["records"]):
@@ -363,18 +471,21 @@ def main(argv=None):
             return 1
         print("run inventory: every directory accounted for -- %d directories, %d records"
               % (n_dirs, n_records))
-        # SCOPE DISCLOSURE. scan() globs `runs/*` ONLY. In the public mirror the May
-        # corpus behind the published table lives under data/, so this gate has
-        # never covered it and never said so.
-        import glob as _glob
-        data_dirs = [p for p in sorted(_glob.glob(os.path.join(STUDY, "data", "*")))
-                     if os.path.isdir(p) and (os.path.isdir(os.path.join(p, "raw"))
-                                              or os.path.isdir(os.path.join(p, "scored")))]
-        if data_dirs:
-            print("  NOT COVERED: %d run-shaped director(y/ies) under data/ are outside this"
-                  % len(data_dirs))
-            print("  gate's scope (it globs runs/* only): %s"
-                  % ", ".join(os.path.basename(p) for p in data_dirs[:5]))
+        # SCOPE DISCLOSURE, and it is now a POSITIVE one.
+        #
+        # This block used to announce that run-shaped directories under `data/` were outside
+        # the gate -- true while `scan()` globbed `runs/*` only, which meant the public
+        # mirror's 42-directory May corpus was never inventoried. `scan()` now walks every
+        # root `studypaths.run_roots()` returns, so the disclosure was left describing
+        # behaviour the code no longer had: the third such stale comment found in this
+        # repository on 2026-09-23, and the reason each of them survived is that a comment is
+        # what a reviewer reads instead of the code.
+        #
+        # It says which roots were walked instead. A gate naming its own scope is the point;
+        # naming the wrong one is worse than naming none.
+        roots = _corpus_roots(STUDY)
+        print("  roots walked: %s"
+              % ", ".join(os.path.relpath(r, STUDY).replace(os.sep, "/") for r in roots))
     return 0
 
 
