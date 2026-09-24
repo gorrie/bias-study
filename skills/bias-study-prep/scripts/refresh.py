@@ -92,7 +92,7 @@ LEGACY_PROTOCOL_FILES = [
 #
 # The live instrument is the author's own bank: `data/ratchet-battery.json`, 32
 # items in 16 mirrored pairs, each pair a claim and its opposing framing written
-# by hand. It ships in full under CC BY 4.0, so a replicator needs no fetch step
+# by hand. It ships in full under MIT, so a replicator needs no fetch step
 # and there is no leak surface.
 #
 # This mattered here more than anywhere else: `refresh.py` hard-coded "expected

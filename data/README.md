@@ -118,11 +118,9 @@ the code, and the run records here alike: reuse, redistribute and build on them,
 including commercially. That covers the model responses as assembled and scored
 here, the judge scores, the per-run manifests and the aggregates.
 
-*Simplified 2026-09-21.* The records were previously CC BY 4.0 while the code was
-MIT. One licence over the whole repository is easier to comply with than two, and
-nothing here needed the difference. Attribution is still the decent thing and the
-citation block in the root README says how — but it is no longer a licence term
-for the data.
+One licence, MIT, covers the whole repository: code, records and documents.
+Attribution is still the decent thing, and the root README's *Cite* section says
+how, but it is not a licence term for the data.
 
 Two carve-outs, and both matter to anyone redistributing:
 
