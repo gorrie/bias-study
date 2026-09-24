@@ -442,7 +442,8 @@ decided by the design's geometry rather than by data, catches this. Do that befo
 
 A reviewed, pre-registered, fully-built design can rest on a requirement its data cannot meet,
 and it looks exactly like a finished design. Run the design's stated requirements against the
-actual corpus before the design is accepted — one command, `check_mcp_coverage.py` — rather
+actual corpus before the design is accepted — one command, check_mcp_coverage.py in the
+private tree, which is not part of this release — rather
 than discovering each shortfall separately and mistaking the first for a scope decision.
 
 ## 40. A constraint that is satisfiable but not FINDABLE must be constructed, not sampled
@@ -1503,8 +1504,9 @@ were entertained and written down before the real one, and the wrong ones are th
 false — the test went on failing with nothing else running.
 
 **Wrong answer 2: "flaky."** One run produced **39** failures with `NameError: name 'groupby'
-is not defined` raised inside CPython's own `statistics.py`. A wedged EPUB build from an
-earlier session had been spinning for nine hours on a full core — `build-cool-epub.py`, 32,550
+is not defined` raised inside CPython's own `statistics` module. A wedged EPUB build from an
+earlier session had been spinning for nine hours on a full core — the EPUB builder from the
+author’s unrelated publishing repository, not a script of this study — 32,550
 seconds of CPU, no output written since 03:47. Starvation produced impossible-looking
 failures. It was real interference, and it was still not the cause: after killing it, one
 failure remained, exactly the same one.

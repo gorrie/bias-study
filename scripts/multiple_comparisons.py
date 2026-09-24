@@ -250,7 +250,54 @@ def _is_local_family(text, start):
     return None
 
 
-def stated_family_sizes():
+def _is_subset_of_a_correctly_stated_family(text, start, end, live):
+    """A SUBSET of the family, in a sentence that states the family size correctly.
+
+    §9.3 reads: *"over the 241 contrasts of the 246-contrast family that carry two scoreable
+    arms"*. Both numbers are live and correct -- 246 is the pre-registered family and 241 is
+    `exact_vs_bootstrap.compared`, the subset with two arms to compare -- and this gate
+    reported the 241 as a stale family size of 241 against 246, in a sentence that names 246
+    three words later.
+
+    That is the LEARNINGS #84 shape: a guard firing on a true statement, and the fix it invites
+    is to reword correct prose until a checker recognises it. It is also the shape the
+    `local_family` classifier above was added for on 2026-09-21, one quantity over.
+
+    NOT A LOOSENING, and the condition is deliberately narrow: the same sentence must state
+    the LIVE family size, and this figure must be SMALLER than it. A sentence claiming a family
+    size that is wrong still fails on that figure, because the wrong one is not `live` and so
+    silences nothing. A figure larger than the family is not a subset and is not exempted.
+    """
+    if live is None:
+        return None
+    stated_here = int(next(g for g in re.match(
+        r"(\d{2,4})", text[start:end]).groups() or (text[start:end],)))
+    if stated_here >= live:
+        return None
+    sentence = _sentence_around(text, start)
+    if re.search(r"\b%d\b" % live, sentence):
+        return ("a subset of the family, in a sentence that states the live family size "
+                "(%d) correctly" % live)
+    return None
+
+
+def _sentence_around(text, start):
+    """The whole sentence containing `start`, wrap-flattened. Both sides, unlike the helper
+    above, because the family size this one looks for is stated AFTER the subset figure."""
+    left = 0
+    for i in range(start - 1, 0, -1):
+        if text[i - 1] in ".!?" and text[i].isspace():
+            left = i
+            break
+    right = len(text)
+    for i in range(start, len(text) - 1):
+        if text[i] in ".!?" and text[i + 1].isspace():
+            right = i
+            break
+    return " ".join(text[left:right].split())
+
+
+def stated_family_sizes(live=None):
     """Every family-size figure written in prose, classified live or historical."""
     out = []
     # Qualifiers are allowed between the number and the noun. `PLAN.md` said "the 153
@@ -272,6 +319,8 @@ def stated_family_sizes():
                 "stated": int(n),
                 "historical": _is_historical(text, m.start(), m.end(), name),
                 "local_family": _is_local_family(text, m.start()),
+                "subset": _is_subset_of_a_correctly_stated_family(
+                    text, m.start(), m.end(), live),
                 "context": " ".join(text[max(0, m.start() - 60):m.end() + 20].split()),
             })
     return out
@@ -279,16 +328,20 @@ def stated_family_sizes():
 
 def report():
     live = prereg_family()
-    stated = stated_family_sizes()
+    stated = stated_family_sizes(live)
     stale = [s for s in stated
              if live is not None and s["stated"] != live
-             and not s["historical"] and not s.get("local_family")]
+             and not s["historical"] and not s.get("local_family")
+             and not s.get("subset")]
     record = [s for s in stated if s["historical"]]
     # PRINTED, NEVER DROPPED. A classification that removes a hit from the failing set has to
     # show its work, or it is indistinguishable from the pattern quietly not matching.
     local = [s for s in stated if s.get("local_family") and not s["historical"]]
+    subset = [s for s in stated if s.get("subset") and not s["historical"]
+              and not s.get("local_family")]
     return {"prereg_family_live": live, "stated": stated, "stale": stale,
-            "historical": record, "local_family": local, "exploratory": EXPLORATORY}
+            "historical": record, "local_family": local, "subset": subset,
+            "exploratory": EXPLORATORY}
 
 
 def markdown(res):
@@ -382,6 +435,15 @@ def main(argv=None):
             print("  %s:%d  says %d  (%s)"
                   % (s["file"], s["line"], s["stated"], s["local_family"]))
             print("      ...%s..." % s["context"][:110])
+        print()
+
+    if res.get("subset"):
+        print("A SUBSET OF THE FAMILY -- the same sentence states the live family size, so "
+              "this figure is a different quantity:")
+        for s_ in res["subset"]:
+            print("  %s:%d  says %d  (%s)"
+                  % (s_["file"], s_["line"], s_["stated"], s_["subset"]))
+            print("      ...%s..." % s_["context"][:110])
         print()
 
     if res["stale"]:
