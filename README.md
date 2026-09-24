@@ -2,76 +2,95 @@
 
 **What political instruments actually measure in language models.**
 
-A forced-choice political instrument of **32 author-written propositions** in 16 mirrored
-pairs, administered to a panel of frontier and open-weight models under four conditions, with
-**no language model anywhere in the scoring path**. Answers are recorded mechanically — item
-id and chosen position — so no judge's own lean can enter the score.
-
-Every floor is reported with a minimum detectable effect, every estimator with a false-positive
-rate measured against a null built by splitting real cells in half, and every figure with the
-command that produces it.
+Studies of political position in language models report how far a model moves under a
+treatment. Almost none report how far it moves when nothing changes. This study administers 32
+author-written forced-choice propositions, in 16 mirrored pairs, to a panel of frontier and
+open-weight models, and measures the factors nobody claims are political: reprinting the items
+in a different order, running the same prompt again, requantising the same weights, and
+comparing two variants of one release. There is no language model anywhere in the scoring
+path. Each answer is recorded as an item id and a chosen position, so no judge's lean can enter
+a score.
 
 - **Paper:** [`PAPER-below-the-floor.md`](PAPER-below-the-floor.md)
-- **Instrument:** [`data/ratchet-battery.json`](data/ratchet-battery.json) — ships in full, no fetch step
-- **Corpus:** [`runs/`](runs/) — the records every number below is computed from
-- **Licence:** MIT, for everything here that is the author's to license
+- **Instrument:** [`data/ratchet-battery.json`](data/ratchet-battery.json), shipped in full
+- **Corpus:** [`runs/`](runs/), every record the paper's figures are computed from
+- **Corrections:** [`CORRECTIONS.md`](CORRECTIONS.md). Read it before quoting anything here.
+- **Licence:** MIT
 
 ---
 
-## The finding
+## Results
 
-Instruments of this class report **where a model sits** on a political axis. That coordinate is
-not stable at the resolution the field reports it.
+### 1. The manipulation and the nuisance are the same size
 
 Measured on the same sheets with the same estimator:
 
 | | pairs | median \|effect\| | p90 | significant |
 |---|---:|---:|---:|---:|
-| the balance instruction (A − N) | 61 | **0.131** | 0.327 | 38 (62%) |
-| reprinting the same items in a different order | 108 | **0.088** | 0.281 | 46 (43%) |
+| the balance instruction (A − N) | 61 | 0.131 | 0.327 | 38 (62%) |
+| reprinting the same items in a different order | 108 | 0.088 | 0.281 | 46 (43%) |
 
-The deliberate manipulation is **1.5×** the median produced by a factor carrying no information
-whatsoever, and it sits **below the 90th percentile** of that factor's own distribution. Both
-are real. Neither is large. **43% of order pairs are themselves "significant"** — that is the
-rate at which reordering alone produces a movement this estimator calls real.
+An instruction to answer in a balanced manner moves position by 1.5 times what a reordering
+moves it, and its median sits below the ninetieth percentile of the reordering's own
+distribution. Both effects are real and neither is large. Reordering alone is called
+significant on 43% of pairs, which is the rate at which this estimator reports movement from a
+factor carrying no information.
 
-**What is stable is agreement.** Across the contested normative propositions in the bank the
-panel agrees **97.1%** of the time, against **99.0%** for documented matters of record — a gap
-under two points. Models answer arguable political questions at very nearly the confidence they
-bring to facts. That consensus holds across vendors and jurisdictions and survives abliteration:
-all five builds with the refusal direction projected out of their weights agree with every
-normative proposition in the bank.
+### 2. Refusal is elicited, not intrinsic
 
-**And the emphasis runs against the evidence.** Models use their strongest available answer on
-**42.5%** of contested normative claims and **36.6%** of documented matters of record — 36
-models to 14, sign test **p = 0.0026**. They commit hardest where the record is thinnest. Two
-confounds are reported with that rather than around it; see the paper.
+Across 64 models measured under both arms there are 88 refusals in 837 runs where the prompt
+carries no directive, against 1284 runs where it carries one — 55 of those runs are refusals.
+Of the models measured under both arms, 9 decline all 32 items without a directive; give those
+same models a firm instruction and **8 of them stop**. The ninth declines under every condition
+and is not a switch. Separately, **3 other models decline only when told to commit**. A refusal
+rate reported as a property of a model is substantially a property of the sentence the
+researcher wrote.
+
+### 3. A standard control silently deletes data
+
+Shuffling presentation order while each item keeps its own id as its printed number produces a
+non-monotonically numbered sheet, and some models skip lines. The sheet is not refused, not
+truncated, well inside its token budget, and looks complete, so neither a refusal table nor an
+aggregate parse rate can see the loss. On local builds, 15 of 102 as-is sheets come back
+incomplete against 1 of 100 renumbered `1..32` (Fisher exact, one-sided, p = 1.8 × 10⁻⁴). The
+serving backend moderates it: one model under an identical protocol loses 7 of 23 as-is sheets
+on one provider and 1 of 23 on another (p = 0.0235). Across both backends and all eight pinned
+models the renumbered arm has lost 0 sheets in 216. (`scripts/omission_arms.py`)
+
+The study's own main wave was collected across that change and dropped 104 partial sheets. All
+34 affected cells were re-collected renumbered under a pre-registration, 369 sheets one for one,
+and no floor moves outside its published interval. (`scripts/partials_sensitivity.py`,
+[`prereg/PREREG-2026-09-24-partials-renumbered.md`](prereg/PREREG-2026-09-24-partials-renumbered.md))
+
+### And one exploratory result
+
+The panel agrees on the contested normative propositions in the bank 97.1% of the time,
+against 99.0% on documented matters of record, and uses its strongest available answer more
+often on the contested claims than on the documented ones (42.5% against 36.6%). The paper
+reports this in §3b, marks it exploratory and outside the corrected family of tests, and states
+its main limit: this bank cannot separate a consensus from an item that is not really arguable.
 
 ---
 
-### The corpus these rest on
+## The rule this is for
 
-Every figure on this page is computed across 3,897 runs, 65 models and 23 vendor keys. The
-population is **declared, not swept**: `refusal_table.PANEL` names the run directories the
-panel consists of and `OUT_OF_PANEL` names every other battery collection with the rule it
-falls under — smokes, budget probes, and arms collected under one or two conditions, whose
-one-sided denominators would move a rate without adding one observation about it.
+The paper's recommendation (§8), five lines in a methods section. None of it costs additional
+calls.
 
-**Refusal is elicited, not intrinsic.** Across 64 models measured under both arms there are
-88 refusals in 837 runs where the prompt carries no directive, against 1284 runs where it
-carries one — 55 of those runs are refusals. Of the models measured under both arms, 9 decline
-all 32 items without a directive; give those same models a firm instruction and **8 of them
-stop**. The ninth declines under every condition and is not a switch at all. Separately,
-**3 other models decline only when told to commit**.
+1. **Vary presentation order and report the change rate** as an item-level magnitude.
+2. **Include one same-version pair per model family** and report what it produces as a
+   distribution.
+3. **Convert the larger of those two into a detection limit** and report every effect against
+   it. An effect below the limit is one the design could not have seen, not a null.
+4. **Retain non-responses and classify them by cause**, and report per-item completeness.
+5. **Renumber shuffled sheets `1..N` and pin the serving backend.**
 
-**Two checkpoints of one release** differ by **p90 1** side flip of 32 over 24 pairs — below
-what this instrument can resolve, which is a bound rather than a measurement. The reproduction
-audit withheld nothing: 0 run records had their text held back from this repository.
+---
 
 ## The floors
 
-What the instrument does when nothing that should matter has changed. Every row is pairs of
-administrations differing in one nuisance factor, scored in the unit the literature reports.
+What the instrument does when nothing that should matter has changed. Each row is pairs of
+administrations differing in one factor, in the unit the literature reports.
 
 <!-- GEN:floors -- generated by scripts/floor_table.py --markdown; do not edit -->
 | factor | n pairs | side-flip med / p90 / max | p90 95% CI | endpoint med / p90 / max |
@@ -91,9 +110,9 @@ administrations differing in one nuisance factor, scored in the unit the literat
 **requantisation excludes `mistral-7b`:** gated ELIGIBLE but contributed no pair -- every condition lost one arm to an invalid run
 <!-- /GEN:floors -->
 
-**Read the estimator row first.** `modal sampling error` is not a factor — it is the noise in
-the statistic itself, two bootstrap modals of the *same* cell. A row whose p90 is not clearly
-above it is reporting the instrument, not the effect.
+Read the last row first. `modal sampling error` is not a factor but the noise in the statistic
+itself: two bootstrap modals of the same cell. A row whose p90 is not clearly above it is
+reporting the instrument, not an effect.
 
 Split by model class, the two largest factors behave differently by generation:
 
@@ -104,69 +123,30 @@ Split by model class, the two largest factors behave differently by generation:
 | run locally at Q4 — 2024-generation 7-14B | p90 **6** (23 pairs) | p90 **9** (17 pairs) |
 <!-- /GEN:class_split -->
 
-### Detection limits
-
-A floor says what a nuisance factor produces. It does not say what the instrument can resolve.
-`scripts/power.py` converts each null into the smallest real effect that would clear the noise
-often enough to be caught. It puts the minimum detectable effect at **7 items** of 32 against
-presentation order pooled across classes, and **3** against the same-version floor. A
-directional claim has to beat the first of those before the word "effect" is doing any work.
-
-The same-version distribution sits entirely *underneath* its own limit, so the honest reading
-is not "same-version variation is small" — it is **"this instrument cannot resolve same-version
-variation from zero."** That is a bound, not a measurement, and an undetectable nuisance is not
-an absent one.
+**Detection limits.** A floor says what a nuisance produces, not what the instrument can
+resolve. `scripts/power.py` converts each null into the smallest real effect that would clear
+it often enough to be caught. It puts the minimum detectable effect at **7 items** of 32 against
+presentation order pooled across classes, and **3** against the same-version floor. Two
+variants of one release differ by **p90 1** side flip of 32 over 24 pairs, which is below what
+the instrument can resolve: a bound, not a measurement.
 
 ---
 
-## Three results a replicator can check independently
+## The field, and this study
 
-**The standard control for order effects silently deletes data.** Randomising presentation is
-the right advice. The obvious implementation — shuffle the items, keep each item's id as its
-printed number — produces a non-monotonically numbered sheet, and some models silently skip
-lines. Across 102 as-is sheets, 15 come back incomplete; across 100 renumbered `1..32`, the
-count is 1. Fisher exact, one-sided: **p = 1.8 × 10⁻⁴**. The sheet is not refused, is not
-truncated, uses a fraction of its token budget, and arrives looking complete — so a refusal
-table cannot see it. The remedy is free and is in the collector.
+Fourteen published studies are scored against the same methodological controls in
+[`PRIOR-WORK-CORRECTIONS.md`](PRIOR-WORK-CORRECTIONS.md). Not one reports what two variants of
+the same model do to the same instrument as a distribution that an observed shift could be
+scored against, and only two report a detection limit outright. Most of those studies document
+their methods well enough that the audit was possible at all; the floors do not show their
+effects are absent, only that they cannot be told apart from factors held fixed, and the remedy
+is a re-analysis rather than a retraction.
 
-**And the serving path moderates it, which nobody reports.** Re-collecting one model on two
-backends under an identical protocol: **7 of 23** as-is sheets come back incomplete on
-DeepInfra against **1 of 23** on Phala — same weights, same twelve orders, same numbering,
-Fisher one-sided **p = 0.0235**. A study that does not pin its backend cannot reproduce its
-own non-response rate. What does *not* move is the remedy: across both backends and all eight
-pinned models the renumbered arm has produced **0 partial sheets in 216**.
-(`scripts/omission_arms.py`)
-
-**Röttger's statistic and ours are not comparable, and the ratio is now measured.** A union over
-k paraphrases counts an item once if *any* of them disagrees; our floors count items differing
-between *two* administrations. On the same 448 sheets, same models, same order, the union runs
-**2.0× the pairwise rate** at k=10, and the maxima diverge far harder — 17 against 3. One model
-reads as wildly unstable under one statistic and perfectly stable under the other. Both numbers
-are correct. (`scripts/paraphrase_analysis.py`)
-
-**A system-prompt effect that survives its own floor: none.** Re-collected against a control at
-the same protocol, 28 of 35 rung-2 contrasts sit at or under *that model's own* between-order
-floor, four reach nominal significance where 1.75 are expected by chance, and none survives
-correction. The position claims stay withdrawn — measured, not assumed.
-(`scripts/rung2_contrast.py`)
-
----
-
-## What this study says about the field, including itself
-
-Fourteen published studies are scored against fourteen methodological controls
-([`PRIOR-WORK-CORRECTIONS.md`](PRIOR-WORK-CORRECTIONS.md)). One column has no "yes" in it
-across every study but this one: **not one reports a same-version null as a distribution.** The
-closest, Törnberg and Schimmel (2026), reports its centre and spread and stops short of an upper
-percentile.
-
-That is not a gotcha. Twelve of the fourteen report a nuisance magnitude of some kind. What none
-does is convert one into a threshold a substantive effect must clear on the instrument in
-question — the step that turns a caveat into a decision rule.
-
-**The same audit scores this study, and it convicted us more than once.** Every correction is in
-[`CORRECTIONS-*.md`](.) and every withdrawn claim is registered in `key_numbers.RETRACTED`, which
-fails the build if any of them is asserted again anywhere in the repository.
+The same audit is applied to this study. **This study has corrected **30** claims of its own**,
+each recorded in [`CORRECTIONS.md`](CORRECTIONS.md) with what was claimed, when, and what
+replaced it. Every withdrawn claim is registered in
+[`data/withdrawals.json`](data/withdrawals.json), and the build fails if one is asserted again
+on any surface.
 
 ---
 
@@ -174,31 +154,43 @@ fails the build if any of them is asserted again anywhere in the repository.
 
 ```bash
 pip install -r requirements.txt
-python scripts/floor_table.py          # the floors table above
-python scripts/power.py                # detection limits per null
-python scripts/key_numbers.py --check  # every load-bearing sentence against the data
-python scripts/gen_readme.py --check   # this file's generated blocks
+python scripts/floor_table.py --markdown   # the floors table above
+python scripts/power.py                    # detection limits per null
+python scripts/key_numbers.py --check      # every load-bearing sentence in the paper, against runs/
+python scripts/gen_readme.py --check       # this file's generated tables
+python scripts/release_check.py            # the release checklist, run rather than asserted
 ```
 
-**No API key is needed.** Collection needs one; verification does not, which is the point of
-shipping the run data. The full gate set runs in CI on every push
-([`.github/workflows/verify.yml`](.github/workflows/verify.yml)).
+No API key is needed to verify anything; one is needed only to collect. The gate set runs in CI
+on every push ([`.github/workflows/verify.yml`](.github/workflows/verify.yml)). Numbers typed in
+prose are held to the data by `key_numbers.py`, and the generated tables above are regenerated
+from `runs/`, so a disagreement between the two is a bug worth an issue.
 
-**Do not treat a difference from a number typed in prose as a fault.** The generated blocks
-above are the promise; `key_numbers.py --check` is what holds the prose to them.
+### The data
 
-### What is not shipped, and what that costs you
+- **`runs/`** is the present study: every answer sheet on the 32-item battery, one JSON line per
+  administration, with the prompt, the raw response, the parsed answers keyed by item id, the
+  serving provider and the validity verdict. The main wave's figures are computed
+  across 3,897 runs, 65 models and 23 vendor keys; the omission, paraphrase, rung-2 and
+  re-collection arms are separate directories, each declared in or out of the refusal panel.
+- **`data/`** holds the instrument, the declarations the analysis reads (which runs form the
+  refusal panel, which losses are declared, which claims are withdrawn), and every earlier corpus,
+  including the May 2026 judge-scored study.
+- Each root carries a generated `README.md` and a `PROVENANCE.json` giving every run's status,
+  so a withdrawn arm is labelled on disk and not only in prose.
+  [`DATA-DICTIONARY.md`](DATA-DICTIONARY.md) documents every field;
+  [`PROTOCOL-DEVIATIONS.md`](PROTOCOL-DEVIATIONS.md) records what was planned against what was
+  done.
+- The reproduction audit held nothing back: 0 run records had their text withheld from this
+  repository.
 
-Everything the paper's floors, detection limits and headline figures rest on is in `runs/`.
-Sixteen run directories are not, and a reader is entitled to know which claims that puts
-out of reach:
+### What is not shipped
 
 | not shipped | why | what cannot be recomputed here |
 |---|---|---|
-| `2026-09-15-g0dm0d3-decomposition` | a pipeline rung this release does not ship | **The decomposition run is NOT in this repository.** `pipeline_decomposition.py` exits 2, so the B-Godmode / B-Autotune split cannot be recomputed from shipped data |
-| `refusal-ablation`, `mask-gradient` | carry 450 verbatim XSTest prompts from Röttger et al. — a third party's text | the dose series. `RESULTS-2026-09-19-dose-response.md` is named in the paper's provenance table and is **not in this repository** for the same reason: `check_corpus.py` matched ten hashed 6-grams of the retired instrument in it. It is in the private tree, and a scrubbed version is owed |
-| eight smoke and probe directories | one sheet per model, collected to price a run or find what answers | nothing: they are excluded from the refusal panel by rule (`refusal_table.OUT_OF_PANEL`) |
-| the May 2026 judge-scored corpus | retired instrument | it *is* here, under `data/` — see the archive note below |
+| `2026-09-15-g0dm0d3-decomposition` | a pipeline-rung arm of the retired design | The decomposition run is NOT in this repository. `pipeline_decomposition.py` exits 2, so the B-Godmode / B-Autotune split cannot be recomputed from shipped data |
+| `refusal-ablation`, `mask-gradient` | they carry verbatim XSTest prompts, a third party's text | the refusal dose series; `RESULTS-2026-09-19-dose-response.md`, named in the paper's provenance table, stays in the private tree for the same reason |
+| eight smoke and probe directories | one sheet per model, collected to price a run or find what answers | nothing; they are outside the refusal panel by rule |
 
 No figure in the paper depends on an absent run. If you find one that does, that is a bug and
 an issue is the right response.
@@ -263,53 +255,39 @@ that ran until 2026-09-16 (see the section below).
 
 ---
 
-## What came before this, and why it is not here
+## The design this replaced
 
-This study ran a different design until 2026-09-16: free-text answers to a **62-proposition
-public questionnaire**, rated 1–5 by a panel of model judges. That work is retired.
+Until 2026-09-16 this study used free-text answers to a 62-proposition public questionnaire,
+rated 1–5 by a panel of model judges. It was retired for three reasons. The questionnaire was a
+third party's licensed text and could not be republished, which a study arguing that the field
+should publish what it measures could not accept. Its headline claim, that hedging is the bias
+signature, restated the rubric: a score of 3 is "does not commit", and the hedge lexicon
+measures non-commitment. And its counts out of 62 are not comparable to counts out of this
+battery's 32 items; no rescaling converts one into the other.
 
-- **The instrument was a third party's licensed text.** It could not be republished, which
-  forced an id-only export and a fetch step on every replicator. The present instrument is the
-  author's and ships here in full — a study arguing that a field should publish what it measures
-  could not be built on an instrument it was not permitted to show you.
-- **Its headline claim is withdrawn.** "The hedge is the bias" restated the rubric in lexical
-  form; rubric score 3 *is* "does not commit", and the hedge lexicon measures non-commitment.
-- **Its numbers are not comparable to these.** A count out of the retired questionnaire's 62
-  propositions is not a count out of this battery's 32 items, and no rescaling converts one
-  into the other. Re-measured on the battery, the same-version null went from the *largest*
-  nuisance in the table to the *smallest*.
-
-The retired material is in `withdrawn/`, with `WRITEUP-2026-05-26.md` marked superseded at the
-top. `DEVELOPER.md` documents that method and says so in its first paragraph.
-
-**Two measurements from that era are worth keeping, because they are the argument for the
-design that replaced it.** Scoring free text with a panel of model judges puts the judges' own
-lean in the result: our judges spanned 0.3108 points between the most and least
-institution-skeptical of them, on the same responses. And the pipeline rung — a system prompt
-plus a sampling change — produced no effect that survived its own control: all 8 intervals span
-zero. The present study has no model anywhere in the scoring path, and its rung-2 re-collection
-reached the same verdict on better evidence.
-
-**This study has corrected **30** claims of its own**, each recorded in
-[`CORRECTIONS.md`](CORRECTIONS.md) with what was wrong and what replaced it. That file is the
-one a reader should check before quoting anything here.
-
-> **Citation note.** An earlier release was archived to Zenodo under the withdrawn title, before
-> this repository carried a citation record of its own; the author deleted that record on
-> 2026-09-22 and it now resolves to a tombstone. **No DOI is live for this study today.** The
-> next release mints one from [`CITATION.cff`](CITATION.cff) and [`.zenodo.json`](.zenodo.json),
-> which is authoritative and is checked against the corpus before it can mint.
+Two measurements from that design are kept because they are the argument for this one. Scoring
+free text with model judges puts the judges' lean in the result:
+our judges spanned 0.3108 points between the most and least institution-skeptical of them,
+on the same responses. And the elicitation-pipeline rung produced no effect that survived its
+own control: all 8 intervals span zero. Its re-collection on the battery, through this study's own transport, reached the same
+verdict. The retired material is in `withdrawn/` and the documents marked HISTORICAL above.
 
 ---
 
+## Cite
+
+[`CITATION.cff`](CITATION.cff) is the citation record, and the next release mints a DOI from it
+through [`.zenodo.json`](.zenodo.json). No DOI is live for this study today: an earlier release
+was archived to Zenodo under a withdrawn title before this repository carried a citation record,
+and that record was deleted on 2026-09-22 and now resolves to a tombstone.
+
 ## Licence
 
-**MIT** — code, run records and documents alike. See [`LICENSE`](LICENSE).
+**MIT**, for code, run records and documents alike. See [`LICENSE`](LICENSE). Two carve-outs,
+both matters of ownership rather than preference:
 
-Two carve-outs, and they are matters of ownership rather than preference:
-
-- **The retired 62 propositions** are a third party's licensed work and are **not in this
-  repository at all**. `scripts/check_corpus.py` gates their absence on every release.
+- **The retired 62 propositions** are a third party's licensed work and are not in this
+  repository at all. `scripts/check_corpus.py` gates their absence on every release.
 - **Model outputs.** The response text inside the run records was produced by each vendor's
   model and their terms govern it; MIT covers the corpus as assembled, scored and structured
   here.

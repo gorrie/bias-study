@@ -1826,3 +1826,26 @@ checklist, the run is a third short of a verdict, however green its last line re
 
 Related: [[97]] a figure registered in one tree has never been green in the other — this is the
 same failure with the BUILD as the thing registered in one tree.
+
+## 100. A fork check over the code and not its tests certifies gates whose tests have rotted
+
+`check_no_fork.py` compared `scripts/` across the two trees and printed **“0 forks across 146
+shared files”** for weeks. It never looked at `tests/`. Measured 2026-09-24: of 72 test files in
+both trees, 4 had forked — three mirror copies 31 to 108 lines behind the study's, so the public
+tree ran older regressions than the private one — and the mirror's `test_release_counts.py` still
+named `RELEASE-v2.md` after the file was renamed. Its `skipif` then read the file as absent and
+**all three of its tests SKIPPED in the tree that ships**, which is how a stale count of the
+release's own checks (43 against a real 44) read as fine there while the study tree failed it.
+
+A skip reports a missing subject, and that is honest when the subject is really missing. Here the
+subject was present under a new name. A `skipif` keyed on a path is armed by any rename of that
+path.
+
+**So: a parity gate covers everything that ships as one implementation, and a gate's tests are
+part of the gate.** `check_no_fork` now walks `SHARED_DIRS = ("scripts", "tests")`; a shared test
+has no retirement shim, so it is identical or it is a fork. Its first run named exactly the four.
+And read a skip count as closely as a failure count: a test that skips in one tree and runs in
+the other is the same finding as [[97]].
+
+Related: [[97]] a figure registered in one tree has never been green in the other; [[99]] the
+build is two runs.
