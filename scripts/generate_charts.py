@@ -70,12 +70,13 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from studypaths import STUDY_DIR  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from studypaths import runs_root  # noqa: E402
-# Two directory conventions in the project:
-#   - publication-canonical (github.com/gorrie/bias-study) uses `data/<run>/`
-#   - an internal working copy uses `runs/<run>/`
-# Auto-detect which one this checkout uses.
-RUN_DIR_NAME = runs_root().name
+from studypaths import run_path  # noqa: E402
+# Two directory conventions in the project -- publication-canonical (github.com/gorrie/bias-study)
+# uses `data/<run>/`, an internal working copy uses `runs/<run>/` -- and a release tree can hold
+# BOTH. This auto-detected ONE of them with `runs_root().name` and then composed
+# `STUDY_DIR / RUN_DIR_NAME / run_date` four times below, which is precisely the composition
+# `run_path()` exists to replace: it resolves a run BY NAME across every root, so a chart for a
+# run in the other corpus loads its JSON instead of silently rendering an empty panel.
 # Default chart output: release-local `results/charts/` (works for any clone).
 # Overridden by --out flag; the upstream Hugo path is no longer a default.
 DEFAULT_CHART_DIR = STUDY_DIR / "results" / "charts"
@@ -102,7 +103,7 @@ def short_model(model: str) -> str:
 
 def chart_forest_plot(run_date: str, out_path: Path) -> bool:
     """Per-model A->B delta forest plot under baseline vs anchor method."""
-    summary = load_json(STUDY_DIR / RUN_DIR_NAME / run_date / "cross-method" / "per-method-summary.json")
+    summary = load_json(run_path(run_date) / "cross-method" / "per-method-summary.json")
     if not summary:
         print(f"  SKIP forest-plot: no summary at {run_date}")
         return False
@@ -150,7 +151,7 @@ def chart_forest_plot(run_date: str, out_path: Path) -> bool:
 
 def chart_agreement_heatmap(run_date: str, out_path: Path) -> bool:
     """Methods × methods exact-match heatmap."""
-    agreement = load_json(STUDY_DIR / RUN_DIR_NAME / run_date / "cross-method" / "cross-method-agreement.json")
+    agreement = load_json(run_path(run_date) / "cross-method" / "cross-method-agreement.json")
     if not agreement or "agreement" not in agreement:
         print(f"  SKIP agreement-heatmap: no agreement at {run_date}")
         return False
@@ -194,7 +195,7 @@ def chart_agreement_heatmap(run_date: str, out_path: Path) -> bool:
 
 def chart_contamination_delta(run_date: str, out_path: Path) -> bool:
     """Per-model |grok-solo - ULTRAPLINIAN| bar chart with CI error bars."""
-    contam = load_json(STUDY_DIR / RUN_DIR_NAME / run_date / "cross-method" / "contamination-delta.json")
+    contam = load_json(run_path(run_date) / "cross-method" / "contamination-delta.json")
     if not contam or "per_model" not in contam:
         print(f"  SKIP contamination-delta: no contam at {run_date}")
         return False
@@ -233,7 +234,7 @@ def chart_paraphrase_robustness(out_path: Path) -> bool:
     """
     sys.path.insert(0, str(SCRIPT_DIR))
     from robustness_checks import within_leg_fdr
-    result = within_leg_fdr(STUDY_DIR / RUN_DIR_NAME / "2026-05-27-paraphrase", "position", q=0.05)
+    result = within_leg_fdr(run_path("2026-05-27-paraphrase"), "position", q=0.05)
     pm = result.get("per_model", {})
     if not pm:
         print("  SKIP paraphrase-robustness: no data")

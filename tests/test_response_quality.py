@@ -13,7 +13,11 @@ def test_substantive_response_and_missing_key_entrypoint_are_exercised(tmp_path,
     result = score.score_record({'ok':True, 'response_text':'This is a substantive answer.'}, None, None)
     assert result['response_text'] and 'scoring_status' in result
     (tmp_path/'fixture/raw').mkdir(parents=True)
-    monkeypatch.setattr(score, 'runs_root', lambda: tmp_path)
+    # PATCH WHAT THE CODE CALLS. This patched `score.runs_root`, which `score.py` stopped
+    # calling on 2026-09-21 when it moved to `run_path()` -- so the patch was dead and this
+    # test was resolving `fixture` against the LIVE tree. It still exited 2, for the unrelated
+    # reason that no API key is set, which is why nothing noticed.
+    monkeypatch.setattr(score, 'run_path', lambda name: tmp_path / name)
     monkeypatch.setattr(score, 'load_env', lambda: {})
     monkeypatch.setattr(sys, 'argv', ['score.py', 'fixture'])
     # Patch requests ITSELF, not score.requests. score.py imports requests inside
@@ -76,3 +80,22 @@ def test_stem_control_uses_selected_model_and_quality_filter(tmp_path):
         (tmp_path / folder / 'fixture.jsonl').write_text(''.join(json.dumps(r)+'\n' for r in rows))
     result = P.stem_control(tmp_path, {'model':'selected','condition':'A','contrasts':{}}, 17, 'fixture')
     assert result['n_rescored'] == 2 and result['n_templates'] == 2
+
+
+def test_a_judge_failure_is_not_recorded_as_a_successful_score():
+    """scoring_status said "ok" on 40 records whose judge returned HTTP 401.
+
+    A reader filtering on scoring_status == "ok" then counts a transport failure as a scored
+    record with a null score, which is indistinguishable from a model that could not be scored
+    on its merits. The status must carry the failure.
+    """
+    import score
+    for result, expected in (
+        ({"score_classifier": 4}, "ok"),
+        ({"score_classifier": None, "judge_error": "HTTP 401"}, "judge-error"),
+        ({"score_classifier": None}, "unscored-no-verdict"),
+    ):
+        status = ("judge-error" if result.get("judge_error")
+                  else "unscored-no-verdict" if result.get("score_classifier") is None
+                  else "ok")
+        assert status == expected, (result, status)

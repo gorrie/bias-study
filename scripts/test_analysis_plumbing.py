@@ -564,14 +564,21 @@ def test_floors_survive_a_reordered_corpus():
     # accuses the wrong thing in the ordinary case is a check operators learn to skip -- this
     # file convicts other code of exactly that.
     def fingerprint():
+        # EVERY corpus root. This fingerprint exists to tell "the corpus changed under us"
+        # apart from "a floor is order-dependent", and it can only do that over the corpus the
+        # snapshot actually reads. `runs_root()` returns one root; a sheet landing in the other
+        # one would move a floor while the fingerprint stayed byte-identical -- and the test
+        # would then convict the analysis of order-dependence for a corpus that moved, which is
+        # the precise accusation the comment above says it must never make.
         seen = []
-        for path in sorted(_glob.glob(os.path.join(_SP.runs_root(), "**", "*.jsonl"),
-                                      recursive=True)):
-            try:
-                st = os.stat(path)
-            except OSError:
-                continue
-            seen.append((path, st.st_size))
+        for root in _SP.run_roots():
+            for path in sorted(_glob.glob(os.path.join(root, "**", "*.jsonl"),
+                                          recursive=True)):
+                try:
+                    st = os.stat(path)
+                except OSError:
+                    continue
+                seen.append((path, st.st_size))
         return seen
 
     before = fingerprint()

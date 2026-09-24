@@ -30,8 +30,7 @@ SCRIPT_DIR = Path(__file__).parent
 # invoked against another study tree still read THIS repo for its protocol and
 # wrote into THIS repo's runs -- silent wrong-data, worse than a crash.
 sys.path.insert(0, str(SCRIPT_DIR))
-from studypaths import STUDY_DIR, runs_root  # noqa: E402
-RUNS_DIR = runs_root()
+from studypaths import STUDY_DIR, aggregate_dir, all_run_dirs, run_path  # noqa: E402
 
 # Family + version parsing — extracts vendor and version number from model ID
 # Returns (family, version_sort_key, version_label)
@@ -141,11 +140,14 @@ def load_run_per_model(run_dir: Path) -> list[dict]:
 def collect_all_runs(runs: list[str] | None) -> list[dict]:
     """Pull per-model rows from every run, tagged with run_date."""
     all_rows = []
+    # BY NAME, ACROSS ROOTS. `RUNS_DIR / r` composed a path under whichever single root
+    # `runs_root()` chose -- so a named run living in the other corpus resolved to a path that
+    # does not exist, failed the `aggregated/` test, and was dropped from the series with no
+    # message. A drift timeseries that silently omits runs is a trend line about nothing.
     if runs:
-        run_dirs = [RUNS_DIR / r for r in runs if (RUNS_DIR / r / "aggregated").exists()]
+        run_dirs = [d for d in (run_path(r) for r in runs) if (d / "aggregated").exists()]
     else:
-        run_dirs = sorted([d for d in RUNS_DIR.iterdir()
-                          if d.is_dir() and (d / "aggregated").exists()])
+        run_dirs = [d for d in all_run_dirs() if (d / "aggregated").exists()]
 
     for rd in run_dirs:
         rows = load_run_per_model(rd)
@@ -378,7 +380,7 @@ def main() -> int:
 
     print(f"Collected {len(rows)} per-model rows across runs")
 
-    out_dir = Path(args.out) if getattr(args, "out", None) else RUNS_DIR / "_aggregated"
+    out_dir = Path(args.out) if getattr(args, "out", None) else aggregate_dir()
     write_csv(rows, out_dir / "drift_timeseries.csv")
 
     series = build_drift_timeseries(rows)

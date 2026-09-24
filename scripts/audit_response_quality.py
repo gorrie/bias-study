@@ -27,18 +27,27 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import eligibility as E  # noqa: E402
 
 try:
-    from studypaths import runs_root
+    from studypaths import all_run_dirs
 except Exception:                                    # noqa: BLE001
-    def runs_root():
+    def all_run_dirs():
         here = Path(__file__).resolve().parents[1]
+        out = []
         for name in ("data", "runs"):
             if (here / name).is_dir():
-                return here / name
-        return here / "data"
+                out += [p for p in sorted((here / name).iterdir())
+                        if p.is_dir() and not p.name.startswith(("_", "."))]
+        return out
 
 
-def scored_dirs(root: Path):
-    for run in sorted(p for p in root.iterdir() if p.is_dir()):
+def scored_dirs(runs=None):
+    """Every scored directory in the study -- across BOTH corpus roots, not one of them.
+
+    This took a single `root` and the caller passed `runs_root()`, which returns ONE root and
+    picks `data/` when both hold runs. The failure that produces is the one recorded at the
+    bottom of this file: a clean bill of health printed over a corpus the audit never opened.
+    A sweep asking "what is scored" must not be answered by a resolver that chooses a corpus.
+    """
+    for run in (all_run_dirs() if runs is None else runs):
         for d in sorted(run.glob("scored*")):
             if d.is_dir():
                 yield run.name, d
@@ -60,11 +69,10 @@ def main(argv=None):
     ap.add_argument("--by-model", action="store_true")
     a = ap.parse_args(argv)
 
-    root = Path(runs_root())
     per_method = defaultdict(lambda: Counter())
     per_model = defaultdict(lambda: Counter())
     offenders = []
-    for run_name, d in scored_dirs(root):
+    for run_name, d in scored_dirs():
         method = d.name
         for fname, r in read(d):
             per_method[method]["records"] += 1

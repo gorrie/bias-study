@@ -100,7 +100,9 @@ def _run(tmp_path, monkeypatch, raw, scored_existing, argv):
     # real tree while asserting against a temp one, so it read "the repaired text was not
     # judged" when the record it was judging was simply somewhere else.
     monkeypatch.setattr(S, "run_path", lambda name: tmp_path / name)
-    monkeypatch.setattr(S, "runs_root", lambda: tmp_path)
+    # The `runs_root` patch that sat here was removed 2026-09-23: `score.py` no longer imports
+    # the name, so setattr would raise. Keeping a patch on a symbol the module does not have is
+    # the same defect as keeping one on a symbol it no longer calls, one exception louder.
     monkeypatch.setattr(S, "load_env", lambda: {"OPENROUTER_API_KEY": "k"})
     monkeypatch.setattr(sys, "argv", ["score.py", "arun"] + argv)
     S.main()

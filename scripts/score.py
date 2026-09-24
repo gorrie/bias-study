@@ -52,7 +52,7 @@ SCRIPT_DIR = Path(__file__).parent
 # invoked against another study tree still read THIS repo for its protocol and
 # wrote into THIS repo's runs -- silent wrong-data, worse than a crash.
 sys.path.insert(0, str(SCRIPT_DIR))
-from studypaths import STUDY_DIR, run_path, runs_root  # noqa: E402
+from studypaths import STUDY_DIR, run_path  # noqa: E402
 # Credential resolution, in .env.example's declared order: process environment first,
 # then the repo-root .env. The legacy agent .env stays last so an existing local setup
 # keeps working. This used to read ONLY the agent path, so a cloner with the key

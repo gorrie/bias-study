@@ -44,7 +44,7 @@ SCRIPT_DIR = Path(__file__).parent
 # invoked against another study tree still read THIS repo for its protocol and
 # wrote into THIS repo's runs -- silent wrong-data, worse than a crash.
 sys.path.insert(0, str(SCRIPT_DIR))
-from studypaths import STUDY_DIR, run_path, runs_root  # noqa: E402
+from studypaths import STUDY_DIR, aggregate_dir, all_run_dirs, run_path  # noqa: E402
 from eligibility import load_scored_records, inspect_scored_records
 import eligibility as E  # noqa: E402  -- the single eligibility rule
 
@@ -352,9 +352,11 @@ def main() -> int:
     parser.add_argument("--all-runs", action="store_true", help="Process every runs/* directory")
     args = parser.parse_args()
 
-    runs_dir = runs_root()
     if args.all_runs:
-        run_dates = sorted(p.name for p in runs_dir.iterdir() if p.is_dir() and not p.name.startswith("_"))
+        # EVERY run, not every run in whichever root the resolver picked. `--all-runs` is a
+        # promise in the flag's own name, and `runs_root().iterdir()` cannot keep it once two
+        # roots are populated -- it would silently process one corpus and report "all".
+        run_dates = [p.name for p in all_run_dirs()]
     elif args.run_date:
         run_dates = [args.run_date]
     else:
@@ -370,7 +372,7 @@ def main() -> int:
               f"contam-models={r.get('contamination_models', 0)}")
 
     # Aggregated headline
-    agg_dir = runs_dir / "_aggregated"
+    agg_dir = aggregate_dir()
     agg_dir.mkdir(exist_ok=True)
     (agg_dir / "cross-method-runs-index.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
     print()

@@ -32,7 +32,7 @@ SCRIPT_DIR = Path(__file__).parent
 # invoked against another study tree still read THIS repo for its protocol and
 # wrote into THIS repo's runs -- silent wrong-data, worse than a crash.
 sys.path.insert(0, str(SCRIPT_DIR))
-from studypaths import STUDY_DIR, run_path, runs_root  # noqa: E402
+from studypaths import STUDY_DIR, run_path  # noqa: E402
 from aggregate import corrected_tables
 
 V1_BASELINE = {

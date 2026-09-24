@@ -98,7 +98,7 @@ def weight_fingerprint(model_path):
 
 SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR))
-from studypaths import run_path, runs_root  # noqa: E402
+from studypaths import new_run_path  # noqa: E402
 sys.path.insert(0, str(SCRIPT_DIR))
 import run_study as rs  # reuse load_questions + condition constants
 
@@ -207,11 +207,11 @@ def main() -> int:
     except Exception as e:
         print(f"  warmup skipped: {e}", flush=True)
 
-    # `runs_root` is imported from studypaths at the top of this file, not re-exported by
-    # run_study -- `rs.runs_root()` raised AttributeError and this script could not write a
-    # single record. Found 2026-09-20 when the Gemma-2-9B recollection produced zero rows on
-    # both arms; every local collection through run_local.py was broken.
-    out_dir = run_path(args.out_date) / "raw"
+    # `new_run_path` is imported from studypaths at the top of this file, not re-exported by
+    # run_study -- reaching for it as `rs.<name>` raised AttributeError and this script could
+    # not write a single record. Found 2026-09-20 when the Gemma-2-9B recollection produced
+    # zero rows on both arms; every local collection through run_local.py was broken.
+    out_dir = new_run_path(args.out_date) / "raw"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{rs.safe_filename(args.label)}.jsonl"
 

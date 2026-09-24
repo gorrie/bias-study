@@ -180,6 +180,101 @@ def run_roots() -> list[Path]:
     return populated or roots
 
 
+def all_run_dirs() -> list[Path]:
+    """EVERY run directory in the study, across every corpus root, sorted by name.
+
+    USE THIS RATHER THAN `runs_root().iterdir()` when the question is "what runs exist".
+    `runs_root()` returns ONE root and, when both are populated, picks `data/` -- so a sweep
+    written as `for run in runs_root().iterdir()` does not sweep the study, it sweeps whichever
+    corpus the resolver happened to select, and reports success over the half it never opened.
+
+    That is not hypothetical. `scripts/run_study.py:740-753` records the day a stray
+    `data/<date>/raw/` made `data/` satisfy `_looks_like_runs_root()`: the root flipped for the
+    whole repo, fourteen analyses followed it to a corpus of one run, and
+    `audit_response_quality.py --check` printed "no empty response carries a score" and exited
+    0 **having opened zero files** against a real 547. Every symptom of that incident is a
+    sweep, and a sweep has no business choosing a root at all.
+
+    A run NAME present in two roots is the ambiguity `resolve_run` refuses to guess at, and
+    this refuses it for the same reason: a sweep that silently drops one of two same-named runs
+    reports a total that is short by exactly the records nobody will look for.
+    """
+    seen: dict[str, Path] = {}
+    collisions: list[str] = []
+    for root in run_roots():
+        if not root.is_dir():
+            continue
+        for p in sorted(root.iterdir()):
+            if not p.is_dir() or p.name.startswith("_") or p.name.startswith("."):
+                continue
+            if p.name in seen:
+                collisions.append(p.name)
+                continue
+            seen[p.name] = p
+    if collisions:
+        raise RunNotFound(
+            "run name(s) present in more than one corpus root: %s; "
+            "set STUDY_RUN_LAYOUT to choose the corpus"
+            % ", ".join(sorted(set(collisions))))
+    return [seen[name] for name in sorted(seen)]
+
+
+def new_run_path(name: str) -> Path:
+    """Where a run BEING COLLECTED goes. Resolve if it exists; otherwise the CURRENT corpus.
+
+    `run_path()` is a reader's resolver, and its fallback for a name it cannot find is
+    `runs_root() / name`. For a collector that fallback is always taken -- a run being written
+    for the first time does not exist yet -- and `runs_root()` prefers `data/`, the retired
+    corpus, once both roots hold runs. So a new collection would land in the old corpus,
+    alongside the instrument it is not using, and nothing would report it: the directory would
+    be created, the records written, the manifest correct.
+
+    The tree is single-root today, which is the only reason this is latent and the reason to
+    fix it now rather than after a move populates the second root.
+
+    `runs/` is the current corpus in both trees -- the battery in the private study, the
+    battery in the public mirror -- so a new run goes there when it exists, and to the single
+    root otherwise. A name that already exists still resolves to wherever it already is,
+    because resuming a run must never fork it into a second root.
+    """
+    try:
+        return resolve_run(name, require_scored=False)
+    except Exception:
+        pass
+    current = STUDY_DIR / "runs"
+    if current.is_dir():
+        return current / name
+    return run_roots()[0] / name
+
+
+def aggregate_dir() -> Path:
+    """`_aggregated/` -- the cross-run OUTPUT directory, resolved by where it already is.
+
+    This was `runs_root() / "_aggregated"`, and that is the most dangerous use of the resolver
+    there is: it is a WRITE path. `runs_root()` prefers `data/` once both roots hold runs, so
+    the day a second root becomes populated, `drift_timeseries` and `cross_method_report` start
+    writing beside the corpus instead of on top of the previous outputs -- no error, no
+    overwrite, just a second set of aggregate files that nothing reads while the stale ones
+    stay where every reader and every doc points.
+
+    A read that picks the wrong root computes nothing and can be re-run. A write that picks the
+    wrong root leaves two answers on disk and no way to tell which is current.
+
+    So: the directory that EXISTS wins. It is `runs/_aggregated` in the private study and
+    `data/_aggregated` in the public mirror, and neither moves because a corpus did.
+    """
+    roots = run_roots()
+    existing = [r / "_aggregated" for r in roots if (r / "_aggregated").is_dir()]
+    if len(existing) > 1:
+        raise RunNotFound(
+            "_aggregated/ exists under more than one corpus root (%s); the cross-run outputs "
+            "have been split. Consolidate them before writing more."
+            % ", ".join(p.parent.name for p in existing))
+    if existing:
+        return existing[0]
+    return roots[0] / "_aggregated"
+
+
 #: A run that has been REPAIRED, and the repaired corpus that supersedes it.
 #:
 #: The May 2026 corpus was collected at an 800-token cap that severed or emptied

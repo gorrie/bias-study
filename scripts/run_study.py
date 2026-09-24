@@ -751,8 +751,15 @@ def main() -> int:
     # files, when the real corpus holds 547 such records. The mirror legitimately
     # keeps the May study under data/, which is why the heuristic exists at all --
     # so the collector must follow resolution, never define it.
-    from studypaths import run_path, runs_root  # noqa: E402
-    run_dir = run_path(run_date)
+    # A COLLECTOR WRITES, and a reader's resolver is the wrong tool for it. `run_path()` falls
+    # back to `runs_root() / name` for a name it cannot find -- and a run being collected for
+    # the first time never can be found, so the fallback is always the path taken. `runs_root()`
+    # prefers `data/`, so the day both roots hold runs a fresh collection lands in the RETIRED
+    # corpus, silently, with a correct manifest. `new_run_path()` resolves an existing run
+    # wherever it already is, so a resume cannot fork it, and puts a new one in the current
+    # corpus.
+    from studypaths import new_run_path  # noqa: E402
+    run_dir = new_run_path(run_date)
     raw_dir = run_dir / "raw"
     raw_dir.mkdir(parents=True, exist_ok=True)
 
