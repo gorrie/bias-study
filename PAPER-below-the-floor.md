@@ -1731,6 +1731,29 @@ has, and the fifth is a change to a collector before the next run.
    objects to in Liu and in Barmettler; the filter here was correct and the disclosure was
    missing, which is half of the same failure.
 
+10. **Some seeded cells return identical text, and a seed-based floor over those cells
+   understates its own quantity.** `validate_claim.py` fails this repository's own
+   pre-publication gate on it: run over the wave across every condition, **146 cells contain
+   at least two records with byte-identical response text at a temperature above zero**
+   (`validate_claim.py --runs runs/2026-09-16-ratchet-v3-wave --conditions A B C D E N P`;
+   restricted to the A and D arms the gate reports 55). Identical text from different seeds at
+   temperature 0.7 is a provider-caching signature, not a model that has stopped sampling.
+
+   **This bears on two rows, and in the direction that flatters nothing.** The run-to-run
+   replicate floor and the modal sampling error are the only floors computed from repeated
+   draws of the same prompt, so a cached cell contributes zero variation that the instrument
+   did not actually produce, and both are therefore **lower bounds rather than estimates**.
+   The paper's argument does not turn on their being small — §1 compares the manipulation
+   against the *order* floor, which is computed across different sheets and is unaffected —
+   but §2 does say frontier order movement sits at the modal error, and a deflated modal error
+   makes that comparison more generous to us, not less.
+
+   It is not fixed by re-running: the collection is frozen, and re-collecting would change the
+   corpus the rest of the paper is measured on. What it needs is a decoding path that defeats
+   caching, and that is a design note for the next collection rather than a repair to this one.
+   Stated here because the gate that finds it is in this repository and a reader will run it.
+   *(Added 2026-09-23. The finding was in the gate's output and in no section of the paper.)*
+
 ### 9.1 How many tests this paper runs
 
 This table is **generated**, which is the point of it. The pre-registered family size was
