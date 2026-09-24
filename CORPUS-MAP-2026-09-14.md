@@ -4,8 +4,8 @@
 >
 > **Corrected 2026-09-22.** The banner that stood here declared the repaired corpora absent
 > from this repository and still awaiting export, and told readers every May figure they
-> derived was computed on the damaged corpus. The export landed on **2026-09-15** (`4d734dd`)
-> and the banner was not updated: thirteen `2026-09-14-recollect-*` repair runs and ten
+> derived was computed on the damaged corpus. The export landed on **2026-09-15** (`598c544`)
+> and the banner was not updated: twelve `2026-09-14-recollect-*` repair runs and ten
 > `*-spliced` derived corpora have been in this tree ever since, including
 > `2026-09-14-full-spliced`, the repaired main run. For a week this file carried an instruction
 > to discount figures the tree was already shipping the fix for. It never reached a reader —

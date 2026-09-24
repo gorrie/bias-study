@@ -262,6 +262,58 @@
         "withdrawn/results/RESULTS-2026-09-14-I3-phase0.md"
       ],
       "supersedes": []
+    },
+    {
+      "id": "same-version-magnitude-62",
+      "claim": "Two models of one declared version disagree on a median of 5 of 62 propositions, p90 11 over 97 pairs -- the largest nuisance, setting the detection limit for version comparisons.",
+      "withdrawn": "2026-09-19",
+      "record": "PAPER-below-the-floor.md",
+      "record_must_reach": [
+        "study",
+        "release"
+      ],
+      "phrases": [
+        "a median of 5 of 62 propositions",
+        "sets a detection limit of 11",
+        "a median of 5 propositions and a p90 of 11"
+      ],
+      "published": true,
+      "published_in": [
+        "release README, 8d6960e (2026-09-07) and e55bb38 (2026-09-11), both ancestors of origin/main",
+        "evilrobots.lol research/ai-bias-audit, evil-robots-series origin/master"
+      ],
+      "public_entry": 29,
+      "note": "Measured on the retired questionnaire. On the 32-item battery the same-version floor is the smallest nuisance (24 pairs, side-flip 1/1/2), and a count out of 62 does not rescale to 32. Entry 19 named it as the surviving replacement; its superseding note points here.",
+      "evidence": [
+        "PAPER-below-the-floor.md",
+        "scripts/floor_table.py"
+      ],
+      "supersedes": []
+    },
+    {
+      "id": "opus-robust-under-every-judge",
+      "claim": "Two large effects hold under every judge: claude-opus-4.7 +0.80 to +1.50 and grok-4.3 +0.80 to +1.30.",
+      "withdrawn": "2026-09-22",
+      "record": "PAPER-below-the-floor.md",
+      "record_must_reach": [
+        "study",
+        "release"
+      ],
+      "phrases": [
+        "the two large effects hold under every judge",
+        "claude-opus-4.7 +0.80"
+      ],
+      "published": true,
+      "published_in": [
+        "release README, ff756ed (2026-09-06), ancestor of origin/main"
+      ],
+      "public_entry": 30,
+      "note": "Re-scored per judge, three findings survive their interval and one (grok-4.3) is robust to judge composition; claude-opus-4.7 is not among the three. judge_lean.py --per-finding.",
+      "evidence": [
+        "PAPER-below-the-floor.md",
+        "scripts/judge_lean.py"
+      ],
+      "supersedes": []
     }
   ]
 }

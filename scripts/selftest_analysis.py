@@ -9,7 +9,7 @@ intervals and no FDR correction, and the run script reported success — while t
 study's own rule is that a delta is reportable only when its CI excludes zero.
 
   G1  ci_analysis on the main run reproduces WRITEUP section 5.6 exactly
-  G2  robustness_checks reproduces the four effects that survive BH-FDR
+  G2  robustness_checks reproduces the five effects that survive BH-FDR
   G3  raw pairwise agreement reproduces the figures WRITEUP section 2.4 publishes
   G4  results do not depend on the order run-dates are passed on the command line
   G5  score.py resolves the key from the process environment, and refuses without one

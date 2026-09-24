@@ -5,7 +5,8 @@
 > below is a count on that design and does not rescale to the present 32-item battery. The
 > current findings are in [`PAPER-below-the-floor.md`](PAPER-below-the-floor.md); anything here
 > that has since been withdrawn or narrowed is recorded in [`CORRECTIONS.md`](CORRECTIONS.md).
-> Kept because it was published, and a findings record that disappears is worse than a dated one.
+> It was the study's internal findings record and ships with this release as the record of
+> what the retired design found; entries narrowed since carry dated notes below.
 
 Substantive findings, not process. Each carries its number and its status. A finding here is
 **ESTABLISHED** (survives its own noise floor and a control that could have falsified it),
@@ -184,6 +185,11 @@ belongs to **which third-party build was downloaded**, not to abliteration as an
 
 ### 12. Elicitation-layer force is real, model-specific, and points opposite ways
 
+> **Narrowed 2026-09-15** (`CORRECTIONS.md` 18). A same-sitting decomposition found the effect is
+> a system prompt acting on one model: `grok-4.3` moves under the godmode prompt and
+> `claude-opus-4.7` does not move under any arm. The "hurts the other" reading below did not
+> survive, and is left as written because it is the record of 2026-09-13.
+
 Re-collected 2026-09-13 at 5 samples with a same-sitting baseline:
 
 | model | layered stack vs hedge-strip alone |
@@ -207,6 +213,8 @@ commit", and the hedge lexicon measures non-commitment. The finding is the rubri
 lexical form, which the writeup's own §3.5 concedes.
 
 It remains the study's title, the book's opening "Proof", and chapter 22's "the finding".
+*(As of 2026-09-13. The title was replaced on 2026-09-15 and the study's title since 2026-09-21
+is "No position, only consensus"; `CORRECTIONS.md` 19.)*
 
 ### 14. "The mask comes off in proportion to force"
 

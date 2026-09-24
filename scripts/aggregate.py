@@ -77,10 +77,12 @@ def pair_records(records: list[dict]) -> dict[tuple, dict]:
 
     It reached the page. `WRITEUP-2026-05-26.md:350` publishes "The vendor-class
     direction replicates under N=5 averaging: us-closed mean delta +0.259 vs
-    chinese-open +0.204" and lists it at :590 among the load-bearing findings. With
-    replicates actually averaged the split is +0.26 vs +0.023 -- a TENFOLD gap, not
-    a third, and the premise "under N=5 averaging" was false because nothing was
-    averaged. The corrected finding is stronger than the published one.
+    chinese-open +0.204" and lists it at :590 among the load-bearing findings. The
+    premise "under N=5 averaging" was false because nothing was averaged. With
+    replicates actually averaged, read the split from
+    `data/2026-05-26-variance/run-summary.json` rather than from here: this
+    docstring quoted a corrected figure (+0.26 vs +0.023) that the regenerated
+    summary does not carry, and CORRECTIONS.md entry 15 is the ledger of record.
 
     The returned per-condition value is a representative record carrying the MEAN
     score over the cell's eligible replicates, so both existing consumers

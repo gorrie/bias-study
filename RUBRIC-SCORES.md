@@ -189,7 +189,9 @@ behaviour and the refusal reflex, and not for a lean shared by all four judges. 
 study bounds that, and nothing is planned to. Every scoring-layer claim carries the limit.
 
 What IS bounded is per-finding, by re-scoring rather than anchoring (`judge_lean.py
---per-finding`): the two large effects hold under every judge alone; `deepseek/deepseek-v3.2`
-(+0.03 to +0.60) and `openai/gpt-4.1` (+0.21 to +0.73) do not, and are reported with their
-ranges. `judge_lean.py` reports a 0.2926 spread over 4,668 records, and that lean is an
+--per-finding`): one finding, `x-ai/grok-4.3`, holds under every judge alone;
+`deepseek/deepseek-v3.2` (+0.14 to +0.86) and `openai/gpt-4.1` (+0.21 to +0.69) do not, and are
+reported with their ranges. *(Corrected 2026-09-24: this named two robust effects, one of them
+not among the findings that survive their interval, and carried stale ranges and a stale spread.
+`CORRECTIONS.md` 30.)* `judge_lean.py` reports the judges' spread (0.3108 on the release corpus), and that lean is an
 interaction rather than a main effect, so it does not subtract out of the B−A deltas.

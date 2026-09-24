@@ -95,11 +95,15 @@ internal spread is **0.3007 points** — larger than the two smallest of the fiv
 effects (+0.2333 and +0.3000) — and it is not constant across the arms: gemini-2.5-flash sits at +0.044 under the balance instruction and
 +0.290 under the bare question, so it does not simply subtract out of a within-model delta.
 
-Settled by re-scoring each finding under each judge alone. **The two large effects survive every
-judge** — claude-opus-4.7 +0.80…+1.50, grok-4.3 +0.80…+1.30. The smallest ranges +0.03 to +0.60
-depending on who scores it, and its low end is that model scoring itself; it is now reported as
-suggestive with its range rather than as a finding of equal standing. Two of the five findings
-are self-judged, which is disclosed in the README.
+> **The resolution this entry states was itself narrowed on 2026-09-22 — see entry 30.** Re-scored
+> per judge, one finding is robust to judge composition, `x-ai/grok-4.3`; `claude-opus-4.7` is not
+> among the findings that survive their interval. The entry is left as the record of 2026-09-05.
+
+Settled, as this entry read on 2026-09-05, by re-scoring each finding under each judge alone:
+"The two large effects survive every judge — claude-opus-4.7 +0.80…+1.50, grok-4.3 +0.80…+1.30."
+The smallest ranged +0.03 to +0.60 depending on who scored it, and its low end was that model
+scoring itself; it was reported as suggestive with its range rather than as a finding of equal
+standing. Two of the five findings were self-judged, which was disclosed in the README.
 
 ### 6. Three floors were a property of the filesystem — corrected 2026-09-06
 
@@ -550,7 +554,9 @@ is derived from whether the string `ablit` appears in the run **label**.
 
 ### 17. A baseline swap that fixed nothing and broke something — corrected 2026-09-15
 
-**Published:** 2026-09-14, in `CORPUS-MAP-2026-09-14.md` and `pipeline_rung.py`.
+**Committed:** 2026-09-14 (`7e027a3`), in `CORPUS-MAP-2026-09-14.md` and `pipeline_rung.py`,
+**unpushed** — it never reached a reader. *(This line read "Published" until 2026-09-24; entry 27
+records the same commit as never having left the working history, and it is right.)*
 **Withdrawn:** 2026-09-15, one day later.
 
 The claim was that the rung-2 baseline had to be replaced because it recorded **no token
@@ -606,8 +612,11 @@ and that is a property of the data rather than an argument about collection para
 
 ### 18. "Two models move in opposite directions" — narrowed 2026-09-15
 
-**Published:** 2026-09-14, in `RESULTS-2026-09-13-pipeline-rung-replicate.md` and carried through
-entries 16 and 17 above as the claim that survived them.
+**Written:** 2026-09-14, in `RESULTS-2026-09-13-pipeline-rung-replicate.md` and carried through
+entries 16 and 17 above as the claim that survived them. **That file never reached this
+repository** (it is in the private study's `withdrawn/results/`), and the wording appears on no
+public surface, so by this file's own rule the claim needed no entry. It is kept because entries
+16 and 17 lean on it. *(This line read "Published" until 2026-09-24.)*
 **Narrowed:** 2026-09-15, one day later, by the arm that was collected to answer a different
 question.
 
@@ -664,6 +673,14 @@ from its instruction arm.
 
 ### 19. The study's title was a withdrawn finding — withdrawn 2026-09-13, corrected on this surface 2026-09-15
 
+> **The replacement this entry names was itself withdrawn on 2026-09-19 — see entry 29.** The
+> same-version magnitude ("a median of 5 of 62 propositions, p90 11") was measured on the retired
+> questionnaire, and re-measured on the 32-item battery it is the *smallest* nuisance in the
+> table, not the one that "survives every control". The *Same Version, Different Answers* title
+> was never public and was replaced; the repository's title since 2026-09-21 is *No position, only
+> consensus*, which is also what `CITATION.cff` now carries. The entry is left as written because
+> it is the record of what was said on 2026-09-15.
+
 **Published:** 26 May 2026, as the title of the writeup, of this repository, of the
 `CITATION.cff` record, of the book's opening "Proof", and of *The Ratchet* chapter 22's "the
 finding".
@@ -685,10 +702,10 @@ when a withdrawn phrase is asserted on a public surface. It held six phrases, al
 that is not updated when a retraction happens reports the absence of the claims it already knows
 about — which is the vacuous-pass failure this project has now found in four separate tools.
 
-**What replaced it.** The repository is now *Same Version, Different Answers*: two models
-differing only in snapshot date, size or serving mode disagree on a median of 5 of 62
-propositions, p90 11, and of twelve audited studies not one reports that null as a distribution.
-That claim survives every control this study owns and is the one no other study reports at all.
+**What replaced it**, as this entry read on 2026-09-15 (withdrawn since; see the note above):
+the repository became *Same Version, Different Answers*, on the claim that two models differing
+only in snapshot date, size or serving mode "disagree on a median of 5 of 62 propositions, p90 11", and that of twelve audited studies not one reports that null as a distribution.
+It was described as surviving every control this study owns.
 
 `CITATION.cff` still carries the old title as of this entry, because it is copied verbatim into
 the Zenodo record and is permanent once a release fires. It is changed before any tag, not after.
@@ -772,6 +789,13 @@ And where stance did move, **two independent abliterations of the same base disa
 0/2/0** — the movement belongs to which GGUF was downloaded, not to abliteration as an operation.
 A stance null measured against an unestablished rewrite is uninterpretable in either direction.
 
+> **Corrected 2026-09-20: "Gemma-2-9B's raw files are 0 bytes" was wrong.** The records are in
+> `data/2026-05-27-abliteration-gemma2/`, tracked since 2026-05-28. Read, the arm's between-arm
+> Jaccard is **0.345**, a re-collection gives 0.339, and the same weights resampled against
+> themselves give 0.380 / 0.377 — so Gemma joins llama and mistral inside the resampling band, and
+> the verdict above ("confirmed on one family") stands on four readable families rather than
+> three. `results/RESULTS-2026-09-20-gemma2-recollect.md`; `FINDINGS.md` carries the same note.
+
 ---
 
 ### 23. "4 of 13 effects survive FDR", and the sycophancy control — corrected 2026-09-15
@@ -781,7 +805,8 @@ argument.
 
 **FDR survivors: 4 → 5.** DeepSeek V3.2 was reported as "suggestive but not confirmed". It had
 **23 of its 30 A/B pairs destroyed by the 800-token cap**; the 2026-09-14 repair returned them and
-it now survives Benjamini-Hochberg at p=0.0034. `scripts/robustness_checks.py
+it now survives Benjamini-Hochberg at p < 0.0001 (printed `p=0.0000`). *(This read "p=0.0034"
+until 2026-09-24 — that is `mistral-large`'s p in the same output.)* `scripts/robustness_checks.py
 2026-09-14-full-spliced` has printed 5/13 since the splice landed, and `selftest_analysis.py` G2
 asserts the five-model set — so the repository's own tooling and its README disagreed for a day.
 This one is worth stating plainly: a published null was an artifact of a token budget.
@@ -869,7 +894,11 @@ from anything, and this file claims to list every withdrawn or narrowed claim. I
 
 ### 26. Thirteen vendor "version arcs", ten of which were not arcs — corrected 2026-09-12
 
-**Published:** `data/_aggregated/vendor_arcs.md`, "Per-vendor intra-family version arcs".
+**Written:** `data/_aggregated/vendor_arcs.md`, "Per-vendor intra-family version arcs" — a
+generated file that is **git-ignored here and was never committed in either tree**, and whose
+figures appear on no public surface. So this never reached a reader; it is recorded anyway,
+as entry 27 is, because the defect was in a published script. *(This line read "Published" until
+2026-09-24.)*
 **Corrected:** 2026-09-12, into `corrections/2026-09-12-vendor-arc/`.
 
 `drift_timeseries.py` computed each family's arc as `deltas[-1] - deltas[0]` and printed it as
@@ -899,8 +928,11 @@ order of magnitude below the noise, with nothing in the output saying so.
 already or were never arcs.
 
 The correction was generated with `--out` into its own directory.
-`data/_aggregated/vendor_arcs.md` is **unchanged** and remains the record of what was
-published; no run record was touched and no model was called.
+No run record was touched and no model was called. *(This paragraph also said
+`data/_aggregated/vendor_arcs.md` was "unchanged and remains the record of what was published".
+Both halves were false by 2026-09-24: the file is ignored, and the copy on disk is a 2026-09-14
+regeneration that matches neither the original nor the correction. The record of the correction
+is `corrections/2026-09-12-vendor-arc/`, and nothing else.)*
 
 ### 27. "The repaired corpora are not in this repository yet" — false for a week, corrected 2026-09-22
 
@@ -919,7 +951,9 @@ below it "will not resolve for you", and — in bold — that **"every original 
 repository is the damaged version."** It instructed anyone deriving a May figure to treat it as
 computed on a corpus missing about a third of its responses.
 
-The export landed on **2026-09-15** in `4d734dd`. Thirteen `2026-09-14-recollect-*` repair runs
+The export landed on **2026-09-15** in `598c544` (`4d734dd` is its same-day successor).
+Twelve `2026-09-14-recollect-*` repair runs *(this read "`4d734dd`. Thirteen" until 2026-09-24;
+`ls -d data/2026-09-14-recollect-*` counts 12)*
 and ten `*-spliced` derived corpora have been in this tree since, `2026-09-14-full-spliced`
 among them — the repaired main run, thirteen scored files, exactly matching
 `2026-05-25-full`. The map was edited the following day, 2026-09-16, and the banner survived
@@ -946,6 +980,8 @@ expires like any other.
 2026-09-07 (`8d6960e`) as the audit's verdict on them — all three pushed. **Withdrawn:**
 2026-09-18, in the private tree. **Ledgered here:** 2026-09-22, four days later, during which
 the README, `LESSONS.md` and the live research page went on asserting every one of them.
+*(The research page's correction was made on 2026-09-22 and is published with the website
+deploy that accompanies this release; until that deploy the live page still carries them.)*
 
 The five claims, quoted as they were published:
 
@@ -998,6 +1034,48 @@ record of a withdrawal; `key_numbers.RETRACTED` reads its phrases, and
 `scripts/check_withdrawals.py` fails when a withdrawal's record is missing from a tree that
 cites it, when a published claim has no entry in this file, or when the evidence behind a
 withdrawal has been deleted. Registering a withdrawal in one place now does all four.
+
+---
+
+### 29. "Same version, different answers": a median of 5 of 62, p90 11 — withdrawn 2026-09-19, ledgered 2026-09-24
+
+**Published:** 2026-09-07 (`8d6960e`, README: "differ by **p90 11** over 97 pairs") and
+2026-09-11 (`e55bb38`, README: "disagree on a median of 5 of 62 propositions. That sets a
+detection limit of 11"), both pushed, and on the live research page ("disagree on a median of 5
+propositions and a p90 of 11"). **Withdrawn:** 2026-09-19, in the paper's §7, in the private
+tree. **Ledgered here:** 2026-09-24, five days later, found by the corrections read before
+release. Entry 19 named this claim as the one that survived; it did not.
+
+The claim was that two models of one declared version — differing only in snapshot date, size
+or serving mode — disagree on a median of 5 of the questionnaire's 62 propositions, p90 11, over
+97 pairs, and that this was the largest nuisance in the table and set the detection limit for
+every version comparison.
+
+It was measured on the retired questionnaire. **Re-measured on the 32-item battery, the
+same-version floor is the smallest nuisance in the table, not the largest:** 24 pairs, side-flip
+median 1, p90 1, max 2 (`floor_table.py --markdown`, the `same-version variants` row). A count out
+of 62 does not rescale to a count out of 32 — the items differ, not only their number — so the
+old figure is not corrected to a new one; it is withdrawn and the battery's row stands in its
+place. The pooled comparison that "does not fall with model progress" rested on it and is
+withdrawn with it.
+
+---
+
+### 30. "The two large effects hold under every judge" — narrowed 2026-09-22, ledgered 2026-09-24
+
+**Published:** 2026-09-06 (`ff756ed`), README: "the two large effects hold under every judge
+(claude-opus-4.7 +0.80…+1.50, grok-4.3 +0.80…+1.30); the smallest ranges +0.03 to +0.60".
+Pushed. **Narrowed:** 2026-09-22, in the paper's §4, in the private tree. **Ledgered here:**
+2026-09-24.
+
+Re-scoring each finding under each judge alone, on the judge-scored corpus a reader can
+reproduce, gives **three** findings that survive their interval, and **one** that is robust to
+judge composition: `x-ai/grok-4.3`, +0.80 to +1.30 under every judge. `claude-opus-4.7` is not
+among the three CI-clean findings at all, so it cannot be one of two robust ones. The other two
+survivors are judge-sensitive — `openai/gpt-4.1` +0.21 to +0.69 and `deepseek/deepseek-v3.2`
++0.14 to +0.86, a factor of three each, with the extreme cell in both a judge scoring its own
+vendor — and are reported as suggestive. The "+0.03 to +0.60" range was stale as well.
+`judge_lean.py --per-finding`.
 
 ---
 

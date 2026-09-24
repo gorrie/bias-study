@@ -8,7 +8,7 @@ WHY THIS FILE EXISTS
     ... the derived corpora below are **pending export** to this public tree ...
     **Every original run in this repository is the damaged version.**
 
-The export landed the next day, 2026-09-15, in `4d734dd`: thirteen
+The export landed the next day, 2026-09-15, in `598c544`: twelve
 `2026-09-14-recollect-*` repair runs and ten `*-spliced` derived corpora,
 including the repaired main run. The map was edited again on 2026-09-16 and the
 banner survived the edit. For a week a public document told readers to discount
