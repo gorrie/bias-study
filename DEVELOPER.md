@@ -1,5 +1,10 @@
 # DEVELOPER.md — Bias Study toolchain & replication guide
 
+> **HISTORICAL — the retired design's toolchain.** This guide describes the free-text,
+> judge-scored pipeline that ran until 2026-09-16. To reproduce the present study, start from
+> the README's *Reproduce it* section; what each current script does is in
+> [`SCRIPTS.md`](SCRIPTS.md), generated from their docstrings.
+
 Operational reference for the institutional-skepticism bias study: what every script
 does, the exact command to run it, and the full force-escalation-ladder pipeline end to
 end. This is the doc to read **before** touching the code — it exists so the toolchain

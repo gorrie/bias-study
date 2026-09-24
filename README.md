@@ -207,15 +207,58 @@ an issue is the right response.
 
 ## Repository layout
 
+Every file at the top of this repository is listed here, in one of three groups.
+`tests/test_readme_maps_every_top_level_doc.py` fails if one is added without being placed.
+
+**The study — what is being published.**
+
 | path | what it is |
 |---|---|
 | `PAPER-below-the-floor.md` | the paper |
+| `CORRECTIONS.md` | every claim corrected, with what replaced it — read before quoting |
 | `data/ratchet-battery.json` | the instrument, 32 items in 16 mirrored pairs |
-| `runs/` | every answer sheet, keyed by item id |
+| `ITEM-READ-2026-09-16-ratchet-battery.md` | the author's signed read of those 32 items, which gated collection |
+| `runs/` | every answer sheet of the present study, keyed by item id |
+| `data/` | the instrument, the declarations the analysis reads, and every earlier corpus |
 | `scripts/` | collection, analysis, and every gate |
 | `tests/` | the regressions behind the gates |
-| `PRIOR-WORK-CORRECTIONS.md` | the fourteen-study controls audit |
-| `PROTOCOL-DEVIATIONS.md` | what was planned against what was done |
+| `SCRIPTS.md` | what each script is for, generated from their docstrings |
+| `DATA-DICTIONARY.md` | every record field, generated from the corpus |
+| `PRIOR-WORK-CORRECTIONS.md` | the controls audit of other studies |
+| `PROTOCOL-DEVIATIONS.md` | what was planned against what was done, generated |
+| `prereg/` | the pre-registrations, each committed before its data |
+| `RELEASE-2026-09-07.md` | the release checklist `scripts/release_check.py` runs; its arm inventory is generated |
+| `CITATION.cff`, `.zenodo.json` | the citation record a DOI mints from |
+| `VERSIONING.md` | releases are dated, not numbered |
+| `MANIFEST.json` | the export manifest: instrument and corpus hashes |
+| `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` | the terms |
+| `requirements.txt`, `requirements-weightrung.txt`, `pytest.ini`, `conftest.py` | to run it |
+
+**The record — how the study got here.** Process, not findings; nothing in the paper depends
+on these.
+
+| path | what it is |
+|---|---|
+| `LEARNINGS.md` | rules earned from defects that actually happened here, each with its receipt |
+| `LESSONS.md` | dead ends, reversals, and what broke in the machinery |
+| `CHECKS-ANY-STUDY-CAN-RUN.md` | six checks on data a study already has; its worked examples come from the retired design |
+| `CORRECTIONS-2026-09-08.md`, `CORRECTIONS-2026-09-17-power.md`, `corrections/` | dated correction records, kept where they were published |
+| `CORPUS-MAP-2026-09-14.md` | what each run of the earlier corpus is for, after its repair |
+| `ADVERSARIAL-REVIEW.md` | the May 2026 self-review; its verdicts are dated and several are superseded |
+| `results/` | dated results documents |
+| `skills/`, `agents/` | the procedures the study was run by |
+
+**The retired design — marked HISTORICAL at the top of each.** The free-text, judge-scored study
+that ran until 2026-09-16 (see the section below).
+
+| path | what it is |
+|---|---|
+| `FINDINGS.md` | what that design had found by 2026-09-13 |
+| `DEVELOPER.md` | how that design's pipeline works |
+| `protocol/` | that design's questions, rubric and aggregation rules |
+| `ROADMAP.md` | what was planned next, on that design |
+| `JUDGEMENT-TOOL-PLAN.md`, `RUBRIC-SCORES.md` | the judge-method plan and its pre-registration |
+| `RESULTS-2026-09-14-rung2-transform-audit.md`, `RESULTS-2026-09-15-rung2-decomposed.md` | the proxy-based pipeline rung, and why it was abandoned |
 | `withdrawn/` | retired arms and instruments, kept rather than deleted |
 
 ---

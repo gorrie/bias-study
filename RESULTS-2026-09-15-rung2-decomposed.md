@@ -1,5 +1,11 @@
 # Rung 2 is a system prompt, on one model. Decomposed.
 
+> **HISTORICAL — the retired design's pipeline rung.** Judge-scored cell means on the
+> ten-question free-text instrument, collected through the proxy. The present study re-collected
+> rung 2 on the 32-item battery through its own transport; that result is in
+> [`PAPER-below-the-floor.md`](PAPER-below-the-floor.md). Kept as the companion to
+> [`RESULTS-2026-09-14-rung2-transform-audit.md`](RESULTS-2026-09-14-rung2-transform-audit.md).
+
 **2026-09-15.** `runs/2026-09-15-g0dm0d3-decomposition` — four conditions, two models, ten
 questions, five samples, **all collected in one sitting** so no contrast crosses a day.
 

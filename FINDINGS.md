@@ -1,5 +1,12 @@
 # What this study has learned about language models
 
+> **HISTORICAL — the retired design, not the paper.** This is what the study had learned by
+> 2026-09-13, on the free-text, judge-scored design that was retired on 2026-09-16. Every count
+> below is a count on that design and does not rescale to the present 32-item battery. The
+> current findings are in [`PAPER-below-the-floor.md`](PAPER-below-the-floor.md); anything here
+> that has since been withdrawn or narrowed is recorded in [`CORRECTIONS.md`](CORRECTIONS.md).
+> Kept because it was published, and a findings record that disappears is worse than a dated one.
+
 Substantive findings, not process. Each carries its number and its status. A finding here is
 **ESTABLISHED** (survives its own noise floor and a control that could have falsified it),
 **NARROW** (real but scoped tighter than it has been stated), or **WITHDRAWN**.

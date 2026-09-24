@@ -1,5 +1,10 @@
 # Pre-Registered Rubric Scoring of Judge Methods
 
+> **HISTORICAL** — a pre-registration for the judge-scored design retired on 2026-09-16. The
+> present study has no model anywhere in its scoring path, so nothing here bears on the paper.
+> Kept, with [JUDGEMENT-TOOL-PLAN.md](JUDGEMENT-TOOL-PLAN.md), because a pre-registration that
+> is withdrawn from view after the fact is no longer evidence of anything.
+
 Companion to [JUDGEMENT-TOOL-PLAN.md](JUDGEMENT-TOOL-PLAN.md). This file is committed BEFORE any of methods 2-8 are executed against the data. The git timestamp on this commit is the anti-HARKing proof that the anchor pick was made on method *design*, not on comparative results.
 
 Score is 1-5 per dimension (5 = excellent, 1 = poor) on **method design alone**. Weighted total = sum(score × weight). Highest total = anchor method.
