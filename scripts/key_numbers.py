@@ -1360,11 +1360,11 @@ def build():
          "value": None if not _psens else _psens_row(
              "prompt condition A->D, one sitting, local open-weight"),
          "what": "local A->D side-flip p90 after substitution",
-         "phrase": "from p90 9 to %s"},
+         "phrase": "A→D row's p90 goes to %s"},
         {"key": "psens_requant_p90",
          "value": None if not _psens else _psens_row("requantisation"),
          "what": "requantisation side-flip p90 after substitution",
-         "phrase": "requantisation from 8 to %s"},
+         "phrase": "requantisation row's p90 goes to %s"},
         {"key": "placebo_panel",
          "value": None if not placebo else placebo["panel"],
          "what": "models with BOTH a placebo and a baseline arm -- the panel this rests on",

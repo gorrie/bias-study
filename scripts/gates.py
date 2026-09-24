@@ -216,6 +216,14 @@ GATES = [
     # a conflict, and a conflict is the only thing that would have made the omission visible.
     # This is the 2026-09-18 finding again -- four tools built in a day, sitting in the tree
     # looking like safeguards, none of which would have run at release.
+    # Both trees carry the arm and its cache, so both can re-derive the verdict; the mirror
+    # doing so is what makes §6b reproducible rather than asserted. ~30s: two floor_table runs.
+    Gate("partials_sensitivity.py", ["--check"], tree="either", stage="release",
+         label="6b the partial-loss re-collection verdict still holds",
+         covers="data/partials-sensitivity.json against a fresh substitution run: the "
+                "pre-registered 'no floor moves' verdict §6b states and nine gated figures "
+                "read from that cache. A stale cache would keep quoting a verdict the corpus "
+                "no longer supports."),
     Gate("dose_figure.py", ["--check"], tree="study", stage="release",
          label="4e the dose figure still matches the arms it draws",
          covers="the SVG against the judged records behind it. The figure's job changed when "

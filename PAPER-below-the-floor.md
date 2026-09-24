@@ -1447,8 +1447,8 @@ unmodified floor table on the corpus as published and on a copy with those cells
 The renumbered cells lose **2 of 369** sheets against **104 of 362** as-is, which is
 descriptive only, because these cells were chosen for losing sheets. **None of the 10 pair
 floors moves its side-flip p90 outside its published 95% interval.** Two local rows move
-inside wide intervals and are worth stating: the local A→D row from p90 9 to 4
-(interval [3, 13]) and requantisation from 8 to 13 ([4, 15]). The modal-sampling row is not
+inside wide intervals and are worth stating: the local A→D row's p90 goes to 4 (from 9,
+interval [3, 13]), and the requantisation row's p90 goes to 13 (from 8, interval [4, 15]). The modal-sampling row is not
 a pair arm, and its cache declines to print on a changed corpus, so it is untested here. The
 published floors stay the frozen wave's; the re-collection is a sensitivity analysis and is
 outside the refusal panel. *(Until 2026-09-24 this paragraph said whether any floor would move
