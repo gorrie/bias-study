@@ -94,7 +94,10 @@
         "mirror"
       ],
       "phrases": [
-        "stance does not move"
+        "stance does not move",
+        "does not move a subject's stance",
+        "moves stance by",
+        "abliteration does not move stance"
       ],
       "published": true,
       "published_in": [

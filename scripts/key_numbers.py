@@ -1011,7 +1011,18 @@ def build():
          "value": _panel_number(len(F._split_refusals(
              sorted(m for m in PANEL_MODELS
                     if m not in manip_sitting.get("paired_models", [])))[0])),
-         "what": "panel models declining condition A outright in the one-sitting arm",
+         # WHAT THIS COUNTS, precisely, because the phrase reads as something slightly
+         # different and the two agreed only by coincidence of count. It is the FROZEN PANEL
+         # members that the one-sitting arm did not pair, split to those that refused --
+         # `gemini-3.7-flash` and `gemini-3.8-flash`. The ARM's own unpaired set is one
+         # refuser plus one model unusable for another reason (`qwen2.5-abliterate:14b`), so
+         # "the other 2" is true of the frozen panel, not of the arm. Both are 2 today; if
+         # either moves they stop agreeing and the sentence silently becomes wrong.
+         # Flagged 2026-09-23. Either register the arm's own refused/unusable counts, or keep
+         # this and let the `what` say which population it means -- it now does.
+         "what": "FROZEN-PANEL models declining condition A outright, among those the "
+                 "one-sitting arm left unpaired (not the arm's own unpaired set, which is "
+                 "one refusal plus one unusable)",
          "phrase": "The other %d decline the balance instruction outright"},
         {"key": "null_median",
          "value": null["side"][0],
@@ -1086,7 +1097,13 @@ def build():
         {"key": "arms_dir_only",
          "value": arms["dir_only"],
          "what": "models that decline ONLY under a directive",
-         "phrase": "%d other models decline only when told to commit"},
+         # WAS "decline only when told to commit", and that was false for one of the three.
+         # `phi4:latest` declines only the CONTENT-FREE PLACEBO -- an instruction with no
+         # political content in it at all, which is the study's own control arm. Saying it
+         # declines "when told to commit" put the control's result under the directive's
+         # name, on four surfaces including the public research page. Corrected 2026-09-23;
+         # "a firm instruction" is true of all three and is what the arm actually varies.
+         "phrase": "%d other models decline only under a firm instruction"},
         # "decline the instrument at least once" was the description and it counts only the
         # NO-DIRECTIVE arm. Across both arms more models decline at least once (this arm plus
         # those that decline ONLY under a directive), and the paper's sentence sat immediately
@@ -1676,7 +1693,7 @@ SURFACES = {
             # until 2026-09-04, and the zero was the only figure on it that was typed rather
             # than generated.
             "arms_silenced": "**%d of them stop**",
-            "arms_dir_only": "**%d other models decline only when told to commit**",
+            "arms_dir_only": "**%d other models decline only under a firm instruction**",
             # Conclusion five. Gated because it is the most quotable paragraph on the page,
             # and because its own argument is that a typed number goes stale.
             "replicate_med": "A median of %d answers move",
@@ -1898,7 +1915,7 @@ SURFACES = {
             "arms_nodir_refusals": "there are %(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
             "arms_nodir_runs": "there are %(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
             "arms_silenced": "**%d of them stop**",
-            "arms_dir_only": "**%d other models decline only when told to commit**",
+            "arms_dir_only": "**%d other models decline only under a firm instruction**",
             "arms_dir_refusals": "%d of those runs are refusals",
             "arms_dir_runs": "against %d runs where it carries one",
             "order_mde": "minimum detectable effect at **%d items",
@@ -2648,7 +2665,7 @@ RETRACTED = [
     ("none in 347 runs where it carries one",
      "the zero-refusals-under-a-directive claim, withdrawn 2026-09-04. Three models decline "
      "under a directive; the surviving statement is the paired one (all 8 decliners stop, "
-     "3 others decline only when told to commit)"),
+     "3 others decline only under a firm instruction)"),
     ("not one of them declines even once",
      "same withdrawal, the public page's wording of it"),
     ("Not one of them declines when told firmly to answer",
@@ -2757,10 +2774,14 @@ RETRACTED = [
      "the frontier endpoint figure, stale since the 2026-09-01 sweep. The generated floors "
      "table reads frontier presentation-order endpoint p90 11"),
     ("sampling variability is zero",
-     "withdrawn 2026-09-21. §2 measures 263 within-cell run pairs at temperature 0 -- median "
-     "1, p90 5, max 32, and only 10 of 57 cells byte-identical. The run-to-run replicate "
-     "floor is SMALL (median 0, p90 3 over 6,240 pairs), which is the claim §6 needs; zero is "
-     "a different claim and this corpus refutes it"),
+     "withdrawn 2026-09-21. The refutation was measured on the RETIRED temperature-0 arm -- "
+     "263 within-cell run pairs, median 1, p90 5, max 32, and 10 of 57 cells byte-identical. "
+     "Those figures do not recompute on the battery, which holds no temperature-0 cell at "
+     "all, and are kept here as the record of what refuted the claim rather than as live "
+     "numbers (flagged 2026-09-23; they had read as current). What IS live and makes the "
+     "same point: the run-to-run replicate floor is SMALL -- median 0, p90 3 over 6,240 "
+     "pairs -- which is the claim §6 needs. Zero is a different claim and this corpus "
+     "refutes it either way"),
     ("the two models move in opposite directions",
      "the rung-2 reading, withdrawn 2026-09-15 by the decomposition. B-STM is not an "
      "untreated control -- the proxy edits its scored text on 45 of 60 Opus records. Against "

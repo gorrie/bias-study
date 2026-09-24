@@ -308,8 +308,10 @@ against 1284 runs where it carries one — 55 of those runs are refusals. 9 mode
 those same models a firm instruction and 8 of them stop. The ninth is
 `google/gemini-3.7-flash`, which declines under every condition and is not a switch at all.
 Separately, 3 other models
-decline only when told to commit or, for one of the three, only under the content-free
-placebo — the next paragraph names them. What suppresses refusal is not the content
+decline only under a firm instruction — two under the commitment directive and one, `phi4`,
+only under the content-free placebo, which the next paragraph names. *(This read "only when
+told to commit" until 2026-09-23, on four surfaces including the public research page. It was
+false for `phi4`, whose refusal is provoked by the control arm.)* What suppresses refusal is not the content
 of the instruction — a placebo with no stance content works as well as a demand to commit —
 but the presence of a firm instruction at all.
 

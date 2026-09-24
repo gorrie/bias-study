@@ -2031,19 +2031,30 @@ def floor_conditions_wave():
     The `prompt condition A->D` row above is the paper's reference scale, and it is pooled
     across collections: temperature 0, three runs, several dates, and one pair whose two arms
     come from different days. It was the open item after wave 0 -- re-collect it under one
-    protocol, one sitting -- and wave 0 turned out to have already done it. 31 models were run
+    protocol, one sitting -- and wave 0 turned out to have already done it. Models were run
     under all four conditions at temperature 0.7 with a swept seed, five runs each, in a single
-    sitting. 25 of them answer both A and D; the other six refuse the balance instruction
-    outright, which is section 1's finding rather than a gap here.
+    sitting; those answering both A and D are the pairs, and the rest refuse the balance
+    instruction outright, which is section 1's finding rather than a gap here.
+
+    THE COUNTS THAT WERE HERE WERE FROM WAVE 0 AND ARE NOT THIS ARM'S. This paragraph said
+    "31 models ... 25 of them answer both A and D ... the other six", and the figures below
+    said "p90 7 over 25 pairs". The live arm is 61 pairs at p90 4 (`floor_table --markdown`,
+    row `prompt condition A->D, one sitting`; `key_numbers` gates both as
+    `manip_pairs_sitting` and `manip_p90_sitting`). The prose was never regenerated when the
+    wave grew, and a docstring is not gated, so nothing said so. Corrected 2026-09-23 to
+    describe the DESIGN, which is stable, and to stop carrying counts that a table already
+    prints -- two copies of a fact, one of them four collections out of date.
 
     THE COMPARISON IS IN THE SAME UNITS. This pairs modal-vs-modal, and so do the two nuisance
     floors it is compared against: `floor_order` pairs `modal(runs)` per item order, and
     `floor_same_version` pairs `modal()` per variant. Only `floor_replicate` pairs raw runs,
     correctly, because raw run-to-run noise is the thing it measures.
 
-    AND THE ANSWER MOVES. Pooled temp-0: p90 15 over 20 pairs. Here: **p90 7 over 25 pairs**,
-    below the presentation-order floor and below the same-version floor. 23 of 25 models move 8
-    items or fewer.
+    AND THE ANSWER MOVES. Pooled temperature-0 gave a far larger p90 than this one-sitting arm
+    does; the live figures for both rows are in the table this function prints, and are gated
+    as `manip_p90_sitting` and `manip_pairs_sitting` rather than restated here. The finding is
+    the DIRECTION -- the one-sitting manipulation sits below the presentation-order floor and
+    below the same-version floor, and the great majority of models move only a few items.
 
     WHY THE TWO DIFFER, stated rather than picked between. At temperature 0 with a fixed seed a
     cell's runs are near-identical, so its "modal" sheet is effectively a single observation

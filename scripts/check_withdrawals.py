@@ -172,6 +172,21 @@ def _surfaces():
     except Exception:
         return None
     out, absent = {}, []
+    # THE PAPER IS NOT IN `SURFACES` AND THIS GATE WAS NOT READING IT.
+    #
+    # `SURFACES` is the list of places that quote GENERATED NUMBERS -- the website, the
+    # dispatches, the release README, the book chapter. The paper is gated differently, by
+    # `key_numbers --check` against its own phrase templates, so it was never in that dict and
+    # this clause inherited the omission: on 2026-09-23 a withdrawn claim was planted in
+    # PAPER-below-the-floor.md and `check_withdrawals` returned exit 0.
+    #
+    # `scan_every_document_for_retractions()` does walk it -- 412 documents -- and caught the
+    # plant. So the claim was covered; this gate's own report was not. A gate whose summary
+    # says "absent" while never opening the primary artifact is the shape this file exists to
+    # refuse, pointed at itself.
+    paper = os.path.join(STUDY, "PAPER-below-the-floor.md")
+    if os.path.exists(paper):
+        out["paper"] = paper
     for label, spec in K.SURFACES.items():
         path = spec.get("path")
         if path and os.path.exists(path):
