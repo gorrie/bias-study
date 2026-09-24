@@ -34,6 +34,12 @@ THE INVARIANT, and each clause is a defect this project actually paid for:
                     published, and unpushed is not unwritten.
   4. EVIDENCED   -- the files that justify the withdrawal still exist. Deleting them leaves a
                     claim about a claim, which is what the paper convicts other people of.
+  5. LABELLED    -- every run named as evidence carries a non-`active` status in its
+                    root's PROVENANCE.json. The four clauses above govern claims on
+                    SURFACES; none of them reaches the records. `data/2026-09-13-i3-phase0`
+                    ships, its manifest reads as a clean success -- 1,600 calls, 0 failed --
+                    and its B-A contrast is withdrawn. A stranger can compute and publish a
+                    withdrawn result from our release without doing one thing wrong.
 
 Registry: `data/withdrawals.json`. It is THE copy. This gate reads it; `key_numbers.RETRACTED`
 is generated from it. Adding a withdrawal means adding it there and nowhere else.
@@ -261,6 +267,7 @@ def _absent(reg, findings):
 def check(reg):
     findings = []
     skipped = set()
+    labelled = set()
     mirror = _tree("mirror")
     ledger = _ledger_entries(mirror)
     scanned, unreadable = _absent(reg, findings)
@@ -327,7 +334,45 @@ def check(reg):
                                           "withdrawal whose evidence has been deleted is a "
                                           "claim about a claim." % rel))
 
-    return findings, scanned, skipped
+        # 5. LABELLED, on disk, in THIS tree.
+        #
+        # THE FOUR CLAUSES ABOVE GOVERN CLAIMS ON SURFACES. None of them reaches the RECORDS,
+        # and that gap is the one a stranger falls into: `data/2026-09-13-i3-phase0` ships, its
+        # `manifest.json` reads as a clean success -- 1,600 calls, 0 failed -- and its B-A
+        # contrast is withdrawn. Someone can compute and publish a withdrawn result from our
+        # release without doing a single thing wrong, because nothing they can see says so.
+        #
+        # `gen_provenance.py` writes the label. This is what makes the label REQUIRED: every
+        # run named as evidence for a withdrawal must carry a non-`active` status in its
+        # root's PROVENANCE.json. A generator nothing checks is a generator that stops being
+        # run, and the state it was describing goes quiet rather than wrong.
+        for rel in w.get("evidence") or []:
+            parts = rel.replace("\\", "/").split("/")
+            if len(parts) != 2 or parts[0] not in ("data", "runs"):
+                continue                       # not a corpus path; clauses 2 and 4 own it
+            root, run = parts
+            index = os.path.join(STUDY, root, "PROVENANCE.json")
+            if not os.path.exists(os.path.join(STUDY, root, run)):
+                continue                       # not in this tree; clause 4 decides if that is a defect
+            labelled.add(run)
+            if not os.path.exists(index):
+                findings.append((wid, "%s holds withdrawn run %s and has no PROVENANCE.json. "
+                                      "Run: python scripts/gen_provenance.py --write"
+                                 % (root, run)))
+                continue
+            rows = (json.load(io.open(index, encoding="utf-8")) or {}).get("runs") or {}
+            status = (rows.get(run) or {}).get("status")
+            if status is None:
+                findings.append((wid, "%s/PROVENANCE.json does not list %s, so the corpus "
+                                      "index disagrees with the corpus. Re-run "
+                                      "gen_provenance.py --write" % (root, run)))
+            elif status == "active":
+                findings.append((wid, "%s/%s is evidence for a WITHDRAWAL and its "
+                                      "PROVENANCE.json status reads 'active'. A healthy-looking "
+                                      "run directory is how a withdrawn result gets recomputed "
+                                      "by somebody acting in good faith." % (root, run)))
+
+    return findings, scanned, skipped, labelled
 
 
 def _citations(root, rel):
@@ -385,7 +430,7 @@ def main(argv=None):
                 print("      %s" % s)
         return 0
 
-    findings, scanned, skipped = check(reg)
+    findings, scanned, skipped, labelled = check(reg)
     print("checked %d withdrawal(s) in %s%s"
           % (total, os.path.relpath(REGISTRY, STUDY).replace(os.sep, "/"),
              "  [running in the MIRROR]" if IN_MIRROR else ""))
@@ -402,10 +447,20 @@ def main(argv=None):
         # them as a different clause and reported all four as held while listing six skips
         # directly above. A summary that contradicts the line above it is worse than no
         # summary: the reader believes the summary.
-        clauses = ("absent", "reachable", "ledgered", "evidenced")
+        # A CLAUSE THAT LABELLED NOTHING DID NOT RUN. `labelled` is the set of corpus runs the
+        # fifth clause actually opened a PROVENANCE.json for. If a registry rewrite stops
+        # naming corpus paths in `evidence`, the loop iterates over nothing and the clause
+        # reports clean forever -- the vacuous pass this repository has paid for repeatedly.
+        # It says so instead.
+        if not labelled:
+            skipped.add("labelled (no withdrawal names a corpus run in this tree)")
+        clauses = ("absent", "reachable", "ledgered", "evidenced", "labelled")
         held = [c for c in clauses if not any(s.startswith(c) for s in skipped)]
+        if "labelled" in held:
+            print("  labelled: %d withdrawn run(s) carry a non-active status on disk: %s"
+                  % (len(labelled), ", ".join(sorted(labelled))))
         if len(held) == len(clauses):
-            print("every withdrawal is absent, reachable, ledgered and evidenced.")
+            print("every withdrawal is absent, reachable, ledgered, evidenced and labelled.")
         else:
             print("nothing FAILED. What was checked here holds: %s."
                   % (", ".join(held) or "nothing"))
