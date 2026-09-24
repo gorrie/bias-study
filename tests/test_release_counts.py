@@ -1,4 +1,4 @@
-"""RELEASE-v2.md states how many checklist items are mechanical and how many are human.
+"""RELEASE-2026-09-07.md states how many checklist items are mechanical and how many are human.
 
 Those two numbers were typed. They said eleven and five while `release_check.py` had grown to
 eighteen and eight, so the release document under-reported its own rigour for five days and
@@ -16,14 +16,14 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import release_check as R  # noqa: E402
 
-DOC = ROOT / "RELEASE-v2.md"
+DOC = ROOT / "RELEASE-2026-09-07.md"
 
-# NOT APPLICABLE IN THE MIRROR. RELEASE-v2.md is a working-tree document; the
+# NOT APPLICABLE IN THE MIRROR. RELEASE-2026-09-07.md is a working-tree document; the
 # public mirror does not carry it. Skipping is the honest outcome there, and it is
 # deliberately a SKIP rather than a silent pass -- a test that reports success
 # having found no subject is the defect this project keeps finding elsewhere.
 pytestmark = pytest.mark.skipif(
-    not DOC.exists(), reason="RELEASE-v2.md is not present in this tree (mirror)")
+    not DOC.exists(), reason="RELEASE-2026-09-07.md is not present in this tree (mirror)")
 
 
 def text():
@@ -32,12 +32,12 @@ def text():
 
 def test_the_split_sentence_matches_the_code():
     m = re.search(r"The split is (\d+) mechanical and (\d+) human", text())
-    assert m, "RELEASE-v2.md must state the split so it can be checked"
+    assert m, "RELEASE-2026-09-07.md must state the split so it can be checked"
     assert int(m.group(1)) == len(R.CHECKS), (
-        "RELEASE-v2 says %s mechanical, release_check.CHECKS has %d"
+        "RELEASE-2026-09-07 says %s mechanical, release_check.CHECKS has %d"
         % (m.group(1), len(R.CHECKS)))
     assert int(m.group(2)) == len(R.HUMAN_CHECKS), (
-        "RELEASE-v2 says %s human, release_check.HUMAN_CHECKS has %d"
+        "RELEASE-2026-09-07 says %s human, release_check.HUMAN_CHECKS has %d"
         % (m.group(2), len(R.HUMAN_CHECKS)))
 
 
