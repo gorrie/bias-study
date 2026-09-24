@@ -146,3 +146,83 @@ def test_the_quality_audit_sweeps_both_corpora(two_roots, monkeypatch):
     runs = sorted(name for name, _ in A.scored_dirs())
     assert runs == ["2026-05-25-old", "2026-09-20-current"]
     sys.modules.pop("audit_response_quality", None)
+
+
+# ---------------------------------------------------------------------------------------
+# What the 2026-09-23 corpus move actually surfaced. Both defects were INVISIBLE while the
+# study had one populated root, and neither was found by the J1 audit -- which grepped for
+# `runs_root()` and so could not see a hazard spelled any other way.
+
+
+def test_a_corpus_root_holds_things_that_are_not_runs(two_roots):
+    """`data/external/` is Roettger et al.'s published codes, not a run of ours.
+
+    The day `data/` became a corpus root, every enumerator counted it: `run_inventory` listed
+    it with `corpus: previous`, ten models and 24,180 records. That inflates the corpus
+    accounting this work exists to make honest AND attributes somebody else's data to us --
+    in a paper whose subject is other people's unchecked measurement claims.
+    """
+    tmp, S = two_roots
+    ext = tmp / "data" / "external"
+    ext.mkdir()
+    (ext / "third-party.jsonl").write_text('{"model":"x"}\n', encoding="utf-8")
+
+    assert "external" in S.NOT_RUNS
+    assert "external" not in [p.name for p in S.all_run_dirs()]
+
+    # And the filter is NAMED, not inferred from the directory's shape: a run directory is not
+    # reliably dated (`refusal-ablation` and `mask-gradient` are runs and neither is), so a
+    # "looks like a date" rule would drop real runs to catch this one.
+    (tmp / "runs" / "refusal-ablation" / "scored").mkdir(parents=True)
+    assert "refusal-ablation" in [p.name for p in S.all_run_dirs()]
+
+
+def test_key_numbers_resolves_every_run_instead_of_spelling_runs(two_roots):
+    """The regression the move caught, pinned at its source.
+
+    `key_numbers.py` held eight `os.path.join(STUDY, "runs", name)` joins. When the older
+    corpus moved to `data/`, `out_of_panel_records` went from **5,647 to 2,437** -- two of its
+    fourteen collections had moved out from under a path that is spelled rather than asked
+    for. It reported the smaller number without complaint: each missing run is skipped with a
+    bare `continue`, so losing a third of the denominator is indistinguishable from having a
+    third less data. That figure heads the STATE block's disclosure of what the refusal panel
+    sets aside.
+
+    Asserted on the SOURCE, because the behaviour needs the real corpus to reproduce and the
+    property wanted is "this file does not spell a corpus root".
+    """
+    import io as _io
+    import os as _os
+
+    src = _io.open(_os.path.join(SCRIPTS, "key_numbers.py"), encoding="utf-8").read()
+    spelled = src.count('os.path.join(STUDY, "runs"')
+    assert spelled == 0, (
+        "%d hardcoded runs/ join(s) are back in key_numbers.py. Use _run_dir()/run_path(): a "
+        "spelled root is silently wrong the next time a run moves, and this file's numbers "
+        "are the ones the paper is gated against." % spelled)
+
+
+def test_a_moved_run_is_not_reported_as_deleted_evidence(two_roots):
+    """`check_withdrawals` must tell a rename apart from a deletion.
+
+    The registry named `runs/2026-09-13-i3-phase0`; the move put it in `data/`. Not one record
+    changed. A gate that cries deletion over a tidy-up is one an operator learns to wave
+    through -- and the real deletion it exists to catch gets waved through with it.
+    """
+    import importlib
+    import sys as _sys
+
+    tmp, S = two_roots
+    _sys.modules.pop("check_withdrawals", None)
+    W = importlib.import_module("check_withdrawals")
+
+    # Present under the OTHER root than the one the path names.
+    assert (tmp / "data" / "2026-05-25-old").is_dir()
+    assert W._elsewhere(str(tmp), "runs/2026-05-25-old") is True
+    assert W._elsewhere(str(tmp), "data/2026-09-20-current") is True
+
+    # Genuinely absent stays a finding, and nothing outside a corpus root is retried at all.
+    assert W._elsewhere(str(tmp), "runs/2026-01-01-never-existed") is False
+    assert W._elsewhere(str(tmp), "withdrawn/results/RESULTS.md") is False
+    assert W._elsewhere(str(tmp), "CORRECTIONS-2026-09-17-power.md") is False
+    _sys.modules.pop("check_withdrawals", None)

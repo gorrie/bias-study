@@ -133,6 +133,31 @@ def _tree(name):
     return None
 
 
+def _elsewhere(study, rel):
+    """A corpus path that MOVED ROOTS still points at the same records.
+
+    The registry stores `runs/2026-09-13-i3-phase0`, and on 2026-09-23 that run moved to
+    `data/` with the rest of the previous-instrument corpus. Not one record changed, and the
+    move made the two trees agree: the mirror has always kept it under `data/`.
+
+    This gate does not check paths for their own sake. It checks that the evidence for a
+    withdrawal still EXISTS, because a withdrawal whose evidence has been deleted is a claim
+    about a claim. Reporting a rename as a deletion is the same false alarm this file's
+    docstring records the gate raising ten times over `withdrawn/`, and a gate that cries
+    deletion over a tidy-up is a gate an operator learns to wave through -- which is how the
+    real deletion, the one the docstring's fourth bullet describes, would get waved through
+    with it.
+
+    So a `<root>/<run>/...` path is retried under the other corpus root, and nothing else is:
+    a missing correction document or a missing `withdrawn/` tree is still a finding.
+    """
+    parts = rel.replace("\\", "/").split("/")
+    if len(parts) < 2 or parts[0] not in ("data", "runs"):
+        return False
+    other = "runs" if parts[0] == "data" else "data"
+    return os.path.exists(os.path.join(study, other, *parts[1:]))
+
+
 def load():
     if not os.path.exists(REGISTRY):
         return None
@@ -284,6 +309,7 @@ def check(reg):
             findings.append((wid, "is not published but claims public_entry %r"
                              % w.get("public_entry")))
 
+
         # 4. EVIDENCED, in the tree that holds the evidence.
         #
         # THE EVIDENCE LIVES IN THE PRIVATE STUDY. `withdrawn/` corpora and the dated
@@ -296,7 +322,7 @@ def check(reg):
             skipped.add("evidenced")
         else:
             for rel in w.get("evidence") or []:
-                if not os.path.exists(os.path.join(study, rel)):
+                if not os.path.exists(os.path.join(study, rel)) and not _elsewhere(study, rel):
                     findings.append((wid, "evidence %s is GONE from the study tree. A "
                                           "withdrawal whose evidence has been deleted is a "
                                           "claim about a claim." % rel))

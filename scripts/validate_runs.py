@@ -30,7 +30,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from studypaths import LEGACY_SEED, resolve_run, run_roots  # noqa: E402
+from studypaths import LEGACY_SEED, NOT_RUNS, resolve_run, run_roots  # noqa: E402
 
 #: Runs from the May 2026 sweep. Frozen: they predate the declared-seed rule and
 #: reproduce against LEGACY_SEED, which is why that default exists at all.
@@ -522,8 +522,13 @@ def main(argv: list[str]) -> int:
     if names:
         dirs = [resolve_run(n, require_scored=False) for n in names]
     else:
+        # NOT_RUNS: a corpus root holds things that are not runs. `data/external/` is
+        # Roettger et al.’s published codes, and it became visible to every enumerator the
+        # day `data/` became a corpus root -- reported here as a 24,180-record run of ours
+        # with no manifest discipline. See studypaths.NOT_RUNS.
         dirs = sorted((d for r in roots for d in r.iterdir()
-                       if d.is_dir() and not d.name.startswith("_")),
+                       if d.is_dir() and not d.name.startswith("_")
+                       and d.name not in NOT_RUNS),
                       key=lambda d: d.name)
         # ONLY roots that use the manifest discipline this validator checks. The
         # August-September corpus under runs/ stores flat `model__CONDITION.jsonl` files and

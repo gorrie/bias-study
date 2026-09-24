@@ -85,6 +85,9 @@ BUDGET = 4000
 #:
 #: Resolved through the run roots so it finds the main study wherever it lives:
 #: the working tree keeps it under the mirror's `data/`, not under `runs/`.
+from studypaths import run_path as _SP_run_path  # noqa: E402
+
+
 def _main_study_dir():
     from studypaths import run_roots
     for root in run_roots():
@@ -96,7 +99,12 @@ def _main_study_dir():
 
 
 SOURCE = _main_study_dir()
-OUT_DIR = os.path.join(STUDY, "runs", "2026-09-05-recollect", "raw")
+# RESOLVED, NOT JOINED. `2026-09-05-recollect` moved to `data/` on 2026-09-23. A write path
+# spelled `runs/<name>` does not fail when the run moves -- it CREATES an empty directory in
+# the wrong root and appends there, forking the run in two with no message. `run_path` finds
+# the one that exists. (`_main_study_dir` above already searched both roots; this line did
+# not, which is how one file ends up half-correct.)
+OUT_DIR = os.path.join(str(_SP_run_path("2026-09-05-recollect")), "raw")
 
 
 def is_budget_exhausted(r):

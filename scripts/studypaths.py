@@ -180,6 +180,21 @@ def run_roots() -> list[Path]:
     return populated or roots
 
 
+#: Directories that sit UNDER a corpus root and are not runs.
+#:
+#: `data/` has always held the study's config JSON, and it holds `external/` -- Roettger et
+#: al.'s published codes, 24,180 third-party records kept for the controls audit. While `data/`
+#: was config-only this cost nothing. The moment it became a corpus root, every enumerator
+#: counted `external/` as a run of ours: `run_inventory` listed it with `corpus: previous`,
+#: 24,180 records and ten models, which both inflates the corpus accounting this work exists to
+#: make honest and attributes somebody else's data to us.
+#:
+#: Filtering on "a run directory is dated" would be wrong -- `refusal-ablation` and
+#: `mask-gradient` are runs and neither is dated. So the exclusions are NAMED, and adding one
+#: is a deliberate act with a reason attached.
+NOT_RUNS = frozenset({"external"})
+
+
 def all_run_dirs() -> list[Path]:
     """EVERY run directory in the study, across every corpus root, sorted by name.
 
@@ -206,6 +221,8 @@ def all_run_dirs() -> list[Path]:
             continue
         for p in sorted(root.iterdir()):
             if not p.is_dir() or p.name.startswith("_") or p.name.startswith("."):
+                continue
+            if p.name in NOT_RUNS:
                 continue
             if p.name in seen:
                 collisions.append(p.name)

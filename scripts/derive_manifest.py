@@ -298,6 +298,11 @@ def candidates() -> list[Path]:
         for d in sorted(root.iterdir()):
             if not d.is_dir() or d.name.startswith("_"):
                 continue
+            # `data/external/` is third-party data, not a run of ours -- see studypaths.NOT_RUNS.
+            # It became visible to every enumerator the day `data/` became a corpus root, and
+            # this gate promptly demanded a freeze manifest for Roettger et al.'s codes.
+            if d.name in studypaths.NOT_RUNS:
+                continue
             if V._is_manifest_layout(d):
                 continue
             paths, _ = record_paths(d)

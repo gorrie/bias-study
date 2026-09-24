@@ -71,7 +71,6 @@ import studypaths as _SP  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
-RUNS = os.path.join(STUDY, "runs")
 
 # The release repo's fingerprint list is the oracle. Read it rather than reimplement it: two
 # copies of "what counts as instrument text" is how one of them ends up permissive.
@@ -383,8 +382,16 @@ def main(argv=None):
     exported = {}
     raw = []
 
-    for path in sorted(glob.glob(os.path.join(RUNS, "**", "*.jsonl"), recursive=True)):
-        rel = os.path.relpath(path, RUNS).replace("\\", "/")
+    # ACROSS BOTH CORPUS ROOTS. `RUNS` was `STUDY/runs`, spelled. Only `SCHEMA` records are
+    # exported and every battery run is under `runs/` today, so this loses nothing right now --
+    # but this is the RELEASE GENERATOR, and the failure mode of a spelled root here is that a
+    # battery run living in the other corpus is simply not in the release, with the export
+    # reporting its own tally cheerfully. `rel` is computed against each sheet's OWN root, so
+    # the exported paths are unchanged.
+    _sheets = sorted((q, str(r)) for r in _SP.run_roots()
+                     for q in glob.glob(os.path.join(str(r), "**", "*.jsonl"), recursive=True))
+    for path, _root in _sheets:
+        rel = os.path.relpath(path, _root).replace(chr(92), "/")
         keep = []
         for line in io.open(path, encoding="utf-8"):
             line = line.strip()

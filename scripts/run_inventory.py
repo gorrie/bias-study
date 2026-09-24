@@ -31,6 +31,13 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
 
+sys.path.insert(0, HERE)
+# The CONSTANT only, not the resolver. `_corpus_roots` below records why this module must not
+# call `studypaths.run_roots()` -- it answers for the real tree and would ignore the `study`
+# argument. A frozenset of names carries no such hazard, and the alternative is a second copy
+# of the exclusion list that drifts from the first.
+from studypaths import NOT_RUNS  # noqa: E402
+
 #: Directories that are development fixtures, not measurements. Each says why.
 FIXTURES = {
     "2026-09-08-evidence-collector-fake":
@@ -126,6 +133,15 @@ def scan(study=STUDY):
         if not os.path.isdir(path):
             continue
         name = os.path.basename(path)
+        # A CORPUS ROOT HOLDS THINGS THAT ARE NOT RUNS. `data/external/` is Roettger et al.'s
+        # published codes -- 24,180 third-party records kept for the controls audit -- and the
+        # day `data/` became a corpus root this loop counted them as a run of OURS: listed
+        # `corpus: previous`, ten models, 24,180 records. That both inflates the accounting
+        # this file exists to make honest and attributes somebody else's data to us.
+        # See studypaths.NOT_RUNS; the exclusions are named, because a run directory is not
+        # reliably dated (`refusal-ablation` and `mask-gradient` are runs and neither is).
+        if name in NOT_RUNS or name.startswith(("_", ".")):
+            continue
         files = glob.glob(os.path.join(path, "**", "*.jsonl"), recursive=True)
         records = 0
         models, conditions, schemas = set(), set(), set()

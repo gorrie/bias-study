@@ -35,6 +35,30 @@ sys.path.insert(0, HERE)
 import floor_table as F      # noqa: E402
 import power as P            # noqa: E402
 import refusal_table as R    # noqa: E402
+from studypaths import run_path as _run_path, run_roots as _run_roots  # noqa: E402
+
+
+def _run_dir(name):
+    """Where a run lives, as a string. Resolved across both corpus roots, never joined.
+
+    THIS FILE HELD SIX `_run_dir(name)` JOINS, and the J1 audit did not
+    find one of them: it grepped for `runs_root()` and these hardcode the string, so they were
+    outside its field of view. The 2026-09-23 corpus move is what surfaced it --
+    `out_of_panel_records` went from **5,647 to 2,437** the moment the older corpus landed in
+    `data/`, because two of the fourteen out-of-panel collections had moved out from under a
+    path that is spelled, not asked for.
+
+    It reported the smaller number without complaint. The function ends `return total or None`
+    and each run is skipped with a bare `continue` when its directory is missing, so losing
+    a third of the denominator looks exactly like having a third less data. That figure heads
+    the STATE block's disclosure of what the refusal panel sets aside, which is the ratio a
+    reader is entitled to before quoting any rate off that table.
+
+    An audit that searches for one spelling of a hazard measures that spelling, not the
+    hazard. Every join in this file goes through the resolver now, including the ones whose
+    runs did not move, because "did not move this time" is not a property of the code.
+    """
+    return str(_run_path(name))
 
 # NOT a copy any more. This was a literal set "kept in sync" with gen_paper.py's --exclude
 # argument, and on 2026-09-04 the paraphrase-floor arm had to be withheld from every refusal
@@ -82,7 +106,7 @@ def _slow_cache(path, label, rebuild):
     run = prov.get("run")
     if not run:
         raise StaleCache("%s carries no provenance -- rebuild:\n  %s" % (label, rebuild))
-    run_dir = os.path.join(STUDY, "runs", run)
+    run_dir = _run_dir(run)
     if not os.path.isdir(run_dir):
         raise StaleCache("%s names run %r, which is not on disk" % (label, run))
     import position_analysis as _PA
@@ -180,7 +204,7 @@ def placebo_control():
             % (est, ", ".join(sorted(ACCEPTED_PLACEBO_ESTIMATORS)), run))
 
     import position_analysis as _PA
-    run_dir = os.path.join(STUDY, "runs", run)
+    run_dir = _run_dir(run)
     if not os.path.isdir(run_dir):
         raise StaleCache("the cache names run %r, which is not on disk" % run)
     now = len(_PA.load_records(run_dir))
@@ -220,7 +244,11 @@ def contested_vs_documented():
     agree = collections.Counter()
     total = collections.Counter()
     per_pair = collections.defaultdict(lambda: [0, 0])
-    for path in sorted(glob.glob(os.path.join(STUDY, "runs", "*-wave", "*.jsonl"))):
+    # Across BOTH corpus roots. No `*-wave` directory moved in the 2026-09-23 reorganisation,
+    # and that is a fact about this week rather than about the glob. See _run_dir().
+    _wave_sheets = sorted(q for _r in _run_roots()
+                          for q in glob.glob(os.path.join(str(_r), "*-wave", "*.jsonl")))
+    for path in _wave_sheets:
         for line in io.open(path, encoding="utf-8", errors="replace"):
             if not line.strip():
                 continue
@@ -297,7 +325,7 @@ def collection_scale():
     import glob as _g
     import io as _io
     import json as _j
-    wave_dir = os.path.join(STUDY, "runs", "2026-09-16-ratchet-v3-wave")
+    wave_dir = _run_dir("2026-09-16-ratchet-v3-wave")
     probe_dir = wave_dir + "-budget-probe"
 
     def _read(d):
@@ -397,7 +425,7 @@ def omission_arms():
     for tag, run in (("local", "2026-09-18-omission-orders"),
                      ("pinned", "2026-09-20-omission-hosted-pinned"),
                      ("phala", "2026-09-21-omission-nemotron-phala")):
-        run_dir = os.path.join(STUDY, "runs", run)
+        run_dir = _run_dir(run)
         if not os.path.isdir(run_dir):
             out[tag] = None
             continue
@@ -818,7 +846,7 @@ def wave_validity():
     # hands back are the ones it kept. Measured through it first, on 2026-09-23, and the
     # answer was 100.0% for both conditions with zero partial sheets, which is the shape of a
     # statistic computed on its own survivors.
-    run_dir = os.path.join(STUDY, "runs", "2026-09-16-ratchet-v3-wave")
+    run_dir = _run_dir("2026-09-16-ratchet-v3-wave")
     if not os.path.isdir(run_dir):
         return {}
     tot, bad = collections.Counter(), collections.Counter()
@@ -863,7 +891,7 @@ def out_of_panel_records():
     import refusal_table as _RT
     total = 0
     for name in getattr(_RT, "OUT_OF_PANEL", {}):
-        d = os.path.join(STUDY, "runs", name)
+        d = _run_dir(name)
         if not os.path.isdir(d):
             continue
         for p in glob.glob(os.path.join(d, "**", "*.jsonl"), recursive=True):
