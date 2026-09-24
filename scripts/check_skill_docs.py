@@ -74,6 +74,10 @@ NOT_A_PROCEDURE = {
     "gen_provenance.py": "release gate and generator -- PROVENANCE.json per corpus root, "
                          "naming every run with its instrument, current-vs-previous, and "
                          "active-vs-withdrawn read from data/withdrawals.json",
+    "gen_corpus_docs.py": "release gate and generator -- the GEN blocks in data/README.md "
+                          "and runs/README.md, the per-root corpus inventories and the "
+                          "scale-vs-MDE comparison. Runs from gates.GATES like gen_paper "
+                          "does; there is no operator decision to describe",
     # ---- ONE-SHOT OPERATOR TOOLS. Run once against a thing that then goes away, so a
     # standing procedure would describe a step nobody will take again.
     "extract_backup_uniques.py": "one-shot -- pulled the 73 records a gitignored corpus "

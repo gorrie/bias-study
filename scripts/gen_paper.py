@@ -106,8 +106,15 @@ def run(script, args):
     return proc.stdout.rstrip()
 
 
-def block_body(name):
-    script, args, trim = BLOCKS[name]
+def block_body(name, blocks=None):
+    """Render one GEN block. `blocks` defaults to the paper's, for other generated files.
+
+    Generalised 2026-09-23 so `gen_corpus_docs.py` can fill GEN blocks in the per-root corpus
+    READMEs through THIS implementation rather than carrying a second one. `check_no_fork.py`
+    exists because two copies that agree today are what this repository has been burned by
+    most often, and a second markdown-block filler would be exactly that.
+    """
+    script, args, trim = (blocks or BLOCKS)[name]
     text = run(script, args)
     if trim:
         # Keep the header lines plus the one row asked for, so the null section shows the
@@ -123,7 +130,9 @@ def block_body(name):
     # reviewer reads to see how many tests the paper ran. Found 2026-09-22 by asking of every
     # block whether it contains a table AND a fence, which is a two-line check nobody had run.
     unfenced = ("floors", "controls", "references", "timeline", "position", "bycondition",
-                "training", "intensity", "comparisons", "conditions")
+                "training", "intensity", "comparisons", "conditions",
+                # The corpus READMEs (gen_corpus_docs.py). All three emit real tables.
+                "corpus-inventory-data", "corpus-inventory-runs", "corpus-scale")
     fence = "" if name in unfenced else "```\n"
     close = "" if name in unfenced else "\n```"
     # NO TRAILING WHITESPACE. The fixed-width blocks right-pad their columns, so `power` and
@@ -144,15 +153,15 @@ def _diff(have, want, context=1):
     return out
 
 
-def fill(text, check=False):
+def fill(text, check=False, blocks=None):
     stale = []
-    for name in BLOCKS:
+    for name in (blocks or BLOCKS):
         pattern = re.compile(r"(<!-- GEN:%s -->\n)(.*?)(<!-- /GEN:%s -->)" % (name, name),
                              re.DOTALL)
         match = pattern.search(text)
         if not match:
-            raise SystemExit("no GEN block named %r in the paper" % name)
-        fresh = block_body(name) + "\n"
+            raise SystemExit("no GEN block named %r in the target file" % name)
+        fresh = block_body(name, blocks) + "\n"
         if match.group(2).strip() != fresh.strip():
             # Carry the DIFF, not just the name. "STALE blocks: floors" is true and useless:
             # on 2026-09-06 this gate went red in CI and green on the author's machine, against

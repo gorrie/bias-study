@@ -1,10 +1,114 @@
-# `data/` — the study record
+# `data/` — the previous corpus, and the study’s configuration
 
-This directory is the immutable record of every scored sweep this study has
-ever run. One subdirectory per run; runs are named by the date they began
-(`YYYY-MM-DD` or `YYYY-MM-DD-<slug>`). An internal working copy uses the
-directory name `runs/` instead of `data/` — content is identical, and the
-scripts auto-detect either.
+This directory is the immutable record of every scored sweep run on the **retired
+62-item external questionnaire** — the May 2026 judge-scored study and its September
+repairs and replications — together with the flat JSON files the study is configured
+from. One subdirectory per run; runs are named by the date they began (`YYYY-MM-DD`
+or `YYYY-MM-DD-<slug>`).
+
+The **current** study’s corpus is in **`runs/`**, collected on the Ratchet battery,
+and it has its own README. **The two roots are different corpora, not two names for
+one thing.**
+
+> *Corrected 2026-09-23.* This paragraph used to say an internal working copy uses the
+> name `runs/` instead of `data/`, content identical, scripts auto-detect either. That
+> was true while the private tree kept everything in one root and only this release
+> separated them. It stopped being true when the two trees were given the same shape,
+> and it was the kind of sentence that stays plausible long after it stops being
+> correct: a reader following it would pool two instruments.
+
+`external/` is **not ours** — Röttger et al.’s published codes, kept for the controls
+audit — and is excluded from every corpus enumerator by name (`studypaths.NOT_RUNS`).
+
+## What is here
+
+<!-- GEN:corpus-inventory-data -->
+| run | records | models | instrument | status | read by |
+|---|---:|---:|---|---|---|
+| `2026-05-25` | 520 | 13 | previous | active | named in a script, named in a document |
+| `2026-05-25-full` | 5,460 | 13 | previous | active | named in a script, named in a document |
+| `2026-05-26-augmentation` | 840 | 7 | previous | active | named in a script, named in a document |
+| `2026-05-26-cn-expansion` | 362 | 4 | previous | active | named in a script, named in a document |
+| `2026-05-26-timeseries` | 1,440 | 12 | previous | active | named in a script, named in a document |
+| `2026-05-26-unmask-gradient` | 900 | 3 | previous | active | named in a script, named in a document |
+| `2026-05-26-variance` | 2,400 | 12 | previous | active | named in a script, named in a document |
+| `2026-05-27` | 0 | — | empty | active | named in a script, named in a document |
+| `2026-05-27-abliteration` | 1,120 | 8 | previous | active | named in a script, named in a document |
+| `2026-05-27-abliteration-controls` | 420 | 3 | previous | active | named in a script, named in a document |
+| `2026-05-27-abliteration-gemma2` | 80 | 2 | previous | active | named in a script, named in a document |
+| `2026-05-27-g0dm0d3` | 420 | 2 | previous | active | named in a script, named in a document |
+| `2026-05-27-ood` | 1,120 | 10 | previous | active | named in a script, named in a document |
+| `2026-05-27-paraphrase` | 2,520 | 6 | previous | active | named in a script, named in a document |
+| `2026-05-27-reversed-premise` | 1,400 | 5 | previous | active | named in a script, named in a document |
+| `2026-08-28` | 0 | — | empty | active | named in a script, named in a document |
+| `2026-09-05-recollect` | 758 | 9 | previous | active | named in a script, named in a document |
+| `2026-09-13-g0dm0d3-replicate` | 600 | 2 | previous | active | named in a script, named in a document |
+| `2026-09-13-g0dm0d3-replicate-baseline` | 200 | 2 | previous | active | named in a script, named in a document |
+| `2026-09-13-i3-phase0` | 3,200 | 4 | previous | **withdrawn** | named in a script, named in a document |
+| `2026-09-14-augmentation-spliced` | 420 | 7 | previous | active | named in a script, named in a document |
+| `2026-09-14-cn-expansion-spliced` | 181 | 4 | previous | active | named in a script, named in a document |
+| `2026-09-14-full-spliced` | 780 | 13 | previous | active | named in a script, named in a document |
+| `2026-09-14-g0dm0d3-baseline-4k` | 200 | 2 | previous | active | named in a script, named in a document |
+| `2026-09-14-g0dm0d3-proxy-control` | 200 | 2 | previous | active | named in a script, named in a document |
+| `2026-09-14-may25-spliced` | 260 | 13 | previous | active | named in a script, named in a document |
+| `2026-09-14-ood-spliced` | 160 | 10 | previous | active | named in a script, named in a document |
+| `2026-09-14-recollect-augmentation` | 360 | 5 | previous | active | named in a script, named in a document |
+| `2026-09-14-recollect-cn` | 274 | 3 | previous | active | named in a script, named in a document |
+| `2026-09-14-recollect-gpt5-augmentation` | 120 | 1 | previous | active | named in a script, named in a document |
+| `2026-09-14-recollect-gpt5-gradient` | 100 | 1 | previous | active | named in a script, named in a document |
+| `2026-09-14-recollect-gpt5-variance` | 40 | 1 | previous | active | named in a script, named in a document |
+| `2026-09-14-recollect-gradient` | 100 | 2 | previous | active | named in a script, named in a document |
+| `2026-09-14-recollect-may25` | 236 | 7 | previous | active | named in a script, named in a document |
+| `2026-09-14-recollect-ood` | 212 | 8 | previous | active | named in a script, named in a document |
+| `2026-09-14-recollect-paraphrase` | 372 | 5 | previous | active | named in a script, named in a document |
+| `2026-09-14-recollect-reversed-premise` | 188 | 3 | previous | active | named in a script, named in a document |
+| `2026-09-14-recollect-timeseries` | 628 | 10 | previous | active | named in a script, named in a document |
+| `2026-09-14-recollect-variance` | 192 | 7 | previous | active | named in a script, named in a document |
+| `2026-09-14-timeseries-spliced` | 720 | 12 | previous | active | named in a script, named in a document |
+| `2026-09-14-unmask-gradient-spliced` | 450 | 3 | previous | active | named in a script, named in a document |
+| `2026-09-14-variance-spliced` | 1,200 | 12 | previous | active | named in a script, named in a document |
+| `2026-09-15-paraphrase-spliced` | 360 | 6 | previous | active | named in a script, named in a document |
+| `2026-09-15-reversed-premise-spliced` | 200 | 5 | previous | active | named in a script, named in a document |
+| **44 directories** | **31,713** | | | | |
+<!-- /GEN:corpus-inventory-data -->
+
+`instrument` is read off each record’s own fields, not inferred from the directory name.
+`status` comes from `data/withdrawals.json` — which is why `2026-09-13-i3-phase0` is marked
+**withdrawn** in the table above and not only in a correction document three files away. Its
+B−A contrast cannot be computed from this corpus; the records ship because they are the
+evidence for *why that design cannot answer the question*, not an answer to it.
+
+## Scale, against the studies this one audits
+
+The argument is not that we collected more. It is that **a nuisance floor cannot be measured
+at n=1** — you cannot ask how large an effect must be to be visible above your own noise until
+you have sampled the noise — and that is why most of the audited studies report no minimum
+detectable effect. The two columns below are that claim as a property of the designs.
+
+Rendered from `data/controls-audit.json`, the same source as the paper’s controls matrix. Row
+order is the audit’s own, this study last; it is **not** sorted by scale, because ranking
+free-text descriptions of heterogeneous designs would be a judgement of ours dressed as an
+ordering, in the table where that is least affordable.
+
+<!-- GEN:corpus-scale -->
+| study | year | what it collected | reports an MDE |
+|---|---:|---|---|
+| naser2026 | 2026 | 14 model snapshots, 2 providers, 2 tiers, ~9500 calls, 10 trials/probe at T=0 | NO |
+| sakhawat2026 | 2026 | 26 models, 10 administrations per inventory per model, context cleared between runs, temperature 0.7 and top_p 1.0 ("All models are queried with temperature=0.7 and top_p=1.0, balancing determinism with natural language variability") | part |
+| rottger2024 | 2024 | 10 models (Llama2 7b/13b/70b chat, Mistral 7b Iv0.1/Iv0.2, Zephyr 7b beta, GPT-3.5 0613/1106, GPT-4 0613/1106), 62 PCT propositions, temperature 0 throughout, 5 forcing levels, 10 paraphrase templates, open-ended arm | NO |
+| motoki2024 | 2024 | ONE model -- text-davinci-003, named only in the supplement -- at temperature 0.7; 100 rounds per condition per country, each round one call carrying all 62 items; bootstrap 1,000 replicates over the 100-answer sample | NO |
+| liu2025 | 2025 | 4 static snapshots -- gpt-3.5-turbo-0613, gpt-3.5-turbo-1106, gpt-4-0613, gpt-4-1106-preview; 3 API accounts x 10 questionnaires = 30 runs per model, 7,440 item responses; temperature left at default (=1) deliberately; then bootstrap 100 and 1,000 replicates | NO |
+| rozado2024 | 2024 | 24 conversational + 5 base + 3 self-finetuned models; 2,640 test administrations (11 tests x 10 trials x 24 models); 96,240 items; temperature 0.7, max 100 tokens; collected Dec 2023 - Jan 2024 | NO |
+| dominguezolmedo2024 | 2024 | 43 models, 110M to 175B parameters; responses read as renormalised next-token logits over choice labels rather than sampled text; all choice orderings evaluated where feasible, 5000 permutations cap, 50 for OpenAI models; ~1500 A100 GPU-hours | yes |
+| kamal2025 | 2025 | 4 models all 4-bit quantised (Llama3-8B-Instruct, Mistral-7B-Instruct-v0.3, Falcon3-7B-Instruct, Gemma-3-4b-it) x 9 instances each (base + 8 LoRA fine-tunes) x 10 prompts x 8 decoding combinations; 2,693 PCT tests retained of an intended 2,880; plus Llama3.2-1B in full and 4-bit precision for A.5 | NO |
+| cen | 2025 | 12 models queried near-daily July-November 2024 across 100+ days; temperature 0 offline and 0.1 online; 128-token cap; approximately $40k of API spend | NO |
+| aipolcom | 2026 | 57 models, 930 answer sets (729 model, 201 synthetic control), collection 2026-07-29 to 2026-08-29 | NO |
+| sclar2024 | 2024 | several open LLMs; meaning-preserving prompt FORMAT variations | ? |
+| messing2026 | 2026 | benchmark and judge pipelines; MMLU and Elo-style match evaluation | yes |
+| barmettler2026 | 2026 | 66 models on the questionnaire, 9 on the referenda. One administration per model-item: "All models were queried via the OpenRouter API with deterministic parameters: temperature=0.0, seed=42." | part |
+| tornberg2026 | 2026 | 6 frontier models via the Requesty API gateway, April 2026. Main grid is "one response per item-model-condition cell", plus "three additional replicates at T=1.0 (27,000 additional calls), and one replicate at T=0 (greedy decoding; 9,000 calls)" | NO |
+| **this study** | 2026 | 3,897 runs, 65 models, 23 vendor keys of which 21 are vendor families | yes |
+<!-- /GEN:corpus-scale -->
 
 ## Licence for the data in this directory
 

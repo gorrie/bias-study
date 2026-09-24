@@ -481,6 +481,17 @@ GATES = [
          why="the withdrawals registry governed claims on our surfaces and never reached the "
              "records on disk; a healthy-looking run directory is how a withdrawn result "
              "gets recomputed by somebody acting in good faith"),
+    Gate("gen_corpus_docs.py", ["--check"], tree="either", stage="release",
+         label="each corpus root's README matches the corpus",
+         covers="the generated inventory in data/README.md and runs/README.md, and the "
+                "scale-vs-MDE comparison against the fifteen audited studies",
+         why="the corpus is the deliverable and its README is the part that rots. Every "
+             "figure in those tables -- records, models, instrument, withdrawal status -- is "
+             "computed off the records, so typing it into prose creates a second copy that is "
+             "right the day it is written. The scale table is worse: it describes OTHER "
+             "people's work, and a hand-typed comparison of other people's work is what this "
+             "paper convicts them of. It refuses rather than skipping when a README is "
+             "absent, because a root with no README is the state it exists to end"),
     Gate("check_withdrawals.py", tree="either", stage="release",
          label="every withdrawal is absent, reachable, ledgered and evidenced",
          covers="each entry in data/withdrawals.json -- THE record of a withdrawal, which "

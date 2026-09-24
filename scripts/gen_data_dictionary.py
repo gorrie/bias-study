@@ -100,11 +100,29 @@ DESCRIPTIONS = {
 }
 
 
-def scan(pattern):
+def scan(*patterns):
+    """Every record matching ANY of these globs. Takes several, and scans all of them.
+
+    THIS TOOK ONE PATTERN AND `render()` TRIED THEM IN TURN -- `data/*/raw/*.jsonl` first,
+    falling back to `runs/*/raw/*.jsonl` only when the first yielded nothing. That is a
+    silent-corruption shape, and the 2026-09-23 corpus move is exactly what arms it: the
+    moment `data/` holds any records at all, the `runs/` branch never runs, and whatever
+    stayed behind is dropped from the record counts, the file counts, the field coverage and
+    the categorical vocabularies, with no message.
+
+    Coverage percentages are the whole point of this document -- "a field on 93.6% of records
+    is one an analysis must check for rather than assume" -- so a denominator quietly computed
+    over half the corpus is the dictionary telling a confident lie about the other half.
+
+    Both roots, always. A pattern that matches nothing contributes nothing, which is the
+    correct behaviour and needs no branch.
+    """
     fields = collections.defaultdict(collections.Counter)
     vocab = collections.defaultdict(collections.Counter)
     n, nfiles = 0, 0
-    for path in sorted(glob.glob(os.path.join(STUDY, pattern))):
+    paths = sorted({p for pattern in patterns
+                    for p in glob.glob(os.path.join(STUDY, pattern))})
+    for path in paths:
         nfiles += 1
         for line in io.open(path, encoding="utf-8", errors="replace"):
             if not line.strip():
@@ -128,9 +146,7 @@ def render():
                ("scored", "data/*/scored/*.jsonl", "runs/*/scored/*.jsonl")]
     blocks, undescribed, allvocab = [], set(), {}
     for label, p1, p2 in layouts:
-        n, nf, fields, vocab = scan(p1)
-        if not n:
-            n, nf, fields, vocab = scan(p2)
+        n, nf, fields, vocab = scan(p1, p2)
         if not n:
             continue
         allvocab.update({k: v for k, v in vocab.items() if k not in allvocab})
@@ -161,6 +177,34 @@ def build_text():
            "must check for rather than assume, and assuming it is how a denominator changes",
            "silently.",
            ""]
+    # THE TWO CORPORA, STATED BEFORE THE FIELD TABLES. Every coverage figure below is pooled
+    # across both, and a reader who does not know there are two will read a 19% coverage as
+    # "this field is usually missing" rather than "this field belongs to one of two instruments
+    # and is near-universal within it". The percentages are honest and the inference from them
+    # is not, unless this is said first.
+    out += ["## Two corpora, pooled in the coverage figures below", "",
+            "The study ran on two instruments and this repository holds both. They are in",
+            "separate directories and the distinction is load-bearing:", "",
+            "| root | instrument | what it is |",
+            "|---|---|---|",
+            "| `runs/` | the **Ratchet battery** — 32 forced-choice items in 16 mirrored pairs, "
+            "author-written, MIT, published in full | the current study. Forced-choice, read "
+            "positionally: no rubric, no judge, no 1–5 score |",
+            "| `data/` | the **retired 62-item external questionnaire** | the May 2026 "
+            "judge-scored study and its September repairs. Free-text responses scored 1–5 by a "
+            "cross-vendor judge panel |",
+            "",
+            "Each root has its own README describing what may and may not be concluded from it.",
+            "",
+            "**The one field difference that bites:** records in `runs/` carry an `instrument`",
+            "field and records in `data/` mostly do not, because the field postdates them. Code",
+            "that filters on `instrument == \"ratchet-battery\"` silently drops the entire",
+            "previous corpus; code that does not filter silently pools two instruments.",
+            "`floor_table._instrument_matches` is the rule the analysis uses.",
+            "",
+            "**No figure computed from 32 items may be set beside one computed from 62.**",
+            "Side-flip counts are not linear in item count.",
+            ""]
     for label, n, nf, nfields, rows in blocks:
         out += [f"## `{label}` records", "",
                 f"{n:,} records across {nf} files, {nfields} distinct fields.", "",

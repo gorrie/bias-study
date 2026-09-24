@@ -9,6 +9,27 @@ present**. Coverage is not decoration: a field on 93.6% of records is one an ana
 must check for rather than assume, and assuming it is how a denominator changes
 silently.
 
+## Two corpora, pooled in the coverage figures below
+
+The study ran on two instruments and this repository holds both. They are in
+separate directories and the distinction is load-bearing:
+
+| root | instrument | what it is |
+|---|---|---|
+| `runs/` | the **Ratchet battery** — 32 forced-choice items in 16 mirrored pairs, author-written, MIT, published in full | the current study. Forced-choice, read positionally: no rubric, no judge, no 1–5 score |
+| `data/` | the **retired 62-item external questionnaire** | the May 2026 judge-scored study and its September repairs. Free-text responses scored 1–5 by a cross-vendor judge panel |
+
+Each root has its own README describing what may and may not be concluded from it.
+
+**The one field difference that bites:** records in `runs/` carry an `instrument`
+field and records in `data/` mostly do not, because the field postdates them. Code
+that filters on `instrument == "ratchet-battery"` silently drops the entire
+previous corpus; code that does not filter silently pools two instruments.
+`floor_table._instrument_matches` is the rule the analysis uses.
+
+**No figure computed from 32 items may be set beside one computed from 62.**
+Side-flip counts are not linear in item count.
+
 ## `raw` records
 
 9,041 records across 184 files, 42 distinct fields.

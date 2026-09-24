@@ -394,12 +394,62 @@ def classify(rows, doc_text):
     return rows
 
 
+def corpus_markdown(root_name, rows=None):
+    """One corpus root's runs as a markdown table, for that root's README.
+
+    THE INVENTORY IN A README IS THE PART THAT ROTS. Every fact in this table -- record
+    counts, model counts, which instrument a run carries, whether anything reads it -- is
+    already computed by `scan()` off the records themselves. Typing it into prose creates a
+    second copy that is right on the day it is written and silently wrong afterwards, which is
+    the defect this repository is organised against and the one the paper accuses other people
+    of.
+
+    `status` comes from `data/withdrawals.json` through `_status_of`, so a reader meets a
+    withdrawn arm HERE, in the directory listing, rather than having to find the correction
+    document first. That is the whole point of the column: a stranger can compute a withdrawn
+    result from a published corpus without doing anything wrong, and until 2026-09-23 nothing
+    on disk would have stopped them.
+    """
+    import os
+
+    rows = rows if rows is not None else classify(scan(), documented())
+    root = os.path.join(STUDY, root_name)
+    here = [r for r in rows if os.path.isdir(os.path.join(root, r["run"]))]
+    if not here:
+        raise SystemExit(
+            "run_inventory: no runs found under %s/. A generated inventory that renders an "
+            "empty table is worse than none -- it reads as 'this corpus is empty'."
+            % root_name)
+
+    out = ["| run | records | models | instrument | status | read by |",
+           "|---|---:|---:|---|---|---|"]
+    for r in sorted(here, key=lambda x: x["run"]):
+        inst = r.get("corpus") or "?"
+        if inst == "current":
+            inst = "`%s`" % LIVE_INSTRUMENT_PREFIX
+        status = r.get("status") or "active"
+        if status != "active":
+            status = "**%s**" % status
+        out.append("| `%s` | %s | %s | %s | %s | %s |"
+                   % (r["run"], "{:,}".format(r["records"]), r["models"] or "—",
+                      inst, status, ", ".join(r.get("read_by") or []) or "—"))
+    out.append("| **%d directories** | **%s** | | | | |"
+               % (len(here), "{:,}".format(sum(r["records"] for r in here))))
+    return "\n".join(out)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--corpus-markdown", metavar="ROOT",
+                    help="one corpus root's runs as a markdown table, for that "
+                         "root's README (gen_corpus_docs.py fills it)")
     a = ap.parse_args(argv)
     rows = classify(scan(), documented())
+    if a.corpus_markdown:
+        print(corpus_markdown(a.corpus_markdown, rows))
+        return 0
     orphans = [r for r in rows if r["role"] == "UNACCOUNTED"]
     # COLLECTED AND UNREACHABLE is a different failure from UNACCOUNTED, and the inventory
     # could not see it: a directory can be documented, manifested, schema-correct and still

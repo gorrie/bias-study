@@ -101,6 +101,51 @@ def render(doc, markdown=False):
     return "\n".join(out)
 
 
+def scale_markdown(doc):
+    """How much each audited study collected, beside whether it reports a detection limit.
+
+    WHY THIS IS A TABLE AND NOT A SENTENCE. The `scale` field has been in
+    `data/controls-audit.json` for all fifteen studies since the audit was written, and
+    nothing rendered it -- so every time the comparison was wanted it got TYPED, from memory,
+    into prose. A hand-typed comparison table of other people's work is the single defect this
+    study has corrected most often, and it is the one that would embarrass it most: the whole
+    subject of the paper is measurement claims nobody checked.
+
+    WHY IT IS JOINED TO `reported_mde` AND NOT PRINTED ALONE. Scale on its own reads as a
+    boast, and "we collected more" is not an argument. The argument is that **a nuisance floor
+    cannot be measured at n=1** -- you cannot ask how big an effect must be to be visible above
+    your own noise until you have sampled the noise -- which is why most of these studies
+    report no minimum detectable effect. The two columns side by side make that a property of
+    the designs rather than an assertion about them.
+
+    Row order is the audit's own, with this study last -- the same order `render()` uses, and
+    NOT sorted by scale. "Scale" is free text describing heterogeneous designs (GPU-hours,
+    API spend, administrations, calls), so any ranking of it would be a judgement dressed as
+    an ordering, made by us, about other people's work, in the table where that is least
+    affordable.
+
+    `--scale-markdown`, deliberately not a column in the controls matrix: that grid is fixed
+    width yes/part/NO, and a ninety-character prose cell would destroy it.
+    """
+    studies = [s for s in doc["studies"] if s["id"] != "ours"] + \
+              [s for s in doc["studies"] if s["id"] == "ours"]
+    missing = [s["id"] for s in studies if not s.get("scale")]
+    if missing:
+        raise SystemExit(
+            "controls_audit: %d study/studies carry no `scale` in data/controls-audit.json: "
+            "%s. A comparison table that silently omits a row is worse than none."
+            % (len(missing), ", ".join(missing)))
+
+    out = ["| study | year | what it collected | reports an MDE |",
+           "|---|---:|---|---|"]
+    for s in studies:
+        name = "**this study**" if s["id"] == "ours" else s["id"]
+        scale = " ".join(str(s["scale"]).split())
+        out.append("| %s | %d | %s | %s |"
+                   % (name, s["year"], scale, MARK[s["status"]["reported_mde"]]))
+    return "\n".join(out)
+
+
 def tally_markdown(doc, controls=None):
     """Per-control tally as a markdown table, externals only.
 
@@ -214,6 +259,11 @@ def main(argv=None):
     ap.add_argument("--markdown", action="store_true")
     ap.add_argument("--gaps", action="store_true")
     ap.add_argument("--strict", action="store_true")
+    ap.add_argument("--scale-markdown", action="store_true",
+                    help="what each audited study collected, beside whether it reports an "
+                         "MDE. The `scale` field has been in the data file for all fifteen "
+                         "studies since the audit was written and nothing rendered it, so "
+                         "the comparison got TYPED every time it was wanted.")
     ap.add_argument("--tally-markdown", action="store_true",
                     help="per-control tally as a markdown table, for GEN blocks in the "
                          "corrections documents. Added 2026-09-12: those tables were typed "
@@ -227,6 +277,9 @@ def main(argv=None):
     doc = load()
     if args.strict:
         return strict_check(doc)
+    if args.scale_markdown:
+        print(scale_markdown(doc))
+        return 0
     if args.tally_markdown:
         want = None
         if args.controls:
