@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-142 script(s). 0 carry no module docstring and are listed at the end.
+143 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -127,6 +127,7 @@
 - **`frontier_extend.py`** — Extend the one-sitting arms onto the CURRENT frontier, which the frozen panel excludes.
 - **`gates.py`** — The one registry of every gate this study has, and where each one runs.
 - **`gen_artifact_manifest.py`** — Checksum the large binaries the study depends on, so they can travel outside git.
+- **`gen_corpus_docs.py`** — Fill the generated tables in the per-corpus-root READMEs. `--check` exits 1 on drift.
 - **`gen_data_dictionary.py`** — Generate DATA-DICTIONARY.md from the corpus, so it cannot describe a corpus that moved.
 - **`gen_deviations.py`** — Generate PROTOCOL-DEVIATIONS.md: what was pre-registered, what was done, what changed.
 - **`gen_provenance.py`** — One machine-readable index per corpus root: what each run is, and what may be concluded.
