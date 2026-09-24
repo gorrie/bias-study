@@ -81,9 +81,10 @@ exits 1 when a table has drifted from the data.**
 > `refusal_table.PANEL` names the run directories the panel consists of and `OUT_OF_PANEL`
 > names every other battery collection with the rule it falls under — smokes, budget probes,
 > arms collected under one or two conditions whose one-sided denominators would move a refusal
-> rate without a single new observation about refusal, and one collection that is a different
-> design entirely. **In the working corpus that rule sets aside 5,647 records against the
-> 3,897 it keeps**, the largest single exclusion being a 3,200-record judge-scored collection
+> rate without a single new observation about refusal, the §6b re-collection of the cells that
+> lost sheets (selected on that behaviour), and one collection that is a different design
+> entirely. **In the working corpus that rule sets aside 6,016 records against the 3,897 it
+> keeps**, the largest single exclusion being a 3,200-record judge-scored collection
 > that has no forced-choice sheet and so cannot refuse one. A reader is entitled to that ratio
 > before quoting any rate off the table, and until 2026-09-22 the disclosure counted
 > directories rather than records, which made fourteen sound small. Until 2026-09-21 the population was a glob minus a list of seven directories
@@ -409,7 +410,7 @@ observation about refusal.
 REFUSAL RATE BY VENDOR AND CONDITION -- recomputed from runs/
 refusal = declined all 32 items: prose returned, zero answers, budget intact
 panel: 2026-09-16-ratchet-v3-wave
-outside the panel, by rule: 14 collection(s); refusal_table.OUT_OF_PANEL names each
+outside the panel, by rule: 15 collection(s); refusal_table.OUT_OF_PANEL names each
 with the rule it falls under, and the rule removes more records than it keeps.
 
 vendor                     N           A           B           C           D           E           P
@@ -1433,13 +1434,25 @@ records are renumbered, 2,300 carry the as-is numbering and 1,358 predate the fl
 sheets came back with some but not all 32 items answered, from 13 models, and every one is
 excluded as invalid — 93 of the 104 from six local builds (`qwen2.5-abliterate:14b` 27,
 `qwen2.5:14b` 27, `mistral:latest` 16, `llama3.1:8b` 11, `gemma-4-12B` 7,
-`mistral:7b-instruct-q8_0` 5) and 11 from hosted models. Whether any floor would move under a
-renumbered re-collection cannot be established from this corpus, because a dropped sheet has
-no value to compare; what the count establishes is where the loss falls — on the local rows,
-which is where §2's class split already puts the instability — and that a cell's depth is
-lower than the protocol's five wherever it fell. These counts are read from the wave's
-`n_answers` and `renumbered` fields and are **not gated**; `ungated_numbers.py` will list this
-paragraph until a key is registered for them.
+`mistral:7b-instruct-q8_0` 5) and 11 from hosted models. The loss falls on the local rows,
+which is where §2's class split already puts the instability, and seven cells lost every
+sheet, so those models were absent from those cells rather than thinner in them.
+
+**So we re-collected every affected cell renumbered, and no floor moves.** Pre-registered
+(`PREREG-2026-09-24-partials-renumbered.md`) before the first call: all 34 affected
+model × condition cells, 369 sheets one for one, with the numbering the only change —
+whole cells, never gap-filling, and no group re-drawn after a partial sheet, since re-drawing
+until a sheet comes back whole is the selection under test. `partials_sensitivity.py` runs the
+unmodified floor table on the corpus as published and on a copy with those cells substituted.
+The renumbered cells lose **2 of 369** sheets against **104 of 362** as-is, which is
+descriptive only, because these cells were chosen for losing sheets. **None of the 10 pair
+floors moves its side-flip p90 outside its published 95% interval.** Two local rows move
+inside wide intervals and are worth stating: the local A→D row from p90 9 to 4
+(interval [3, 13]) and requantisation from 8 to 13 ([4, 15]). The modal-sampling row is not
+a pair arm, and its cache declines to print on a changed corpus, so it is untested here. The
+published floors stay the frozen wave's; the re-collection is a sensitivity analysis and is
+outside the refusal panel. *(Until 2026-09-24 this paragraph said whether any floor would move
+"cannot be established from this corpus, because a dropped sheet has no value to compare".)*
 
 **The loss is invisible from every direction a collection normally checks.** The sheet is not
 refused. It is not truncated — it ends with a well-formed final answer and uses a fraction of

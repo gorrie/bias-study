@@ -1,0 +1,778 @@
+{
+ "_note": "Written by recollect_partials.py BEFORE the first call. The cells, groups, record counts, seeds, orders and backend pins are derived from the frozen source run, so none of them can be chosen to suit a result.",
+ "run": "runs/2026-09-24-partials-renumbered",
+ "source_run": "runs/2026-09-16-ratchet-v3-wave",
+ "prereg": "PREREG-2026-09-24-partials-renumbered.md",
+ "analysis": "scripts/partials_sensitivity.py",
+ "analysis_seed": 20260527,
+ "instrument": "ratchet-battery",
+ "items": "data/ratchet-battery.json",
+ "protocol": "v2 (--renumber)",
+ "temperature": 0.7,
+ "template": "T01",
+ "max_tokens": 40960,
+ "cells": [
+  "aion-labs/aion-3.0-mini A",
+  "anthropic/claude-fable-5.1 F011",
+  "anthropic/claude-fable-5.1 F110",
+  "anthropic/claude-opus-5 P",
+  "deepseek/deepseek-v4-pro A",
+  "deepseek/deepseek-v4-pro D",
+  "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M A",
+  "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M D",
+  "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M N",
+  "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M P",
+  "huihui_ai/phi4-abliterated:latest E",
+  "huihui_ai/qwen2.5-abliterate:14b A",
+  "huihui_ai/qwen2.5-abliterate:14b B",
+  "huihui_ai/qwen2.5-abliterate:14b C",
+  "huihui_ai/qwen2.5-abliterate:14b D",
+  "huihui_ai/qwen2.5-abliterate:14b E",
+  "huihui_ai/qwen2.5-abliterate:14b N",
+  "llama3.1:8b D",
+  "llama3.1:8b N",
+  "llama3.1:8b P",
+  "mistral:7b-instruct-q8_0 D",
+  "mistral:7b-instruct-q8_0 N",
+  "mistral:7b-instruct-q8_0 P",
+  "mistral:latest A",
+  "mistral:latest B",
+  "mistral:latest N",
+  "mistral:latest P",
+  "qwen2.5:14b A",
+  "qwen2.5:14b B",
+  "qwen2.5:14b C",
+  "qwen2.5:14b N",
+  "qwen2.5:14b P",
+  "qwen2.5:14b-instruct-q8_0 A",
+  "z-ai/glm-5.3-flash B"
+ ],
+ "models": [
+  "aion-labs/aion-3.0-mini",
+  "anthropic/claude-fable-5.1",
+  "anthropic/claude-opus-5",
+  "deepseek/deepseek-v4-pro",
+  "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+  "huihui_ai/phi4-abliterated:latest",
+  "huihui_ai/qwen2.5-abliterate:14b",
+  "llama3.1:8b",
+  "mistral:7b-instruct-q8_0",
+  "mistral:latest",
+  "qwen2.5:14b",
+  "qwen2.5:14b-instruct-q8_0",
+  "z-ai/glm-5.3-flash"
+ ],
+ "provider_pins": {
+  "aion-labs/aion-3.0-mini": "AionLabs",
+  "anthropic/claude-fable-5.1": "Anthropic",
+  "anthropic/claude-opus-5": "Claude Platform on AWS",
+  "deepseek/deepseek-v4-pro": "Baidu",
+  "z-ai/glm-5.3-flash": "Fireworks"
+ },
+ "groups": [
+  {
+   "model": "aion-labs/aion-3.0-mini",
+   "channel": "openrouter",
+   "condition": "A",
+   "shuffle_seed": 11,
+   "runs": 7,
+   "seed_base": 20260926,
+   "source_partials": 2
+  },
+  {
+   "model": "anthropic/claude-fable-5.1",
+   "channel": "openrouter",
+   "condition": "F011",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 0
+  },
+  {
+   "model": "anthropic/claude-fable-5.1",
+   "channel": "openrouter",
+   "condition": "F011",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260830,
+   "source_partials": 1
+  },
+  {
+   "model": "anthropic/claude-fable-5.1",
+   "channel": "openrouter",
+   "condition": "F011",
+   "shuffle_seed": 33,
+   "runs": 5,
+   "seed_base": 20260830,
+   "source_partials": 0
+  },
+  {
+   "model": "anthropic/claude-fable-5.1",
+   "channel": "openrouter",
+   "condition": "F110",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 0
+  },
+  {
+   "model": "anthropic/claude-fable-5.1",
+   "channel": "openrouter",
+   "condition": "F110",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260830,
+   "source_partials": 0
+  },
+  {
+   "model": "anthropic/claude-fable-5.1",
+   "channel": "openrouter",
+   "condition": "F110",
+   "shuffle_seed": 33,
+   "runs": 5,
+   "seed_base": 20260830,
+   "source_partials": 1
+  },
+  {
+   "model": "anthropic/claude-opus-5",
+   "channel": "openrouter",
+   "condition": "P",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 0
+  },
+  {
+   "model": "anthropic/claude-opus-5",
+   "channel": "openrouter",
+   "condition": "P",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "anthropic/claude-opus-5",
+   "channel": "openrouter",
+   "condition": "P",
+   "shuffle_seed": 33,
+   "runs": 5,
+   "seed_base": 20260948,
+   "source_partials": 1
+  },
+  {
+   "model": "deepseek/deepseek-v4-pro",
+   "channel": "openrouter",
+   "condition": "A",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 0
+  },
+  {
+   "model": "deepseek/deepseek-v4-pro",
+   "channel": "openrouter",
+   "condition": "A",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "deepseek/deepseek-v4-pro",
+   "channel": "openrouter",
+   "condition": "A",
+   "shuffle_seed": 33,
+   "runs": 5,
+   "seed_base": 20260948,
+   "source_partials": 1
+  },
+  {
+   "model": "deepseek/deepseek-v4-pro",
+   "channel": "openrouter",
+   "condition": "D",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 0
+  },
+  {
+   "model": "deepseek/deepseek-v4-pro",
+   "channel": "openrouter",
+   "condition": "D",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "deepseek/deepseek-v4-pro",
+   "channel": "openrouter",
+   "condition": "D",
+   "shuffle_seed": 33,
+   "runs": 5,
+   "seed_base": 20260948,
+   "source_partials": 1
+  },
+  {
+   "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+   "channel": "ollama",
+   "condition": "A",
+   "shuffle_seed": 11,
+   "runs": 7,
+   "seed_base": 20260926,
+   "source_partials": 0
+  },
+  {
+   "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+   "channel": "ollama",
+   "condition": "A",
+   "shuffle_seed": 22,
+   "runs": 8,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+   "channel": "ollama",
+   "condition": "A",
+   "shuffle_seed": 33,
+   "runs": 2,
+   "seed_base": 20260948,
+   "source_partials": 2
+  },
+  {
+   "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+   "channel": "ollama",
+   "condition": "D",
+   "shuffle_seed": 11,
+   "runs": 7,
+   "seed_base": 20260926,
+   "source_partials": 0
+  },
+  {
+   "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+   "channel": "ollama",
+   "condition": "D",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+   "channel": "ollama",
+   "condition": "D",
+   "shuffle_seed": 33,
+   "runs": 2,
+   "seed_base": 20260948,
+   "source_partials": 2
+  },
+  {
+   "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 11,
+   "runs": 7,
+   "seed_base": 20260926,
+   "source_partials": 0
+  },
+  {
+   "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 33,
+   "runs": 2,
+   "seed_base": 20260948,
+   "source_partials": 2
+  },
+  {
+   "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 11,
+   "runs": 7,
+   "seed_base": 20260926,
+   "source_partials": 0
+  },
+  {
+   "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 33,
+   "runs": 5,
+   "seed_base": 20260948,
+   "source_partials": 1
+  },
+  {
+   "model": "huihui_ai/phi4-abliterated:latest",
+   "channel": "ollama",
+   "condition": "E",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 1
+  },
+  {
+   "model": "huihui_ai/qwen2.5-abliterate:14b",
+   "channel": "ollama",
+   "condition": "A",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 5
+  },
+  {
+   "model": "huihui_ai/qwen2.5-abliterate:14b",
+   "channel": "ollama",
+   "condition": "B",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 5
+  },
+  {
+   "model": "huihui_ai/qwen2.5-abliterate:14b",
+   "channel": "ollama",
+   "condition": "C",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 5
+  },
+  {
+   "model": "huihui_ai/qwen2.5-abliterate:14b",
+   "channel": "ollama",
+   "condition": "D",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 2
+  },
+  {
+   "model": "huihui_ai/qwen2.5-abliterate:14b",
+   "channel": "ollama",
+   "condition": "E",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 5
+  },
+  {
+   "model": "huihui_ai/qwen2.5-abliterate:14b",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 5
+  },
+  {
+   "model": "llama3.1:8b",
+   "channel": "ollama",
+   "condition": "D",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 0
+  },
+  {
+   "model": "llama3.1:8b",
+   "channel": "ollama",
+   "condition": "D",
+   "shuffle_seed": 22,
+   "runs": 9,
+   "seed_base": 20260937,
+   "source_partials": 2
+  },
+  {
+   "model": "llama3.1:8b",
+   "channel": "ollama",
+   "condition": "D",
+   "shuffle_seed": 33,
+   "runs": 6,
+   "seed_base": 20260948,
+   "source_partials": 0
+  },
+  {
+   "model": "llama3.1:8b",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 1
+  },
+  {
+   "model": "llama3.1:8b",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 22,
+   "runs": 6,
+   "seed_base": 20260937,
+   "source_partials": 2
+  },
+  {
+   "model": "llama3.1:8b",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 33,
+   "runs": 5,
+   "seed_base": 20260948,
+   "source_partials": 0
+  },
+  {
+   "model": "llama3.1:8b",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 0
+  },
+  {
+   "model": "llama3.1:8b",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 22,
+   "runs": 8,
+   "seed_base": 20260937,
+   "source_partials": 6
+  },
+  {
+   "model": "llama3.1:8b",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 33,
+   "runs": 5,
+   "seed_base": 20260948,
+   "source_partials": 0
+  },
+  {
+   "model": "mistral:7b-instruct-q8_0",
+   "channel": "ollama",
+   "condition": "D",
+   "shuffle_seed": 11,
+   "runs": 1,
+   "seed_base": 20260926,
+   "source_partials": 1
+  },
+  {
+   "model": "mistral:7b-instruct-q8_0",
+   "channel": "ollama",
+   "condition": "D",
+   "shuffle_seed": 22,
+   "runs": 1,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "mistral:7b-instruct-q8_0",
+   "channel": "ollama",
+   "condition": "D",
+   "shuffle_seed": 33,
+   "runs": 1,
+   "seed_base": 20260948,
+   "source_partials": 1
+  },
+  {
+   "model": "mistral:7b-instruct-q8_0",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 11,
+   "runs": 1,
+   "seed_base": 20260926,
+   "source_partials": 0
+  },
+  {
+   "model": "mistral:7b-instruct-q8_0",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 22,
+   "runs": 1,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "mistral:7b-instruct-q8_0",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 33,
+   "runs": 1,
+   "seed_base": 20260948,
+   "source_partials": 1
+  },
+  {
+   "model": "mistral:7b-instruct-q8_0",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 11,
+   "runs": 1,
+   "seed_base": 20260926,
+   "source_partials": 1
+  },
+  {
+   "model": "mistral:7b-instruct-q8_0",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 22,
+   "runs": 1,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "mistral:7b-instruct-q8_0",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 33,
+   "runs": 1,
+   "seed_base": 20260948,
+   "source_partials": 1
+  },
+  {
+   "model": "mistral:latest",
+   "channel": "ollama",
+   "condition": "A",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 1
+  },
+  {
+   "model": "mistral:latest",
+   "channel": "ollama",
+   "condition": "A",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "mistral:latest",
+   "channel": "ollama",
+   "condition": "A",
+   "shuffle_seed": 33,
+   "runs": 5,
+   "seed_base": 20260948,
+   "source_partials": 1
+  },
+  {
+   "model": "mistral:latest",
+   "channel": "ollama",
+   "condition": "B",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 4
+  },
+  {
+   "model": "mistral:latest",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 11,
+   "runs": 7,
+   "seed_base": 20260926,
+   "source_partials": 7
+  },
+  {
+   "model": "mistral:latest",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "mistral:latest",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 33,
+   "runs": 5,
+   "seed_base": 20260948,
+   "source_partials": 0
+  },
+  {
+   "model": "mistral:latest",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 3
+  },
+  {
+   "model": "mistral:latest",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "mistral:latest",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 33,
+   "runs": 5,
+   "seed_base": 20260948,
+   "source_partials": 0
+  },
+  {
+   "model": "qwen2.5:14b",
+   "channel": "ollama",
+   "condition": "A",
+   "shuffle_seed": 11,
+   "runs": 8,
+   "seed_base": 20260926,
+   "source_partials": 6
+  },
+  {
+   "model": "qwen2.5:14b",
+   "channel": "ollama",
+   "condition": "A",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "qwen2.5:14b",
+   "channel": "ollama",
+   "condition": "A",
+   "shuffle_seed": 33,
+   "runs": 5,
+   "seed_base": 20260948,
+   "source_partials": 1
+  },
+  {
+   "model": "qwen2.5:14b",
+   "channel": "ollama",
+   "condition": "B",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 3
+  },
+  {
+   "model": "qwen2.5:14b",
+   "channel": "ollama",
+   "condition": "C",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 5
+  },
+  {
+   "model": "qwen2.5:14b",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 11,
+   "runs": 10,
+   "seed_base": 20260926,
+   "source_partials": 8
+  },
+  {
+   "model": "qwen2.5:14b",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "qwen2.5:14b",
+   "channel": "ollama",
+   "condition": "N",
+   "shuffle_seed": 33,
+   "runs": 2,
+   "seed_base": 20260948,
+   "source_partials": 2
+  },
+  {
+   "model": "qwen2.5:14b",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 11,
+   "runs": 5,
+   "seed_base": 20260926,
+   "source_partials": 0
+  },
+  {
+   "model": "qwen2.5:14b",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 22,
+   "runs": 5,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "qwen2.5:14b",
+   "channel": "ollama",
+   "condition": "P",
+   "shuffle_seed": 33,
+   "runs": 5,
+   "seed_base": 20260948,
+   "source_partials": 2
+  },
+  {
+   "model": "qwen2.5:14b-instruct-q8_0",
+   "channel": "ollama",
+   "condition": "A",
+   "shuffle_seed": 11,
+   "runs": 1,
+   "seed_base": 20260926,
+   "source_partials": 1
+  },
+  {
+   "model": "qwen2.5:14b-instruct-q8_0",
+   "channel": "ollama",
+   "condition": "A",
+   "shuffle_seed": 22,
+   "runs": 1,
+   "seed_base": 20260937,
+   "source_partials": 0
+  },
+  {
+   "model": "qwen2.5:14b-instruct-q8_0",
+   "channel": "ollama",
+   "condition": "A",
+   "shuffle_seed": 33,
+   "runs": 1,
+   "seed_base": 20260948,
+   "source_partials": 1
+  },
+  {
+   "model": "z-ai/glm-5.3-flash",
+   "channel": "openrouter",
+   "condition": "B",
+   "shuffle_seed": 11,
+   "runs": 12,
+   "seed_base": 20260830,
+   "source_partials": 1
+  }
+ ],
+ "records_planned": 369,
+ "written_at": "2026-09-24T18:45:51Z"
+}

@@ -86,6 +86,7 @@ PLACEBO_CACHE = os.path.join(STUDY, "data", "placebo-control.json")
 #: neither figure was registered here, so `--check` was green throughout.
 CALIBRATION_CACHE = os.path.join(STUDY, "data", "calibration.json")
 EXACT_VS_BOOT_CACHE = os.path.join(STUDY, "data", "exact-vs-bootstrap.json")
+PARTIALS_CACHE = os.path.join(STUDY, "data", "partials-sensitivity.json")
 
 
 def _slow_cache(path, label, rebuild):
@@ -958,6 +959,17 @@ def build():
                            "> data/exact-vs-bootstrap.json")
     except StaleCache:
         _evb = None
+    try:
+        _psens = _slow_cache(PARTIALS_CACHE, "data/partials-sensitivity.json",
+                             "python scripts/partials_sensitivity.py")
+    except StaleCache:
+        _psens = None
+
+    def _psens_row(factor):
+        for r in _psens["rows"]:
+            if r["factor"] == factor and r["substituted"]:
+                return r["substituted"]["p90"]
+        return None
 
     _wave = wave_validity()
     _oop = out_of_panel_records()
@@ -1313,6 +1325,46 @@ def build():
          "value": None if not _evb else _evb["an_lost"],
          "what": "of those, A-N contrasts -- the lead's own comparison",
          "phrase": "%s A−N contrasts are among them"},
+        # §6b's re-collection of the wave's partial-loss cells (PREREG-2026-09-24).
+        {"key": "psens_cells",
+         "value": None if not _psens else _psens["cells"],
+         "what": "wave model x condition cells holding a partial sheet, all re-collected",
+         "phrase": "all %s affected"},
+        {"key": "psens_records",
+         "value": None if not _psens else _psens["arm_records"],
+         "what": "renumbered sheets collected, one for one against the affected cells",
+         "phrase": "%s sheets one for one"},
+        {"key": "psens_renum_partial",
+         "value": None if not _psens else _psens["partials"]["renumbered"]["partial"],
+         "what": "partial sheets among the renumbered re-collection",
+         "phrase": "lose **%s of"},
+        {"key": "psens_asis_partial",
+         "value": None if not _psens else _psens["partials"]["asis"]["partial"],
+         "what": "partial sheets in the same cells at the as-is numbering",
+         "phrase": "against **%s of"},
+        {"key": "psens_asis_answered",
+         "value": None if not _psens else _psens["partials"]["asis"]["answered"],
+         "what": "answered as-is sheets in those cells (the denominator)",
+         "phrase": "of %s** as-is"},
+        {"key": "psens_rows",
+         "value": None if not _psens else sum(
+             1 for r in _psens["rows"] if r["verdict"] in ("within CI", "MOVES")),
+         "what": "pair floor rows the decision rule was applied to",
+         "phrase": "of the %s pair floors"},
+        {"key": "psens_moved",
+         "value": None if not _psens else ("None" if not _psens["moved"]
+                                           else str(len(_psens["moved"]))),
+         "what": "rows whose p90 left the published CI -- the pre-registered verdict",
+         "phrase": "**%s of the"},
+        {"key": "psens_local_ad_p90",
+         "value": None if not _psens else _psens_row(
+             "prompt condition A->D, one sitting, local open-weight"),
+         "what": "local A->D side-flip p90 after substitution",
+         "phrase": "from p90 9 to %s"},
+        {"key": "psens_requant_p90",
+         "value": None if not _psens else _psens_row("requantisation"),
+         "what": "requantisation side-flip p90 after substitution",
+         "phrase": "requantisation from 8 to %s"},
         {"key": "placebo_panel",
          "value": None if not placebo else placebo["panel"],
          "what": "models with BOTH a placebo and a baseline arm -- the panel this rests on",

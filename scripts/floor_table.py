@@ -890,6 +890,13 @@ ORDER_EXCLUDE = {
     # sample selected on one behaviour into a floor for another invites the question and the
     # floor does not need it. Named here rather than silently absent.
     "2026-08-31-google-orderfloor",
+    # The renumbered re-collection of the wave's 34 partial-loss cells
+    # (PREREG-2026-09-24-partials-renumbered.md). A sensitivity arm, compared against the
+    # published floors by partials_sensitivity.py on a substituted copy of the tree. Pooled
+    # here it would mix protocol v2 into as-is cells, and it holds condition-A sheets, so it
+    # would enter this floor the moment it landed -- the published row, moved by the arm
+    # built to ask whether it moves.
+    "2026-09-24-partials-renumbered",
 }
 
 

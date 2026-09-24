@@ -29,7 +29,8 @@ The inventory below is generated from the records themselves. Do not edit it by 
 | `2026-09-20-omission-hosted-pinned` | 384 | 8 | `ratchet-battery` | active | named in a script, named in a document |
 | `2026-09-20-rung2-control-v2` | 70 | 7 | `ratchet-battery` | active | named in a script, named in a document |
 | `2026-09-21-omission-nemotron-phala` | 48 | 1 | `ratchet-battery` | active | named in a script, named in a document |
-| **12 directories** | **6,334** | | | | |
+| `2026-09-24-partials-renumbered` | 369 | 13 | `ratchet-battery` | active | named in a script, named in a document |
+| **13 directories** | **6,703** | | | | |
 <!-- /GEN:corpus-inventory-runs -->
 
 `instrument` is read off each record's own `instrument` field, not inferred from the

@@ -319,6 +319,22 @@ If a number moved, regenerate rather than retype: `gen_readme.py`, and
   refuse*, which would deflate the corpus rate by construction. That is a reason. "It moved
   the number" is not.
 
+- **Never resume a cell to fill it after a partial sheet.** A partial sheet is dropped whole, so
+  re-drawing a cell until its sheets come back complete keeps only the runs the model chose to
+  finish. That is how the wave's own omission loss arose, and re-collecting it is its own
+  pre-registered arm (`prereg/PREREG-2026-09-24-partials-renumbered.md`):
+
+  ```bash
+  python scripts/recollect_partials.py --plan                  # the 34 cells, no calls
+  python scripts/recollect_partials.py --run --channel ollama  # and --channel openrouter
+  python scripts/partials_sensitivity.py --selftest            # the harness moves nothing
+  python scripts/partials_sensitivity.py --check               # the published verdict holds
+  ```
+
+  The collector skips any group already started rather than topping it up.
+  `partials_sensitivity` runs the unmodified `floor_table` on a copy of the tree with those
+  cells substituted, so it computes no floor of its own.
+
 ## How to invoke
 
 ```bash

@@ -24,6 +24,7 @@ what was done. This is that record for this study, in one place.
 | 2026-09-18 | `PREREG-2026-09-18-omission-orders.md` | Pre-registration — does silent omission follow the ITEM, the SLOT, or the PRINTED NUMBER? |
 | 2026-09-18 | `PREREG-2026-09-18-paraphrase.md` | Pre-registration — Röttger's statistic, run on this instrument |
 | 2026-09-20 | `PREREG-2026-09-20-rung2-control-v2.md` | Pre-registration — the rung-2 control, re-collected at protocol v2 |
+| 2026-09-24 | `PREREG-2026-09-24-partials-renumbered.md` | Pre-registration — do the wave's dropped partial sheets move any floor? |
 | — | `PREREG-DRAFT-factions.md` | Pre-registration: the Factions instrument — sector lean as a within-model contrast |
 
 ## Roster amendments

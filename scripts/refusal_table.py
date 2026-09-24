@@ -243,6 +243,10 @@ OUT_OF_PANEL = {
         "battery put to the panel.",
     "2026-09-20-rung2-control-v2":
         "The rung-2 control at protocol v2. Same rule as the arm it controls.",
+    "2026-09-24-partials-renumbered":
+        "The renumbered re-collection of the wave's 34 partial-loss cells, a sensitivity arm "
+        "(PREREG-2026-09-24-partials-renumbered.md). Selected for a behaviour -- the cells "
+        "that lost sheets -- like every omission arm.",
     "2026-09-13-i3-phase0":
         "A DIFFERENT DESIGN, not a withheld one: open questions scored by an LLM judge against "
         "rubric v2, neutral and reversed framings. It has no forced-choice sheet and therefore "

@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-144 script(s). 0 carry no module docstring and are listed at the end.
+146 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -12,6 +12,7 @@
 - **`order_floor_wave.py`** — Collect a presentation-order floor UNDER THE WAVE PROTOCOL, so the paper's central comparison stops being cross-protocol.
 - **`order_robustness.py`** — Does the suppression effect survive presentation-order randomisation?
 - **`recollect_at_cap.py`** — Re-collect the May study's truncated cells at a real token budget, PAIRED.
+- **`recollect_partials.py`** — Re-collect, renumbered, every wave cell that lost a sheet to silent item omission.
 - **`repair_recollect_provenance.py`** — One-shot: fix provenance on records written before recollect_at_cap was corrected.
 - **`roster_gap.py`** — Which vendors have shipped a model we have never measured, and how far behind are we.
 - **`run_battery.py`** — Administer the forced-choice item bank to a model under one pressure condition.
@@ -149,6 +150,7 @@
 - **`pair_consistency.py`** — Agreeing with BOTH halves of a mirrored pair: incoherence, or a contested subject?
 - **`paired_analysis.py`** — paired_analysis.py — the estimator for a matched-pair arm study. No API calls.
 - **`paraphrase_analysis.py`** — Roettger's union statistic and our pairwise rate, on the same sheets.
+- **`partials_sensitivity.py`** — Do the wave's dropped partial sheets move any floor? The pre-registered test.
 - **`pipeline_decomposition.py`** — What is rung 2's surviving effect actually made of?
 - **`pipeline_rung.py`** — Rung 2 of the escalation ladder, estimated. The arm the analysis pipeline could not see.
 - **`pipeline_transform_audit.py`** — Did the pipeline rung apply the transform each condition is named after?
