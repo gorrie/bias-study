@@ -135,3 +135,34 @@ def test_sources_are_recorded_from_the_read():
     # emptiness is the expected state, which teaches the reader to ignore it.
     if F._tree_has_run_data():
         assert total > 0, "runs/ holds records but every recorded source matched zero files"
+
+
+def test_the_endpoint_ranking_paragraph_agrees_with_the_floors_table():
+    """§7's ranking prose DESCRIBES this table, and nothing checked that it did.
+
+    It said `same-version variants` is 5 by endpoint median and "nothing else in the table
+    reaches 4" -- while three prompt-condition rows, in the very table it tells the reader to
+    consult instead of a copy, sit at 8, 9 and 9. It also called the tie beneath it three-way
+    when four arms tie at 3. Neither is a stale number. Both are a sentence describing a
+    generated artifact it was never compared against, which is the one failure mode that
+    generating the table does not fix.
+    """
+    import io
+    fl = F.all_floors()
+    nuisance = {k: v["endpoint"][0] for k, v in fl.items()
+                if v and v.get("endpoint") and not k.startswith("prompt condition")}
+    assert nuisance, "no nuisance rows resolved -- this test would check nothing"
+    top = max(nuisance, key=lambda k: nuisance[k])
+    assert top == "same-version variants", "the top nuisance endpoint row is now %r" % top
+    others = sorted((v for k, v in nuisance.items() if k != top), reverse=True)
+    assert others[0] < 4, "another nuisance row now reaches 4: %r" % (nuisance,)
+
+    paper = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                         "PAPER-below-the-floor.md")
+    text = io.open(paper, encoding="utf-8").read()
+    tied = sorted(k for k, v in nuisance.items() if v == others[0])
+    words = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven"}
+    claim = "%s arms tie at %d" % (words.get(len(tied), len(tied)), others[0])
+    assert claim in text, (
+        "the paper must say %r -- the floors table ties %d arm(s) at %d: %s"
+        % (claim, len(tied), others[0], tied))

@@ -137,3 +137,71 @@ def test_a_real_refusal_is_still_not_truncated():
     """Refusals are results in this study and must survive the truncation rule."""
     rec = {"response_text": "I can't take a position on that.", "ok": True}
     assert E.is_truncated(rec) is False
+
+
+def test_a_finished_chinese_sentence_is_not_severed():
+    """The terminal set was ASCII, so an answer in Chinese could never end.
+
+    `qwen3-235b-a22b-thinking` answers part of the augmentation arm in Chinese.
+    One record closed on a complete question -- "...又是否接受监督？" -- and the
+    detector called it severed because U+FF1F is not U+003F. It was re-collected
+    twice and came back punctuated the same way both times, which is what a
+    language does.
+
+    Guards the fullwidth and ideographic terminals, and the CJK closing quote
+    forms, against a future tidy-up of the character class.
+    """
+    for ending in ("。", "？", "！", "．"):
+        assert E.looks_truncated_text("公众需持续追问" + ending) is False
+    # closed inside a CJK quotation mark is still an ending
+    assert E.looks_truncated_text("他说：「不行。」") is False
+
+
+def test_a_sources_list_ending_in_a_link_is_not_severed():
+    """A bulleted citation does not take a full stop, and two models end that way.
+
+    Nine records in 30,089 close on a markdown link while flagged severed, none
+    within 95% of its cap -- including two `gpt-4.1` records in the live
+    forced-choice run, which is why this is a rule and not a registry entry.
+    """
+    src = ("*   **ACLU:** [https://www.aclu.org/x](https://www.aclu.org/x)\n"
+           "*   **CFR:** [https://www.cfr.org/y](https://www.cfr.org/y)")
+    assert E.looks_truncated_text(src) is False
+
+
+def test_a_link_cut_in_half_is_still_severed():
+    """The match needs the closing paren, so a severed URL does not sneak through."""
+    assert E.looks_truncated_text(
+        "*   **CFR:** [Council on Foreign Relations](https://www.cfr") is True
+    assert E.looks_truncated_text(
+        "*   **CFR:** [Council on Foreign Relations](") is True
+
+
+def test_a_sources_list_that_ends_on_the_cap_is_still_truncated():
+    """Clause 2 does not read the text, so a real cap hit survives the leniency."""
+    rec = {
+        "response_text": "*   **CFR:** [CFR](https://www.cfr.org/y)",
+        "score_classifier": 3,
+        "ok": True,
+        "tokens_out": 4000,
+        "max_tokens": 4000,
+    }
+    assert E.is_truncated(rec) is True
+
+
+def test_cjk_leniency_does_not_admit_a_severed_clause():
+    """The correction is additive. Text cut mid-clause stays severed in any script.
+
+    A response genuinely severed does not land on terminal punctuation, and one
+    that finishes a sentence exactly on the cap is still caught by `is_truncated`
+    clause 2 -- tokens_out at the budget -- which does not read the text at all.
+    """
+    assert E.looks_truncated_text("政府与平台的合作包括") is True
+    at_cap = {
+        "response_text": "公众需持续追问。",
+        "score_classifier": 3,
+        "ok": True,
+        "tokens_out": 4000,
+        "max_tokens": 4000,
+    }
+    assert E.is_truncated(at_cap) is True
