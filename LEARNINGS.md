@@ -1802,3 +1802,27 @@ there, which is both more useful and unfalsifiable-by-drift in the same way the 
 
 Related: [[82]] a hand copy of a generated table is the defect the generator was built to
 remove.
+
+## 99. The build is not one command when half its checks need the other tree
+
+`release_check.py` run from the public mirror printed **“every mechanical check passes; exit
+0”**, and PLAN.md recorded that as the build. It also printed, further up and in a section
+headed *reported, not counted*, that **twelve checks were `N/A (rc=2)`**: the study suite,
+`check_no_fork`, the website numbers, the paper’s generated blocks, the frozen manifests, the
+dose figure, the MDE check, both DOI checks, the deviation record, model release dates and the
+RELEASE arm inventory.
+
+The N/A is correct behaviour and the file argues for it well — an earlier version fell back to
+“the mirror is this tree” and printed *“gates green (study suite)”* from a tree with no study in
+it, and a gate that reports on something it did not read is worse than one that refuses.
+
+The defect was in what I wrote down. **“The build passed” meant “the half of the build that can
+run here passed”**, and the validation table said `release_check.py (mirror) | exit 0` with no
+hint that a second run existed. Run from the study tree, one of the twelve fails.
+
+**So: when a checklist reports items as not-applicable, the verdict line is scoped to what ran,
+and the record of it has to carry that scope.** Count the N/As. If they are a third of the
+checklist, the run is a third short of a verdict, however green its last line reads.
+
+Related: [[97]] a figure registered in one tree has never been green in the other — this is the
+same failure with the BUILD as the thing registered in one tree.
