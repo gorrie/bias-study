@@ -798,6 +798,80 @@ def position_floor():
     return out
 
 
+def wave_validity():
+    """Invalid-sheet rates per condition on the main wave, and the partial-sheet count.
+
+    REGISTERED 2026-09-23 (backlog R4). §2 argued that the order floor is measured under
+    condition D rather than A *because A loses far more sheets*, and quoted "28.2% against
+    2.9%" -- figures that exist nowhere but a `floor_table` docstring and that the wave does
+    not produce. The live pair is 18.2% and 7.0%. An argument for a design choice, resting on
+    two numbers nothing computed.
+
+    The partial-sheet count is the other half: §6b states how many of the wave's OWN sheets
+    came back incomplete, which matters because the wave straddles the 2026-09-18 renumbering
+    that §6b is about. A partial sheet is dropped whole -- `run_battery` marks it invalid --
+    so this is a count of what the corpus lost to its own numbering, not a rate.
+    """
+    # READ THE SHEETS, NOT `load_records`. That helper drops invalid and degenerate sheets
+    # before it returns -- which is correct for an estimator and useless for measuring
+    # validity. Asking it how many sheets are invalid returns 100%, because the only ones it
+    # hands back are the ones it kept. Measured through it first, on 2026-09-23, and the
+    # answer was 100.0% for both conditions with zero partial sheets, which is the shape of a
+    # statistic computed on its own survivors.
+    run_dir = os.path.join(STUDY, "runs", "2026-09-16-ratchet-v3-wave")
+    if not os.path.isdir(run_dir):
+        return {}
+    tot, bad = collections.Counter(), collections.Counter()
+    partial, partial_models = 0, set()
+
+    def _sheets():
+        for p in sorted(glob.glob(os.path.join(run_dir, "**", "*.jsonl"), recursive=True)):
+            with io.open(p, encoding="utf-8", errors="replace") as fh:
+                for line in fh:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        yield json.loads(line)
+                    except ValueError:
+                        continue
+
+    for rec in _sheets():
+        cond = rec.get("condition")
+        if cond in ("A", "D"):
+            tot[cond] += 1
+            if not rec.get("valid"):
+                bad[cond] += 1
+        n = rec.get("n_answers")
+        if isinstance(n, int) and 0 < n < (rec.get("n_items") or 32):
+            partial += 1
+            partial_models.add(rec.get("model"))
+    out = {"partial_sheets": partial, "partial_models": len(partial_models)}
+    for cond in ("A", "D"):
+        if tot[cond]:
+            out["invalid_%s" % cond] = round(100.0 * bad[cond] / tot[cond], 1)
+    return out
+
+
+def out_of_panel_records():
+    """Records the refusal panel sets aside, against the 3,897 it keeps.
+
+    The disclosure in the STATE block states this ratio, and until 2026-09-22 it counted
+    COLLECTIONS rather than records -- a reader is entitled to the ratio before quoting any
+    rate off the table. Ungated until 2026-09-23 (backlog R4).
+    """
+    import refusal_table as _RT
+    total = 0
+    for name in getattr(_RT, "OUT_OF_PANEL", {}):
+        d = os.path.join(STUDY, "runs", name)
+        if not os.path.isdir(d):
+            continue
+        for p in glob.glob(os.path.join(d, "**", "*.jsonl"), recursive=True):
+            with io.open(p, encoding="utf-8", errors="replace") as fh:
+                total += sum(1 for line in fh if line.strip())
+    return total or None
+
+
 def unattributable_sheets():
     """The sheets dropped because the record does not say which proposition each answer is.
 
@@ -856,6 +930,9 @@ def build():
                            "> data/exact-vs-bootstrap.json")
     except StaleCache:
         _evb = None
+
+    _wave = wave_validity()
+    _oop = out_of_panel_records()
 
     def mde(name, stat="side"):
         # The pair store is built from the same arms; an arm with no data is absent here too,
@@ -1145,6 +1222,37 @@ def build():
         # printed table. Two hand copies of the count were already disagreeing (PLAN.md said
         # 15, THESES.md said 14, the corpus says 16), which is the drift these keys exist to
         # stop and which had reached the study's own lead finding.
+        # R4, registered 2026-09-23. Each of these was load-bearing and ungated: §2's reason
+        # for measuring the order floor under D rather than A, §6b's count of the wave's own
+        # incomplete sheets, and the STATE block's out-of-panel ratio. The A-vs-D pair had
+        # already gone stale once -- the paper quoted "28.2% against 2.9%", figures that exist
+        # nowhere but a floor_table docstring and that the corpus does not produce.
+        {"key": "wave_invalid_a",
+         "value": _wave.get("invalid_A", UNAVAILABLE),
+         "what": "share of condition-A sheets on the main wave that fail validity -- the "
+                 "reason §2 measures the order floor under D instead",
+         "phrase": "%s%% of A runs are invalid"},
+        {"key": "wave_invalid_d",
+         "value": _wave.get("invalid_D", UNAVAILABLE),
+         "what": "the same for condition D",
+         "phrase": "against %s%% of D's"},
+        {"key": "wave_partial_sheets",
+         "value": _wave.get("partial_sheets", UNAVAILABLE),
+         "what": "sheets on the main wave answering some items but not all; each is dropped "
+                 "WHOLE by run_battery rather than analysed on the part it answered",
+         "phrase": "In it, %d"},
+        {"key": "wave_partial_models",
+         "value": _wave.get("partial_models", UNAVAILABLE),
+         "what": "distinct models contributing those partial sheets",
+         "phrase": "items answered, from %d models"},
+        {"key": "out_of_panel_records",
+         # Thousands-separated in the VALUE, not the phrase -- the same convention as
+         # `corpus_runs` above, and for the same reason: the check is a literal grep and the
+         # sentence writes "5,647".
+         "value": "{:,}".format(_oop) if _oop else UNAVAILABLE,
+         "what": "records the refusal panel sets aside, against the 3,897 it keeps -- the "
+                 "ratio a reader is entitled to before quoting any rate off the table",
+         "phrase": "sets aside %s records"},
         # THE ESTIMATOR CALIBRATION, registered 2026-09-23 after four days of a stale figure
         # heading the paper with every gate green. See CALIBRATION_CACHE above.
         {"key": "calib_boot_fpr",
