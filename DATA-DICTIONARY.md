@@ -32,7 +32,7 @@ Side-flip counts are not linear in item count.
 
 ## `raw` records
 
-9,041 records across 184 files, 42 distinct fields.
+9,051 records across 185 files, 42 distinct fields.
 
 | field | coverage | types | meaning |
 |---|---:|---|---|
@@ -48,11 +48,11 @@ Side-flip counts are not linear in item count.
 | `topic` | 100.0% | `str` | Topic grouping of the item, T01..T18. Items within a topic are not independent; cluster on this, not on rows. |
 | `user_prompt` | 100.0% | `str` | The full user turn as sent, question text included. |
 | `response_text` | 99.1% | `str`, `null` | The model's reply verbatim, or null on a failed call. An EMPTY string is not a refusal and not a null -- see `scoring_status` and the eligibility rule in scripts/eligibility.py. |
-| `system_prompt` | 94.9% | `str`, `null` | The system turn as sent, or null where none was used. The presence or absence of a directive here is the manipulation in most arms. |
-| `tokens_in` | 91.2% | `int`, `null` | Prompt tokens as the provider counted them. |
-| `tokens_out` | 91.2% | `int`, `null` | Completion tokens as the provider counted them. |
-| `vendor_response_id` | 88.5% | `str`, `null` | The provider's own id for the response, where it returned one. Absent for local channels. |
-| `sample_idx` | 60.7% | `int` | Replicate index within a cell, where the run collected replicates. Absent means one draw. |
+| `system_prompt` | 94.8% | `str`, `null` | The system turn as sent, or null where none was used. The presence or absence of a directive here is the manipulation in most arms. |
+| `tokens_in` | 91.1% | `int`, `null` | Prompt tokens as the provider counted them. |
+| `tokens_out` | 91.1% | `int`, `null` | Completion tokens as the provider counted them. |
+| `vendor_response_id` | 88.4% | `str`, `null` | The provider's own id for the response, where it returned one. Absent for local channels. |
+| `sample_idx` | 60.8% | `int` | Replicate index within a cell, where the run collected replicates. Absent means one draw. |
 | `max_tokens` | 38.6% | `int` | Output cap requested. Load-bearing: an 800-token cap severed 21.5% of the May corpus mid-argument and the truncation was differential by model. |
 | `word_count_total` | 27.8% | `int` | Words in the response. Descriptive only. |
 | `confidence` | 19.8% | `str` | Rubric-independent register label: `definitive`, `hedging`, or `refusing-then-answering`. |
@@ -72,11 +72,11 @@ Side-flip counts are not linear in item count.
 | `score_classifier_n_judges` | 17.3% | `int` | Judges asked. |
 | `score_classifier_n_valid` | 17.3% | `int` | Judges that returned a parseable score. Less than n_judges means the panel was thinner than it looks. |
 | `error` | 8.1% | `null`, `str` | Transport or provider error string where the call failed. |
-| `study_call_metadata` | 8.0% | `dict` | Free-form collector state at call time. Shape varies by collector and it is not safe to index blindly. |
-| `transient` | 7.3% | `null` | Marked where the collector judged a failure retryable. |
-| `finish_reason` | 4.4% | `str` | The provider's stop reason. NOT trustworthy through a proxy: the G0DM0D3 proxy returned `stop` for ten responses severed mid-word. |
-| `truncated` | 4.4% | `bool` | Collector's truncation verdict. Prefer eligibility.looks_truncated_text, which was written because finish_reason lies. |
-| `usage` | 4.4% | `dict` | The provider's raw usage object, where returned. |
+| `study_call_metadata` | 8.1% | `dict` | Free-form collector state at call time. Shape varies by collector and it is not safe to index blindly. |
+| `transient` | 7.2% | `null` | Marked where the collector judged a failure retryable. |
+| `finish_reason` | 4.5% | `str` | The provider's stop reason. NOT trustworthy through a proxy: the G0DM0D3 proxy returned `stop` for ten responses severed mid-word. |
+| `truncated` | 4.5% | `bool` | Collector's truncation verdict. Prefer eligibility.looks_truncated_text, which was written because finish_reason lies. |
+| `usage` | 4.5% | `dict` | The provider's raw usage object, where returned. |
 | `called_at_unrecorded` | 2.1% | `str` | Set where the original timestamp was lost and had to be reconstructed; the value says how. |
 
 ## `scored` records
@@ -136,15 +136,15 @@ Side-flip counts are not linear in item count.
 Measured from the corpus, most frequent first. A value not listed here does not
 occur in the published data.
 
-- **`channel`** — `openrouter` (8,080), `g0dm0d3` (460), `transformers-local` (260), `ollama` (241)
-- **`condition`** — `B` (3,770), `A` (3,692), `B-prime` (400), `P` (400), `B-Layered` (120), `B-Parseltongue` (120), `B-STM` (120), `D` (110), `C` (108), `E` (101), `B-Proxy` (100)
+- **`channel`** — `openrouter` (8,080), `g0dm0d3` (470), `transformers-local` (260), `ollama` (241)
+- **`condition`** — `B` (3,770), `A` (3,692), `B-prime` (400), `P` (400), `B-Layered` (130), `B-Parseltongue` (120), `B-STM` (120), `D` (110), `C` (108), `E` (101), `B-Proxy` (100)
 - **`confidence`** — `definitive` (1,572), `hedging` (218)
-- **`finish_reason`** — `stop` (400)
-- **`position`** — `neutral` (5,154), `mild` (1,070), `pointed` (1,061), `reversed` (944), `ood` (266), `para3` (185), `para2` (181), `para1` (180)
+- **`finish_reason`** — `stop` (410)
+- **`position`** — `neutral` (5,164), `mild` (1,070), `pointed` (1,061), `reversed` (944), `ood` (266), `para3` (185), `para2` (181), `para1` (180)
 - **`refusal_class`** — `None` (1,790)
 - **`score_classifier_method`** — `ultraplinian` (907), `reversed-rubric` (656)
 - **`scoring_status`** — `pending-rescore` (1,599), `ok` (191)
-- **`topic`** — `T08` (888), `T04` (883), `T07` (878), `T10` (877), `T05` (876), `T06` (876), `T09` (876), `T02` (874), `T03` (874), `T01` (873), `T13` (35), `T11` (34)
+- **`topic`** — `T08` (889), `T04` (884), `T07` (879), `T10` (878), `T05` (877), `T06` (877), `T09` (877), `T02` (875), `T03` (875), `T01` (874), `T13` (35), `T11` (34)
 
 ## What is deliberately absent
 

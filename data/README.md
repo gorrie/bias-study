@@ -45,6 +45,7 @@ audit — and is excluded from every corpus enumerator by name (`studypaths.NOT_
 | `2026-09-13-g0dm0d3-replicate` | 600 | 2 | previous | active | named in a script, named in a document |
 | `2026-09-13-g0dm0d3-replicate-baseline` | 200 | 2 | previous | active | named in a script, named in a document |
 | `2026-09-13-i3-phase0` | 3,200 | 4 | previous | **withdrawn** | named in a script, named in a document |
+| `2026-09-13-truncation-proof` | 10 | 1 | previous | active | named in a script, named in a document |
 | `2026-09-14-augmentation-spliced` | 420 | 7 | previous | active | named in a script, named in a document |
 | `2026-09-14-cn-expansion-spliced` | 181 | 4 | previous | active | named in a script, named in a document |
 | `2026-09-14-full-spliced` | 780 | 13 | previous | active | named in a script, named in a document |
@@ -69,7 +70,7 @@ audit — and is excluded from every corpus enumerator by name (`studypaths.NOT_
 | `2026-09-14-variance-spliced` | 1,200 | 12 | previous | active | named in a script, named in a document |
 | `2026-09-15-paraphrase-spliced` | 360 | 6 | previous | active | named in a script, named in a document |
 | `2026-09-15-reversed-premise-spliced` | 200 | 5 | previous | active | named in a script, named in a document |
-| **44 directories** | **31,713** | | | | |
+| **45 directories** | **31,723** | | | | |
 <!-- /GEN:corpus-inventory-data -->
 
 `instrument` is read off each record’s own fields, not inferred from the directory name.

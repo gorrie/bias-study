@@ -1,9 +1,14 @@
 {
   "THIS_IS_NOT_A_MANIFEST": "Derived after collection from the records themselves. A real manifest declares intent BEFORE collection and can therefore disagree with the data; this cannot. Its only load-bearing parts are files[].sha256, which makes future drift detectable, and config, which the collector wrote at collection time.",
-  "derived_at": "2026-09-22T05:47:29+00:00",
-  "derived_by": "scripts/derive_manifest.py @ 9ba999b",
+  "derived_at": "2026-09-24T06:07:10+00:00",
+  "derived_by": "scripts/derive_manifest.py @ 5d858ec",
   "run": "2026-09-19-rung2-smoke",
   "layout": "flat",
+  "instrument": {
+    "ratchet-battery": 3
+  },
+  "corpus": "current",
+  "status": "active",
   "records_total": 3,
   "records_unparsable": 0,
   "file_count": 3,
