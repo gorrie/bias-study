@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-143 script(s). 0 carry no module docstring and are listed at the end.
+144 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -10,6 +10,7 @@
 - **`extend_manipulation_floor.py`** — Extend the A->D manipulation floor, which the whole paper is measured against.
 - **`ingest_agent_answers.py`** — Ingest an answer sheet produced by an in-harness agent into the standard run format.
 - **`order_floor_wave.py`** — Collect a presentation-order floor UNDER THE WAVE PROTOCOL, so the paper's central comparison stops being cross-protocol.
+- **`order_robustness.py`** — Does the suppression effect survive presentation-order randomisation?
 - **`recollect_at_cap.py`** — Re-collect the May study's truncated cells at a real token budget, PAIRED.
 - **`repair_recollect_provenance.py`** — One-shot: fix provenance on records written before recollect_at_cap was corrected.
 - **`roster_gap.py`** — Which vendors have shipped a model we have never measured, and how far behind are we.

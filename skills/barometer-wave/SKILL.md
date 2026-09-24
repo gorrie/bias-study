@@ -334,6 +334,8 @@ python scripts/gen_readme.py && python scripts/key_numbers.py --check-release
 
 - `scripts/wave.py` — fixed-panel repeat measurement, the barometer's time axis
 - `scripts/order_floor_wave.py` — shuffled-order arm under the wave protocol
+- `scripts/order_robustness.py` — does the suppression effect survive presentation-order
+  randomisation? Specified BEFORE the data landed, so the test cannot be fitted to its noise
 - `scripts/ablation_wave.py` — stock vs ablated, per ablator, at the wave protocol
 - `scripts/frontier_extend.py` — extend the panel onto more hosted models
 - `scripts/run_battery.py` — the collector all three drive; owns the failure classifier
