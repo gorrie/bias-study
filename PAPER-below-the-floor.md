@@ -695,10 +695,16 @@ paraphrase experiment for too few valid responses, so naming it here was wrong. 
 statistic is a **union**: a proposition counts if it is contradicted anywhere across ten
 paraphrases. Ours is a pairwise 90th percentile. A union over ten comparisons is larger than
 any one of them by construction, so setting 14 beside our 14 compares two different
-quantities that happen to agree. The like-for-like figure is their data re-scored with our
-statistic — p90 9 — and that is the number to use. *(That figure comes from
-`replicate_rottger.py`, which needs their repository cloned under `external/rottger2024/`; it
-is recorded nowhere else in this tree and is not gated, so recompute it rather than quote it.)*
+quantities that happen to agree. The like-for-like comparison is their data re-scored with our
+statistic, and re-scored it is **smaller than their published 14** — which is the point, and
+it does not depend on the exact value.
+
+*(The value we computed was p90 9. It is not quoted as authoritative here, because nothing in
+this repository can recompute it: `replicate_rottger.py` needs Röttger et al.'s repository
+cloned under `external/rottger2024/` and exits without it, and the figure is recorded in no
+other file. A number that no reader of this tree can check is not a number this paper should
+lean on. Clone their repository and run the script — the comparison stands either way, and
+the direction is what the argument uses.)*
 
 A single pooled order floor would have been a net aggregate concealing gross movement between
 two populations. That is a defect this project has already caught in itself once, and here it
@@ -1054,9 +1060,11 @@ computed it.
 
 *(This read "larger than one of the five effects this project published" until 2026-09-22.
 Both halves were wrong. `judge_lean.py` prints the comparison itself — "the study's CI-clean
-findings are +0.90, +0.45, +0.43. A judge-composition spread of 0.3127 is larger than none of
+findings are +0.90, +0.45, +0.43. A judge-composition spread of 0.3108 is larger than none of
 them" — and there are three such findings, not five. A self-criticism that overstates is still
-a number the paper cannot support, and this one had the refutation printed by its own command.)*
+a number the paper cannot support, and this one had the refutation printed by its own command.
+The quoted spread read 0.3127 until 2026-09-23, which was the working tree's figure before the
+missing run was imported; the command prints 0.3108 in both trees now.)*
 
 The principle that would rescue it is real: **an instrument does not have to be unbiased, it has
 to be biased CONSTANTLY across the comparison being made.** A ruler 2% short measures differences
@@ -1081,14 +1089,17 @@ doubt: the column that would be zero if the lean cancelled spans 0.359.*
 one, and the paper quotes the released figure because a reader can only reproduce that. One
 gap was closed — the 3,200-record judge-scored collection whose contrast is withdrawn is now
 published, because withholding data whose conclusion died is the defect §5 convicts Liu of.
-A second remains and is stated rather than closed: the same script over the working tree
-reads 5,369 records and a spread of 0.3127, and the 39-record difference is exactly one scored
-run, `2026-05-27-abliteration-gemma2`, present in the release corpus and absent from this
-tree's `runs/`. The selection is one — `judge_lean.scored_records()` and
+The second is now closed too, and it is worth recording how it was found. The same script over
+the working tree read 5,369 records and a spread of 0.3127 against the release's 5,408 and
+0.3108 — a 39-record difference that turned out to be exactly one scored run,
+`2026-05-27-abliteration-gemma2`, present in the release corpus and absent from this tree's
+`runs/`. The selection was never in doubt: `judge_lean.scored_records()` and
 `key_numbers._mirror_judge_stats()` apply the same eligibility rule and the same supersession
-list — and the corpora are two. Every figure in this subsection is the release's; the 0.3127
-quoted in the note above is the working tree's, and the two are not a disagreement about the
-panel. Until 2026-09-23 this note said the gap was closed.)*
+list. The corpora were two, in the wrong direction — the public release held data the private
+tree did not, so the tree the work is done in could not reproduce the figure the paper
+publishes. The run was imported on 2026-09-23 and both now read 5,408 and 0.3108. No gated
+number moved. Until that day this note said the gap was closed when it was not, and then said
+it remained when it no longer did.)*
 
 The panel fans out between the arms and the fanning rides into the delta. (Condition A scores
 92% threes, which explains *why* the lean is compressed there. It does not make it cancel; a
@@ -1830,8 +1841,10 @@ through, and `position_analysis.load_records` drops the degenerate sheets before
 bootstrap; the duplicate-seed cells are collapsed by `dedupe_by_seed` in the one-sitting
 floors. **The 55 identical-across-seeds cells are not excluded by anything and this paper
 does not yet say what they do to the run-to-run and modal-sampling rows, which are seed-based
-floors.** Its order-control line also reports the worst between-order disagreement as `14/62`,
-a denominator from the retired instrument. It is not fixed by loosening the check. *(Until
+floors.** It is not fixed by loosening the check. *(Its order-control line also reported the
+worst between-order disagreement as `14/62` — a denominator from the retired instrument, in a
+live gate, long after the swap. The count was right and the scale was not. Corrected
+2026-09-23: the gate reads the bank's length and now prints `14/32`.)* *(Until
 2026-09-23 this paragraph described a different run — "12 persisted transport rows and one
 all-one-answer sheet from grok-4.3" — which is what the tool printed on the retired corpus.)*
 

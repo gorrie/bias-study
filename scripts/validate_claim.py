@@ -208,14 +208,42 @@ def check_families(rows, conditions):
     return OK, "%d vendor families: %s" % (len(fams), sorted(fams))
 
 
+def _instrument_length():
+    """How many items the LIVE instrument has, read from the bank rather than typed.
+
+    Returns None when the bank cannot be read, and callers then omit the denominator
+    entirely: a count with no scale is incomplete, a count against the WRONG scale is
+    misleading, and this gate spent the period after the instrument swap doing the second.
+    """
+    # `_SP` is `studypaths`, already imported by this module; its STUDY_DIR is the resolver's
+    # answer for whichever tree this runs in. The first version of this helper referenced a
+    # bare `STUDY` that does not exist here, so it returned None through its own except and
+    # the denominator silently vanished instead of being corrected -- a fix that looked
+    # applied and was not.
+    try:
+        path = os.path.join(str(_SP.STUDY_DIR), "data", "ratchet-battery.json")
+        with open(path, encoding="utf-8") as fh:
+            return len(json.load(fh).get("items") or []) or None
+    except Exception:
+        return None
+
+
 def check_order(rows, conditions):
     """Presentation order is the largest measured confound in this project.
 
-    Reordering the same 62 items flips up to 24 of them -- more than ablation, more than
-    requantisation, more than any prompt condition. A single-order dataset cannot separate
-    a real effect from an order artifact, and this check was missing from the first version
-    of this gate: it was built from failures its author had personally been burned by, and
-    order was one he had documented but never suffered.
+    Reordering the same items flips a substantial share of them -- more than ablation, more
+    than requantisation, more than any prompt condition. A single-order dataset cannot
+    separate a real effect from an order artifact, and this check was missing from the first
+    version of this gate: it was built from failures its author had personally been burned by,
+    and order was one he had documented but never suffered.
+
+    THE DENOMINATOR IS READ, NOT TYPED. This said "62 items ... up to 24 of them" in the
+    docstring and printed "/62" in two of its three returns -- the RETIRED questionnaire's
+    length, still being reported by a live gate against a 32-item instrument long after the
+    swap. A reader checking a claimed effect against "worst disagreement 9/62" would compare
+    it to a scale that does not exist here. Corrected 2026-09-23 (backlog B7); the magnitude
+    is left qualitative because the live figure belongs to the floors table, which computes
+    it, and a second copy here is the defect this repository has corrected most often.
 
     Where multiple orders exist, the between-order disagreement is a floor the claimed
     effect must clear.
@@ -227,10 +255,11 @@ def check_order(rows, conditions):
     if not orders:
         return OK, "no cells in the requested conditions"
     multi = [k for k, v in orders.items() if len(v) > 1]
+    n_items = _instrument_length()
     if not multi:
-        return WARN, ("every cell is SINGLE-ORDER; order moves up to 24/62 items on this "
-                      "instrument, so any effect here is confounded with presentation "
-                      "order and the writeup must say so")
+        return WARN, ("every cell is SINGLE-ORDER; presentation order is the largest measured "
+                      "confound in this project (see the floors table), so any effect here is "
+                      "confounded with it and the writeup must say so")
 
     # Where orders exist, measure the disagreement they produce.
     by = collections.defaultdict(dict)
@@ -247,7 +276,8 @@ def check_order(rows, conditions):
                 d = sum(1 for q in a if q in b and side(a[q]) != side(b[q]))
                 worst = max(worst, d)
     return OK, ("%d cells carry 2+ presentation orders; worst between-order disagreement "
-                "%d/62 -- any claimed effect must exceed it" % (len(multi), worst))
+                "%d%s -- any claimed effect must exceed it"
+                % (len(multi), worst, ("/%d" % n_items) if n_items else ""))
 
 
 CHECKS = [
