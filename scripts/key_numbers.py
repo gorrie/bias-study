@@ -3882,7 +3882,23 @@ def main(argv=None):
         if r.get("value") is UNAVAILABLE:
             unresolved.append(r)
             continue
-        expected = r["phrase"] % r["value"]
+        # THE SAME THREE RULES THE SURFACE CHECKER APPLIES, because these are two code paths
+        # over one registry and every place they diverged has cost something (backlog B9):
+        #   1. a `%(key)s` template fills from every key, not from this row's value;
+        #   2. a phrase that cannot be filled is REPORTED, never a traceback out of main();
+        #   3. the spelled alternative below.
+        # Today no paper phrase uses `%(` and nothing raises -- verified 2026-09-23 over all
+        # 109 rows -- so this is latent rather than live. Latent is exactly when to fix it:
+        # the first person to register a two-value sentence would otherwise get a TypeError
+        # instead of a finding, and `--check` would die with three surfaces already passed.
+        try:
+            if "%(" in r["phrase"]:
+                expected = r["phrase"] % {x["key"]: x["value"] for x in rows}
+            else:
+                expected = r["phrase"] % r["value"]
+        except (TypeError, ValueError, KeyError) as exc:
+            bad.append(dict(r, _why="phrase %r could not be filled: %s" % (r["phrase"], exc)))
+            continue
         # THE SPELLED ALTERNATIVE, which the SURFACE checker has had since it was written and
         # this one never did. House style spells small numbers, and a paper that opens a
         # clause with "six A-N contrasts" is correctly written -- but a digit-only template
