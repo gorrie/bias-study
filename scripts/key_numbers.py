@@ -2051,7 +2051,16 @@ SURFACES = {
             "arms_nodir_refusals": "there are %(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
             "arms_nodir_runs": "there are %(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
             "arms_silenced": "**%d of them stop**",
-            "arms_dir_only": "**%d other models decline only under a firm instruction**",
+            # THE RELEASE README WORDS THIS DIFFERENTLY FROM THE WEBSITE, and it is right
+            # to. Its sentence already says "give those same models a firm instruction" two
+            # clauses earlier, so it closes on "when told to commit" rather than repeating
+            # itself. The website page has no such neighbour and uses the longer phrase.
+            #
+            # This template carried the website's wording and so fired on a TRUE sentence
+            # with the right number in it -- LEARNINGS #84, and the fix is the template, not
+            # the prose. Found 2026-09-23;  had been red on it before the
+            # corpus move, and PLAN.md's validation table said exit 0 the whole time.
+            "arms_dir_only": "**%d other models decline only when told to commit**",
             "arms_dir_refusals": "%d of those runs are refusals",
             "arms_dir_runs": "against %d runs where it carries one",
             "order_mde": "minimum detectable effect at **%d items",
