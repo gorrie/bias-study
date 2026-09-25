@@ -33,6 +33,11 @@ WHAT IT ENFORCES, from the pre-registration rather than from taste:
     python scripts/rung2_contrast.py
     python scripts/rung2_contrast.py --arm 2026-09-19-rung2-elicitation --json
     python scripts/rung2_contrast.py --selftest
+    python scripts/rung2_contrast.py --within     # G-Directive - G-Boost, G-Persona - G-Directive
+
+`--within` is the decomposition inside the arm run (PREREG-2026-09-25-rung2-within-depth10):
+the two contrasts per model, BH over the family, each model's v2 floor as a per-contrast kill
+rule, and the sign of runs 6-10 alone against runs 1-5.
 
 Reads only. No API calls.
 """
@@ -113,8 +118,14 @@ def exact_permutation_p(a, b):
     return hits / splits, splits
 
 
-def sheet_means(run_dir, index, seed_filter=None):
-    """{(model, condition): [mean position per sheet]} plus provenance for the checks."""
+def sheet_means(run_dir, index, seed_filter=None, run_filter=None):
+    """{(model, condition): [mean position per sheet]} plus provenance for the checks.
+
+    `run_filter`, when given, is a predicate on `run_no`. It exists for the within-rung
+    half-split (`--within`): runs 1-5 and 6-10 were collected on different days, and the
+    depth-10 cell contains the depth-5 cell, so only runs 6-10 alone can say whether a sign
+    seen at depth 5 recurs.
+    """
     per = collections.defaultdict(list)
     provider = collections.defaultdict(set)
     near_cap = collections.Counter()
@@ -129,6 +140,8 @@ def sheet_means(run_dir, index, seed_filter=None):
             if not _SP.is_run_record(rec) or not rec.get("valid"):
                 continue
             if seed_filter is not None and rec.get("shuffle_seed") != seed_filter:
+                continue
+            if run_filter is not None and not run_filter(rec.get("run_no") or 0):
                 continue
             sides = collections.defaultdict(dict)
             for ans in rec.get("answers") or []:
@@ -157,17 +170,162 @@ def sheet_means(run_dir, index, seed_filter=None):
     return per, provider, near_cap
 
 
+#: PREREG-2026-09-25-rung2-within-depth10. The decomposition rung 2 was built for: two arms
+#: collected by the same script, same day pair, seed, protocol, cap and pin, differing in the
+#: system prompt alone. (treated arm, reference arm, what the difference isolates)
+WITHIN_CONTRASTS = (
+    ("G-Directive", "G-Boost", "DEPTH_DIRECTIVE"),
+    ("G-Persona", "G-Directive", "the jailbreak persona on top of it"),
+)
+
+#: The registered half-split. Runs 1-5 were collected 2026-09-19 and produced the lead in
+#: RESEARCH-BACKLOG §16; runs 6-10 were collected 2026-09-20 and did not.
+EARLY_RUNS = range(1, 6)
+
+#: BH level for the within-rung family.
+FDR_Q = 0.05
+
+
+def bh_survivors(pvals, q=FDR_Q):
+    """Benjamini-Hochberg step-up. Returns (set of surviving indices, the per-rank thresholds).
+
+    Plain step-up: the largest rank k with p_(k) <= k*q/m, and every p at or below it survives.
+    A None p (an enumeration too large to be exact) never survives and still counts in m, so a
+    missing test cannot shrink the family it belongs to.
+    """
+    m = len(pvals)
+    order = sorted(range(m), key=lambda i: (pvals[i] is None, pvals[i] or 0.0))
+    cut = 0
+    for rank, i in enumerate(order, 1):
+        if pvals[i] is not None and pvals[i] <= rank * q / m:
+            cut = rank
+    return {order[r] for r in range(cut)}, [rank * q / m for rank in range(1, m + 1)]
+
+
+def v2_floors(ctl_dir, index, condition="B"):
+    """Each model's own v2 between-order floor: |mean(control seed 11) - mean(seed 22)|."""
+    c11, _p, _c = sheet_means(ctl_dir, index, seed_filter=ARM_SEED)
+    c22, _p, _c = sheet_means(ctl_dir, index, seed_filter=FLOOR_SEED)
+    out = {}
+    for (model, cond), vals in c11.items():
+        other = c22.get((model, cond))
+        if cond == condition and vals and other:
+            out[model] = abs(st.mean(vals) - st.mean(other))
+    return out
+
+
+def within(a):
+    """G-Directive - G-Boost and G-Persona - G-Directive, per model, inside the arm run."""
+    index = PA.pair_index(PA.load_bank())
+    arm_dir = os.path.join(_SP.STUDY_DIR, "runs", a.arm)
+    ctl_dir = os.path.join(_SP.STUDY_DIR, "runs", a.control)
+    for d in (arm_dir, ctl_dir):
+        if not os.path.isdir(d):
+            print("no such run directory: %s" % d, file=sys.stderr)
+            return 2
+    full, prov, _cap = sheet_means(arm_dir, index, seed_filter=ARM_SEED)
+    early, _p, _c = sheet_means(arm_dir, index, seed_filter=ARM_SEED,
+                                run_filter=lambda n: n in EARLY_RUNS)
+    late, _p, _c = sheet_means(arm_dir, index, seed_filter=ARM_SEED,
+                               run_filter=lambda n: n not in EARLY_RUNS)
+    floors = v2_floors(ctl_dir, index, a.control_condition)
+
+    rows = []
+    for model in sorted({m for m, _c in full}):
+        other = {p for p in prov.get(model) or set() if p != PROVIDER_PINS.get(model)}
+        for treated, ref, isolates in WITHIN_CONTRASTS:
+            t, r = full.get((model, treated)), full.get((model, ref))
+            if not t or not r:
+                continue
+            p, splits = exact_permutation_p(t, r)
+
+            def _eff(src):
+                x, y = src.get((model, treated)), src.get((model, ref))
+                return None if not x or not y else st.mean(x) - st.mean(y)
+
+            e_early, e_late = _eff(early), _eff(late)
+            eff = st.mean(t) - st.mean(r)
+            floor = floors.get(model)
+            rows.append({
+                "model": model, "contrast": "%s - %s" % (treated, ref), "isolates": isolates,
+                "n_treated": len(t), "n_reference": len(r), "effect": round(eff, 3),
+                "exact_p": None if p is None else round(p, 6), "splits": splits,
+                "effect_runs_1_5": None if e_early is None else round(e_early, 3),
+                "effect_runs_6_10": None if e_late is None else round(e_late, 3),
+                "sign_replicates": (None if e_early is None or e_late is None
+                                    else (e_early > 0) == (e_late > 0)),
+                "v2_between_order_floor": None if floor is None else round(floor, 3),
+                "exceeds_floor": floor is not None and abs(eff) > floor,
+                "provider_violation": sorted(other),
+            })
+    if not rows:
+        print("CHECKED NOTHING -- no model carries both arms of a within-rung contrast at "
+              "shuffle seed %d. NOT a pass." % ARM_SEED)
+        return 2
+    keep, thresholds = bh_survivors([r["exact_p"] for r in rows])
+    for i, r in enumerate(rows):
+        r["bh_survives"] = i in keep
+        r["reportable"] = bool(r["bh_survives"] and r["exceeds_floor"] and r["sign_replicates"]
+                               and not r["provider_violation"])
+
+    if a.json:
+        print(json.dumps({"arm": a.arm, "control": a.control, "family": len(rows),
+                          "q": FDR_Q, "contrasts": rows}, indent=2))
+        return 0
+
+    print("")
+    print("  RUNG-2 WITHIN-RUNG CONTRASTS (PREREG-2026-09-25-rung2-within-depth10)")
+    print("  %s, shuffle seed %d; family of %d, BH q = %.2f on exact two-sided p"
+          % (a.arm, ARM_SEED, len(rows), FDR_Q))
+    print("")
+    print("  %-26s %-24s %5s %8s %10s %7s %7s %6s  %s"
+          % ("model", "contrast", "n", "effect", "exact p", "r1-5", "r6-10", "floor", "verdict"))
+    for r in rows:
+        why = []
+        if not r["bh_survives"]:
+            why.append("not BH")
+        if not r["exceeds_floor"]:
+            why.append("under floor")
+        if r["sign_replicates"] is False:
+            why.append("sign flips")
+        if r["provider_violation"]:
+            why.append("pin broken")
+        print("  %-26s %-24s %2d/%-2d %+8.3f %10s %+7.3f %+7.3f %6s  %s"
+              % (r["model"].split("/")[-1][:26], r["contrast"], r["n_treated"],
+                 r["n_reference"], r["effect"],
+                 "n/a" if r["exact_p"] is None else "%.6f" % r["exact_p"],
+                 r["effect_runs_1_5"] or 0.0, r["effect_runs_6_10"] or 0.0,
+                 "n/a" if r["v2_between_order_floor"] is None
+                 else "%.3f" % r["v2_between_order_floor"],
+                 "REPORTABLE" if r["reportable"] else ", ".join(why)))
+    print("")
+    smallest = min((r["splits"] for r in rows if r["splits"]), default=0)
+    print("  BH rank-1 threshold %.4f; smallest attainable exact p at this depth %.6f "
+          "(2 of %d)." % (thresholds[0], 2.0 / smallest if smallest else float("nan"),
+                          smallest))
+    print("  %d of %d survive BH; %d of %d reportable under all registered conditions."
+          % (sum(r["bh_survives"] for r in rows), len(rows),
+             sum(r["reportable"] for r in rows), len(rows)))
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--arm", default=ARM_RUN)
     ap.add_argument("--control", default=CONTROL_RUN)
     ap.add_argument("--control-condition", default="B")
+    ap.add_argument("--within", action="store_true",
+                    help="the within-rung contrasts (G-Directive - G-Boost, G-Persona - "
+                         "G-Directive) inside the arm run, BH over the family; "
+                         "PREREG-2026-09-25-rung2-within-depth10")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args(argv)
 
     if a.selftest:
         return selftest()
+    if a.within:
+        return within(a)
 
     index = PA.pair_index(PA.load_bank())
     arm_dir = os.path.join(_SP.STUDY_DIR, "runs", a.arm)
@@ -331,6 +489,19 @@ def selftest():
     killed = [floor >= abs(e) for e in effects]
     ok = killed == [False, True]
     print("  %-46s %s %s" % ("per-contrast kill rule", killed, "OK" if ok else "FAIL"))
+    bad += 0 if ok else 1
+
+    # BH step-up, on a case worked by hand: thresholds .0167/.0333/.05 over m=3.
+    keep, _t = bh_survivors([0.02, 0.5, 0.01])
+    ok = keep == {0, 2}
+    # ...and step-UP: a p above its own rank's threshold survives if a later rank passes.
+    keep2, _t = bh_survivors([0.04, 0.045, 0.049])
+    ok = ok and keep2 == {0, 1, 2}
+    # A None p never survives and still counts in m.
+    keep3, t3 = bh_survivors([0.02, None])
+    ok = ok and keep3 == {0} and abs(t3[0] - 0.025) < 1e-12
+    print("  %-46s %s %s" % ("Benjamini-Hochberg step-up", sorted(keep),
+                             "OK" if ok else "FAIL"))
     bad += 0 if ok else 1
 
     # And the loader must read a real run rather than assert against its own assumptions.

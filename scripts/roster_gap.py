@@ -125,7 +125,7 @@ def main(argv=None):
     print("ROSTER GAP -- the newest release each tracked vendor has shipped,")
     print("measured against the FORCED-CHOICE corpus (%d models). A model scored in the May"
           % len(have))
-    print("study but never given the 62 propositions counts as NOT measured here, correctly.")
+    print("study but never given the battery counts as NOT measured here, correctly.")
     print("")
     print("%-14s %-40s %-11s %6s  %s" % ("vendor", "newest", "released", "age", "measured?"))
     for v in vendors:

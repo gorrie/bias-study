@@ -1083,8 +1083,8 @@ reproduce, gives **three** findings that survive their interval, and **one** tha
 judge composition: `x-ai/grok-4.3`, +0.80 to +1.30 under every judge. `claude-opus-4.7` is not
 among the three CI-clean findings at all, so it cannot be one of two robust ones. The other two
 survivors are judge-sensitive — `openai/gpt-4.1` +0.21 to +0.69 and `deepseek/deepseek-v3.2`
-+0.14 to +0.86, a factor of three each, with the extreme cell in both a judge scoring its own
-vendor — and are reported as suggestive. The "+0.03 to +0.60" range was stale as well.
++0.14 to +0.86, a factor of three each; both findings' subjects sat on the panel that scored
+them — and are reported as suggestive. The "+0.03 to +0.60" range was stale as well.
 `judge_lean.py --per-finding`.
 
 ---

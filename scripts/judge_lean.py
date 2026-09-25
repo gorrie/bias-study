@@ -401,8 +401,9 @@ def rank_stability(records, conds=("A", "B")):
     print("  nothing to subtract it at all.")
     print("")
     print("  What survives is per-finding, not per-panel: re-score each finding under each")
-    print("  judge alone and see which ones hold. See RESULTS-2026-09-05-judge-lean.md --")
-    print("  the two large effects hold under every judge; the smallest does not.")
+    print("  judge alone and see which ones hold: `judge_lean.py --per-finding`. (The")
+    print("  2026-09-05 reading that two effects hold under every judge is withdrawn --")
+    print("  public CORRECTIONS.md entry 30; on the corpus a reader can reproduce, one does.)")
     return stable
 
 

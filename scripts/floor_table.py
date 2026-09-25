@@ -897,6 +897,22 @@ ORDER_EXCLUDE = {
     # would enter this floor the moment it landed -- the published row, moved by the arm
     # built to ask whether it moves.
     "2026-09-24-partials-renumbered",
+    # The local stock-vs-ablated pressure gradient (PREREG-2026-09-25-local-gradient.md):
+    # twelve local builds, six conditions, three orders, five seeds, protocol v2. It holds
+    # condition-A sheets at T01 and temperature 0.7 under three orders, so it would enter this
+    # floor the moment it landed, and half its builds are ablations selected for being
+    # ablations. Its per-model order floors are computed inside the arm by local_gradient.py.
+    "2026-09-25-local-gradient",
+    # One model on two pinned backends (PREREG-2026-09-25-serving-path.md): conditions N and
+    # A, protocol v2, the wave's three orders. Its condition-A sheets at T01 and temperature
+    # 0.7 would pool into the wave's order cells for four of its five models, mixing a second
+    # backend and a second numbering protocol into a published floor. Its per-model order
+    # floors are computed inside the arm by serving_path.py.
+    "2026-09-25-serving-path",
+    # The second-placebo arm (PREREG-2026-09-25-placebo-wording.md): N, P and P2 only, so it
+    # holds no condition-A sheet today. Named anyway, so a later change to what this floor
+    # reads cannot pool an arm selected for placebo anomalies into it.
+    "2026-09-25-placebo-wording",
 }
 
 

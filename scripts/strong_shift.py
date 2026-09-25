@@ -50,6 +50,13 @@ STRONG = (0, 3)
 BASELINE = "N"
 ARMS = ("A", "P", "D")
 
+#: WHAT REPLACES THE INSTRUCTION, measured against it rather than against the baseline. On the
+#: retired questionnaire a content-free placebo restored endpoint answers as fully as a demand to
+#: commit, and "what replaces the instruction does not matter" was the reading. On the battery the
+#: three contrasts below separate the readings: the placebo returning A to baseline, the directive
+#: overshooting it, and the two differing from each other.
+REPLACEMENTS = (("P", "A"), ("D", "A"), ("D", "P"))
+
 
 def strong_counts(records):
     """(model, condition) -> [strong answers per sheet]."""
@@ -139,21 +146,23 @@ def main(argv=None):
     print("")
     print("  %-10s %7s %8s %8s %9s %10s" % ("contrast", "models", "down", "up", "unchanged",
                                             "sign test"))
-    for arm in ARMS:
+    for arm, ref in [(x, BASELINE) for x in ARMS] + list(REPLACEMENTS):
+        if (arm, ref) == REPLACEMENTS[0]:
+            print("  -- against the balance instruction, and the two replacements against each other")
         pairs = []
         for m in models:
-            base = counts.get((m, BASELINE))
+            base = counts.get((m, ref))
             other = counts.get((m, arm))
             if not base or not other:
                 continue
             pairs.append((median(base), median(other)))
         if not pairs:
-            print("  %-10s no model carries both arms" % ("%s - %s" % (arm, BASELINE)))
+            print("  %-10s no model carries both arms" % ("%s - %s" % (arm, ref)))
             continue
         up, down, ties, p = sign_test(pairs)
         shifts = [b - a_ for a_, b in pairs]
         print("  %-10s %7d %8d %8d %9d %10s   median shift %+.0f  range %+.0f..%+.0f"
-              % ("%s - %s" % (arm, BASELINE), len(pairs), down, up, ties,
+              % ("%s - %s" % (arm, ref), len(pairs), down, up, ties,
                  ("p = %.2g" % p) if p is not None else "-",
                  median(shifts), min(shifts), max(shifts)))
 

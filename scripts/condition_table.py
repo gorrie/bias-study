@@ -101,7 +101,7 @@ def main(argv=None):
             print("%d further cells, `%s`-`%s`, are the clause factorial: condition A's "
                   "instruction with each of its three clauses independently present or absent. "
                   "They carry their own pre-registration, whose Amendment 2 states the verdict; "
-                  "they are listed in §9.1 as exploratory and not pooled with the rows above. "
+                  "they are listed in §7.1 as exploratory and not pooled with the rows above. "
                   "`condition_table.py --factorial` prints them."
                   % (len(fac), fac[0], fac[-1]))
         return 0

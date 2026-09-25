@@ -79,7 +79,8 @@ EXPLORATORY = [
     {"family": "intensity by claim type (top-box rate, documented vs normative)",
      "command": "scripts/intensity_by_claim.py",
      "corrected": False,
-     "note": "one paired sign test over 56 models, p = 0.0038. Exploratory, and it carries a "
+     "note": "one paired sign test over the models with enough answers in both classes; "
+             "intensity_by_claim.py prints its p. Exploratory, and it carries a "
              "confound the design forecloses rather than one more data fixes: claim_type is "
              "perfectly aligned with the bank's jurisdiction tag, so this is simultaneously a "
              "result about record-backed claims and about jurisdiction-specific ones"},

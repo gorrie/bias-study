@@ -168,6 +168,23 @@ def looks_truncated_text(text: str) -> bool:
 #: answer ending without punctuation is just terse.
 _TRUNCATION_MIN_WORDS = 50
 
+#: ...UNLESS THE RECORD SPENT ITS BUDGET. "Long by construction" is true of the TEXT only for a
+#: model that writes its whole output as text. A reasoning model spends the budget on reasoning
+#: tokens and returns whatever visible text is left, so a severed answer can be twenty-five
+#: words long. Measured 2026-09-25 over every scored run in data/: 620 records passed as
+#: eligible while ending mid-sentence under 50 words -- google/gemini-2.5-pro ("...Assessing the
+#: concern that government-"), gemini-3.1-pro-preview, deepseek-r1, gpt-5, kimi-k2.6,
+#: kimi-k2-thinking, glm-4.5 -- and EVERY ONE had tokens_out of 796-800 on the May era's
+#: 800-token cap. None sat between 200 and 650 tokens, so the corroboration below separates them
+#: cleanly and admits nothing that the length guard was protecting. Their re-collections at
+#: 4,000 tokens existed and were complete, and the splice never used them, because it replaces
+#: only ineligible originals and these read as eligible.
+#:
+#: Corroboration is a fraction of the record's own cap, never the constant 800: when no cap was
+#: recorded the May era's 800 is the only value that was ever in use.
+_BUDGET_SPENT_FRACTION = 0.8
+_MAY_ERA_CAP = 800
+
 
 def is_truncated(rec: dict) -> bool:
     """Was this response cut off? The EXCLUSION decision, which needs corroboration.
@@ -177,7 +194,8 @@ def is_truncated(rec: dict) -> bool:
       2. `tokens_out >= max_tokens` when both are known -- a response that spent
          its entire budget did not choose to stop;
       3. text that ends mid-sentence AND is long enough to have plausibly hit a
-         cap.
+         cap -- in words, or, for a short text, in tokens spent (see
+         `_BUDGET_SPENT_FRACTION`).
 
     Clause 3 carries the length guard because the bare text heuristic is a
     heuristic. On its own it called the three-word string "a real answer"
@@ -219,7 +237,11 @@ def is_truncated(rec: dict) -> bool:
         return True
     text = response_text(rec)
     if len(text.split()) < _TRUNCATION_MIN_WORDS:
-        return False
+        # Short text is corroborated by the budget instead: a record that spent most of its
+        # cap and shows a fragment was cut off, whatever it spent the tokens on.
+        ceiling = cap if isinstance(cap, int) and cap > 0 else _MAY_ERA_CAP
+        spent = isinstance(out, int) and out >= _BUDGET_SPENT_FRACTION * ceiling
+        return spent and looks_truncated_text(text)
     return looks_truncated_text(text)
 
 

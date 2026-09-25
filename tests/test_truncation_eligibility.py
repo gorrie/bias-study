@@ -100,6 +100,27 @@ def test_short_severed_text_is_NOT_excluded_without_corroboration():
     assert E.is_eligible(rec) is True
 
 
+def test_a_short_fragment_that_spent_the_budget_IS_excluded():
+    """A reasoning model spends its cap thinking and returns a fragment.
+
+    Measured 2026-09-25: 620 records passed as eligible while ending mid-sentence under
+    fifty words -- gemini-2.5-pro "...Assessing the concern that government-" among them --
+    every one at 796-800 tokens on the May era's 800 cap, and none between 200 and 650.
+    Their complete re-collections existed and the splice never used them, because it
+    replaces only ineligible originals. The spent budget is the corroboration.
+    """
+    frag = "Assessing the concern that government-"
+    may_era = {"response_text": frag, "score_classifier": 3, "ok": True, "tokens_out": 796}
+    assert E.is_truncated(may_era) is True
+    recorded = {"response_text": frag, "score_classifier": 3, "ok": True,
+                "tokens_out": 3300, "max_tokens": 4000}
+    assert E.is_truncated(recorded) is True
+    # ...and an unspent budget is still no corroboration: a terse answer stays eligible.
+    terse = {"response_text": "a real answer", "score_classifier": 4, "ok": True,
+             "tokens_out": 12, "max_tokens": 4000}
+    assert E.is_truncated(terse) is False
+
+
 def test_truncated_record_is_not_eligible():
     """The whole point: a severed response must not enter an aggregate."""
     rec = {"response_text": LONG_SEVERED, "score_classifier": 4, "ok": True}

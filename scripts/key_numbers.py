@@ -2101,7 +2101,9 @@ SURFACES = {
             # own repository can reproduce. Gating this on the default pair made
             # the same check compute 8 in the working tree and 6 here.
             "pipeline_contrasts_historical": "all %d intervals span zero",
-            "withheld_records": "%d run records had their",
+            # withheld_records is not stated on this surface: the README no longer carries the
+            # reproduction-audit status sentence, and a figure a page does not state is not
+            # checked there. `--check-website` still gates it where it is stated.
             "arms_models": "Across %d models measured under both arms",
             "arms_declining": "arms, %d decline all",
             "arms_nodir_refusals": "there are %(arms_nodir_refusals)d refusals in %(arms_nodir_runs)d runs",
@@ -2116,7 +2118,11 @@ SURFACES = {
             # with the right number in it -- LEARNINGS #84, and the fix is the template, not
             # the prose. Found 2026-09-23;  had been red on it before the
             # corpus move, and PLAN.md's validation table said exit 0 the whole time.
-            "arms_dir_only": "**%d other models decline only when told to commit**",
+            # AND THE SHORT FORM WAS FALSE, which a matching number could not show: of the three,
+            # two decline under the commitment directive and one only under the placebo, so
+            # "when told to commit" misdescribed one model in three (2026-09-25). The README now
+            # uses the paper's wording, and so does the template.
+            "arms_dir_only": "%d other models decline only under a firm instruction",
             "arms_dir_refusals": "%d of those runs are refusals",
             "arms_dir_runs": "against %d runs where it carries one",
             "order_mde": "minimum detectable effect at **%d items",
@@ -3782,9 +3788,13 @@ def main(argv=None):
         print("  %d records on this instrument: %d in the wave (%d valid, %.0f%%) and %d in"
               % (c["records_total"], c["records_wave"], c["records_valid"],
                  100.0 * c["records_valid"] / max(c["records_wave"], 1), c["records_probe"]))
-        print("  the budget probe. %d models were COLLECTED -- the 36-model frozen panel plus"
+        # The breakdown of that count is NOT typed here. It read "the 36-model frozen panel plus
+        # 6 declared requantisation siblings" beside a derived 65, and 36 + 6 is 42 -- the
+        # same-version siblings, breadth models and ablation entries were the rest. The roster
+        # amendments that add up to it are recorded, with their rules, in PROTOCOL-DEVIATIONS.md.
+        print("  the budget probe. %d models were COLLECTED -- the frozen panel plus the roster"
               % c["models_collected"])
-        print("  6 declared requantisation siblings. Contrasts resolve on fewer, because a")
+        print("  amendments in PROTOCOL-DEVIATIONS.md. Contrasts resolve on fewer, because a")
         print("  contrast needs both arms and models refuse different conditions: %s." % res)
         print("  Two instrument labels are present and are one instrument: %s." % lab)
         print("")

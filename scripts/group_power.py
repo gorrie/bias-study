@@ -203,10 +203,39 @@ def main(argv=None):
         if not g["comparisons"]:
             print("    no comparison has %d models on both sides" % MIN_PER_SIDE)
         print()
-    print("  For scale: the balance instruction moves the median model 0.159, and reprinting")
-    print("  the same items in a different order moves it 0.094. A grouping whose MDE is")
-    print("  above those cannot speak to either.")
+    # READ, NOT TYPED. This line said 0.159 and 0.094 -- the 2026-09-18 figures -- after the
+    # frozen wave put them at 0.131 and 0.088, and the vintage MDE had meanwhile moved above the
+    # live instruction median, so the stale scale understated this tool's own conclusion.
+    scale = _position_scale()
+    if scale:
+        print("  For scale: the balance instruction moves the median model %s, and reprinting"
+              % scale[0])
+        print("  the same items in a different order moves it %s (data/position-floor.json)."
+              % scale[1])
+        print("  A grouping whose MDE is above those cannot speak to either.")
+    else:
+        print("  For scale, see data/position-floor.json (order_floor_position.py); it is absent")
+        print("  here, so no comparison is printed.")
     return 0
+
+
+def _position_scale():
+    """-> (instruction median, order median) as printed in the paper's GEN:position cache, or
+    None when the cache is absent. The two bold cells of its two data rows."""
+    import re
+    path = os.path.join(os.path.dirname(HERE), "data", "position-floor.json")
+    try:
+        with io.open(path, encoding="utf-8") as fh:
+            rows = json.load(fh)["rows"]
+    except (OSError, ValueError, KeyError):
+        return None
+    meds = []
+    for row in rows[2:4]:
+        cells = [c.strip() for c in row.strip("|").split("|")]
+        m = re.search(r"[0-9.]+", cells[2]) if len(cells) > 2 else None
+        if m:
+            meds.append(m.group(0))
+    return tuple(meds) if len(meds) == 2 else None
 
 
 if __name__ == "__main__":

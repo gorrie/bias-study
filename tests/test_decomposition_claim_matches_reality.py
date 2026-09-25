@@ -31,7 +31,7 @@ DECOMP_RUN = "2026-09-15-g0dm0d3-decomposition"
 
 #: The sentence the README must carry while the run is absent, and must NOT
 #: carry once it is present. Short enough to survive rewording around it.
-DISCLAIMER = "The decomposition run is NOT in this repository."
+DISCLAIMER = "The decomposition run is not in this repository."
 
 #: The claim that was wrong. It must never come back while the run is absent.
 WITHDRAWN = "its runs are in this repository"

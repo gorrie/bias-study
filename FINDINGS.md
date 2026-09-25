@@ -49,6 +49,13 @@ that had a placebo.
 
 ### 3. A model gives different answers to the same question, and the spread is large
 
+**WITHDRAWN 2026-09-19** (public `CORRECTIONS.md` entry 29). The figures below are counts on
+the retired 62-item questionnaire. Re-measured on the 32-item battery, same-version variants
+are the smallest nuisance in the side-flip table (24 pairs, median 1, p90 1, max 2), below
+the instrument's own detection limit, and the largest only in endpoint changes. A count out
+of the retired questionnaire's 62 does not rescale to a count out of 32. Kept as the record
+of what was measured.
+
 | comparison | median items changed | p90 |
 |---|---:|---:|
 | same-version variants (97 pairs) | 5 of 62 | **11** |

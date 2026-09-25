@@ -764,9 +764,11 @@ def main(argv=None):
         try:
             sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
             import floor_table as _FT2
-            rows = _FT2.collect()
-            order = (rows.get("presentation order") or {}).get("pairs")
-            null = (rows.get("same-version variants") or {}).get("pairs")
+            # all_floors(), not collect(): floor_table has no `collect`, so this printed
+            # UNAVAILABLE on every run (found 2026-09-25 re-running it against their corpus).
+            rows = _FT2.all_floors()
+            order = (rows.get("presentation order") or {}).get("n")
+            null = (rows.get("same-version variants") or {}).get("n")
             if order is None or null is None:
                 return "UNAVAILABLE -- floor_table produced no row to read the scale from"
             return "order floor %d pairs, same-version null %d pairs" % (order, null)
