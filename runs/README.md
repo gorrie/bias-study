@@ -18,7 +18,7 @@ The inventory below is generated from the records themselves. Do not edit it by 
 | run | records | models | instrument | status | read by |
 |---|---:|---:|---|---|---|
 | `2026-09-16-ratchet-v3-wave` | 3,897 | 65 | `ratchet-battery` | active | runs/*-wave/*.jsonl, named in a script, named in a document |
-| `2026-09-16-ratchet-v3-wave-budget-probe` | 71 | 71 | `ratchet-battery` | active | named in a script |
+| `2026-09-16-ratchet-v3-wave-budget-probe` | 71 | 71 | `ratchet-battery` | active | named in a script, named in a document |
 | `2026-09-18-bce-smoke` | 7 | 2 | `ratchet-battery` | active | named in a script |
 | `2026-09-18-omission-hosted` | 864 | 18 | `ratchet-battery` | active | named in a script, named in a document |
 | `2026-09-18-omission-orders` | 240 | 5 | `ratchet-battery` | active | named in a script, named in a document |
