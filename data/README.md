@@ -1,9 +1,10 @@
 # `data/` — the previous corpus, and the study’s configuration
 
-This directory is the immutable record of every scored sweep run on the **retired
-62-item external questionnaire** — the May 2026 judge-scored study and its September
-repairs and replications — together with the flat JSON files the study is configured
-from. One subdirectory per run; runs are named by the date they began (`YYYY-MM-DD`
+This directory is the immutable record of the study's earlier design: the May 2026
+judge-scored study on the author's **institutional-framing question set** (topics
+`T01`..`T18`, question text in every record), its September repairs and replications,
+and the withdrawn I3 Phase 0 arm — together with the flat JSON files the study is
+configured from. One subdirectory per run; runs are named by the date they began (`YYYY-MM-DD`
 or `YYYY-MM-DD-<slug>`).
 
 The **current** study’s corpus is in **`runs/`**, collected on the Ratchet battery,
@@ -131,22 +132,19 @@ Two carve-outs, and both matter to anyone redistributing:
 
    *Corrected 2026-09-17.* This carve-out previously read "the instrument is not
    ours to license and is not here", because the study then ran on a 62-item
-   external questionnaire. That instrument was retired on 2026-09-16 and every
-   record collected on it is in `withdrawn/`. `scripts/check_corpus.py` still runs
-   in CI, now guarding the one third-party corpus this repository does hold —
-   XSTest's 450 prompts — and pointedly not guarding the author's own instrument,
-   which would mean withholding the thing this repository exists to publish.
+   external questionnaire. That instrument was retired on 2026-09-16, and neither
+   it nor any record collected on it is in this repository. `scripts/check_corpus.py`
+   runs in CI to keep it that way, and pointedly does not guard the author's own
+   instrument, which would mean withholding the thing this repository exists to publish.
 2. **Model responses are model output.** Each vendor's terms governed the
    account that generated them. We assert no ownership over a model's words and
    cannot grant you rights we do not hold; the MIT grant covers this project's
    own contribution — the collection, the scoring, the structure and the
    aggregates.
 
-Redacted records carry `[withheld: <reason>]` in place of the response text; the
-scored fields are intact, so no published number depends on the redacted prose.
-There are 38 of them across both run roots. Do not take that figure from here —
-`python scripts/key_numbers.py` recounts it from the shipped files, and
-`--check-release` fails if the README's copy of it drifts.
+No record's response text is withheld: every shipped record carries the model's reply as
+returned. `python scripts/key_numbers.py` recounts `[withheld: …]` markers from the shipped
+files, and `--check-release` fails if the root README's statement of that count drifts.
 
 ## If you just want the data — start here, not with the run layout
 

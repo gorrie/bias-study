@@ -18,9 +18,12 @@ sheet is, where a cell's sheets live and the exact test are imported from the on
 is defined (`recollect_partials.is_partial`, `run_battery.sheet_path`,
 `omission_arms.fisher_one_sided`).
 
-    python scripts/partials_sensitivity.py            # compute, print, write the cache
+    python scripts/partials_sensitivity.py            # compute and print; writes nothing
     python scripts/partials_sensitivity.py --markdown # the comparison table only
     python scripts/partials_sensitivity.py --check    # recompute; exit 1 if the cache drifted
+    python scripts/partials_sensitivity.py --write    # rebuild the cache (operator only)
+
+Read-only by default: a reader reproducing §6b must not come away with a dirty tree.
 
 The cache is `data/partials-sensitivity.json`, provenance-carrying like
 `data/placebo-control.json`, so `key_numbers` can gate its figures without a rerun.
@@ -265,6 +268,8 @@ def main(argv=None):
                     help="recompute and exit 1 if data/partials-sensitivity.json has drifted")
     ap.add_argument("--selftest", action="store_true",
                     help="prove the harness is a no-op: identity substitution, same table")
+    ap.add_argument("--write", action="store_true",
+                    help="write data/partials-sensitivity.json (otherwise nothing is written)")
     args = ap.parse_args(argv)
     if args.selftest:
         return selftest()
@@ -284,11 +289,12 @@ def main(argv=None):
     if args.markdown:
         print(markdown(res))
         return 0
-    with io.open(CACHE, "w", encoding="utf-8", newline="\n") as fh:
-        json.dump(res, fh, indent=1, ensure_ascii=False)
-        fh.write("\n")
     report(res)
-    print("\ncache: %s" % CACHE)
+    if args.write:
+        with io.open(CACHE, "w", encoding="utf-8", newline="\n") as fh:
+            json.dump(res, fh, indent=1, ensure_ascii=False)
+            fh.write("\n")
+        print("\ncache written: %s" % CACHE)
     return 0
 
 

@@ -1,7 +1,7 @@
 {
   "THIS_IS_NOT_A_MANIFEST": "Derived after collection from the records themselves. A real manifest declares intent BEFORE collection and can therefore disagree with the data; this cannot. Its only load-bearing parts are files[].sha256, which makes future drift detectable, and config, which the collector wrote at collection time.",
-  "derived_at": "2026-09-24T06:07:10+00:00",
-  "derived_by": "scripts/derive_manifest.py @ 5d858ec",
+  "derived_at": "2026-09-25T00:41:33+00:00",
+  "derived_by": "scripts/derive_manifest.py @ 24d46cd",
   "run": "2026-09-19-rung2-smoke",
   "layout": "flat",
   "instrument": {
@@ -16,17 +16,17 @@
     {
       "path": "x-ai__grok-4.3__G-Boost.jsonl",
       "records": 1,
-      "sha256": "6cf59e6021f639a77c3e7cac89181142943d9c75878116939081c50cec80e34b"
+      "sha256": "c0bf1a78853c9c250ec339b3c050ae6db4f6e49d3e2ca733b0945b12ee4b1f81"
     },
     {
       "path": "x-ai__grok-4.3__G-Directive.jsonl",
       "records": 1,
-      "sha256": "1cc36f60f04b44db614a4511752d58436f022e8cf836a564ffb96e36385604dd"
+      "sha256": "eaffaea772865d5bfe8e842a2fa6cb13aaf89e16a7fe38e852d16e43859a877e"
     },
     {
       "path": "x-ai__grok-4.3__G-Persona.jsonl",
       "records": 1,
-      "sha256": "4339802bbc7eec49a501b5172c5a53fefdd1ed3edf4ebaf6d6a130c912f37d10"
+      "sha256": "bfb114e8ee243fbfa35e35b93f2685af98751912804e34013890456f99aa079a"
     }
   ],
   "models": [

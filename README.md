@@ -190,7 +190,9 @@ from `runs/`, so a disagreement between the two is a bug worth an issue.
 |---|---|---|
 | `2026-09-15-g0dm0d3-decomposition` | a pipeline-rung arm of the retired design | The decomposition run is NOT in this repository. `pipeline_decomposition.py` exits 2, so the B-Godmode / B-Autotune split cannot be recomputed from shipped data |
 | `refusal-ablation`, `mask-gradient` | they carry verbatim XSTest prompts, a third party's text | the refusal dose series; `RESULTS-2026-09-19-dose-response.md`, named in the paper's provenance table, stays in the private tree for the same reason |
-| eight smoke and probe directories | one sheet per model, collected to price a run or find what answers | nothing; they are outside the refusal panel by rule |
+| the 62-item questionnaire and every record collected on it | a third party's licensed text; the forced-choice arm of August and early September ran on it | the withdrawn claims measured on it: the figures `CORRECTIONS.md` #1–#14 and #29 quote cannot be recomputed here |
+| internal working documents (`STATUS`, backlogs, plans) | process records, not results | nothing in the paper; where `data/withdrawals.json` cites one as evidence, the claim is withdrawn either way |
+| eight `2026-09-08-*` directories | three evidence-collector pilots of a different design on one model, and five residency smokes that returned no records | nothing |
 
 No figure in the paper depends on an absent run. If you find one that does, that is a bug and
 an issue is the right response.
@@ -234,7 +236,7 @@ on these.
 | `LEARNINGS.md` | rules earned from defects that actually happened here, each with its receipt |
 | `LESSONS.md` | dead ends, reversals, and what broke in the machinery |
 | `CHECKS-ANY-STUDY-CAN-RUN.md` | six checks on data a study already has; its worked examples come from the retired design |
-| `CORRECTIONS-2026-09-08.md`, `CORRECTIONS-2026-09-17-power.md`, `corrections/` | dated correction records, kept where they were published |
+| `CORRECTIONS-2026-09-08.md`, `CORRECTIONS-2026-09-17-labels.md`, `CORRECTIONS-2026-09-17-power.md`, `CORRECTIONS-2026-09-18-bootstrap.md`, `corrections/` | dated correction records; the paper and `data/withdrawals.json` cite them |
 | `CORPUS-MAP-2026-09-14.md` | what each run of the earlier corpus is for, after its repair |
 | `ADVERSARIAL-REVIEW.md` | the May 2026 self-review; its verdicts are dated and several are superseded |
 | `results/` | dated results documents |
@@ -251,7 +253,7 @@ that ran until 2026-09-16 (see the section below).
 | `ROADMAP.md` | what was planned next, on that design |
 | `JUDGEMENT-TOOL-PLAN.md`, `RUBRIC-SCORES.md` | the judge-method plan and its pre-registration |
 | `RESULTS-2026-09-14-rung2-transform-audit.md`, `RESULTS-2026-09-15-rung2-decomposed.md` | the proxy-based pipeline rung, and why it was abandoned |
-| `withdrawn/` | retired arms and instruments, kept rather than deleted |
+| `withdrawn/` | withdrawn results documents, in their corrected form, and the notes on superseded arms that `data/withdrawals.json` cites as evidence |
 
 ---
 
@@ -262,7 +264,7 @@ rated 1–5 by a panel of model judges. It was retired for three reasons. The qu
 third party's licensed text and could not be republished, which a study arguing that the field
 should publish what it measures could not accept. Its headline claim, that hedging is the bias
 signature, restated the rubric: a score of 3 is "does not commit", and the hedge lexicon
-measures non-commitment. And its counts out of 62 are not comparable to counts out of this
+measures non-commitment. And counts out of the retired questionnaire's 62 propositions are not comparable to counts out of this
 battery's 32 items; no rescaling converts one into the other.
 
 Two measurements from that design are kept because they are the argument for this one. Scoring
@@ -270,7 +272,8 @@ free text with model judges puts the judges' lean in the result:
 our judges spanned 0.3108 points between the most and least institution-skeptical of them,
 on the same responses. And the elicitation-pipeline rung produced no effect that survived its
 own control: all 8 intervals span zero. Its re-collection on the battery, through this study's own transport, reached the same
-verdict. The retired material is in `withdrawn/` and the documents marked HISTORICAL above.
+verdict. That design's records are under `data/`, and its documents are the ones marked
+HISTORICAL above.
 
 ---
 

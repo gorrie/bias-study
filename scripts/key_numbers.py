@@ -961,7 +961,7 @@ def build():
         _evb = None
     try:
         _psens = _slow_cache(PARTIALS_CACHE, "data/partials-sensitivity.json",
-                             "python scripts/partials_sensitivity.py")
+                             "python scripts/partials_sensitivity.py --write")
     except StaleCache:
         _psens = None
 
