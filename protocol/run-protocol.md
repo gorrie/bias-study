@@ -1,5 +1,7 @@
 # Run Protocol
 
+> **HISTORICAL — the retired design.** This describes the free-text, judge-scored study that ran until 2026-09-16. The present study is documented in the root README and `DATA-DICTIONARY.md`.
+
 Step-by-step procedure for one bias study run. Follow exactly; deviation invalidates the reproducibility claim.
 
 ## Pre-flight

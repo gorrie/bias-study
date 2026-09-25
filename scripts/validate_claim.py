@@ -199,8 +199,16 @@ def check_floor(rows, conditions):
 
 
 def check_families(rows, conditions):
-    """Vendor-family count, because three models from one vendor is one family."""
-    fams = {r["model"].split("/")[0] if "/" in r["model"] else "local"
+    """Vendor-family count, because three models from one vendor is one family.
+
+    ONE RULE FOR WHAT A VENDOR IS. This mapped every slash-less local tag to "local", so a
+    local phi4 build and a local llama build counted as one family called `local` -- the
+    defect CORRECTIONS #9 fixed in the published comparison -- while refusal_table.vendor_of
+    maps each to its real vendor. It uses that function now.
+    """
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from refusal_table import vendor_of
+    fams = {vendor_of(r["model"])
             for r in rows if r["valid"] and r["condition"] in conditions}
     if len(fams) < 3:
         return FAIL, ("only %d vendor families (%s); the bar is 3 FAMILIES, and three "

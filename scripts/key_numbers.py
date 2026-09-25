@@ -129,7 +129,8 @@ def _slow_cache(path, label, rebuild):
 #: instruction -- was this paper's lead for nine hours on 2026-09-18 before being withdrawn.
 #:
 #: `sheet-bootstrap` is here and is not innocent either: `calibrate_estimators.py` measures it
-#: at 10.5% against a nominal 5% (2026-09-19). It is reported because the placebo table is a
+#: at 9.7% against a nominal 5% on the frozen corpus (`data/calibration.json`; it read 10.5%
+#: on 2026-09-19, before the freeze). It is reported because the placebo table is a
 #: per-model panel view rather than a single significance verdict, and because §1's reading of
 #: it -- 3 of 37 against 3.9 expected BY THAT RATE -- uses the measured rate rather than
 #: assuming nominal. A future exact-permutation build belongs in this set too; it does not

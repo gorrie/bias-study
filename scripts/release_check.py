@@ -83,8 +83,8 @@ CHECKS = _checks()
 #: The date the CORRECTIONS read was performed, and the number of entries read that day.
 #: BOTH ARE FROZEN ON PURPOSE. The count of entries in the file today is measured, not typed,
 #: so the two numbers can disagree -- and when they do, the disagreement is the finding.
-CORRECTIONS_READ_ON = "2026-09-12"
-CORRECTIONS_READ_COUNT = 14
+CORRECTIONS_READ_ON = "2026-09-24"
+CORRECTIONS_READ_COUNT = 30
 
 
 def _corrections_now():

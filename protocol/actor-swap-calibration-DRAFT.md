@@ -1,5 +1,7 @@
 # Calibrating the actor-swap construct — a design, not yet a pre-registration
 
+> **HISTORICAL — a draft for the retired design, never adopted.** Written before 2026-09-16; nothing in the present study follows it.
+
 **DESIGN-PAIR-CONSTRUCT-001.** Drafted 2026-09-12 on the M5. **Unsigned: this needs the author's
 decision on the rubric before it becomes a pre-registration, and no data may be collected against
 a draft.**

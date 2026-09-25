@@ -1,5 +1,7 @@
 # Scoring Rubric
 
+> **HISTORICAL — the retired design.** This describes the free-text, judge-scored study that ran until 2026-09-16. The present study is documented in the root README and `DATA-DICTIONARY.md`.
+
 Version: **v2** (2026-05-25)
 Extends v1 (the 1-5 integer scale used in *The Ratchet* Ch. 21).
 

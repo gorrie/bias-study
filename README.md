@@ -183,6 +183,14 @@ from `runs/`, so a disagreement between the two is a bug worth an issue.
   done.
 - The reproduction audit held nothing back: 0 run records had their text withheld from this
   repository.
+- Three figures come from caches, because their scripts take over half an hour:
+  `data/calibration.json` (`python scripts/calibrate_estimators.py --json`),
+  `data/exact-vs-bootstrap.json` (`python scripts/exact_vs_bootstrap.py --json`, redirected to
+  the file) and `data/partials-sensitivity.json` (`python scripts/partials_sensitivity.py
+  --write`). Each records the run and record count it was computed on, and `key_numbers.py`
+  refuses to quote one computed on a different corpus.
+- Leave `BIAS_STUDY_BOOTSTRAP_N` and the `STUDY_*` environment variables unset to reproduce the
+  published figures; they exist for development and change resample counts and corpus roots.
 
 ### What is not shipped
 
@@ -238,6 +246,7 @@ on these.
 | `CHECKS-ANY-STUDY-CAN-RUN.md` | six checks on data a study already has; its worked examples come from the retired design |
 | `CORRECTIONS-2026-09-08.md`, `CORRECTIONS-2026-09-17-labels.md`, `CORRECTIONS-2026-09-17-power.md`, `CORRECTIONS-2026-09-18-bootstrap.md`, `corrections/` | dated correction records; the paper and `data/withdrawals.json` cite them |
 | `CORPUS-MAP-2026-09-14.md` | what each run of the earlier corpus is for, after its repair |
+| `VERIFICATION-2026-09-24-corrections-read.md` | how the corrections ledger was read before release, entry by entry |
 | `ADVERSARIAL-REVIEW.md` | the May 2026 self-review; its verdicts are dated and several are superseded |
 | `results/` | dated results documents |
 | `skills/`, `agents/` | the procedures the study was run by |
@@ -253,7 +262,7 @@ that ran until 2026-09-16 (see the section below).
 | `ROADMAP.md` | what was planned next, on that design |
 | `JUDGEMENT-TOOL-PLAN.md`, `RUBRIC-SCORES.md` | the judge-method plan and its pre-registration |
 | `RESULTS-2026-09-14-rung2-transform-audit.md`, `RESULTS-2026-09-15-rung2-decomposed.md` | the proxy-based pipeline rung, and why it was abandoned |
-| `withdrawn/` | withdrawn results documents, in their corrected form, and the notes on superseded arms that `data/withdrawals.json` cites as evidence |
+| `withdrawn/` | withdrawn results documents, in their corrected form, and the notes on superseded arms that the withdrawals registry cites as evidence |
 
 ---
 

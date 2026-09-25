@@ -1,5 +1,7 @@
 # Bias Study Questions
 
+> **HISTORICAL — the retired design.** This describes the free-text, judge-scored study that ran until 2026-09-16. The present study is documented in the root README and `DATA-DICTIONARY.md`.
+
 Version: **v2** (2026-05-25)
 Source: extends *The Ratchet* Ch. 21 baseline (v1 — 10 questions, 1 per topic).
 

@@ -1,5 +1,7 @@
 # Aggregation Rules
 
+> **HISTORICAL — the retired design.** This describes the free-text, judge-scored study that ran until 2026-09-16. The present study is documented in the root README and `DATA-DICTIONARY.md`.
+
 How per-response scores aggregate to per-question, per-topic, per-model, and overall numbers. Deterministic — no judgment calls embedded in the aggregation layer.
 
 ## Per-question aggregation

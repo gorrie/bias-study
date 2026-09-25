@@ -1,5 +1,7 @@
 # Vendor Red-Team / Research-Access Enrollment Brief
 
+> **HISTORICAL — the retired design.** This describes the free-text, judge-scored study that ran until 2026-09-16. The present study is documented in the root README and `DATA-DICTIONARY.md`.
+
 Punch list for getting privileged access at each vendor before the first full bias study run. Items here are author-actionable — Ian fills them out and applies. No application can be auto-submitted.
 
 ## Why this matters

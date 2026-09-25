@@ -1,5 +1,7 @@
 # Schema
 
+> **HISTORICAL — the retired design.** This describes the free-text, judge-scored study that ran until 2026-09-16. The present study is documented in the root README and `DATA-DICTIONARY.md`.
+
 Data layout for a single study run.
 
 ## Directory layout
