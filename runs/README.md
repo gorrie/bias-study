@@ -32,7 +32,8 @@ The inventory below is generated from the records themselves. Do not edit it by 
 | `2026-09-25-placebo-wording` | 450 | 10 | `ratchet-battery` | active | named in a script, named in a document |
 | `2026-09-25-same-items-both-paths` | 1,536 | 6 | `ratchet-battery` | active | named in a script, named in a document |
 | `2026-09-25-serving-path` | 311 | 5 | `ratchet-battery` | active | named in a script, named in a document |
-| **18 directories** | **11,976** | | | | |
+| `mask-gradient` | 226 | 4 | previous | active | named in a script, named in a document |
+| **19 directories** | **12,202** | | | | |
 <!-- /GEN:corpus-inventory-runs -->
 
 `instrument` is read off each record's own `instrument` field, not inferred from the

@@ -1,0 +1,69 @@
+{
+  "THIS_IS_NOT_A_MANIFEST": "Derived after collection from the records themselves. A real manifest declares intent BEFORE collection and can therefore disagree with the data; this cannot. Its only load-bearing parts are files[].sha256, which makes future drift detectable, and config, which the collector wrote at collection time.",
+  "derived_at": "2026-09-25T19:11:15+00:00",
+  "derived_by": "scripts/derive_manifest.py @ 826a36f",
+  "run": "mask-gradient",
+  "layout": "flat",
+  "instrument": {
+    "(none)": 226
+  },
+  "corpus": "previous",
+  "status": "active",
+  "records_total": 226,
+  "records_unparsable": 0,
+  "file_count": 5,
+  "files": [
+    {
+      "path": "gemma4-abl.jsonl",
+      "records": 50,
+      "sha256": "562aa6c5eb83efbf7bd747a1f56d53317e1d18428e811aa06b1de11d8debf7ea"
+    },
+    {
+      "path": "gemma4-stock.jsonl",
+      "records": 50,
+      "sha256": "fd35dfa057a63145fb0ab1525604d8abed2d324d40e3ef4af9ff82457e6d42af"
+    },
+    {
+      "path": "qwen38-abl.jsonl",
+      "records": 50,
+      "sha256": "6b0240535940e81b7d2c69f5fb6515f28e88431bff7a1b3fe1a00c2d6bef5925"
+    },
+    {
+      "path": "qwen38-stock.jsonl",
+      "records": 50,
+      "sha256": "df84d0e1038715cbf81f4a2fc457838b9027b5695b04684c20c1ef8646f1e14e"
+    },
+    {
+      "path": "qwen38-stock.scored.jsonl",
+      "records": 26,
+      "sha256": "c44e4f1273be057f3f8cc1ad2ab6576c90727e55a4e08d89588cf9ad865b4011"
+    }
+  ],
+  "models": [
+    "hf.co/OBLITERATUS/Gemma-4-12B-OBLITERATED:Q4_K_M",
+    "hf.co/OBLITERATUS/Qwen3.8-27B-OBLITERATED:Q4_K_M",
+    "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M",
+    "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M"
+  ],
+  "conditions": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E"
+  ],
+  "run_numbers": [],
+  "collected_at": null,
+  "config": {},
+  "outcomes": {
+    "ok_true": 0,
+    "ok_false": 0,
+    "failure_modes": {}
+  },
+  "NOT_RECOVERABLE": {
+    "models_attempted": "a model that failed on every call wrote no file, so it leaves no trace",
+    "total_calls_planned": "the plan lived in the collector invocation, which was not recorded",
+    "calls_failed": "transport-level failures that produced no record cannot be counted from records",
+    "started_at": "only the first SUCCESSFUL call is datable; the run began some unknown time earlier"
+  }
+}

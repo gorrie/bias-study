@@ -7,8 +7,8 @@
   "instrument_canonical_sha256": "1ba8b0fd4097bd9c023c4f9ccf40b05860b7932f4ee69d2a4615da40a80767d1",
   "instrument_normalized_sha256": "cd98fdf48a8eafff98f9e6aed61cfc1946b62e6ee78bab4153a3d0c790bd7965",
   "instrument_hash_note": "canonical = byte-exact item set; normalized = same after folding curly quotes, dashes and entities to ASCII. `forcing_prompt_sha256` on each battery record is the hash of that record's own prompt as sent.",
-  "records": 12245,
-  "files": 1460,
+  "records": 12471,
+  "files": 1466,
   "directories": {
     "runs/2026-09-16-ratchet-v3-wave": {
       "records": 3897,
@@ -137,6 +137,13 @@
         "battery-run/1": 311
       }
     },
+    "runs/mask-gradient": {
+      "records": 226,
+      "files": 6,
+      "schemas": {
+        "(none)": 226
+      }
+    },
     "withdrawn/backend-split-precollection": {
       "records": 196,
       "files": 41,
@@ -155,7 +162,6 @@
   },
   "not_shipped": {
     "refusal-ablation": "carries 450 verbatim XSTest prompts (Roettger et al.), a third party's text",
-    "mask-gradient": "the superseded first attempt at the local gradient: 226 judged free-text answers on the author's own questions (NOT XSTest, checked 2026-09-25), read only by RESULTS-2026-09-19-dose-response.md, which stays private because its other half is refusal-ablation. Withheld pending the author's decision; 2026-09-25-local-gradient is the collection that replaced it and ships",
     "test-refusal": "empty scratch directory, no records",
     "2026-05-26": "empty directory left by a May collector; the May runs are under data/",
     "2026-09-08-evidence-collector-fake": "development fixture: a fake backend for the collector's interruption/retry tests",

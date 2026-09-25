@@ -1,11 +1,17 @@
 # The scoring layer, audited: what five judge-validation methods do not test
 
-> **SUPERSEDED.** This document asserts that abliteration "rewrites ~70% of political
-> wording". That claim was narrowed on 2026-09-13 and settled against on 2026-09-20: on four
-> of five families the stock-versus-abliterated word-set overlap sits inside the band a single
-> model produces resampled against itself, and only `qwen2.5-7b` falls outside it. The
-> **stance** half — abliteration moves stance by ≤0.2 — is unaffected and is the load-bearing
-> one. See `CORRECTIONS.md` before quoting anything here.
+> **SUPERSEDED — archived 2026-09-21, and kept because it is the record of what was believed.**
+> This document asserts that abliteration "rewrites ~70% of political wording", which was
+> narrowed on 2026-09-13 and settled against on 2026-09-20: on four of five families the
+> stock-versus-abliterated word-set overlap sits inside the band a single model produces
+> resampled against itself, and only `qwen2.5-7b` falls outside it. The **stance** half of the
+> weight-rung claim — that abliteration moves stance by ≤0.2 — is unaffected and is the
+> load-bearing one. Read `PRIOR-WORK-CORRECTIONS.md` and the retraction register in
+> `key_numbers.RETRACTED` before quoting anything here.
+>
+> It was carrying the claim unmarked until an adversarial pass found it, because the retraction
+> scanner read line by line and the sentence is hand-wrapped. The scanner now reads across
+> wraps; this banner is what exempts an archive from a gate that a live document must pass.
 
 2026-09-05
 

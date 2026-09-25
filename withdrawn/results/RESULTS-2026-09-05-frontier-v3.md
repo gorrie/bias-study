@@ -1,20 +1,5 @@
 # The newest Western frontier will not take the test
 
-> ## SUPERSEDED — kept as history. Its null is withdrawn; do not cite it.
->
-> **Banner added 2026-09-22.** This document states, in bold, that the models it measured
-> comply with a commitment instruction and that their position under pressure does not move.
-> **That null is withdrawn** — 2026-09-18, `CORRECTIONS-2026-09-17-power.md`, ledgered as
-> entry 28 of [`CORRECTIONS.md`](../CORRECTIONS.md). It was judged against a detection limit
-> measured on a different instrument: the movement here is counted out of the retired 62-item
-> questionnaire, the threshold out of the 32-item battery, and the two do not convert, because
-> the items differ and not merely how many there are.
->
-> The refusal behaviour recorded below is unaffected and is why the page is kept. The
-> positional null is not a finding of this study until it is re-collected on the live
-> instrument. This page carried the claim unbannered at the pushed head for four days after
-> the withdrawal, because no gate read this directory.
-
 2026-09-05
 
 Six models released between 2026-08-26 and 2026-09-04, put to the same 62 forced-choice

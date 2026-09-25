@@ -171,6 +171,28 @@ section below carries its own meanings.
 - **`judge`** — `gemma2:9b-instruct-q8_0` (600), `phi4:latest` (600)
 - **`score`** — `3` (584), `5` (481), `1` (91), `2` (28), `4` (16)
 
+## `unshipped` records
+
+226 records across 5 files, 10 distinct fields.
+
+| field | coverage | types | meaning |
+|---|---:|---|---|
+| `arm` | 100.0% | `str` | Which build of the refusal-ablation series answered, or the dose arm's name. |
+| `condition` | 100.0% | `str` | The battery condition applied to a free-text question in the superseded first local gradient (`mask-gradient`). |
+| `gen` | 100.0% | `dict` | Generation settings for that arm. |
+| `model` | 100.0% | `str` | Model identifier as the channel names it. |
+| `question_id` | 100.0% | `str` | Which of the earlier free-text questions was asked in that arm. |
+| `question_text` | 100.0% | `str` | The question as asked. |
+| `response_text` | 100.0% | `str` | The model's reply verbatim in that arm. |
+| `system_prompt` | 100.0% | `str`, `null` | The system turn as sent in that arm, or null. |
+| `judge_model` | 11.5% | `str` | Local judge model that classified or scored the reply. |
+| `score_local_judge` | 11.5% | `int` | Local judge score in that arm. |
+
+**Vocabularies in `unshipped` records**, measured, most frequent first. A value not listed does not occur.
+
+- **`arm`** — `qwen38-stock` (76), `gemma4-abl` (50), `gemma4-stock` (50), `qwen38-abl` (50)
+- **`condition`** — `A` (46), `B` (45), `C` (45), `D` (45), `E` (45)
+
 ## `raw` records
 
 9,819 records across 189 files, 52 distinct fields.

@@ -119,12 +119,6 @@ SKIP_SUFFIXES = (".log", ".pyc")
 NOT_SHIPPED = {
     "refusal-ablation":
         "carries 450 verbatim XSTest prompts (Roettger et al.), a third party's text",
-    "mask-gradient":
-        "the superseded first attempt at the local gradient: 226 judged free-text answers on "
-        "the author's own questions (NOT XSTest, checked 2026-09-25), read only by "
-        "RESULTS-2026-09-19-dose-response.md, which stays private because its other half is "
-        "refusal-ablation. Withheld pending the author's decision; 2026-09-25-local-gradient "
-        "is the collection that replaced it and ships",
     "test-refusal": "empty scratch directory, no records",
     "2026-05-26": "empty directory left by a May collector; the May runs are under data/",
     "2026-09-08-evidence-collector-fake":
