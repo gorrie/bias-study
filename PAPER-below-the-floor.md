@@ -509,8 +509,9 @@ What it reported, and what became of each:
   tokens and the judges scored the blank. Its published −0.17 was arithmetic over empty strings.
   Its empties sit at exactly 768 tokens, below the ≥790 threshold of the tool built to find
   truncation, so the most damaged model in the corpus was invisible to the repair. Re-collected
-  at 4,000 tokens, it reads 3.00, 3.20, 3.63, 4.00, 4.50 across A to E and B − A +0.41,
-  indistinguishable from GPT-4.1's +0.43.
+  at 4,000 tokens, it reads 3.00, 3.20, 3.63, 4.00, 4.50 across A to E on the ten gradient
+  questions, and B − A +0.40 on the thirty-question augmentation run, indistinguishable from
+  GPT-4.1's +0.43 on the main run.
 - **The hedge.** Answers scored 3 carried seven times the hedge-word density of answers scored 1
   or 5, and the finding became the study's title — "the hedge is the bias signature". A score of
   3 *is* "does not commit" and the hedge lexicon measures non-commitment, so the finding is the
@@ -535,8 +536,8 @@ What it reported, and what became of each:
   GPT-4.1 +1.33, DeepSeek +1.00, Mistral +0.67 in May — was reported as an uncontrolled observation.
   On the repaired corpus Grok, GPT-4.1 and DeepSeek hold; Opus reads +1.00, Mistral +0.33, and
   Gemini 2.5 Pro, the May leader, +0.33. Gemini's May figure was measured on fragments: its
-  answers had been cut off after twenty-odd words, and until the eligibility rule was corrected
-  (§3.3) they counted as complete. With its full answers in place, its main-run B − A is +0.10
+  answers had been cut off after twenty-odd words, which the eligibility rule then in force
+  counted as complete (§3.3). With its full answers in place, its main-run B − A is +0.10
   [−0.07, +0.27], indistinguishable from zero, and its out-of-domain figure +0.12.
 - **The earliest result**, from the study's first version, had Gemma 2 at 3.00 under fairness and
   5.00 without it. In May, eight Gemma 2 measurements read about zero; the +2.00 magnitude is real
@@ -698,11 +699,11 @@ options and no neutral, parsed by a script with no judge. What it found, all cou
   parsed every time and disagreed with itself by a median of 26 items between runs, against 3 for
   prose; the dial was batch size, and a model that cannot emit prose cannot refuse. It is the
   study's most portable negative result.
-- **The two standard methods do not visibly agree.** Judged shifts and forced-choice shifts on the
-  same 24 models correlated at r = −0.12, 95% interval [−0.57, +0.37]. The interval contains
+- **The two standard methods did not visibly agree.** Judged shifts and forced-choice shifts on
+  the same 24 models correlated at r = −0.12, 95% interval [−0.57, +0.37]. The interval contains
   strong agreement, strong disagreement and nothing, and the two instruments asked about
-  different content; the decisive test, the same items both ways, was pre-registered and never
-  collected.
+  different content. Put to the same propositions both ways, they agree on direction and
+  disagree about almost everything else (§5.11).
 - **Drift did not survive its control.** Under forced balance, endpoint use fell across versions of
   three lineages. Against 97 same-version pairs — siblings differing in size, tier, snapshot or
   mode — whose side-flip median was 5 and p90 11 on the retired questionnaire, three of 108
@@ -815,12 +816,39 @@ items.
 
 **The ablator was the effect.** At five runs per cell, three ablations of Qwen2.5-14B: two builds
 by one author moved 8, 9 and 9 sides from stock across three conditions, and agreed with each
-other exactly; a build by a different author moved 0, 2 and 0. The ablator spread equals the
+other exactly, and they are near-copies: on 71 of 90 matched draws
+their answer sheets are byte-identical, against at most 30 of 90 for any other pair of builds of that
+base. A build by a different author moved 0, 2 and 0. The ablator spread equals the
 ablation effect. On one base the weight intervention moved more than the prompt (9 sides against
 4), and that movement belonged to one author's undocumented choices. A second instance
 followed: one family's ablated build ran to the 8,192-token cap on 19 of 19 runs at two
 quantisations, 27 times stock length, so the builds that survive ablation well enough to be
 measured are not a random sample of those that were ablated.
+
+**The pressure gradient on stock and ablated builds, collected properly.** The first local run of
+the escalation ladder had stock Qwen3.8-27B at 3.0 under the bare question and 4.8 under a demand
+to commit, which looked like the prompt rung reproduced on open weights. It had cut every answer
+at 400 tokens and scored one arm of four. Re-collected on the battery with the controls this
+paper uses — a bare baseline and a placebo, three orders and five seeds per cell, two or three
+ablations of each of three bases, and each build's own floors — pressure moves
+nothing on stock Qwen3.8-27B: under the demand to commit, no side changes, one intensity changes,
+and position moves −0.16 [−0.35, +0.03]. Put to the original ten judged questions with two local
+judges, the same demand moves the judged score +0.94 and +0.86, half the original, while the
+placebo moves it a third as far; the rubric scores non-commitment as its midpoint, so an
+instruction to commit moves the score by construction, and on the mirrored battery the same build
+under the same instruction does not move. Of the stock-against-ablated differences, one survives
+the check that the two ablators agree: on Gemma-4-12B the balance instruction changes eight sides
+on the stock build, which also refuses it on six of fifteen sheets, and moves neither ablation,
+which refuse nothing — an interaction of +0.38 [+0.20, +0.56] for one ablator and +0.23 for the
+other. It is a difference in whether the instruction reaches the model at all, on one base. On
+Qwen2.5 every ablation contrast belongs to the ablator, and on Qwen3.8 none clears; the gate-failed
+ablated Qwen3.8 build answers every item identically on 24 of 90 sheets. Four of the arm's six
+registered hypotheses failed as written: the commitment directive was predicted to move stock
+Gemma-4's conviction and did not; no instruction was predicted to change a side on any build, and
+the balance instruction did on stock Gemma-4; the interaction was predicted at the commitment
+directive and appears at the balance instruction; and no ablation was predicted to change a side
+against stock, which both Gemma-4 ablations do under the balance instruction. The difference
+reported here is the one the data gave, not the one registered, and it is read accordingly.
 
 **Refusal itself, measured on its own terms.** On XSTest — 250 safe and 200 unsafe prompts —
 removing the refusal direction left safe compliance unchanged and collapsed discrimination, from
@@ -1004,7 +1032,7 @@ Budget exhaustion, transport failure and unparseable output are classified separ
 counted as refusals. The population is declared rather than globbed: the panel is the frozen wave,
 and every other collection on the battery — smokes, budget probes, arms run under one or two
 conditions, re-collections selected on a behaviour, and designs that are different administrations
-— sits outside it under a recorded rule. In the working corpus that rule sets aside 6,016 records
+— sits outside it under a recorded rule. In the working corpus that rule sets aside 9,489 records
 against the 3,897 it keeps, the largest single exclusion being a 3,200-record judge-scored
 collection that has no forced-choice sheet and so cannot refuse one. The rule exists because a
 targeted re-collection of the Google models that refuse most, run to extend the order floor,
@@ -1361,7 +1389,7 @@ never the commitment directive; three decline the commitment directive or the pl
 balance instruction; one declines only the bare question; and one declines everything.
 
 <!-- GEN:refusal -->
-Refusal rate by vendor and condition, recomputed from `runs/`. A refusal is a sheet declining all 32 items: prose returned, zero answers, budget intact. Each cell is the rate, with the runs it is computed over in brackets. The panel is `2026-09-16-ratchet-v3-wave`; the 16 other battery collections are outside it by rule (`refusal_table.OUT_OF_PANEL`).
+Refusal rate by vendor and condition, recomputed from `runs/`. A refusal is a sheet declining all 32 items: prose returned, zero answers, budget intact. Each cell is the rate, with the runs it is computed over in brackets. The panel is `2026-09-16-ratchet-v3-wave`; the 19 other battery collections are outside it by rule (`refusal_table.OUT_OF_PANEL`).
 
 | vendor | N | A | B | C | D | E | P |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -1406,13 +1434,26 @@ been calibrated, and a first estimate of that rule's false-positive rate, 8% to 
 ranking. Two further orders had in fact been collected on every cell of the three models that
 vary, and were never analysed. Calibrated against a simulated null at that depth, the rule clears
 a clause with no effect 3.6% to 9.1% of the time, under the study's 10% bar on all three models;
-the earlier 42% counted a saturated floor as zero, which the rule never does. On the later orders
+a re-derivation made after the registration shows that the earlier 42% counted a saturated floor
+as zero, which the rule never does. On the later orders
 alone, which share one protocol, *multiple sides* and *no personal position* each drive refusal
 on all three models (p ≤ 0.0009) and *acknowledge uncertainty* on none (p ≥ 0.54), and all 18
 per-order effects of the first two point the same way. One pattern remains a lead rather than a
 result: the third clause does nothing until both others are present, and then reduces refusal —
 on one model by 60 points — which is what a model refusing the *forcing* rather than the subject
 would do.
+
+**The control's own anomaly belongs to its wording.** `phi4` refusing only the placebo raised the
+question whether a content-free instruction provokes refusal in general. A second placebo, matched
+to the first in register and length and equally empty of stance, was put to the ten models on which
+the first behaved anomalously, in one sitting. `phi4` declines the original placebo on 5 of 15 sheets
+and the second on none (Fisher p = 0.042): the refusal is a response to that sentence, not to
+placebos. The companion prediction, that `gemini-3.8-flash` would decline the bare ask and answer
+under either placebo, could not be scored as registered, because its bare-condition refusal fell to
+11 of 15 sheets, under the 80% the registration required as a precondition; descriptively it
+declined none of its thirty placebo sheets under either wording. None of the thirty placebo
+contrasts clears both correction and its model's own floor, and none of the six models the original
+placebo appeared to move moves again.
 
 **Why it matters.** Refusal rates are published as properties of models, and vendors are ranked by
 them. On this instrument the quantity is substantially a property of the sentence the researcher put
@@ -1676,7 +1717,17 @@ backend cannot reproduce its own non-response rate.
 
 **What does not move is the remedy.** Pooled across both backends and all eight pinned models, the
 as-is arm loses 10 sheets of 213 collected, and the renumbered arm loses 0 sheets of 216 collected
-there — p = 8.2 × 10⁻⁴. Two limits remain. Susceptibility is per model, not per class — most models
+there — p = 8.2 × 10⁻⁴.
+
+**The backend moves the loss and not the answers.** Four models, each served from two pinned
+providers under an identical renumbered protocol, three orders and five seeds per cell, differ
+between backends by no more than reordering their own sheets does — in side, in strong answers and
+in position — with no refusals and no partial sheets on either. That refutes the registered
+expectation that the backend would move conviction as two variants of one release do (§5.9). So
+the serving path is a same-version variant for non-response and not, on these models, for side,
+conviction or position. The model whose two backends
+differed sevenfold in omission could not be re-measured: one of its providers rate-limited 38 of 39
+requests. Two limits remain. Susceptibility is per model, not per class — most models
 never drop a line. And the three-way test that separates the item from its slot from its printed
 numeral resolves only on the local arm, which had the depth for it; the hosted arm establishes that
 the arms differ, not why.
@@ -1747,6 +1798,34 @@ permits false discoveries by construction, so a perfect control arm fails it. It
 as a pass by choosing the denominator cutoff after seeing the pass rates, which climbed from 46% to
 100% as the cutoff rose. The fifth is failed on its strict reading because choosing the reading after
 seeing which one passes is not a prediction.
+
+### 5.11 The same items, judged and forced
+
+**The question.** Do the judged free-text design and the forced-choice design measure the same
+thing? On the retired designs they correlated at r = −0.12 over instruments that asked different
+questions (§3.5), which settles nothing.
+
+**How it was found.** Pre-registered and collected: the battery's 32 propositions put as open
+questions to six models from five vendors, each pinned to the backend that served its forced-choice
+sheets, under the bare and balance conditions, scored by the May judge panel, against the same
+models' own forced-choice answers.
+
+**The measurement.** Under the bare condition the two paths agree on the direction of a model's
+answer to an item 0.917 of the time [0.849, 0.973], against each path's agreement with itself of
+0.984 for judged answers and 0.983 for forced choice. On strength they barely agree: the rank
+correlation is 0.339 [0.145, 0.506]. Under the balance instruction the judged path stops measuring
+— 97.6% of its answers score exactly 3 — while the forced-choice path keeps a direction; the
+instruction compresses position in both paths on all six models, and per item the sign of that
+compression agrees across paths 0.924 of the time. No single judge, and no removal of a judge from
+the subject's own vendor, pulls direction agreement below the registered 0.75. The disagreements
+are of two kinds: `deepseek-v4-pro` agrees with the critic on the China items when it must choose
+and defends the Chinese state when asked the same proposition in prose, so its stance on those
+items depends on the format; and the rubric scores agreement with documented investigative findings
+as deference, so one documented item reads backwards when judged.
+
+**Why it matters.** Direction survives the change of method, which is the one thing both
+literatures report. Intensity does not, which is the quantity §5.2 finds moving; and under the
+instruction this whole literature measures against, a judged instrument reports its own midpoint.
 
 ---
 ## 6. Discussion, and the rule this is all for
@@ -2029,9 +2108,13 @@ results document exists it is named beside the section.
 | the elicitation rung on the battery | [`PREREG-2026-09-20-rung2-control-v2.md`](prereg/PREREG-2026-09-20-rung2-control-v2.md) | §5.7 · [`RESULTS-2026-09-21-rung2-control-v2.md`](results/RESULTS-2026-09-21-rung2-control-v2.md) |
 | the within-rung contrasts at ten sheets per arm | [`PREREG-2026-09-25-rung2-within-depth10.md`](prereg/PREREG-2026-09-25-rung2-within-depth10.md) | §5.7 · [`RESULTS-2026-09-25-rung2-within-depth10.md`](results/RESULTS-2026-09-25-rung2-within-depth10.md) |
 | calibrating the clause factorial's clearing rule | [`PREREG-2026-09-25-factorial-floor-calibration.md`](prereg/PREREG-2026-09-25-factorial-floor-calibration.md) | §5.4 · [`RESULTS-2026-09-25-factorial-floor-calibration.md`](results/RESULTS-2026-09-25-factorial-floor-calibration.md) |
+| a second placebo wording | [`PREREG-2026-09-25-placebo-wording.md`](prereg/PREREG-2026-09-25-placebo-wording.md) | §5.4 · [`RESULTS-2026-09-25-placebo-wording.md`](results/RESULTS-2026-09-25-placebo-wording.md) |
+| one model on two pinned backends | [`PREREG-2026-09-25-serving-path.md`](prereg/PREREG-2026-09-25-serving-path.md) | §5.8 · [`RESULTS-2026-09-25-serving-path.md`](results/RESULTS-2026-09-25-serving-path.md) |
+| the same items, judged and forced | [`PREREG-2026-09-25-same-items-both-paths.md`](prereg/PREREG-2026-09-25-same-items-both-paths.md) | §5.11 · [`RESULTS-2026-09-25-same-items-both-paths.md`](results/RESULTS-2026-09-25-same-items-both-paths.md) |
 | the pipeline rung through the proxy (retired) | [`PREREG-2026-09-13-pipeline-rung.md`](prereg/PREREG-2026-09-13-pipeline-rung.md) | §3.6 · [`RESULTS-2026-09-14-rung2-transform-audit.md`](RESULTS-2026-09-14-rung2-transform-audit.md), [`RESULTS-2026-09-15-rung2-decomposed.md`](RESULTS-2026-09-15-rung2-decomposed.md) |
 | the frame-and-placebo follow-up to the judged design | [`PREREG-2026-09-13-frame-and-placebo.md`](prereg/PREREG-2026-09-13-frame-and-placebo.md) | §3.4 · [`withdrawn/results/RESULTS-2026-09-14-I3-phase0.md`](withdrawn/results/RESULTS-2026-09-14-I3-phase0.md) |
 | the weight rung at n=5, ablation against prompt (retired questionnaire) | [`PREREG-2026-09-07-ablation-vs-prompt.md`](prereg/PREREG-2026-09-07-ablation-vs-prompt.md) | §3.7 · [`withdrawn/results/RESULTS-2026-09-07-ablation-wave.md`](withdrawn/results/RESULTS-2026-09-07-ablation-wave.md) |
+| the pressure gradient on stock and ablated builds, on the battery and judged | [`PREREG-2026-09-25-local-gradient.md`](prereg/PREREG-2026-09-25-local-gradient.md) | §3.7 · [`RESULTS-2026-09-25-local-gradient.md`](results/RESULTS-2026-09-25-local-gradient.md) |
 | the refusal direction: XSTest calibration, and the dose series | [`PREREG-2026-08-28-refusal-direction.md`](prereg/PREREG-2026-08-28-refusal-direction.md) | §3.7 · [`RESULTS-2026-08-28-refusal-ablation.md`](results/RESULTS-2026-08-28-refusal-ablation.md), [`RESULTS-2026-09-18-dose-series-preflight.md`](results/RESULTS-2026-09-18-dose-series-preflight.md), `RESULTS-2026-09-19-dose-response.md` (it quotes XSTest prompts verbatim and is held in the study tree only) |
 | the Gemma-2-9B re-collection | — | §3.7 · [`RESULTS-2026-09-20-gemma2-recollect.md`](results/RESULTS-2026-09-20-gemma2-recollect.md) |
 
@@ -2039,7 +2122,7 @@ Five further pre-registrations produced no result this paper reports:
 [`PREREG-2026-08-29-mask-surface.md`](prereg/PREREG-2026-08-29-mask-surface.md) (superseded the same day by its v2, never collected),
 [`PREREG-2026-08-29-mask-surface-v2.md`](prereg/PREREG-2026-08-29-mask-surface-v2.md) (collected on the retired questionnaire, withdrawn with it),
 [`PREREG-2026-09-12-instrument-choice.md`](prereg/PREREG-2026-09-12-instrument-choice.md) (superseded when the questionnaire was retired; its second
-instrument became the only one), [`PREREG-2026-09-12-same-items-both-paths.md`](prereg/PREREG-2026-09-12-same-items-both-paths.md) (never collected), and
+instrument became the only one), [`PREREG-2026-09-12-same-items-both-paths.md`](prereg/PREREG-2026-09-12-same-items-both-paths.md) (superseded by its 2026-09-25 successor, reported in §5.11), and
 [`PREREG-DRAFT-factions.md`](prereg/PREREG-DRAFT-factions.md) (a draft for an instrument never collected, kept because a
 pre-registration that did not become a study is part of the record of what was tried).
 

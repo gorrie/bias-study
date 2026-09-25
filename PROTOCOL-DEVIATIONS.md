@@ -25,6 +25,12 @@ what was done. This is that record for this study, in one place.
 | 2026-09-18 | `PREREG-2026-09-18-paraphrase.md` | Pre-registration — Röttger's statistic, run on this instrument |
 | 2026-09-20 | `PREREG-2026-09-20-rung2-control-v2.md` | Pre-registration — the rung-2 control, re-collected at protocol v2 |
 | 2026-09-24 | `PREREG-2026-09-24-partials-renumbered.md` | Pre-registration — do the wave's dropped partial sheets move any floor? |
+| 2026-09-25 | `PREREG-2026-09-25-factorial-floor-calibration.md` | Pre-registration — calibrating the clause factorial's floor rule on the orders it already has |
+| 2026-09-25 | `PREREG-2026-09-25-local-gradient.md` | Pre-registration — the local pressure gradient on stock and ablated builds |
+| 2026-09-25 | `PREREG-2026-09-25-placebo-wording.md` | Pre-registration — a second placebo wording |
+| 2026-09-25 | `PREREG-2026-09-25-rung2-within-depth10.md` | Pre-registration — the within-rung rung-2 contrasts at depth 10 |
+| 2026-09-25 | `PREREG-2026-09-25-same-items-both-paths.md` | Pre-registration — the same 32 propositions through both scoring paths |
+| 2026-09-25 | `PREREG-2026-09-25-serving-path.md` | Pre-registration — access tier as serving path: one model, two pinned backends |
 | — | `PREREG-DRAFT-factions.md` | Pre-registration: the Factions instrument — sector lean as a within-model contrast |
 
 ## Roster amendments
