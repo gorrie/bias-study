@@ -32,14 +32,14 @@ PY = sys.executable
 # block name -> (script, args, how to trim the output)
 BLOCKS = {
     "floors":   ("floor_table.py", ["--markdown"], None),
-    "power":    ("power.py", [], None),
+    "power":    ("power.py", ["--markdown"], None),
     "controls": ("controls_audit.py", ["--markdown"], None),
-    "gaps":     ("controls_audit.py", ["--gaps"], None),
+    "gaps":     ("controls_audit.py", ["--gaps-markdown"], None),
     # The paper's refusal table must match the analysis it describes, which withholds the
     # targeted floor collections. That list is refusal_table.DEFAULT_EXCLUDE and is now the
     # script's own default -- naming a run dir here made this the third copy of the same fact,
     # and on 2026-09-04 a new arm needed withholding from all three.
-    "refusal":  ("refusal_table.py", [], None),
+    "refusal":  ("refusal_table.py", ["--markdown"], None),
     # SECTION 1b'S BY-CONDITION TABLE. Hand-typed until 2026-09-22 and stale in every cell --
     # 1622 runs under N against a live 673, 1163 under P against 665, a pooled A rate of
     # 12.2% against 11.6%. Worse than the cells: the sentence above it claimed the ordering
@@ -53,7 +53,7 @@ BLOCKS = {
     # Generated from `run_battery`, which is what was actually sent, so a reworded condition
     # cannot leave a stale prompt in the paper.
     "conditions": ("condition_table.py", ["--markdown"], None),
-    "null":     ("floor_table.py", [], "same-version"),
+    "null":     ("floor_table.py", ["--markdown"], "same-version"),
     # SECTION 1'S HEADLINE TABLE. It was typed, and it disagreed with `order_floor_position`
     # -- the script the ABSTRACT's figures come from -- on both rows they share: 111 order
     # pairs against 108 and 62 significant against 46. A paper whose argument is that a
@@ -120,7 +120,9 @@ def block_body(name, blocks=None):
         # Keep the header lines plus the one row asked for, so the null section shows the
         # null in both statistics without repeating the whole floor table.
         lines = text.split("\n")
-        keep = [l for l in lines if l.strip().startswith("factor") or trim in l]
+        # The markdown table's header and separator rows, then the one row asked for.
+        keep = [l for l in lines
+                if l.strip().startswith(("factor", "| factor", "|---")) or trim in l]
         text = "\n".join(keep) if keep else text
     # A MARKDOWN TABLE INSIDE A CODE FENCE RENDERS AS LITERAL PIPES. The fence is right for the
     # blocks that emit fixed-width text (the vendor table, the power table, the gaps tally) and
@@ -129,7 +131,10 @@ def block_body(name, blocks=None):
     # multiple-comparison accounting all shipped as raw `|` characters -- §9.1 being the one a
     # reviewer reads to see how many tests the paper ran. Found 2026-09-22 by asking of every
     # block whether it contains a table AND a fence, which is a two-line check nobody had run.
+    # EVERY BLOCK IS A REAL TABLE NOW. refusal, power, gaps and null were fixed-width text in
+    # a code fence, which scrolls sideways on a rendered page and breaks a PDF (2026-09-24).
     unfenced = ("floors", "controls", "references", "timeline", "position", "bycondition",
+                "refusal", "power", "gaps", "null",
                 "training", "intensity", "comparisons", "conditions",
                 # The corpus READMEs (gen_corpus_docs.py). All three emit real tables.
                 "corpus-inventory-data", "corpus-inventory-runs", "corpus-scale")

@@ -246,6 +246,22 @@ def main(argv=None):
             rows.append((name, stat, len(vals), thr, mde(vals, thr),
                          pctile_is_max(vals, 1 - ALPHA)))
 
+    if args.markdown:
+        # A REAL TABLE. This flag was accepted and ignored, so the paper carried the fixed-width
+        # text in a code fence -- a block that scrolls sideways on a page and breaks a PDF.
+        print("Detection limits: what this instrument can resolve against each null, in items of "
+              "%d. The threshold is the null's 95th percentile, an order statistic and not an "
+              "alpha = 0.05 rejection region. The minimum detectable effect (MDE) is the "
+              "smallest shift that would put 80%% of its mass above that threshold: a design "
+              "sensitivity, not achieved power." % BOUND)
+        print()
+        print("| null | statistic | pairs | threshold | MDE | note |")
+        print("|---|---|---:|---:|---:|---|")
+        for name, stat, n, thr, m, is_max in rows:
+            note = "p95 is the sample maximum (n=%d)" % n if is_max else ""
+            print("| %s | %s | %d | %.0f | %.0f | %s |" % (name, stat, n, thr, m, note))
+        return 0
+
     # DERIVED. Typed as 62 -- the retired questionnaire's length -- above a table of limits
     # computed from 32-item sheets, where every threshold is a count of items out of that
     # bound. BOUND already reads the live bank; the header did not.

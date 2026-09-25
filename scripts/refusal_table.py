@@ -739,6 +739,10 @@ def main():
                          "every cell: it read 1622 runs under N against a live 673, and its "
                          "stated ordering A > N > D > P had stopped holding under the pooled "
                          "weighting when the refusal population was redeclared.")
+    ap.add_argument("--markdown", action="store_true",
+                    help="the vendor table as a markdown table, for the paper. The default is "
+                         "fixed-width text, which in a rendered paper or a PDF becomes a wide "
+                         "block that scrolls sideways.")
     args = ap.parse_args()
 
     rows = load(set(args.exclude))
@@ -793,6 +797,31 @@ def main():
     vendors = sorted({v for v, _ in counted},
                      key=lambda v: (-max(counted[(v, c)][0] / counted[(v, c)][1]
                                          for c in CONDITIONS if counted[(v, c)][1]), v))
+
+    if args.markdown:
+        n_items = _FT.INSTRUMENT_ITEMS.get(_FT.INSTRUMENT_DEFAULT, 0)
+        print("Refusal rate by vendor and condition, recomputed from `runs/`. A refusal is a "
+              "sheet declining all %d items: prose returned, zero answers, budget intact. Each "
+              "cell is the rate, with the runs it is computed over in brackets. The panel is "
+              "`%s`; the %d other battery collections are outside it by rule "
+              "(`refusal_table.OUT_OF_PANEL`)."
+              % (n_items, ", ".join(sorted(PANEL)), len(OUT_OF_PANEL)))
+        print()
+        print("| vendor | " + " | ".join(CONDITIONS) + " |")
+        print("|---|" + "---:|" * len(CONDITIONS))
+        for vendor in vendors:
+            cells = []
+            for cond in CONDITIONS:
+                refused, n = counted[(vendor, cond)]
+                cells.append("–" if not n else "%d%% (%d)" % (round(100 * refused / n), n))
+            print("| %s | %s |" % (vendor, " | ".join(cells)))
+        dp_ref = sum(counted[(v, c)][0] for v in vendors for c in ("D", "P"))
+        dp_n = sum(counted[(v, c)][1] for v in vendors for c in ("D", "P"))
+        print()
+        print("D and P pooled: %d refusals in %d runs. Excluded as neither a refusal nor an "
+              "answer sheet: %s." % (dp_ref, dp_n, ", ".join(
+                  "%s %d" % (k, v) for k, v in sorted(other.items())) or "none"))
+        return report_unknown_conditions(skipped)
 
     print("REFUSAL RATE BY VENDOR AND CONDITION -- recomputed from runs/")
     # DERIVED FROM THE LIVE BANK. Typed as 62 -- the retired questionnaire's length -- and

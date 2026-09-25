@@ -22,6 +22,7 @@ SECOND GUARD: no hand-copying. Every count in the paper comes from this script's
 from __future__ import annotations
 
 import argparse
+import collections
 import io
 import json
 import os
@@ -220,6 +221,36 @@ def gaps(doc):
     return "\n".join(lines)
 
 
+def gaps_markdown(doc):
+    """The same tally and the same two lists as `gaps`, as a table and sentences, for the paper.
+
+    The per-study notes are the audit's working record -- sources, re-read dates -- and belong
+    in `data/controls-audit.json`, not in the paper. The paper names the studies.
+    """
+    controls = list(doc["controls"])
+    studies = [s for s in doc["studies"] if s["id"] != "ours"]
+    keys = ("yes", "partial", "no", "n/a", "unknown")
+    out = ["Each control scored across the %d audited studies, excluding this one. The full "
+           "per-study record, with sources, is `data/controls-audit.json`." % len(studies), "",
+           "| control | what it asks | " + " | ".join(keys) + " |",
+           "|---|---|" + "---:|" * len(keys)]
+    for c in controls:
+        counts = collections.Counter(s["status"][c] for s in studies)
+        out.append("| `%s` | %s | %s |" % (c, doc["controls"][c].replace("|", "/"),
+                                           " | ".join(str(counts.get(k, 0)) for k in keys)))
+    have = [s["id"] for s in studies if s.get("pairs_in_hand") is True
+            and s["status"]["same_version_dist"] in ("no", "partial")]
+    unestablished = [s["id"] for s in studies if s.get("pairs_in_hand") is None]
+    out += ["", "%d of the %d studies already hold same-version pairs inside their own design "
+                "and do not report them as a distribution: %s."
+            % (len(have), len(studies), ", ".join("`%s`" % h for h in have))]
+    if unestablished:
+        out.append("For %d it cannot be established from the published record whether such "
+                   "pairs are in the design: %s."
+                   % (len(unestablished), ", ".join("`%s`" % u for u in unestablished)))
+    return "\n".join(out)
+
+
 def strict_check(doc):
     """A 'no' verdict about someone else's paper needs a source stronger than our own notes."""
     problems = []
@@ -258,6 +289,9 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--markdown", action="store_true")
     ap.add_argument("--gaps", action="store_true")
+    ap.add_argument("--gaps-markdown", action="store_true",
+                    help="the --gaps tally as a markdown table with the studies named, for the "
+                         "paper (the per-study notes stay in data/controls-audit.json)")
     ap.add_argument("--strict", action="store_true")
     ap.add_argument("--scale-markdown", action="store_true",
                     help="what each audited study collected, beside whether it reports an "
@@ -291,6 +325,9 @@ def main(argv=None):
         return 0
     if args.gaps:
         print(gaps(doc))
+        return 0
+    if args.gaps_markdown:
+        print(gaps_markdown(doc))
         return 0
 
     print(render(doc, args.markdown))

@@ -1645,7 +1645,10 @@ def build():
         {"key": "omission_pinned_renum",
          "value": (omission["pinned"] or {}).get("renum_partial", UNAVAILABLE),
          "what": "partial sheets in the renumbered hosted arm, backends pinned",
-         "phrase": "against %d of"},
+         # WITH THE BOLD. "against %d of" never matched the §6b sentence, which reads
+         # "against **0 of 192"; it passed on "against 0 offline" in an audit note inside a
+         # generated block, so this figure was not gated until that block changed (2026-09-24).
+         "phrase": "against **%d of"},
         {"key": "omission_pinned_renum_sheets",
          "value": (omission["pinned"] or {}).get("renum_sheets", UNAVAILABLE),
          "what": "renumbered sheets attempted, hosted arm with backends pinned",

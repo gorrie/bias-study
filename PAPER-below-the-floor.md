@@ -309,43 +309,37 @@ same damage in the other direction — it grows a denominator on one side of a c
 adding a single observation about refusal.
 
 <!-- GEN:refusal -->
-```
-REFUSAL RATE BY VENDOR AND CONDITION -- recomputed from runs/
-refusal = declined all 32 items: prose returned, zero answers, budget intact
-panel: 2026-09-16-ratchet-v3-wave
-outside the panel, by rule: 15 collection(s); refusal_table.OUT_OF_PANEL names each
-with the rule it falls under, and the rule removes more records than it keeps.
+Refusal rate by vendor and condition, recomputed from `runs/`. A refusal is a sheet declining all 32 items: prose returned, zero answers, budget intact. Each cell is the rate, with the runs it is computed over in brackets. The panel is `2026-09-16-ratchet-v3-wave`; the 15 other battery collections are outside it by rule (`refusal_table.OUT_OF_PANEL`).
 
-vendor                     N           A           B           C           D           E           P
-google              61% (59)    61% (59)    67% (15)    67% (15)    32% (56)    40% (15)    32% (56)
-microsoft            0% (15)     0% (15)      0% (5)     43% (7)     0% (15)      0% (5)    53% (19)
-meta-llama           0% (27)     0% (28)      0% (5)     40% (5)    28% (32)     40% (5)     0% (26)
-openai              0% (120)   25% (126)     0% (40)     0% (40)    0% (120)     0% (40)    0% (120)
-anthropic            0% (45)     9% (47)     0% (15)     0% (15)     0% (45)     0% (15)     0% (44)
-hf.co                0% (37)     8% (39)     0% (25)     0% (25)     0% (37)     0% (30)     0% (39)
-deepseek             6% (63)     0% (57)     0% (17)     0% (18)     0% (59)     0% (20)     0% (59)
-moonshotai           0% (48)     2% (46)     0% (15)     0% (14)     0% (45)     0% (15)     0% (47)
-x-ai                 0% (45)     2% (46)     0% (15)     0% (15)     0% (45)     0% (15)     0% (45)
-z-ai                 0% (55)     2% (51)     0% (15)     0% (15)     0% (51)     0% (15)     0% (51)
-aion-labs             0% (5)      0% (5)           -           -      0% (5)           -      0% (5)
-cohere                0% (5)      0% (5)           -           -      0% (5)           -      0% (5)
-huihui_ai             0% (5)      0% (5)      0% (5)      0% (5)      0% (8)      0% (4)     0% (10)
-ibm-granite           0% (5)      0% (5)           -           -      0% (5)           -      0% (5)
-meituan               0% (5)      0% (5)           -           -      0% (5)           -      0% (5)
-minimax               0% (5)      0% (5)           -           -      0% (5)           -      0% (5)
-mistralai            0% (27)     0% (31)      0% (6)     0% (10)     0% (31)     0% (10)     0% (28)
-qwen                 0% (45)     0% (47)     0% (12)     0% (10)     0% (53)     0% (15)     0% (51)
-stepfun               0% (5)      0% (5)           -           -      0% (5)           -      0% (5)
-tencent               0% (5)      0% (5)           -           -      0% (5)           -      0% (5)
-upstage               0% (5)      0% (5)           -           -      0% (5)           -      0% (5)
-writer                0% (5)      0% (5)           -           -      0% (5)           -      0% (5)
-xiaomi                0% (5)      0% (5)           -           -      0% (5)           -      0% (5)
+| vendor | N | A | B | C | D | E | P |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| google | 61% (59) | 61% (59) | 67% (15) | 67% (15) | 32% (56) | 40% (15) | 32% (56) |
+| microsoft | 0% (15) | 0% (15) | 0% (5) | 43% (7) | 0% (15) | 0% (5) | 53% (19) |
+| meta-llama | 0% (27) | 0% (28) | 0% (5) | 40% (5) | 28% (32) | 40% (5) | 0% (26) |
+| openai | 0% (120) | 25% (126) | 0% (40) | 0% (40) | 0% (120) | 0% (40) | 0% (120) |
+| anthropic | 0% (45) | 9% (47) | 0% (15) | 0% (15) | 0% (45) | 0% (15) | 0% (44) |
+| hf.co | 0% (37) | 8% (39) | 0% (25) | 0% (25) | 0% (37) | 0% (30) | 0% (39) |
+| deepseek | 6% (63) | 0% (57) | 0% (17) | 0% (18) | 0% (59) | 0% (20) | 0% (59) |
+| moonshotai | 0% (48) | 2% (46) | 0% (15) | 0% (14) | 0% (45) | 0% (15) | 0% (47) |
+| x-ai | 0% (45) | 2% (46) | 0% (15) | 0% (15) | 0% (45) | 0% (15) | 0% (45) |
+| z-ai | 0% (55) | 2% (51) | 0% (15) | 0% (15) | 0% (51) | 0% (15) | 0% (51) |
+| aion-labs | 0% (5) | 0% (5) | – | – | 0% (5) | – | 0% (5) |
+| cohere | 0% (5) | 0% (5) | – | – | 0% (5) | – | 0% (5) |
+| huihui_ai | 0% (5) | 0% (5) | 0% (5) | 0% (5) | 0% (8) | 0% (4) | 0% (10) |
+| ibm-granite | 0% (5) | 0% (5) | – | – | 0% (5) | – | 0% (5) |
+| meituan | 0% (5) | 0% (5) | – | – | 0% (5) | – | 0% (5) |
+| minimax | 0% (5) | 0% (5) | – | – | 0% (5) | – | 0% (5) |
+| mistralai | 0% (27) | 0% (31) | 0% (6) | 0% (10) | 0% (31) | 0% (10) | 0% (28) |
+| qwen | 0% (45) | 0% (47) | 0% (12) | 0% (10) | 0% (53) | 0% (15) | 0% (51) |
+| stepfun | 0% (5) | 0% (5) | – | – | 0% (5) | – | 0% (5) |
+| tencent | 0% (5) | 0% (5) | – | – | 0% (5) | – | 0% (5) |
+| upstage | 0% (5) | 0% (5) | – | – | 0% (5) | – | 0% (5) |
+| writer | 0% (5) | 0% (5) | – | – | 0% (5) | – | 0% (5) |
+| xiaomi | 0% (5) | 0% (5) | – | – | 0% (5) | – | 0% (5) |
 
-D and P pooled: 55 refusals in 1292 runs
-excluded as neither refusal nor answer sheet: budget-exhausted 16, other 109, transport 85
+D and P pooled: 55 refusals in 1292 runs. Excluded as neither a refusal nor an answer sheet: budget-exhausted 16, other 109, transport 85.
 
 not in this table, by design: 519 clause-factorial sheet(s) across 8 cell(s) -- run with --factorial
-```
 <!-- /GEN:refusal -->
 
 That is a small result. It is first because it is the shape of the large one.
@@ -602,28 +596,24 @@ For that the null has to become a detection limit: the smallest real effect that
 the noise often enough to be caught.
 
 <!-- GEN:power -->
-```
-DETECTION LIMITS -- what this instrument can resolve, per null, of 32 items
-threshold = reference p95, an order statistic; NOT an alpha=0.05 rejection region
-MDE       = smallest shift with 80% of mass above p95; a design sensitivity,
-            NOT achieved power, and NOT a cutoff for reading an observation
+Detection limits: what this instrument can resolve against each null, in items of 32. The threshold is the null's 95th percentile, an order statistic and not an alpha = 0.05 rejection region. The minimum detectable effect (MDE) is the smallest shift that would put 80% of its mass above that threshold: a design sensitivity, not achieved power.
 
-null                         statistic  pairs   threshold    MDE  note
-presentation order           side          94           7      7
-presentation order           endpoint      94          12     13
-same-version variants        side          24           2      3
-same-version variants        endpoint      24          13     11
-run-to-run replicate         side        6240           4      5
-run-to-run replicate         endpoint    6240          15     16
-requantisation               side          16          15     15  p95 IS THE SAMPLE MAX (n=16)
-requantisation               endpoint      16          15     16  p95 IS THE SAMPLE MAX (n=16)
-presentation order, one sitting side         107           3      4
-presentation order, one sitting endpoint     107          18     18
-presentation order, one sitting, local open-weight side          23          11     10
-presentation order, one sitting, local open-weight endpoint      23          16     16
-presentation order, one sitting, frontier API side          84           1      2
-presentation order, one sitting, frontier API endpoint      84          20     20
-```
+| null | statistic | pairs | threshold | MDE | note |
+|---|---|---:|---:|---:|---|
+| presentation order | side | 94 | 7 | 7 |  |
+| presentation order | endpoint | 94 | 12 | 13 |  |
+| same-version variants | side | 24 | 2 | 3 |  |
+| same-version variants | endpoint | 24 | 13 | 11 |  |
+| run-to-run replicate | side | 6240 | 4 | 5 |  |
+| run-to-run replicate | endpoint | 6240 | 15 | 16 |  |
+| requantisation | side | 16 | 15 | 15 | p95 is the sample maximum (n=16) |
+| requantisation | endpoint | 16 | 15 | 16 | p95 is the sample maximum (n=16) |
+| presentation order, one sitting | side | 107 | 3 | 4 |  |
+| presentation order, one sitting | endpoint | 107 | 18 | 18 |  |
+| presentation order, one sitting, local open-weight | side | 23 | 11 | 10 |  |
+| presentation order, one sitting, local open-weight | endpoint | 23 | 16 | 16 |  |
+| presentation order, one sitting, frontier API | side | 84 | 1 | 2 |  |
+| presentation order, one sitting, frontier API | endpoint | 84 | 20 | 20 |  |
 <!-- /GEN:power -->
 
 **7 items of 32**, against presentation order pooled across classes. That is the threshold a
@@ -976,56 +966,27 @@ contributes a decision rule rather than a warning.
 <!-- /GEN:controls -->
 
 <!-- GEN:gaps -->
-```
-PER-CONTROL TALLY, excluding this study (n=14)
+Each control scored across the 14 audited studies, excluding this one. The full per-study record, with sources, is `data/controls-audit.json`.
 
-  item_order             yes 1, partial 3, no 5, n/a 5
-      Item-order variation WITH a reported change rate. Not randomisation used as a prevention device and pooled away -- the magnitude has to be reported.
-  nuisance_magnitude     yes 9, partial 3, no 2
-      ANY non-political factor's effect reported as an item-level magnitude -- paraphrase, format, ordering, serving stack. Broader than item_order and the question that actually matters: did the study tell the reader how much its instrument moves on its own?
-  same_version_point     yes 2, partial 3, no 7, n/a 2
-      Any same-version or non-transition pair used as a negative control, even one.
-  same_version_dist      partial 1, no 11, n/a 2
-      A same-version null as a DISTRIBUTION: median and upper percentile over many pairs, so a single observed transition can be scored against it.
-  quantisation           partial 2, no 9, n/a 2, unknown 1
-      Serving-stack variation (quantisation, precision) held or measured.
-  retained_failures      yes 2, partial 3, no 7, n/a 1, unknown 1
-      Unparseable or declined runs retained and classified by cause rather than discarded as collection error.
-  reported_mde           yes 2, partial 2, no 9, unknown 1
-      A minimum detectable effect, power analysis, or explicit resolution limit reported alongside the effects.
-  forcing_disclosed      yes 11, partial 3
-      The forcing mechanism that turns free text into a scoreable answer is stated and its influence acknowledged.
-  open_raw               yes 11, no 2, unknown 1
-      Raw per-item responses published, not just aggregates.
-  judge_free_scoring     yes 9, partial 2, no 3
-      No language model anywhere in the scoring path -- answers are recorded mechanically (forced choice, item id + position) rather than read and rated by a model. A judged score inherits the judge's lean; a mechanical one cannot.
-  judge_lean_reported    partial 1, no 4, n/a 9
-      If a model DOES score the responses, the study reports that scoring layer's own lean as a magnitude -- per-judge deviation, or an equivalent -- rather than asserting agreement and stopping.
-  self_judging_disclosed yes 1, partial 3, no 1, n/a 9
-      No subject of the study also sits on the panel that scores it, or if one does, the study says so. n/a where scoring is judge-free.
-  longitudinal           yes 1, partial 1, no 12
-      The same subject re-measured over CALENDAR TIME under held parameters. A cross-section of successive versions measured on one date is not this, however many versions it spans.
-  item_completeness      partial 5, no 5, n/a 1, unknown 3
-      Per-item non-response reported, and tested for item-dependence. An aggregate parse-failure rate does not answer it: exclusions that concentrate on the most contested items are differential on the axis being measured, which relocates a confound rather than removing it.
+| control | what it asks | yes | partial | no | n/a | unknown |
+|---|---|---:|---:|---:|---:|---:|
+| `item_order` | Item-order variation WITH a reported change rate. Not randomisation used as a prevention device and pooled away -- the magnitude has to be reported. | 1 | 3 | 5 | 5 | 0 |
+| `nuisance_magnitude` | ANY non-political factor's effect reported as an item-level magnitude -- paraphrase, format, ordering, serving stack. Broader than item_order and the question that actually matters: did the study tell the reader how much its instrument moves on its own? | 9 | 3 | 2 | 0 | 0 |
+| `same_version_point` | Any same-version or non-transition pair used as a negative control, even one. | 2 | 3 | 7 | 2 | 0 |
+| `same_version_dist` | A same-version null as a DISTRIBUTION: median and upper percentile over many pairs, so a single observed transition can be scored against it. | 0 | 1 | 11 | 2 | 0 |
+| `quantisation` | Serving-stack variation (quantisation, precision) held or measured. | 0 | 2 | 9 | 2 | 1 |
+| `retained_failures` | Unparseable or declined runs retained and classified by cause rather than discarded as collection error. | 2 | 3 | 7 | 1 | 1 |
+| `reported_mde` | A minimum detectable effect, power analysis, or explicit resolution limit reported alongside the effects. | 2 | 2 | 9 | 0 | 1 |
+| `forcing_disclosed` | The forcing mechanism that turns free text into a scoreable answer is stated and its influence acknowledged. | 11 | 3 | 0 | 0 | 0 |
+| `open_raw` | Raw per-item responses published, not just aggregates. | 11 | 0 | 2 | 0 | 1 |
+| `judge_free_scoring` | No language model anywhere in the scoring path -- answers are recorded mechanically (forced choice, item id + position) rather than read and rated by a model. A judged score inherits the judge's lean; a mechanical one cannot. | 9 | 2 | 3 | 0 | 0 |
+| `judge_lean_reported` | If a model DOES score the responses, the study reports that scoring layer's own lean as a magnitude -- per-judge deviation, or an equivalent -- rather than asserting agreement and stopping. | 0 | 1 | 4 | 9 | 0 |
+| `self_judging_disclosed` | No subject of the study also sits on the panel that scores it, or if one does, the study says so. n/a where scoring is judge-free. | 1 | 3 | 1 | 9 | 0 |
+| `longitudinal` | The same subject re-measured over CALENDAR TIME under held parameters. A cross-section of successive versions measured on one date is not this, however many versions it spans. | 1 | 1 | 12 | 0 | 0 |
+| `item_completeness` | Per-item non-response reported, and tested for item-dependence. An aggregate parse-failure rate does not answer it: exclusions that concentrate on the most contested items are differential on the axis being measured, which relocates a confound rather than removing it. | 0 | 5 | 5 | 1 | 3 |
 
-STUDIES WHOSE OWN DESIGN CONTAINS THE PAIRS FOR A SAME-VERSION NULL
-but which do not report one as a distribution: 9 of 14
-  naser2026 -- Same-version pairs exist inside their own tier ladder (mini vs flagship at one generation, dated snapshots of one name) and are read as drift transitions carrying d values rather than as a baseline.
-  sakhawat2026 -- Re-read 2026-09-11 (arXiv HTML full text). No same-version distribution is reported. The cohort does contain size siblings presented side by side -- gpt-4.1-nano, gpt-4.1-mini and gpt-4.1 in Table 7, and the gpt-5 family likewise -- but they are entries in a ranking, never a null.
-  rottger2024 -- GPT-3.5 0613 vs 1106 and GPT-4 0613 vs 1106 are snapshot pairs of one version, and Llama2 7b/13b/70b are size variants. All four are in the model list as separate subjects rather than as a baseline.
-  liu2025 -- The same-version snapshot pair IS the treatment, not a control. Nothing in the paper establishes what a zero-difference comparison looks like on this instrument. Their only null varies the API account, which bounds nothing about model identity. Two same-date cross-tier pairs are also in hand -- 3.5-turbo-0613 against gpt-4-0613, and the two 1106 models -- and neither is estimated.
-  rozado2024 -- The pairs are excluded ON PURPOSE, and he says so -- the strongest single quote in the audit. Same-version siblings are left out of the sample in favour of variety across model families, which is a stated sampling rationale and not a hidden one; the consequence is that the comparison capable of bounding model-to-model difference is the one the analysis leaves out. Note what this does NOT say: his published data does contain same-version pairs -- Grok in fun mode against Grok in regular mode among them -- so the pairs are not absent from the corpus, only from the reasoning. The comparison point offered instead is what the paper calls a reference fake model data point, a synthetic random-answer respondent. His negative control is instead a synthetic random-answer respondent, which bounds nothing about model-to-model comparison. (Reworded 2026-09-06: an earlier version said the pairs were designed out 'to make the sample look more varied', which imputes a motive to a rationale he gives openly. The methodological point does not need it.)
-  kamal2025 -- The pair exists and is clean -- Llama3.2-1B-Instruct at full precision against the same model 4-bit, same version, same size, precision only -- and it is used as a generalisability check rather than a null. They never compute the difference or ask whether it is zero.
-  cen -- Three online/offline pairs of one model each -- gpt-4o, claude-3.5-sonnet, gemini-1.0-pro with and without Google Search. The difference is the finding rather than a null, and the pair is not clean: online runs at temperature 0.1 against 0 offline.
-  barmettler2026 -- Read 2026-09-20. No same-version pair is used as a control. The cohort of 66 necessarily contains size and generation siblings, but they are rows in a ranking, never a null.
-  tornberg2026 -- Read 2026-09-20. It goes further than any other study here short of ours and stops just short of a distribution: "mean within-cell standard deviation in WD(Dem) is 0.021; the median is 0.000." That is a centre and a spread over many cells, which is most of a null -- but no upper percentile is given, so a single observed shift still cannot be scored against it. `partial`.
-
-NOT ESTABLISHED either way (3) -- absent from the count above, and said
-so rather than dropped:
-  dominguezolmedo2024 -- NOT ESTABLISHED. Scored `no` on reporting a same-version null, which says nothing about whether the pairs are in their design, and nobody has checked. Recorded as unknown rather than dropped silently: this study was absent from the remedy list for no reason but a missing note.
-  aipolcom -- NOT ESTABLISHED, and this one is ours to answer rather than anyone else's -- it is this project's own observatory. Same clerical exclusion as dominguezolmedo2024.
-  sclar2024 -- Its subjects do include size siblings (Llama-2-7b against Llama-2-13b), so the structure is present -- but the study measures few-shot accuracy, not political position, and counting it among studies that could fix the political same-version gap would pad the numerator the same way scoring it `no` padded the denominator.
-```
+9 of the 14 studies already hold same-version pairs inside their own design and do not report them as a distribution: `naser2026`, `sakhawat2026`, `rottger2024`, `liu2025`, `rozado2024`, `kamal2025`, `cen`, `barmettler2026`, `tornberg2026`.
+For 3 it cannot be established from the published record whether such pairs are in the design: `dominguezolmedo2024`, `aipolcom`, `sclar2024`.
 <!-- /GEN:gaps -->
 
 One column has no "yes" in it across every study but this one: **not one reports a same-version
@@ -1220,11 +1181,9 @@ instrument, same condition. If two checkpoints of the same model disagree, a ver
 claim has to clear that disagreement before it means anything.
 
 <!-- GEN:null -->
-```
-factor                        pairs   side med/p90/max     p90 95% CI endpoint med/p90/max
-same-version variants            24          1 / 1 / 2         [0, 2]        5 / 11 / 19
-  same-version variants        same version, by kind: tier sibling 21, date snapshot 3; the same-name-later-SNAPSHOT subset -- the null a drift claim actually needs -- is n=3, median 0, p90 1, max 1, and the rest of this row is size and tier siblings
-```
+| factor | n pairs | side-flip med / p90 / max | p90 95% CI | endpoint med / p90 / max |
+|---|---:|---|---|---|
+| same-version variants | 24 | 1 / 1 / 2 | [0, 2] | 5 / 11 / 19 |
 <!-- /GEN:null -->
 
 **The null is small here, and it is below what this design can see.** Twenty-four pairs, side
