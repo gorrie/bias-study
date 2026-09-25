@@ -24,6 +24,11 @@ it carries one."
 small local models, and three of their runs under the commitment directive came back as
 declines. The absolute claim is gone.
 
+> **The replacement below was itself narrowed on the 32-item battery (2026-09-24 note).** Of the
+> 9 models that decline all items without a directive, 8 stop when given one; the ninth declines
+> under every condition and is not a switch. "No exceptions" no longer holds; the README and
+> paper §1b carry the current count, and both are gated.
+
 **What replaced it, and it survives every weighting:** of the models that decline without a
 directive, *all of them stop* when given one — no exceptions. Separately, a few other models
 decline *only* when told to commit, each on a single run.
@@ -271,6 +276,11 @@ the generated figure is **three**.
 **What replaces it:** nothing yet, deliberately. The 2026-09-07 ablation wave re-collects that
 exact pair at n=5 with a swept seed. Until that is analysed the claim is undecided in both
 directions.
+
+> **Settled 2026-09-18 (note added 2026-09-24).** It was not decided in either direction: all
+> five published nulls, this one included, were withdrawn on 2026-09-18 — entry 28 below. The
+> n=5 re-collection is reported in
+> [`withdrawn/results/RESULTS-2026-09-07-ablation-wave.md`](withdrawn/results/RESULTS-2026-09-07-ablation-wave.md).
 
 ### 9. The vendor comparison pooled five vendors as one — corrected 2026-09-07
 

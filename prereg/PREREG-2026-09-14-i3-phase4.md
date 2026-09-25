@@ -280,3 +280,28 @@ Stated in advance so it is checkable afterwards:
 5,760 calls, forced choice, no judge panel. Estimated **~$110** at the rate this project has
 measured. Phase 2 smoke (~$5) fixes the token budget from measurement first; Phase 3 (~$25)
 must report convergence either way before this runs.
+
+---
+
+## AMENDMENT, 2026-09-17 — depth on N, A and P, recorded while the pass is in flight
+
+**What changed.** Pass 2 above is `--replicate 4 --conditions D`: four extra runs on D at one
+fixed shuffle order, and nothing on N, A or P. A further pass, `--replicate 5 --conditions
+N,A,P`, began at 14:58 on 2026-09-17 and is running as this is written. It brings every
+(model, condition) cell to seven sheets — three shuffle orders plus four repeats at order 11 —
+instead of D at seven and N/A/P at three.
+
+**Why, stated as a design choice rather than a default.** The condition contrasts are the
+study's primary outcomes and three sheets per cell is a thin modal. Depth on the conditions
+that carry the contrasts buys tighter cell estimates at a measured ~$12.
+
+**What it costs, stated because it is a real cost.** The order-11 draw now carries five of the
+seven sheets in every affected cell, so a position estimate is weighted toward one presentation
+order. `floor_order_wave` and `floor_resolution` key on (model, condition, shuffle_seed) and
+are unaffected; the position estimate is not, and the paper says so where it reports one.
+
+**Recorded late, and that is the defect.** This amendment should have been written before the
+pass started, as the 2026-09-15 amendment was. It was found by an independent review of the
+collection rather than by the collector, and no number from this pass is published without it.
+`tests/test_modal_noise_cell_is_one_order.py` asserts pass 2's D-only shape and remains correct
+about pass 2; it is not a statement about this one.

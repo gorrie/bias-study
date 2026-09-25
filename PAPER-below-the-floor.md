@@ -160,7 +160,7 @@ the five-draw depth read as universal.)*
 | **B** | — | `What do you think?` | bare ask |
 | **E** | `You are an opinionated political commentator. You have strong views on every issue and you state them plainly without hedging or both-sides framing.` | — | opinionated persona (BRIDGE CONTROL ONLY -- see prereg section 4; assigns an identity, so it is not a clean pressure condition) |
 
-8 further cells, `F000`-`F111`, are the clause factorial: condition A's instruction with each of its three clauses independently present or absent. They carry their own pre-registration and are reported in §1b, not pooled with the rows above. `condition_table.py --factorial` prints them.
+8 further cells, `F000`-`F111`, are the clause factorial: condition A's instruction with each of its three clauses independently present or absent. They carry their own pre-registration, whose Amendment 2 states the verdict; they are listed in §9.1 as exploratory and not pooled with the rows above. `condition_table.py --factorial` prints them.
 <!-- /GEN:conditions -->
 
 `N` is the baseline and the design turns on that choice. The judged study this project ran in
@@ -1925,26 +1925,35 @@ minute; nothing caught that until the check did.
 
 ### Where each arm is pre-registered and reported
 
-Every collection in this paper has a pre-registration committed before its first call and a
-results document written against it. They are the record a reader should check the paper
-against, and several report things the paper does not lean on.
+Every collection this paper reports has a pre-registration committed before its first call.
+Where a results document exists it is named beside the section; three arms have none and are
+reported by the paper and a generated table alone. Several report things the paper does not
+lean on.
 
 | arm | pre-registered | reported |
 |---|---|---|
-| refusal direction, ablation vs prompt | `PREREG-2026-08-28-refusal-direction.md`, `PREREG-2026-09-07-ablation-vs-prompt.md` | §1, §1b |
-| the mask surface — pressure × ablation | `PREREG-2026-08-29-mask-surface.md`, `PREREG-2026-08-29-mask-surface-v2.md` | §1b |
-| which clause of the balance instruction causes refusal | `PREREG-2026-08-31-clause-factorial.md` | §1 |
-| the same items through both scoring paths | `PREREG-2026-09-12-same-items-both-paths.md` | §4 |
-| frame, and the content-free placebo | `PREREG-2026-09-13-frame-and-placebo.md` | §1 |
-| rung 2 of the escalation ladder | `PREREG-2026-09-13-pipeline-rung.md`, `PREREG-2026-09-20-rung2-control-v2.md` | §4 · `RESULTS-2026-09-21-rung2-control-v2.md` |
-| the main forced-choice collection | `PREREG-2026-09-14-i3-phase4.md` | §2, §3, §7 |
-| silent omission: item, slot or printed number | `PREREG-2026-09-18-omission-orders.md` | §6 · `RESULTS-2026-09-18-omission-orders.md`, `RESULTS-2026-09-21-omission-pinned.md` |
-| Röttger's statistic on this instrument | `PREREG-2026-09-18-paraphrase.md` | §2 · `RESULTS-2026-09-21-paraphrase.md` |
-| the dose series | — | `RESULTS-2026-09-18-dose-series-preflight.md`, `RESULTS-2026-09-19-dose-response.md` |
-| the Gemma-2-9B re-collection | — | `RESULTS-2026-09-20-gemma2-recollect.md` |
+| the main forced-choice collection | `PREREG-2026-09-14-i3-phase4.md` | §1, §1b, §2, §3, §7 |
+| silent omission: item, slot or printed number | `PREREG-2026-09-18-omission-orders.md` | §6b · `RESULTS-2026-09-18-omission-orders.md`, `RESULTS-2026-09-21-omission-pinned.md` |
+| the wave's partial-loss cells, re-collected renumbered | `PREREG-2026-09-24-partials-renumbered.md` | §6b · `data/partials-sensitivity.json` (`scripts/partials_sensitivity.py`) |
+| Röttger's statistic on this instrument | `PREREG-2026-09-18-paraphrase.md` | §5 · `RESULTS-2026-09-21-paraphrase.md` |
+| which clause of the balance instruction causes refusal | `PREREG-2026-08-31-clause-factorial.md` (amended before and after collection) | §9.1, exploratory; no narrative section · `scripts/refusal_table.py --factorial` |
+| rung 2 of the escalation ladder | `PREREG-2026-09-13-pipeline-rung.md` (the retired proxy arm), `PREREG-2026-09-20-rung2-control-v2.md` | §9.1 · `RESULTS-2026-09-21-rung2-control-v2.md`; the proxy arm in `RESULTS-2026-09-14-rung2-transform-audit.md`, `RESULTS-2026-09-15-rung2-decomposed.md` |
+| the weight rung at n=5, ablation vs prompt (retired questionnaire; withdrawn) | `PREREG-2026-09-07-ablation-vs-prompt.md` | §4 · `withdrawn/results/RESULTS-2026-09-07-ablation-wave.md` |
+| the refusal direction: XSTest calibration, and the dose series | `PREREG-2026-08-28-refusal-direction.md` | `RESULTS-2026-08-28-refusal-ablation.md`, `RESULTS-2026-09-18-dose-series-preflight.md`, `RESULTS-2026-09-19-dose-response.md` (study tree only); not in the text of this paper |
+| the Gemma-2-9B re-collection | — | §4 · `RESULTS-2026-09-20-gemma2-recollect.md` |
 
-`PREREG-DRAFT-factions.md` is a draft for an instrument that was never collected, kept because
-a pre-registration that did not become a study is part of the record of what was tried.
+Six further pre-registrations produced no result this paper reports:
+`PREREG-2026-08-29-mask-surface.md` (superseded the same day by its v2, never collected),
+`PREREG-2026-08-29-mask-surface-v2.md` (collected on the retired questionnaire, withdrawn with
+it), `PREREG-2026-09-12-instrument-choice.md` (superseded when the questionnaire was retired;
+its second instrument became the only one), `PREREG-2026-09-12-same-items-both-paths.md` (never
+collected), `PREREG-2026-09-13-frame-and-placebo.md` (collected as `data/2026-09-13-i3-phase0`;
+its contrast is withdrawn, `withdrawn/results/RESULTS-2026-09-14-I3-phase0.md`), and
+`PREREG-DRAFT-factions.md` (a draft for an instrument never collected, kept because a
+pre-registration that did not become a study is part of the record of what was tried). *(This
+table was corrected 2026-09-24: it mapped four plans written for the retired questionnaire to
+battery sections, listed an arm that was never collected as reported in §4, and omitted the
+partial-loss re-collection.)*
 
 Raw runs, every script, and the full record of what was withdrawn are in the repository. The
 instrument is `data/ratchet-battery.json` — 32 forced-choice items in 16 mirrored pairs,

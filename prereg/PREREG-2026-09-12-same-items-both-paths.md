@@ -1,8 +1,55 @@
 # Pre-registration: the same items through both scoring paths
 
+> **Status note, 2026-09-24 — NEVER COLLECTED.** No run was made under this plan. Its items are
+> the 62 propositions of the questionnaire retired on 2026-09-16, so it cannot be run as
+> written. The text below is unchanged; this note is the only addition.
+
 **Written 2026-09-12, before any model is run.** The predictions below are the point; a
 prediction that can be adjusted after seeing the number is not a prediction, and the commit
 carrying this file is what makes that checkable.
+
+> ## AMENDMENT 2026-09-14 — the roster, before any of it ran
+>
+> **Amended before collection, not after.** Nothing in this file has been run. The predictions
+> and decision rules below stand unchanged; only the model roster does, and the reason is
+> measurable.
+>
+> The three models named in Design are the three with the **least room to move on the judged
+> scale**, and a correlation between arms is attenuated by restricted range. Measured over the
+> four main-study runs, eligible records only:
+>
+> | model | n | sd | scale points used |
+> |---|---:|---:|---|
+> | `gemma2:latest` | 60 | **0.183** | 2, 3, 4 |
+> | `phi4:latest` | 59 | **0.220** | **2, 3 only** |
+> | `qwen2.5:14b` | 60 | 0.387 | 1, 2, 3, 4 |
+> | `openai/gpt-4.1` | 59 | 0.523 | 3, 4, 5 |
+> | `anthropic/claude-opus-4.7` | 25 | 0.693 | 3, 4, 5 |
+> | `x-ai/grok-4.3` | 60 | **0.695** | 2, 3, 4, 5 |
+>
+> `phi4` occupies **two of five** scale points. The three named models spread 0.18–0.39 against
+> 0.52–0.70 for the models that actually move, so a null on this roster would be the expected
+> result of the range, not evidence about the instruments.
+>
+> **Correcting an overstatement of my own.** `PLAN-2026-09-14-finish-the-study.md` said these
+> models "never leave 3.0 on the judged scale". That is false and the table above is why: they
+> do vary, roughly a third to a half as much. The weaker, true statement is the one that
+> justifies the amendment; the stronger one did not need to be made.
+>
+> **The roster becomes** `x-ai/grok-4.3`, `anthropic/claude-opus-4.7`, `openai/gpt-4.1` and
+> `mistralai/mistral-large` — the four carried through I3 Phase 0, which is also what makes the
+> arms comparable to that run. This costs API spend the original roster did not, and that is
+> the trade: a local-only design that cannot answer the question is not cheaper, it is
+> unpriced.
+>
+> **`mistral-large` is included knowing it may contribute nothing.** It has zero usable A/B
+> pairs in the main run before the 2026-09-14 re-collection, and it was flat across every I3
+> Phase 0 contrast. If it still has no variance after re-collection it is reported as
+> uninformative rather than dropped, because dropping it after seeing that is the thing this
+> file exists to prevent.
+>
+> **The unit changes with the roster**: 4 × 62 = 248 paired observations rather than 186.
+> Clustering stays on the proposition.
 
 ## The question
 
@@ -110,4 +157,3 @@ already in both corpora because they were collected on the workstation. Running 
 mean pulling roughly 20 GB and re-serving them at a different quantisation on different
 hardware, which changes the serving path this study has repeatedly shown moves the answer.
 Queue it as a 4090 job.
-

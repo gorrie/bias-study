@@ -8,10 +8,18 @@ A pre-registration that lives only in the author's working tree is a private not
 function is that a reader can check the plan was fixed before the numbers were seen, and that
 requires the plan to be public and dated in a history nobody can quietly rewrite.
 
-These five were written before their collections and were **not published until 2026-09-07** —
-while `ROADMAP.md` said, of its own forward-looking entries, that they were "published in
-advance for the same reason the pre-registrations are." That reason did not apply to the
-pre-registrations, because they were not published. They are now.
+Every file here was committed before the collection it governs, or is marked as a draft that
+never became one. None was published until 2026-09-07, while `ROADMAP.md` said of its own
+forward-looking entries that they were "published in advance for the same reason the
+pre-registrations are." That reason did not apply to the pre-registrations, because they were
+not published. They are now.
+
+There are fifteen. Nine were collected: three on the 62-proposition questionnaire the study
+retired on 2026-09-16, withdrawn with it, and one on the judge-scored design, whose contrast is
+withdrawn. Four were never collected: two superseded by the instrument change, one superseded
+the same day by its own v2, and one a draft. The table names the run directory, or the reason
+there is none, and the document that reports each. Amendments are recorded in the file they
+amend, dated, with the original text left standing.
 
 ## What a pre-registration commits this study to
 
@@ -20,29 +28,28 @@ design, the analysis steps **in order**, and what would make the result unintere
 of those matters most — a plan that cannot describe its own boring outcome is a plan that will
 find something.
 
-The 2026-09-07 ablation plan goes further and its stopping rule is **enforced in code**:
+The 2026-09-07 ablation plan went further, and its stopping rule was **enforced in code**:
 `scripts/ablation_analysis.py` withholds steps 2–5 if step 1's ablator-agreement check fails,
-and requires `--force` to print them as diagnostics. Running the steps in a different order, or
-reporting a later step while an earlier one fails, is precisely the researcher degree of freedom
-a pre-registration exists to remove — so it is removed mechanically rather than by intention.
+and requires `--force` to print them as diagnostics. The arm it gated is withdrawn with the
+retired questionnaire; the mechanism is kept as the model for the plans after it.
 
-| plan | collection | result |
-|---|---|---|
-| `PREREG-2026-08-28-refusal-direction.md` | refusal-direction arm | — |
-| `PREREG-2026-08-29-mask-surface.md` | mask-surface arm | — |
-| `PREREG-2026-08-29-mask-surface-v2.md` | mask-surface, revised design | — |
-| `PREREG-2026-08-31-clause-factorial.md` | clause factorial | — |
-| `PREREG-2026-09-07-ablation-vs-prompt.md` | `runs/2026-09-07-ablation-wave/` | [`results/RESULTS-2026-09-07-ablation-wave.md`](../results/RESULTS-2026-09-07-ablation-wave.md) |
-| `PREREG-2026-09-12-instrument-choice.md` | **not yet collected** — item set not frozen | — |
-| `PREREG-2026-09-12-same-items-both-paths.md` | **UNSIGNED, not collected** — needs Ian's signature before any run | — |
-
-The last one is written earlier in its own lifecycle than the others: before the instrument it
-describes exists. That is deliberate. Four of the five plans above this study published were
-written before their collections but **after** the instrument was chosen, so the one degree of
-freedom they could not remove was the one that matters most here — which ruler to use. This plan
-fixes the primary outcome, the floors gate and the boring outcome while the item set is still
-unwritten, and the collection does not begin until the items and the scoring function are
-committed.
+| plan | status | collection | result |
+|---|---|---|---|
+| `PREREG-2026-08-28-refusal-direction.md` | collected; the stance null it supported is withdrawn (`CORRECTIONS.md` #28) | `runs/refusal-ablation/`, `runs/mask-gradient/` (study tree; not in this release). Also binds the dose series | [`RESULTS-2026-08-28-refusal-ablation.md`](../results/RESULTS-2026-08-28-refusal-ablation.md), [`RESULTS-2026-08-28-stance-survives-ablation.md`](../results/RESULTS-2026-08-28-stance-survives-ablation.md) (superseded), [`RESULTS-2026-09-18-dose-series-preflight.md`](../results/RESULTS-2026-09-18-dose-series-preflight.md) |
+| `PREREG-2026-08-29-mask-surface.md` | superseded the same day by v2; never collected | none | — |
+| `PREREG-2026-08-29-mask-surface-v2.md` | collected on the retired questionnaire; withdrawn with it | deleted 2026-09-22 with the questionnaire's licensed text | [`RESULTS-2026-08-29-evidence-concordance.md`](../results/RESULTS-2026-08-29-evidence-concordance.md) (working notes) |
+| `PREREG-2026-08-31-clause-factorial.md` | collected 2026-09-19 on the 32-item battery; amended before collection and after | the `F000`–`F111` cells of `runs/2026-09-16-ratchet-v3-wave/` | the file's own Amendment 2 and its correction; `scripts/refusal_table.py --factorial` |
+| `PREREG-2026-09-07-ablation-vs-prompt.md` | collected on the retired questionnaire; withdrawn with it; the arm is spent, not complete | deleted 2026-09-22 with the questionnaire's licensed text | [`withdrawn/results/RESULTS-2026-09-07-ablation-wave.md`](../withdrawn/results/RESULTS-2026-09-07-ablation-wave.md) |
+| `PREREG-2026-09-12-instrument-choice.md` | superseded; never collected. The second instrument it planned became the study's only instrument when the questionnaire was retired | none | — |
+| `PREREG-2026-09-12-same-items-both-paths.md` | never collected; written against the retired questionnaire and not runnable as written | none | — |
+| `PREREG-2026-09-13-frame-and-placebo.md` | collected as I3 Phase 0 on the judge-scored design; its B−A contrast is withdrawn | `data/2026-09-13-i3-phase0/` (3,200 records, status `withdrawn`) | [`withdrawn/results/RESULTS-2026-09-14-I3-phase0.md`](../withdrawn/results/RESULTS-2026-09-14-I3-phase0.md) |
+| `PREREG-2026-09-13-pipeline-rung.md` | collected through the G0DM0D3 proxy; its obfuscation predictions were untestable (`CORRECTIONS.md` #16); the proxy design was abandoned | `data/2026-09-13-g0dm0d3-replicate/`, `data/2026-09-13-g0dm0d3-replicate-baseline/` | [`RESULTS-2026-09-14-rung2-transform-audit.md`](../RESULTS-2026-09-14-rung2-transform-audit.md), [`RESULTS-2026-09-15-rung2-decomposed.md`](../RESULTS-2026-09-15-rung2-decomposed.md) |
+| `PREREG-2026-09-14-i3-phase4.md` | collected; Amendment 2 replaced the unsigned i3 bank with `data/ratchet-battery.json` before any battery call | `runs/2026-09-16-ratchet-v3-wave/`, `runs/2026-09-16-ratchet-v3-wave-budget-probe/` | the paper, §1–§3 and §7; [`ITEM-READ-2026-09-16-ratchet-battery.md`](../ITEM-READ-2026-09-16-ratchet-battery.md) |
+| `PREREG-2026-09-18-omission-orders.md` | collected; Amendment 1 re-collected eight hosted models with pinned backends | `runs/2026-09-18-omission-orders/`, `runs/2026-09-18-omission-hosted/`, `runs/2026-09-20-omission-hosted-pinned/`, `runs/2026-09-21-omission-nemotron-phala/` | [`RESULTS-2026-09-18-omission-orders.md`](../results/RESULTS-2026-09-18-omission-orders.md), [`RESULTS-2026-09-21-omission-pinned.md`](../results/RESULTS-2026-09-21-omission-pinned.md); the paper, §6b |
+| `PREREG-2026-09-18-paraphrase.md` | collected | `runs/2026-09-18-paraphrase/` | [`RESULTS-2026-09-21-paraphrase.md`](../results/RESULTS-2026-09-21-paraphrase.md); the paper, §5 |
+| `PREREG-2026-09-20-rung2-control-v2.md` | collected; the rung-2 position claims stay withdrawn | `runs/2026-09-20-rung2-control-v2/` against `runs/2026-09-19-rung2-elicitation/` | [`RESULTS-2026-09-21-rung2-control-v2.md`](../results/RESULTS-2026-09-21-rung2-control-v2.md) |
+| `PREREG-2026-09-24-partials-renumbered.md` | collected; no floor moves | `runs/2026-09-24-partials-renumbered/` | the paper, §6b; `data/partials-sensitivity.json` (`scripts/partials_sensitivity.py`) |
+| `PREREG-DRAFT-factions.md` | draft, undated by design; never collected; continuing work | none | — |
 
 ## Reading them against what happened
 
