@@ -409,26 +409,26 @@ published after that date still does not run the control.
 <!-- GEN:timeline -->
 | first public | study | mag | null | MDE | what it is |
 |---|---|:-:|:-:|:-:|---|
-| 2023-06-13 | **dominguezolmedo2024** | Y | - | Y | Survey responses are dominated by answer ordering and labelling artifacts; adjust for them and m |
-| 2023-08-17 | **motoki2024** | Y | . | - | Default answers correlate 0.96 with the model's own average-Democrat impersonation and -0.12 wit |
-| 2023-10-17 | **sclar2024** | Y | . | ? | Prompt formatting alone -- separators, casing, spacing -- moves few-shot accuracy by up to 76 po |
-| 2024-02-26 | **rottger2024** | Y | - | - | Models give different answers when not forced, different answers depending on HOW they are force |
-| 2024-07-31 | **rozado2024** | ~ | - | - | Conversational LLMs are diagnosed left-of-centre across models and across instruments, while bas |
-| 2025-02-10 | **liu2025** | Y | - | - | Both model families shift right between the 0613 and 1106 snapshots on both axes, with coefficie |
-| 2025-06-27 | **kamal2025** | ~ | - | - | Decoding parameters barely move PCT scores; prompt phrasing and fine-tuning move them a lot -- a |
-| 2025-09-22 | **cen** | Y | - | - | Election-related responses drift over time even offline at temperature 0, are steerable by demog |
-| 2026-01-08 | **sakhawat2026** | - | - | ~ | Model identity explains >90% of score variance (eta-squared > 0.90, p<1e-90); normalized drift b |
-| 2026-04-13 | **messing2026** | Y | - | Y | LLM evaluations systematically underestimate uncertainty because variance from judge choice, tem |
-| 2026-05-26 | — |  |  |  | This project publishes its May 2026 judge-scored study on evilrobots.lol -- no nuisance magnitud |
+| 2023-06-13 | **dominguezolmedo2024** | Y | - | Y | Survey responses are dominated by answer ordering and labelling artifacts; adjust for them and … |
+| 2023-08-17 | **motoki2024** | Y | . | - | Default answers correlate 0.96 with the model's own average-Democrat impersonation and -0.12 … |
+| 2023-10-17 | **sclar2024** | Y | . | ? | Prompt formatting alone -- separators, casing, spacing -- moves few-shot accuracy by up to 76 … |
+| 2024-02-26 | **rottger2024** | Y | - | - | Models give different answers when not forced, different answers depending on HOW they are … |
+| 2024-07-31 | **rozado2024** | ~ | - | - | Conversational LLMs are diagnosed left-of-centre across models and across instruments, while … |
+| 2025-02-10 | **liu2025** | Y | - | - | Both model families shift right between the 0613 and 1106 snapshots on both axes, with … |
+| 2025-06-27 | **kamal2025** | ~ | - | - | Decoding parameters barely move PCT scores; prompt phrasing and fine-tuning move them a lot … |
+| 2025-09-22 | **cen** | Y | - | - | Election-related responses drift over time even offline at temperature 0, are steerable by … |
+| 2026-01-08 | **sakhawat2026** | - | - | ~ | Model identity explains >90% of score variance (eta-squared > 0.90, p<1e-90); normalized drift … |
+| 2026-04-13 | **messing2026** | Y | - | Y | LLM evaluations systematically underestimate uncertainty because variance from judge choice … |
+| 2026-05-26 | — |  |  |  | This project publishes its May 2026 judge-scored study on evilrobots.lol -- no nuisance … |
 | 2026-06-11 | **naser2026** | ~ | - | - | Mean stance drift Cohen's d = 0.35 (OpenAI) vs 0.02 (Anthropic); 14-fold provider asymmetry |
-| 2026-07-29 | **aipolcom** | Y | - | - | Rolling collection with prompt-variation, access-method, run-to-run stability and question-order |
-| 2026-08-20 | — |  |  |  | Carnegie Endowment (Metaxa and Engler) calls for longitudinal monitoring infrastructure and name |
-| 2026-08-29 | — |  |  |  | This project swaps its instrument to a 62-item external questionnaire and begins the forced-choi |
+| 2026-07-29 | **aipolcom** | Y | - | - | Rolling collection with prompt-variation, access-method, run-to-run stability and … |
+| 2026-08-20 | — |  |  |  | Carnegie Endowment (Metaxa and Engler) calls for longitudinal monitoring infrastructure and … |
+| 2026-08-29 | — |  |  |  | This project swaps its instrument to a 62-item external questionnaire and begins the … |
 | 2026-08-30 | — |  |  |  | First noise floors measured; seven claims withdrawn |
-| 2026-08-31 | — |  |  |  | Same-version null (97 pairs) measured; drift withdrawn; refusal found to be elicited by directiv |
-| 2026-08-31 | **ours** | Y | Y | Y | Presentation order and same-version variation each move as many items as any deliberate manipula |
-| 2026-09-01 | — |  |  |  | Detection limit computed: three of our own nulls are underpowered, including both used to retire |
-| 2026-09-01 | — |  |  |  | Priority search: the OpenReview paper feared to contain a same-version null DOES NOT EXIST -- a  |
+| 2026-08-31 | — |  |  |  | Same-version null (97 pairs) measured; drift withdrawn; refusal found to be elicited by … |
+| 2026-08-31 | **ours** | Y | Y | Y | Presentation order and same-version variation each move as many items as any deliberate … |
+| 2026-09-01 | — |  |  |  | Detection limit computed: three of our own nulls are underpowered, including both used to … |
+| 2026-09-01 | — |  |  |  | Priority search: the OpenReview paper feared to contain a same-version null DOES NOT EXIST -- a … |
 <!-- /GEN:timeline -->
 
 The field was told three times: Sclar in October 2023, for benchmark tasks; Röttger in February
@@ -2146,47 +2146,47 @@ record of what is withdrawn, and a gate fails if a withdrawn claim is asserted o
 
 Generated by `scripts/references.py` from `data/controls-audit.json`, the same record that supplies each study's row in the controls table. The provenance note on each entry says how we know what we claim about it.
 
-- **barmettler2026** — Barmettler, Progressive in Principle, Centrist in Practice: LLM Political Bias Is Instrument-Dependent, arXiv:2606.00048
-  *Instrument:* Smartvote questionnaire (75 policy questions) on 66 models; 48 real Swiss federal referenda on 9 flagship models, four languages, three information conditions  *Scale:* 66 models on the questionnaire, 9 on the referenda. One administration per model-item: "All models were queried via the OpenRouter API with deterministic parameters: temperature=0.0, seed=42."
+- **barmettler2026** — Barmettler, Progressive in Principle, Centrist in Practice: LLM Political Bias Is Instrument-Dependent, arXiv:2606.00048.
+  *Instrument:* Smartvote questionnaire (75 policy questions) on 66 models; 48 real Swiss federal referenda on 9 flagship models, four languages, three information conditions.  *Scale:* 66 models on the questionnaire, 9 on the referenda. One administration per model-item: "All models were queried via the OpenRouter API with deterministic parameters: temperature=0.0, seed=42.".
   *Provenance:* read in full.
-- **cen** — Cen S H, Ilyas A, Driss H, Park C, Hopkins A, Podimata C, Madry A, Large-Scale, Longitudinal Study of Large Language Models During the 2024 US Election Season, arXiv:2509.18446 [cs.CY], 22 September 2025
-  *Instrument:* bespoke structured survey, 12,638 questions -- 12,606 election questions across nine categories plus 32 non-election baseline questions from TriviaQA and MedQA; each non-baseline question x 21 prompt variations  *Scale:* 12 models queried near-daily July-November 2024 across 100+ days; temperature 0 offline and 0.1 online; 128-token cap; approximately $40k of API spend
+- **cen** — Cen S H, Ilyas A, Driss H, Park C, Hopkins A, Podimata C, Madry A, Large-Scale, Longitudinal Study of Large Language Models During the 2024 US Election Season, arXiv:2509.18446 [cs.CY], 22 September 2025.
+  *Instrument:* bespoke structured survey, 12,638 questions -- 12,606 election questions across nine categories plus 32 non-election baseline questions from TriviaQA and MedQA; each non-baseline question x 21 prompt variations.  *Scale:* 12 models queried near-daily July-November 2024 across 100+ days; temperature 0 offline and 0.1 online; 128-token cap; approximately $40k of API spend.
   *Provenance:* read in full.
-- **dominguezolmedo2024** — Dominguez-Olmedo R, Hardt M, Mendler-Dunner C, Questioning the Survey Responses of Large Language Models, NeurIPS 2024 (arXiv:2306.07951)
-  *Instrument:* 25 multiple-choice questions from the 2019 American Community Survey; replicated on ATP, GAS/WVS and ANES  *Scale:* 43 models, 110M to 175B parameters; responses read as renormalised next-token logits over choice labels rather than sampled text; all choice orderings evaluated where feasible, 5000 permutations cap, 50 for OpenAI models; ~1500 A100 GPU-hours
+- **dominguezolmedo2024** — Dominguez-Olmedo R, Hardt M, Mendler-Dunner C, Questioning the Survey Responses of Large Language Models, NeurIPS 2024 (arXiv:2306.07951).
+  *Instrument:* 25 multiple-choice questions from the 2019 American Community Survey; replicated on ATP, GAS/WVS and ANES.  *Scale:* 43 models, 110M to 175B parameters; responses read as renormalised next-token logits over choice labels rather than sampled text; all choice orderings evaluated where feasible, 5000 permutations cap, 50 for OpenAI models; ~1500 A100 GPU-hours.
   *Provenance:* read in full.
-- **kamal2025** — Kamal S, Prakash L P Y, Rafiuddin S M, Rakib M, Sen A, Ray Choudhury S, A Detailed Factor Analysis for the Political Compass Test: Navigating Ideologies of Large Language Models, IJCNLP-AACL 2025 (short), pp. 284-303, anthology 2025.ijcnlp-short.25; preprint arXiv:2506.22493
-  *Instrument:* Political Compass Test (62 items, 4-point), plus 8 Values as a check  *Scale:* 4 models all 4-bit quantised (Llama3-8B-Instruct, Mistral-7B-Instruct-v0.3, Falcon3-7B-Instruct, Gemma-3-4b-it) x 9 instances each (base + 8 LoRA fine-tunes) x 10 prompts x 8 decoding combinations; 2,693 PCT tests retained of an intended 2,880; plus Llama3.2-1B in full and 4-bit precision for A.5
+- **kamal2025** — Kamal S, Prakash L P Y, Rafiuddin S M, Rakib M, Sen A, Ray Choudhury S, A Detailed Factor Analysis for the Political Compass Test: Navigating Ideologies of Large Language Models, IJCNLP-AACL 2025 (short), pp. 284-303, anthology 2025.ijcnlp-short.25; preprint arXiv:2506.22493.
+  *Instrument:* Political Compass Test (62 items, 4-point), plus 8 Values as a check.  *Scale:* 4 models all 4-bit quantised (Llama3-8B-Instruct, Mistral-7B-Instruct-v0.3, Falcon3-7B-Instruct, Gemma-3-4b-it) x 9 instances each (base + 8 LoRA fine-tunes) x 10 prompts x 8 decoding combinations; 2,693 PCT tests retained of an intended 2,880; plus Llama3.2-1B in full and 4-bit precision for A.5.
   *Provenance:* read in full.
-- **liu2025** — Liu Y, Panwang Y, Gu C, 'Turning right'? An experimental study on the political value shift in large language models, Humanities and Social Sciences Communications 12:179, 2025, doi:10.1057/s41599-025-04465-z
-  *Instrument:* Political Compass, 62 items, forced 4-point numeric scale, scored onto economic and social axes on [-10, 10]  *Scale:* 4 static snapshots -- gpt-3.5-turbo-0613, gpt-3.5-turbo-1106, gpt-4-0613, gpt-4-1106-preview; 3 API accounts x 10 questionnaires = 30 runs per model, 7,440 item responses; temperature left at default (=1) deliberately; then bootstrap 100 and 1,000 replicates
+- **liu2025** — Liu Y, Panwang Y, Gu C, 'Turning right'? An experimental study on the political value shift in large language models, Humanities and Social Sciences Communications 12:179, 2025, doi:10.1057/s41599-025-04465-z.
+  *Instrument:* Political Compass, 62 items, forced 4-point numeric scale, scored onto economic and social axes on [-10, 10].  *Scale:* 4 static snapshots -- gpt-3.5-turbo-0613, gpt-3.5-turbo-1106, gpt-4-0613, gpt-4-1106-preview; 3 API accounts x 10 questionnaires = 30 runs per model, 7,440 item responses; temperature left at default (=1) deliberately; then bootstrap 100 and 1,000 replicates.
   *Provenance:* read in full.
-- **naser2026** — M.Z. Naser, Tracing moral value drift across large language model generations and their societal implications, Technology in Society 87 (2026) 103431
-  *Instrument:* 107 moral probes (63 MFQ-adapted, 26 ethical dilemma, 7 value priority, 11 meta-ethical), 6-point Likert  *Scale:* 14 model snapshots, 2 providers, 2 tiers, ~9500 calls, 10 trials/probe at T=0
+- **naser2026** — M.Z. Naser, Tracing moral value drift across large language model generations and their societal implications, Technology in Society 87 (2026) 103431.
+  *Instrument:* 107 moral probes (63 MFQ-adapted, 26 ethical dilemma, 7 value priority, 11 meta-ethical), 6-point Likert.  *Scale:* 14 model snapshots, 2 providers, 2 tiers, ~9500 calls, 10 trials/probe at T=0.
   *Provenance:* read in full.
-- **messing2026** — Messing S, Hidden Measurement Error in LLM Pipelines Distorts Annotation, Evaluation, and Benchmarking, arXiv:2604.11581, April 2026 (rev. May 2026)
-  *Instrument:* LLM evaluation and annotation pipelines generally  *Scale:* benchmark and judge pipelines; MMLU and Elo-style match evaluation
+- **messing2026** — Messing S, Hidden Measurement Error in LLM Pipelines Distorts Annotation, Evaluation, and Benchmarking, arXiv:2604.11581, April 2026 (rev. May 2026).
+  *Instrument:* LLM evaluation and annotation pipelines generally.  *Scale:* benchmark and judge pipelines; MMLU and Elo-style match evaluation.
   *Provenance:* read in full.
-- **motoki2024** — Motoki F, Pinho Neto V, Rodrigues V, More human than human: measuring ChatGPT political bias, Public Choice 198(1), 3-23, 2024, doi:10.1007/s11127-023-01097-2
-  *Instrument:* Political Compass, 62 items, forced 4-point scale coded 0-3, no neutral option; plus an author-written 62-item placebo battery and the IDRLabs Political Coordinates Test as robustness  *Scale:* ONE model -- text-davinci-003, named only in the supplement -- at temperature 0.7; 100 rounds per condition per country, each round one call carrying all 62 items; bootstrap 1,000 replicates over the 100-answer sample
+- **motoki2024** — Motoki F, Pinho Neto V, Rodrigues V, More human than human: measuring ChatGPT political bias, Public Choice 198(1), 3-23, 2024, doi:10.1007/s11127-023-01097-2.
+  *Instrument:* Political Compass, 62 items, forced 4-point scale coded 0-3, no neutral option; plus an author-written 62-item placebo battery and the IDRLabs Political Coordinates Test as robustness.  *Scale:* ONE model -- text-davinci-003, named only in the supplement -- at temperature 0.7; 100 rounds per condition per country, each round one call carrying all 62 items; bootstrap 1,000 replicates over the 100-answer sample.
   *Provenance:* read in full.
-- **rottger2024** — Rottger, Hofmann, Pyatkin, Hinck, Kirk, Schutze, Hovy, Political Compass or Spinning Arrow? Towards More Meaningful Evaluations for Values and Opinions in Large Language Models, ACL 2024, pp. 15295-15311
-  *Instrument:* Political Compass Test  *Scale:* 10 models (Llama2 7b/13b/70b chat, Mistral 7b Iv0.1/Iv0.2, Zephyr 7b beta, GPT-3.5 0613/1106, GPT-4 0613/1106), 62 PCT propositions, temperature 0 throughout, 5 forcing levels, 10 paraphrase templates, open-ended arm
+- **rottger2024** — Rottger, Hofmann, Pyatkin, Hinck, Kirk, Schutze, Hovy, Political Compass or Spinning Arrow? Towards More Meaningful Evaluations for Values and Opinions in Large Language Models, ACL 2024, pp. 15295-15311.
+  *Instrument:* Political Compass Test.  *Scale:* 10 models (Llama2 7b/13b/70b chat, Mistral 7b Iv0.1/Iv0.2, Zephyr 7b beta, GPT-3.5 0613/1106, GPT-4 0613/1106), 62 PCT propositions, temperature 0 throughout, 5 forcing levels, 10 paraphrase templates, open-ended arm.
   *Provenance:* read in full.
-- **rozado2024** — Rozado D, The political preferences of LLMs, PLoS ONE 19(7): e0306621, 2024, https://doi.org/10.1371/journal.pone.0306621
-  *Instrument:* 11 political orientation tests (Political Compass, Political Spectrum Quiz, World's Smallest Political Quiz, Political Typology, Political Coordinates, Eysenck, Ideologies, 8 Values, Nolan, iSideWith US and UK), 401 items total  *Scale:* 24 conversational + 5 base + 3 self-finetuned models; 2,640 test administrations (11 tests x 10 trials x 24 models); 96,240 items; temperature 0.7, max 100 tokens; collected Dec 2023 - Jan 2024
+- **rozado2024** — Rozado D, The political preferences of LLMs, PLoS ONE 19(7): e0306621, 2024, https://doi.org/10.1371/journal.pone.0306621.
+  *Instrument:* 11 political orientation tests (Political Compass, Political Spectrum Quiz, World's Smallest Political Quiz, Political Typology, Political Coordinates, Eysenck, Ideologies, 8 Values, Nolan, iSideWith US and UK), 401 items total.  *Scale:* 24 conversational + 5 base + 3 self-finetuned models; 2,640 test administrations (11 tests x 10 trials x 24 models); 96,240 items; temperature 0.7, max 100 tokens; collected Dec 2023 - Jan 2024.
   *Provenance:* read in full.
-- **sakhawat2026** — Sakhawat, Islam, Farhin, Raiyan, Mahmud, Hasan, Political Alignment in Large Language Models: A Multidimensional Audit of Psychometric Identity and Behavioral Bias, arXiv:2601.06194v1
-  *Instrument:* Political Compass (62 items), SapplyValues (46), 8 Values (70)  *Scale:* 26 models, 10 administrations per inventory per model, context cleared between runs, temperature 0.7 and top_p 1.0 ("All models are queried with temperature=0.7 and top_p=1.0, balancing determinism with natural language variability")
+- **sakhawat2026** — Sakhawat, Islam, Farhin, Raiyan, Mahmud, Hasan, Political Alignment in Large Language Models: A Multidimensional Audit of Psychometric Identity and Behavioral Bias, arXiv:2601.06194v1.
+  *Instrument:* Political Compass (62 items), SapplyValues (46), 8 Values (70).  *Scale:* 26 models, 10 administrations per inventory per model, context cleared between runs, temperature 0.7 and top_p 1.0 ("All models are queried with temperature=0.7 and top_p=1.0, balancing determinism with natural language variability").
   *Provenance:* read in full.
-- **sclar2024** — Sclar M, Choi Y, Tsvetkov Y, Suhr A, Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design, or: How I learned to start worrying about prompt formatting, ICLR 2024 (arXiv:2310.11324)
-  *Instrument:* few-shot benchmark tasks, not a values or political instrument  *Scale:* several open LLMs; meaning-preserving prompt FORMAT variations
+- **sclar2024** — Sclar M, Choi Y, Tsvetkov Y, Suhr A, Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design, or: How I learned to start worrying about prompt formatting, ICLR 2024 (arXiv:2310.11324).
+  *Instrument:* few-shot benchmark tasks, not a values or political instrument.  *Scale:* several open LLMs; meaning-preserving prompt FORMAT variations.
   *Provenance:* partial.
-- **tornberg2026** — Toernberg, Schimmel, Political Bias Audits of LLMs Capture Sycophancy to the Inferred Auditor, arXiv:2604.27633
-  *Instrument:* Political Compass Test, Pew Political Typology, and 1,540 partisan-benchmarked Pew American Trends Panel items; 30,990 responses  *Scale:* 6 frontier models via the Requesty API gateway, April 2026. Main grid is "one response per item-model-condition cell", plus "three additional replicates at T=1.0 (27,000 additional calls), and one replicate at T=0 (greedy decoding; 9,000 calls)"
+- **tornberg2026** — Toernberg, Schimmel, Political Bias Audits of LLMs Capture Sycophancy to the Inferred Auditor, arXiv:2604.27633.
+  *Instrument:* Political Compass Test, Pew Political Typology, and 1,540 partisan-benchmarked Pew American Trends Panel items; 30,990 responses.  *Scale:* 6 frontier models via the Requesty API gateway, April 2026. Main grid is "one response per item-model-condition cell", plus "three additional replicates at T=1.0 (27,000 additional calls), and one replicate at T=0 (greedy decoding; 9,000 calls)".
   *Provenance:* read in full.
-- **aipolcom** — aipolcom.net, rolling public observatory
-  *Instrument:* politicalcompass.org 62 propositions, forced choice  *Scale:* 57 models, 930 answer sets (729 model, 201 synthetic control), collection 2026-07-29 to 2026-08-29
+- **aipolcom** — aipolcom.net, rolling public observatory.
+  *Instrument:* politicalcompass.org 62 propositions, forced choice.  *Scale:* 57 models, 930 answer sets (729 model, 201 synthetic control), collection 2026-07-29 to 2026-08-29.
   *Provenance:* read in full.
 
 Thirteen of the 14 are read in full. The remainder — sclar2024 — was consulted as abstract and PDF without the full text being read end to end, and no verdict in the controls table rests on more than that.

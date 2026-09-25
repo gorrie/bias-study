@@ -33,6 +33,12 @@ PROV = {
 }
 
 
+def _closed(text):
+    """End a reference field with a full stop unless it already ends a sentence."""
+    text = text.rstrip()
+    return text if text.endswith((".", "?", "!")) else text + "."
+
+
 def load():
     with io.open(DATA, encoding="utf-8") as fh:
         return json.load(fh)
@@ -70,12 +76,14 @@ def main(argv=None):
     for s in studies:
         if s["id"] == "ours":
             continue
-        print("- **%s** — %s" % (s["id"], s["cite"]))
+        # Every field closes as a sentence: run together unpunctuated, "arXiv:2601.06194v1
+        # Instrument: ..." read as one clause in the typeset paper.
+        print("- **%s** — %s" % (s["id"], _closed(s["cite"])))
         detail = []
         if s.get("instrument"):
-            detail.append("*Instrument:* %s" % s["instrument"])
+            detail.append("*Instrument:* %s" % _closed(s["instrument"]))
         if s.get("scale"):
-            detail.append("*Scale:* %s" % s["scale"])
+            detail.append("*Scale:* %s" % _closed(s["scale"]))
         if detail:
             print("  %s" % "  ".join(detail))
         print("  *Provenance:* %s." % PROV.get(s["provenance"], s["provenance"]))

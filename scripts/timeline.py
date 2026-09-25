@@ -41,6 +41,14 @@ LABEL = {"nuisance_magnitude": "reports a nuisance magnitude",
          "reported_mde": "reports a detection limit"}
 
 
+def _clip(text, width=96):
+    """Shorten a table cell at a word, never inside one. A bare [:96] printed "forced-choi"
+    and "directiv" into the paper."""
+    if len(text) <= width:
+        return text
+    return text[:width].rsplit(" ", 1)[0].rstrip(" ,;:–—-") + " …"
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--markdown", action="store_true")
@@ -69,7 +77,7 @@ def main(argv=None):
             m = list(marks) if marks else ["", "", ""]
             print("| %s | %s | %s | %s | %s | %s |"
                   % (date, "**%s**" % sid if sid else "—",
-                     m[0], m[1], m[2], (head or note)[:96]))
+                     m[0], m[1], m[2], _clip(head or note)))
         return 0
 
     print("FIELD TIMELINE — generated from data/controls-audit.json")
