@@ -1572,10 +1572,14 @@ def print_factorial(rows):
         print("  NO clause effect clears its model's order floor. Reported as unresolvable on")
         print("  the prereg's own terms, which is a RESULT and publishes as one.")
     print()
-    print("  The floors are wide and that is the finding's own limit: the F cells were all")
-    print("  collected at ONE order (seed 11), so an order-induced difference inside the F")
-    print("  comparison cannot be ruled out -- only bounded by these numbers. A clause effect")
-    print("  sitting under its floor is not a small effect, it is one this design cannot see.")
+    # WAS "the F cells were all collected at ONE order (seed 11)" -- true until 2026-09-20,
+    # when orders 22 and 33 landed on every F cell of the three models that vary. The limit
+    # that remains is the protocol: seed 11 is v1, seeds 22/33 are v2.
+    print("  The floors are wide and that is the finding's own limit. The F cells carry three")
+    print("  orders (seeds 11, 22, 33) on the models that vary, but seed 11 was collected under")
+    print("  protocol v1 and 22/33 under v2, so --factorial-calibration reports every figure on")
+    print("  the v2 orders alone as well. A clause effect sitting under its floor is not a small")
+    print("  effect, it is one this design cannot see.")
     if other:
         print()
         print("excluded as neither refusal nor answer sheet: %s"
