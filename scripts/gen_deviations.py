@@ -182,6 +182,9 @@ def render():
         A("the pre-registration forbids removing a model from the roster after collection, so")
         A("these stay in every denominator and the loss is reported.")
         A("")
+        if limits.get("_counts"):
+            A(limits["_counts"])
+            A("")
         A("| model | lost / attempted | separability | shape |")
         A("|---|---:|---|---|")
         for m in models:
@@ -190,7 +193,12 @@ def render():
                  m.get("separability") or "—",
                  (m.get("shape") or "").split(".")[0][:110]))
         A("")
-    blocking = limits.get("not_declared_and_still_blocking") or []
+    listed = limits.get("not_declared_and_still_blocking") or []
+    # AN ENTRY THAT RECORDS ITS OWN RESOLUTION IS NOT STILL BLOCKING. This printed every entry
+    # under "Still blocking", so `z-ai/glm-5.3-flash` read as blocking acceptance for a week
+    # after its record said it stopped on 2026-09-19 -- while collection_check ACCEPTED the wave.
+    blocking = [b for b in listed if not b.get("no_longer_blocking")]
+    cleared = [b for b in listed if b.get("no_longer_blocking")]
     if blocking:
         A("Still blocking acceptance, deliberately — infrastructure failures are")
         A("re-collectable and may not be declared away:")
@@ -199,6 +207,15 @@ def render():
             A("- `%s` — %s of %s sheets, `%s`. %s"
               % (b.get("model"), b.get("lost"), b.get("attempted"), b.get("shape"),
                  b.get("why_not_declared", "")))
+        A("")
+    if cleared:
+        A("No longer blocking — infrastructure shortfalls that stopped counting against the")
+        A("model, each with the date and the reason:")
+        A("")
+        for b in cleared:
+            A("- `%s` — `%s`, cleared %s. %s"
+              % (b.get("model"), b.get("shape"), b.get("no_longer_blocking"),
+                 b.get("why_no_longer_blocking", "")))
         A("")
     resolved = limits.get("_RESOLVED")
     if resolved:

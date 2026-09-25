@@ -137,7 +137,15 @@ renumbered `1..32` in presentation order rather than carrying each item's own id
 alternative silently deletes answers (§6b). Temperature, token cap and provider pin are recorded
 on every record. Cells are collected to five draws so that every figure pairs a *modal* sheet
 rather than a single draw, and the modal's own sampling error is measured and reported as a row
-of the floors table.
+of the floors table. Eleven models fall short of that, and the requantisation row rests on
+them: the six requantisation builds (`gemma2:9b-instruct-q8_0`, `llama3.1:8b-instruct-q8_0`,
+`llama3.2:3b-instruct-q8_0`, `llama3.2:latest`, `mistral:7b-instruct-q8_0`,
+`qwen2.5:14b-instruct-q8_0`) hold one draw per presentation order, three per condition, so
+that row pairs three-draw modals; and five hosted models (`minimax/minimax-m2.7`,
+`moonshotai/kimi-k2-thinking`, `qwen/qwen3.8-2.4t-a95b`, `xiaomi/mimo-v2.5-pro`,
+`z-ai/glm-5.2`) hold five records at one order under a single repeated seed, which is one
+distinct draw, and contribute to no order row. *(This sentence was added 2026-09-24; until then
+the five-draw depth read as universal.)*
 
 **The conditions.** Seven, and the paper reasons about the differences between them:
 

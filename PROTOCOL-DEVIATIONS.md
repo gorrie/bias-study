@@ -171,20 +171,22 @@ Models whose own output is unusable on some sheets. Declared rather than dropped
 the pre-registration forbids removing a model from the roster after collection, so
 these stay in every denominator and the loss is reported.
 
+RECOUNTED 2026-09-24 on the frozen wave: `lost` is partial sheets (0 < n_answers < 32), `attempted` is every sheet the model has in the wave -- the same count the paper's section 6b states. The file declared counts from 2026-09-17, while the wave was still collecting; those are kept per model as `counted_2026_09_17`. The `shape` wording was written on that snapshot and its counts describe it, not the frozen wave.
+
 | model | lost / attempted | separability | shape |
 |---|---:|---|---|
-| `mistral:latest` | 11 / 46 | NOT SEPARABLE | Eleven partial sheets |
+| `mistral:latest` | 16 / 77 | NOT SEPARABLE | Eleven partial sheets |
 | `mistral:7b-instruct-q8_0` | 5 / 12 | MIXED, at four sheets per cell | Five partial sheets |
-| `qwen2.5:14b` | 10 / 31 | NOT SEPARABLE | Ten partial sheets, each exactly one item short |
+| `qwen2.5:14b` | 27 / 80 | NOT SEPARABLE | Ten partial sheets, each exactly one item short |
 | `qwen2.5:14b-instruct-q8_0` | 2 / 12 | NOT SEPARABLE | Two partial sheets, one item short each -- item 4 once and item 13 once, the same two items as its unquantised |
-| `hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M` | 6 / 54 | NOT SEPARABLE | Six partial sheets, all dropping item 2, and all at order 33 -- where item 2 sits at SLOT 2, on the line numbe |
-| `llama3.1:8b` | 11 / 45 | MIXED -- an item x slot interaction, the corpus's one candidate for content-specific omission | Eleven partial sheets, and the ONLY pattern in the corpus that survives its item moving |
+| `hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M` | 7 / 77 | NOT SEPARABLE | Six partial sheets, all dropping item 2, and all at order 33 -- where item 2 sits at SLOT 2, on the line numbe |
+| `llama3.1:8b` | 11 / 84 | MIXED -- an item x slot interaction, the corpus's one candidate for content-specific omission | Eleven partial sheets, and the ONLY pattern in the corpus that survives its item moving |
 | `huihui_ai/qwen2.5-abliterate:14b` | 27 / 35 | NOT SEPARABLE, and for a reason worth stating: this build was collected at ONE presentation order (seed 11) only. Item and slot cannot be told apart from a single order by construction -- `item_omission.py` requires two distinct slots before it will name either. The sibling's drops are order-11-specific, which points at slot, but that is the sibling's evidence and not this build's. | Twenty-seven sheets of thirty-five fail to parse -- classified `other`, so the model produced output that is n |
 
-Still blocking acceptance, deliberately — infrastructure failures are
-re-collectable and may not be declared away:
+No longer blocking — infrastructure shortfalls that stopped counting against the
+model, each with the date and the reason:
 
-- `z-ai/glm-5.3-flash` — 12 of 28 sheets, `transport`. Infrastructure, not the model. Re-collectable at ~12 sheets. It blocks until it is retried, which is the correct behaviour.
+- `z-ai/glm-5.3-flash` — `transport`, cleared 2026-09-19. Transport is no longer counted toward a model's invalidity: a sheet the model never saw is not a sheet it answered badly, and counting it made an availability problem read as a model problem. Its shortfall is now reported on its own availability line. Kept rather than deleted because the reason it stopped blocking is the interesting part -- the entry was correct under the old accounting.
 
 ### Resolved
 

@@ -12,8 +12,8 @@
   "models": [
     {
       "model": "mistral:latest",
-      "lost": 11,
-      "attempted": 46,
+      "lost": 16,
+      "attempted": 77,
       "shape": "Eleven partial sheets. Items 20 and 31 are dropped 10 times each and item 21 eight times -- and in order 11 those are SLOTS 0, 1 AND 31. The model begins its sheet at the line numbered '1.' and stops before the last line. Nothing is truncated: the sheets run 160-210 tokens against a 32,768 cap and end on the last item presented.",
       "separability": "NOT SEPARABLE",
       "orders_observed": [
@@ -23,7 +23,8 @@
       ],
       "retry_evidence": "Reproduced across three conditions and five replicates at the pre-registered temperature. The failure is the model's output, not the call.",
       "consequence": "Its cells carry fewer sheets than the panel. It contributes to no floor row it cannot fill.",
-      "correction_note": "The previous shape here -- 'answers the first 17 items in format, then degrades into prose' -- describes ONE A-condition sheet on which the item numbers are present and the text turns to prose. That is a different failure from the drops above, and the two were conflated into a single declared shape."
+      "correction_note": "The previous shape here -- 'answers the first 17 items in format, then degrades into prose' -- describes ONE A-condition sheet on which the item numbers are present and the text turns to prose. That is a different failure from the drops above, and the two were conflated into a single declared shape.",
+      "counted_2026_09_17": "11 / 46"
     },
     {
       "model": "mistral:7b-instruct-q8_0",
@@ -41,8 +42,8 @@
     },
     {
       "model": "qwen2.5:14b",
-      "lost": 10,
-      "attempted": 31,
+      "lost": 27,
+      "attempted": 80,
       "shape": "Ten partial sheets, each exactly one item short. Item 4 accounts for eight of them and item 13 for two. Item 4 sits at SLOT 4 of order 11, and every drop of it is at that order: at orders 22 and 33, where the same item sits at slots 20 and 12, it is never dropped.",
       "separability": "NOT SEPARABLE",
       "orders_observed": [
@@ -52,7 +53,8 @@
       ],
       "retry_evidence": "Ten sheets, one missing item each, across conditions and replicates.",
       "consequence": "The analysed subset for this model is selected by its own behaviour on one item -- the valid sheets at order 11 are exactly those where it answered slot 4. That is a limitation of the corpus whatever the cause turns out to be, and it is reported as one.",
-      "correction_note": "Previously declared as 'systematic omission of one proposition, not truncation -- item 4, the defender half on programmable money'. The content reading is not supported: the drop does not follow the item when the item moves."
+      "correction_note": "Previously declared as 'systematic omission of one proposition, not truncation -- item 4, the defender half on programmable money'. The content reading is not supported: the drop does not follow the item when the item moves.",
+      "counted_2026_09_17": "10 / 31"
     },
     {
       "model": "qwen2.5:14b-instruct-q8_0",
@@ -70,8 +72,8 @@
     },
     {
       "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
-      "lost": 6,
-      "attempted": 54,
+      "lost": 7,
+      "attempted": 77,
       "shape": "Six partial sheets, all dropping item 2, and all at order 33 -- where item 2 sits at SLOT 2, on the line numbered '2.' immediately after the line numbered '22.'. At orders 11 and 22, where the same item sits at slots 8 and 14, it is never dropped.",
       "separability": "NOT SEPARABLE",
       "orders_observed": [
@@ -81,12 +83,13 @@
       ],
       "retry_evidence": "Six sheets across conditions; the item number is absent from the response text entirely, so nothing was written and missed.",
       "consequence": "Declared rather than left as an unexplained hole. This model was the study's worst-hit until the structural/3 parser fix recovered 32 of its sheets; these six are what remains.",
-      "correction_note": "Added 2026-09-18. It was not declared before because the per-model loss sits under the block threshold, which is exactly how a pattern stays undocumented."
+      "correction_note": "Added 2026-09-18. It was not declared before because the per-model loss sits under the block threshold, which is exactly how a pattern stays undocumented.",
+      "counted_2026_09_17": "6 / 54"
     },
     {
       "model": "llama3.1:8b",
       "lost": 11,
-      "attempted": 45,
+      "attempted": 84,
       "shape": "Eleven partial sheets, and the ONLY pattern in the corpus that survives its item moving. Item 14 -- the defender half on payment processors -- is dropped on 10 of 23 sheets at slot 12 and on 1 of 19 at slot 17; slot 12 hosting a different item (19) loses it on 1 of 19. So neither the item alone nor the position alone accounts for it: the drop needs both, mid-sheet, with the item number absent from the text.",
       "separability": "MIXED -- an item x slot interaction, the corpus's one candidate for content-specific omission",
       "orders_observed": [
@@ -96,7 +99,8 @@
       ],
       "retry_evidence": "Eleven sheets across conditions and replicates; the sheet is otherwise in presentation order and complete on both sides of the gap.",
       "consequence": "This is the case the local separation pass is designed to settle. It is declared now rather than after the result, so the declaration cannot be written to match the answer.",
-      "correction_note": "Added 2026-09-18. Undeclared until the generated scan found it -- the free-prose declarations named the three loudest models and missed the only interesting one."
+      "correction_note": "Added 2026-09-18. Undeclared until the generated scan found it -- the free-prose declarations named the three loudest models and missed the only interesting one.",
+      "counted_2026_09_17": "11 / 45"
     },
     {
       "model": "huihui_ai/qwen2.5-abliterate:14b",
@@ -122,5 +126,6 @@
       "no_longer_blocking": "2026-09-19",
       "why_no_longer_blocking": "Transport is no longer counted toward a model's invalidity: a sheet the model never saw is not a sheet it answered badly, and counting it made an availability problem read as a model problem. Its shortfall is now reported on its own availability line. Kept rather than deleted because the reason it stopped blocking is the interesting part -- the entry was correct under the old accounting."
     }
-  ]
+  ],
+  "_counts": "RECOUNTED 2026-09-24 on the frozen wave: `lost` is partial sheets (0 < n_answers < 32), `attempted` is every sheet the model has in the wave -- the same count the paper's section 6b states. The file declared counts from 2026-09-17, while the wave was still collecting; those are kept per model as `counted_2026_09_17`. The `shape` wording was written on that snapshot and its counts describe it, not the frozen wave."
 }
