@@ -99,8 +99,94 @@ DESCRIPTIONS = {
     "spliced_base_exclusion": "For derived corpora: why the base record was excluded, where it was.",
 }
 
+#: THE PRESENT STUDY'S RECORDS -- one JSON line per administration of the 32-item battery, in
+#: `runs/<run>/<model>__<condition>.jsonl`. Added 2026-09-24: until then this generator globbed
+#: only the `raw/` and `scored/` layouts of the earlier corpus, so the dictionary described
+#: none of the fields of the corpus the paper is about, and `--check` passed over it. Some names
+#: are shared with the earlier corpus and MEAN SOMETHING DIFFERENT here (`condition`), so these
+#: take precedence for this layout only.
+BATTERY_DESCRIPTIONS = {
+    # identity
+    "schema": "Record schema. `battery-run/1` for every forced-choice sheet; readers also accept the older name `compass-run/1`.",
+    "model": "Model identifier as the channel names it. The same weights over two channels are two rows.",
+    "channel": "`openrouter` (hosted API) or `ollama` (local inference on the study's GPU). Local builds are Q4 unless the tag says otherwise.",
+    "provider": "The backend that actually served the sheet (OpenRouter), or null locally. Serving path is treated as a same-version variant, so a cell served by two providers is not one cell.",
+    "provider_pinned": "The backend REQUESTED, with fallbacks off, or null if unpinned. Equal to `provider` or null is healthy; a difference means the pin did not hold.",
+    "instrument": "Which item bank was administered: `ratchet-battery`. 120 wave records collected 2026-09-16 16:11-17:18Z carry the earlier label `ratchet-battery-v3` for the SAME 32 items (identical `forcing_prompt`); match on the prefix, as `floor_table._instrument_matches` does.",
+    "n_items": "Items on the sheet. 32 for the battery.",
+    # the condition
+    "condition": "The arm. Rung 1: `N` bare, `A` balance instruction, `D` commitment directive, `P` content-free placebo, `B`/`C`/`E` further prompt arms; `F000`-`F111` the three-clause factorial of the balance instruction (one bit per clause). Rung 2: `G-*` elicitation arms and `S-*` sampling presets. The exact text of every condition is in the paper's §0 Design table, generated from `run_battery`.",
+    "condition_note": "One-line human description of the condition, stamped by the collector so an arm is readable without the code.",
+    "system_prompt": "The system turn as sent, or null where the condition has none (`N`). The manipulation in most arms.",
+    "forcing_prompt": "The user turn as sent: the fixed instruction and the 32 items in presentation order. Shipped in full.",
+    "forcing_prompt_sha256": "Hash of the forcing prompt, so a reader can verify a regenerated prompt matches what was administered.",
+    "forcing_prompt_chars": "Length of the forcing prompt in characters.",
+    "forcing_prompt_note": "Export note about the forcing prompt field (the live instrument ships in full; nothing is withheld).",
+    "template": "Wording of the forcing instruction: `T01` canonical; `T02`-`T10` the paraphrase arm only.",
+    "shuffle_seed": "Presentation order. Items are shuffled by this seed; the same seed is the same order. The wave uses 11, 22 and 33.",
+    "renumbered": "Protocol v2. True: items were printed `1..32` in presentation order and answers mapped back through `label_to_id`. False: each item printed under its own id (the as-is numbering, which lets some models silently skip lines). Absent on records that predate the flag, which are as-is.",
+    "label_to_id": "For renumbered sheets, the map from printed label to item id, so the remap is auditable. Null otherwise.",
+    "run_no": "Index of the sheet within its collector invocation. Not a replicate key across invocations; use `seed`.",
+    "seed": "Sampling seed for the call. Replicates in a cell differ by seed; sample size is DISTINCT seeds, not rows.",
+    "temperature": "Sampling temperature. 0.7 for the wave.",
+    "max_tokens": "Completion budget requested.",
+    "think": "Reasoning mode requested on local builds (false for the wave), or null on channels without the switch.",
+    "thinking_chars": "Characters of reasoning trace returned, where the channel reports it.",
+    "done_reason": "Local channel's stop reason (`stop`, `length`), or null.",
+    "presence_penalty": "Sampling penalty sent, rung 2 only. Recorded only when sent.",
+    "frequency_penalty": "Sampling penalty sent, rung 2 only. Recorded only when sent.",
+    # the response
+    "ok": "The call completed. False is a transport failure: the model never saw the sheet.",
+    "error": "Transport error string, on failed calls.",
+    "transient": "Whether the failed call was judged retryable.",
+    "collected_at": "UTC timestamp of the call.",
+    "latency_ms": "Wall-clock time of the call, including queueing.",
+    "tokens_in": "Prompt tokens as the provider counted them.",
+    "tokens_out": "Completion tokens as the provider counted them.",
+    "ollama_timing_ns": "Local channel's timing breakdown in nanoseconds, or null.",
+    "response_text": "The model's reply verbatim.",
+    # the parse
+    "answers": "The parsed sheet: a list of `{q, position}`, where `q` is the ITEM ID (already remapped on renumbered sheets, with `printed_label` kept) and `position` is 0 Strongly Disagree, 1 Disagree, 2 Agree, 3 Strongly Agree. There is no neutral option.",
+    "n_answers": "Items answered. A sheet with 0 < n_answers < 32 is a PARTIAL sheet: it fails validity and is dropped whole.",
+    "problems": "Why the sheet is invalid, one string per problem (missing items, contradictory repeats, call failed). Empty on a valid sheet.",
+    "valid": "The sheet is complete and self-consistent. Every analysis reads valid sheets only.",
+    "failure_mode": "Why an invalid sheet failed: `refused`, `transport`, `budget-exhausted`, `truncated`, or `other` (includes silent omission). Null on a valid sheet.",
+    "classifier": "Version of the validity/failure rule that labelled this record (`structural/1`-`/3`). `run_battery.CLASSIFIER_VERSION` documents each; `refusal_table --audit` holds current-version rows to exact agreement.",
+    # rung 2
+    "rung": "Escalation-ladder rung: 2 for the elicitation arms.",
+    "base_condition": "The rung-1 condition a rung-2 arm is built on (`B`).",
+    "transform_source": "Where the rung-2 transform's constants came from.",
+    "g0dm0d3_provenance": "The G0DM0D3 source files read for the transform, each with a content digest (`sha256_12`), and the boost constants applied.",
+    "system_prompt_chars": "Length of the rung-2 system prompt in characters.",
+    "instructs_against_measured_outcome": "Rung 2: where the arm's prompt itself instructs against the outcome being measured (e.g. 'never refuse'), the offending phrases; null otherwise. A refusal under such an arm is measured against an explicit order not to.",
+    "boost_applied": "Rung 2: whether G0DM0D3's sampling boost was applied.",
+    "sampling_preset": "Rung 2 sampling ladder: `S-Precise`, `S-Balanced`, `S-Creative`, `S-Chaotic`, or null.",
+    "preset_full": "The complete sampling preset as defined, including fields the channel does not accept.",
+    "preset_fields_not_sent": "Preset fields NOT sent because the channel does not accept them, so the arm's effective sampling is stated rather than assumed.",
+    # study-tree arms not shipped in the public release
+    "question_id": "Item id, on the rung-2 control arms that re-administer the earlier free-text questions.",
+    "question_text": "Item text for those questions.",
+    "id": "Refusal-ablation prompt id (XSTest; third-party text, private tree only).",
+    "type": "XSTest prompt category.",
+    "label": "XSTest's label for the prompt: `safe` or `unsafe`.",
+    "prompt": "The prompt administered in the refusal-ablation and dose arms.",
+    "reply": "The model's reply in those arms.",
+    "arm": "Which build of the refusal-ablation series answered.",
+    "gen": "Generation settings for that arm.",
+    "keyword_refused": "Keyword-rule refusal verdict for that reply.",
+    "judge_model": "Local judge model that classified the reply.",
+    "judge_verdict": "The judge's verdict (e.g. `COMPLIED`).",
+    "judge_raw": "The judge's raw output.",
+    "request_id": "Channel request id, where returned.",
+    "score_local_judge": "Local judge score, dose arms only.",
+}
 
-def scan(*patterns):
+#: Categorical fields worth a vocabulary in the battery section.
+BATTERY_CATEGORICAL = {"channel", "condition", "failure_mode", "instrument", "classifier",
+                       "template", "renumbered", "done_reason", "sampling_preset"}
+
+
+def scan(*patterns, categorical=CATEGORICAL):
     """Every record matching ANY of these globs. Takes several, and scans all of them.
 
     THIS TOOK ONE PATTERN AND `render()` TRIED THEM IN TURN -- `data/*/raw/*.jsonl` first,
@@ -136,34 +222,40 @@ def scan(*patterns):
             n += 1
             for k, v in r.items():
                 fields[k][type(v).__name__ if v is not None else "null"] += 1
-                if k in CATEGORICAL and not isinstance(v, (dict, list)):
+                if k in categorical and not isinstance(v, (dict, list)):
                     vocab[k][str(v)] += 1
     return n, nfiles, fields, vocab
 
 
 def render():
-    layouts = [("raw", "data/*/raw/*.jsonl", "runs/*/raw/*.jsonl"),
-               ("scored", "data/*/scored/*.jsonl", "runs/*/scored/*.jsonl")]
-    blocks, undescribed, allvocab = [], set(), {}
-    for label, p1, p2 in layouts:
-        n, nf, fields, vocab = scan(p1, p2)
+    """(label, patterns, descriptions, categorical) per record layout.
+
+    `battery` is the present study, flat under `runs/<run>/`, and comes first because it is
+    the corpus the paper is about. `raw`/`scored` are the earlier corpus under `data/`.
+    """
+    layouts = [("battery", ("runs/*/*.jsonl",), BATTERY_DESCRIPTIONS, BATTERY_CATEGORICAL),
+               ("raw", ("data/*/raw/*.jsonl", "runs/*/raw/*.jsonl"), DESCRIPTIONS, CATEGORICAL),
+               ("scored", ("data/*/scored/*.jsonl", "runs/*/scored/*.jsonl"), DESCRIPTIONS,
+                CATEGORICAL)]
+    blocks, undescribed = [], set()
+    for label, patterns, descriptions, categorical in layouts:
+        n, nf, fields, vocab = scan(*patterns, categorical=categorical)
         if not n:
             continue
-        allvocab.update({k: v for k, v in vocab.items() if k not in allvocab})
         rows = []
         for k in sorted(fields, key=lambda k: (-sum(fields[k].values()), k)):
             tot = sum(fields[k].values())
             types = ", ".join(f"`{t}`" for t, _ in fields[k].most_common(3))
-            if k not in DESCRIPTIONS:
+            if k not in descriptions:
                 undescribed.add(k)
-            desc = DESCRIPTIONS.get(k, "**UNDESCRIBED -- see gen_data_dictionary.DESCRIPTIONS**")
+            desc = descriptions.get(k, "**UNDESCRIBED -- see gen_data_dictionary**")
             rows.append(f"| `{k}` | {tot / n:.1%} | {types} | {desc} |")
-        blocks.append((label, n, nf, len(fields), rows))
-    return blocks, undescribed, allvocab
+        blocks.append((label, n, nf, len(fields), rows, vocab))
+    return blocks, undescribed
 
 
 def build_text():
-    blocks, undescribed, vocab = render()
+    blocks, undescribed = render()
     if not blocks:
         return None, undescribed
     out = ["# Data dictionary",
@@ -182,7 +274,7 @@ def build_text():
     # "this field is usually missing" rather than "this field belongs to one of two instruments
     # and is near-universal within it". The percentages are honest and the inference from them
     # is not, unless this is said first.
-    out += ["## Two corpora, pooled in the coverage figures below", "",
+    out += ["## Two corpora, documented separately below", "",
             "The study ran on two instruments and this repository holds both. They are in",
             "separate directories and the distinction is load-bearing:", "",
             "| root | instrument | what it is |",
@@ -190,47 +282,45 @@ def build_text():
             "| `runs/` | the **Ratchet battery** — 32 forced-choice items in 16 mirrored pairs, "
             "author-written, MIT, published in full | the current study. Forced-choice, read "
             "positionally: no rubric, no judge, no 1–5 score |",
-            "| `data/` | the **retired 62-item external questionnaire** | the May 2026 "
-            "judge-scored study and its September repairs. Free-text responses scored 1–5 by a "
-            "cross-vendor judge panel |",
+            "| `data/` | the author's **institutional-framing question set** (topics "
+            "`T01`..`T18`, question text included) | the May 2026 judge-scored study and its "
+            "September repairs. Free-text responses scored 1–5 by a cross-vendor judge panel |",
             "",
             "Each root has its own README describing what may and may not be concluded from it.",
             "",
             "**The one field difference that bites:** records in `runs/` carry an `instrument`",
-            "field and records in `data/` mostly do not, because the field postdates them. Code",
-            "that filters on `instrument == \"ratchet-battery\"` silently drops the entire",
-            "previous corpus; code that does not filter silently pools two instruments.",
-            "`floor_table._instrument_matches` is the rule the analysis uses.",
+            "field and records in `data/` do not, because the field postdates them. Code that",
+            "filters on `instrument == \"ratchet-battery\"` drops the whole earlier corpus, and",
+            "also the 120 wave records labelled `ratchet-battery-v3` (same 32 items); code that",
+            "does not filter pools two designs. `floor_table._instrument_matches` is the rule the",
+            "analysis uses.",
             "",
-            "**No figure computed from 32 items may be set beside one computed from 62.**",
-            "Side-flip counts are not linear in item count.",
+            "**`condition` means different things in the two corpora**, which is why each",
+            "section below carries its own meanings.",
             ""]
-    for label, n, nf, nfields, rows in blocks:
+    for label, n, nf, nfields, rows, vocab in blocks:
         out += [f"## `{label}` records", "",
                 f"{n:,} records across {nf} files, {nfields} distinct fields.", "",
                 "| field | coverage | types | meaning |", "|---|---:|---|---|"]
         out += rows
         out.append("")
-    if vocab:
-        out += ["## Categorical vocabularies", "",
-                "Measured from the corpus, most frequent first. A value not listed here does not",
-                "occur in the published data.", ""]
-        for k in sorted(vocab):
-            vals = ", ".join(f"`{v}` ({c:,})" for v, c in vocab[k].most_common(12))
-            out.append(f"- **`{k}`** — {vals}")
-        out.append("")
+        if vocab:
+            out += [f"**Vocabularies in `{label}` records**, measured, most frequent first. A "
+                    "value not listed does not occur.", ""]
+            for k in sorted(vocab):
+                vals = ", ".join(f"`{v}` ({c:,})" for v, c in vocab[k].most_common(20))
+                out.append(f"- **`{k}`** — {vals}")
+            out.append("")
     out += ["## What is deliberately absent", "",
             "**The live instrument is in this repository in full.** `data/ratchet-battery.json` is",
             "32 author-written propositions in 16 mirrored pairs, MIT-licensed with everything",
             "else, with no fetch step and nothing to take on trust.",
             "",
-            "What is absent is the **retired** 62-item external questionnaire the August arm ran",
-            "on. It is a third party's licensed text, so neither it nor the script that retrieved",
-            "it is here, and the records that used it carry item ids rather than item text —",
-            "which is all that is needed to recompute a result from the answers.",
-            "`MANIFEST.json` carries its hash so a reader can prove they hold the same",
-            "instrument. Everything measured on it is withdrawn; it survives in this study as a",
-            "thing that was evaluated and rejected, and nothing else.",
+            "What is absent is the **retired** 62-item external questionnaire, and every record",
+            "collected on it: the forced-choice arm of August and early September. It is a third",
+            "party's licensed text, so neither it nor its records ship here. Everything measured",
+            "on it is withdrawn, and the corrections that describe those claims are in",
+            "`CORRECTIONS.md`; the figures they quote cannot be recomputed from this repository.",
             "",
             "The export is produced and re-verified against the fingerprint list by an operator",
             "tool that lives on the development side, not here — deliberately, so that the thing",

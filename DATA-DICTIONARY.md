@@ -9,7 +9,7 @@ present**. Coverage is not decoration: a field on 93.6% of records is one an ana
 must check for rather than assume, and assuming it is how a denominator changes
 silently.
 
-## Two corpora, pooled in the coverage figures below
+## Two corpora, documented separately below
 
 The study ran on two instruments and this repository holds both. They are in
 separate directories and the distinction is load-bearing:
@@ -17,18 +17,90 @@ separate directories and the distinction is load-bearing:
 | root | instrument | what it is |
 |---|---|---|
 | `runs/` | the **Ratchet battery** — 32 forced-choice items in 16 mirrored pairs, author-written, MIT, published in full | the current study. Forced-choice, read positionally: no rubric, no judge, no 1–5 score |
-| `data/` | the **retired 62-item external questionnaire** | the May 2026 judge-scored study and its September repairs. Free-text responses scored 1–5 by a cross-vendor judge panel |
+| `data/` | the author's **institutional-framing question set** (topics `T01`..`T18`, question text included) | the May 2026 judge-scored study and its September repairs. Free-text responses scored 1–5 by a cross-vendor judge panel |
 
 Each root has its own README describing what may and may not be concluded from it.
 
 **The one field difference that bites:** records in `runs/` carry an `instrument`
-field and records in `data/` mostly do not, because the field postdates them. Code
-that filters on `instrument == "ratchet-battery"` silently drops the entire
-previous corpus; code that does not filter silently pools two instruments.
-`floor_table._instrument_matches` is the rule the analysis uses.
+field and records in `data/` do not, because the field postdates them. Code that
+filters on `instrument == "ratchet-battery"` drops the whole earlier corpus, and
+also the 120 wave records labelled `ratchet-battery-v3` (same 32 items); code that
+does not filter pools two designs. `floor_table._instrument_matches` is the rule the
+analysis uses.
 
-**No figure computed from 32 items may be set beside one computed from 62.**
-Side-flip counts are not linear in item count.
+**`condition` means different things in the two corpora**, which is why each
+section below carries its own meanings.
+
+## `battery` records
+
+6,703 records across 1200 files, 52 distinct fields.
+
+| field | coverage | types | meaning |
+|---|---:|---|---|
+| `answers` | 100.0% | `list` | The parsed sheet: a list of `{q, position}`, where `q` is the ITEM ID (already remapped on renumbered sheets, with `printed_label` kept) and `position` is 0 Strongly Disagree, 1 Disagree, 2 Agree, 3 Strongly Agree. There is no neutral option. |
+| `channel` | 100.0% | `str` | `openrouter` (hosted API) or `ollama` (local inference on the study's GPU). Local builds are Q4 unless the tag says otherwise. |
+| `collected_at` | 100.0% | `str` | UTC timestamp of the call. |
+| `condition` | 100.0% | `str` | The arm. Rung 1: `N` bare, `A` balance instruction, `D` commitment directive, `P` content-free placebo, `B`/`C`/`E` further prompt arms; `F000`-`F111` the three-clause factorial of the balance instruction (one bit per clause). Rung 2: `G-*` elicitation arms and `S-*` sampling presets. The exact text of every condition is in the paper's §0 Design table, generated from `run_battery`. |
+| `condition_note` | 100.0% | `str` | One-line human description of the condition, stamped by the collector so an arm is readable without the code. |
+| `done_reason` | 100.0% | `null`, `str` | Local channel's stop reason (`stop`, `length`), or null. |
+| `failure_mode` | 100.0% | `null`, `str` | Why an invalid sheet failed: `refused`, `transport`, `budget-exhausted`, `truncated`, or `other` (includes silent omission). Null on a valid sheet. |
+| `forcing_prompt` | 100.0% | `str` | The user turn as sent: the fixed instruction and the 32 items in presentation order. Shipped in full. |
+| `instrument` | 100.0% | `str` | Which item bank was administered: `ratchet-battery`. 120 wave records collected 2026-09-16 16:11-17:18Z carry the earlier label `ratchet-battery-v3` for the SAME 32 items (identical `forcing_prompt`); match on the prefix, as `floor_table._instrument_matches` does. |
+| `latency_ms` | 100.0% | `int` | Wall-clock time of the call, including queueing. |
+| `max_tokens` | 100.0% | `int` | Completion budget requested. |
+| `model` | 100.0% | `str` | Model identifier as the channel names it. The same weights over two channels are two rows. |
+| `n_items` | 100.0% | `int` | Items on the sheet. 32 for the battery. |
+| `ok` | 100.0% | `bool` | The call completed. False is a transport failure: the model never saw the sheet. |
+| `ollama_timing_ns` | 100.0% | `null`, `dict` | Local channel's timing breakdown in nanoseconds, or null. |
+| `problems` | 100.0% | `list` | Why the sheet is invalid, one string per problem (missing items, contradictory repeats, call failed). Empty on a valid sheet. |
+| `provider` | 100.0% | `str`, `null` | The backend that actually served the sheet (OpenRouter), or null locally. Serving path is treated as a same-version variant, so a cell served by two providers is not one cell. |
+| `provider_pinned` | 100.0% | `str`, `null` | The backend REQUESTED, with fallbacks off, or null if unpinned. Equal to `provider` or null is healthy; a difference means the pin did not hold. |
+| `run_no` | 100.0% | `int` | Index of the sheet within its collector invocation. Not a replicate key across invocations; use `seed`. |
+| `schema` | 100.0% | `str` | Record schema. `battery-run/1` for every forced-choice sheet; readers also accept the older name `compass-run/1`. |
+| `seed` | 100.0% | `int`, `null` | Sampling seed for the call. Replicates in a cell differ by seed; sample size is DISTINCT seeds, not rows. |
+| `shuffle_seed` | 100.0% | `int` | Presentation order. Items are shuffled by this seed; the same seed is the same order. The wave uses 11, 22 and 33. |
+| `system_prompt` | 100.0% | `str`, `null` | The system turn as sent, or null where the condition has none (`N`). The manipulation in most arms. |
+| `temperature` | 100.0% | `float` | Sampling temperature. 0.7 for the wave. |
+| `template` | 100.0% | `str` | Wording of the forcing instruction: `T01` canonical; `T02`-`T10` the paraphrase arm only. |
+| `think` | 100.0% | `null`, `bool` | Reasoning mode requested on local builds (false for the wave), or null on channels without the switch. |
+| `thinking_chars` | 100.0% | `null`, `int` | Characters of reasoning trace returned, where the channel reports it. |
+| `tokens_in` | 100.0% | `int`, `null` | Prompt tokens as the provider counted them. |
+| `tokens_out` | 100.0% | `int`, `null` | Completion tokens as the provider counted them. |
+| `valid` | 100.0% | `bool` | The sheet is complete and self-consistent. Every analysis reads valid sheets only. |
+| `classifier` | 98.6% | `str` | Version of the validity/failure rule that labelled this record (`structural/1`-`/3`). `run_battery.CLASSIFIER_VERSION` documents each; `refusal_table --audit` holds current-version rows to exact agreement. |
+| `n_answers` | 98.6% | `int` | Items answered. A sheet with 0 < n_answers < 32 is a PARTIAL sheet: it fails validity and is dropped whole. |
+| `response_text` | 98.6% | `str` | The model's reply verbatim. |
+| `forcing_prompt_chars` | 94.5% | `int` | Length of the forcing prompt in characters. |
+| `forcing_prompt_note` | 94.5% | `str` | Export note about the forcing prompt field (the live instrument ships in full; nothing is withheld). |
+| `forcing_prompt_sha256` | 94.5% | `str` | Hash of the forcing prompt, so a reader can verify a regenerated prompt matches what was administered. |
+| `label_to_id` | 79.1% | `null`, `dict` | For renumbered sheets, the map from printed label to item id, so the remap is auditable. Null otherwise. |
+| `renumbered` | 79.1% | `bool` | Protocol v2. True: items were printed `1..32` in presentation order and answers mapped back through `label_to_id`. False: each item printed under its own id (the as-is numbering, which lets some models silently skip lines). Absent on records that predate the flag, which are as-is. |
+| `base_condition` | 4.2% | `str` | The rung-1 condition a rung-2 arm is built on (`B`). |
+| `boost_applied` | 4.2% | `bool` | Rung 2: whether G0DM0D3's sampling boost was applied. |
+| `frequency_penalty` | 4.2% | `float` | Sampling penalty sent, rung 2 only. Recorded only when sent. |
+| `g0dm0d3_provenance` | 4.2% | `dict` | The G0DM0D3 source files read for the transform, each with a content digest (`sha256_12`), and the boost constants applied. |
+| `instructs_against_measured_outcome` | 4.2% | `null`, `str` | Rung 2: where the arm's prompt itself instructs against the outcome being measured (e.g. 'never refuse'), the offending phrases; null otherwise. A refusal under such an arm is measured against an explicit order not to. |
+| `presence_penalty` | 4.2% | `float` | Sampling penalty sent, rung 2 only. Recorded only when sent. |
+| `rung` | 4.2% | `int` | Escalation-ladder rung: 2 for the elicitation arms. |
+| `system_prompt_chars` | 4.2% | `int` | Length of the rung-2 system prompt in characters. |
+| `transform_source` | 4.2% | `str` | Where the rung-2 transform's constants came from. |
+| `preset_fields_not_sent` | 2.6% | `list`, `null` | Preset fields NOT sent because the channel does not accept them, so the arm's effective sampling is stated rather than assumed. |
+| `preset_full` | 2.6% | `dict`, `null` | The complete sampling preset as defined, including fields the channel does not accept. |
+| `sampling_preset` | 2.6% | `str`, `null` | Rung 2 sampling ladder: `S-Precise`, `S-Balanced`, `S-Creative`, `S-Chaotic`, or null. |
+| `error` | 1.4% | `str` | Transport error string, on failed calls. |
+| `transient` | 1.4% | `bool` | Whether the failed call was judged retryable. |
+
+**Vocabularies in `battery` records**, measured, most frequent first. A value not listed does not occur.
+
+- **`channel`** — `openrouter` (5,384), `ollama` (1,319)
+- **`classifier`** — `structural/3` (5,555), `structural/2` (625), `structural/1` (432)
+- **`condition`** — `N` (2,068), `P` (1,536), `A` (776), `D` (724), `B` (312), `E` (230), `C` (225), `F011` (80), `F110` (79), `F000` (65), `F001` (65), `F010` (65), `F100` (65), `F101` (65), `F111` (65), `G-Boost` (61), `G-Directive` (61), `G-Persona` (61), `S-Balanced` (25), `S-Chaotic` (25)
+- **`done_reason`** — `None` (5,387), `stop` (1,294), `length` (22)
+- **`failure_mode`** — `None` (5,937), `refused` (460), `other` (172), `transport` (91), `budget-exhausted` (41), `truncated` (2)
+- **`instrument`** — `ratchet-battery` (6,583), `ratchet-battery-v3` (120)
+- **`renumbered`** — `False` (3,573), `True` (1,730)
+- **`sampling_preset`** — `None` (75), `S-Balanced` (25), `S-Chaotic` (25), `S-Creative` (25), `S-Precise` (25)
+- **`template`** — `T01` (6,301), `T02` (46), `T03` (46), `T04` (45), `T05` (45), `T06` (44), `T07` (44), `T08` (44), `T09` (44), `T10` (44)
 
 ## `raw` records
 
@@ -78,6 +150,18 @@ Side-flip counts are not linear in item count.
 | `truncated` | 4.5% | `bool` | Collector's truncation verdict. Prefer eligibility.looks_truncated_text, which was written because finish_reason lies. |
 | `usage` | 4.5% | `dict` | The provider's raw usage object, where returned. |
 | `called_at_unrecorded` | 2.1% | `str` | Set where the original timestamp was lost and had to be reconstructed; the value says how. |
+
+**Vocabularies in `raw` records**, measured, most frequent first. A value not listed does not occur.
+
+- **`channel`** — `openrouter` (8,080), `g0dm0d3` (470), `transformers-local` (260), `ollama` (241)
+- **`condition`** — `B` (3,770), `A` (3,692), `B-prime` (400), `P` (400), `B-Layered` (130), `B-Parseltongue` (120), `B-STM` (120), `D` (110), `C` (108), `E` (101), `B-Proxy` (100)
+- **`confidence`** — `definitive` (1,572), `hedging` (218)
+- **`finish_reason`** — `stop` (410)
+- **`position`** — `neutral` (5,164), `mild` (1,070), `pointed` (1,061), `reversed` (944), `ood` (266), `para3` (185), `para2` (181), `para1` (180)
+- **`refusal_class`** — `None` (1,790)
+- **`score_classifier_method`** — `ultraplinian` (907), `reversed-rubric` (656)
+- **`scoring_status`** — `pending-rescore` (1,599), `ok` (191)
+- **`topic`** — `T08` (889), `T04` (884), `T07` (879), `T10` (878), `T05` (877), `T06` (877), `T09` (877), `T02` (875), `T03` (875), `T01` (874), `T13` (35), `T11` (34), `T12` (34), `T14` (33), `T15` (33), `T18` (33), `T16` (32), `T17` (32)
 
 ## `scored` records
 
@@ -131,20 +215,17 @@ Side-flip counts are not linear in item count.
 | `usage` | 2.9% | `dict` | The provider's raw usage object, where returned. |
 | `called_at_unrecorded` | 1.0% | `str` | Set where the original timestamp was lost and had to be reconstructed; the value says how. |
 
-## Categorical vocabularies
+**Vocabularies in `scored` records**, measured, most frequent first. A value not listed does not occur.
 
-Measured from the corpus, most frequent first. A value not listed here does not
-occur in the published data.
-
-- **`channel`** — `openrouter` (8,080), `g0dm0d3` (470), `transformers-local` (260), `ollama` (241)
-- **`condition`** — `B` (3,770), `A` (3,692), `B-prime` (400), `P` (400), `B-Layered` (130), `B-Parseltongue` (120), `B-STM` (120), `D` (110), `C` (108), `E` (101), `B-Proxy` (100)
-- **`confidence`** — `definitive` (1,572), `hedging` (218)
-- **`finish_reason`** — `stop` (410)
-- **`position`** — `neutral` (5,164), `mild` (1,070), `pointed` (1,061), `reversed` (944), `ood` (266), `para3` (185), `para2` (181), `para1` (180)
-- **`refusal_class`** — `None` (1,790)
-- **`score_classifier_method`** — `ultraplinian` (907), `reversed-rubric` (656)
-- **`scoring_status`** — `pending-rescore` (1,599), `ok` (191)
-- **`topic`** — `T08` (889), `T04` (884), `T07` (879), `T10` (878), `T05` (877), `T06` (877), `T09` (877), `T02` (875), `T03` (875), `T01` (874), `T13` (35), `T11` (34)
+- **`channel`** — `openrouter` (12,571), `ollama` (481), `g0dm0d3` (460), `transformers-local` (260)
+- **`condition`** — `B` (6,000), `A` (5,923), `B-prime` (400), `P` (400), `D` (200), `C` (198), `E` (191), `B-Layered` (120), `B-Parseltongue` (120), `B-STM` (120), `B-Proxy` (100)
+- **`confidence`** — `definitive` (10,511), `hedging` (2,817), `refusing-then-answering` (239), `None` (205)
+- **`finish_reason`** — `stop` (400)
+- **`position`** — `neutral` (7,864), `mild` (1,771), `pointed` (1,761), `reversed` (1,044), `ood` (426), `para3` (305), `para2` (301), `para1` (300)
+- **`refusal_class`** — `None` (13,532), `recovery` (239), `empty-response` (1)
+- **`score_classifier_method`** — `ultraplinian` (11,703), `reversed-rubric` (1,079)
+- **`scoring_status`** — `ok` (13,567), `skipped-failed-call` (204), `skipped-empty-response` (1)
+- **`topic`** — `T08` (1,345), `T04` (1,340), `T07` (1,335), `T10` (1,334), `T05` (1,333), `T06` (1,333), `T09` (1,333), `T01` (1,331), `T02` (1,331), `T03` (1,331), `T13` (55), `T11` (54), `T12` (54), `T14` (53), `T15` (53), `T18` (53), `T16` (52), `T17` (52)
 
 ## What is deliberately absent
 
@@ -152,13 +233,11 @@ occur in the published data.
 32 author-written propositions in 16 mirrored pairs, MIT-licensed with everything
 else, with no fetch step and nothing to take on trust.
 
-What is absent is the **retired** 62-item external questionnaire the August arm ran
-on. It is a third party's licensed text, so neither it nor the script that retrieved
-it is here, and the records that used it carry item ids rather than item text —
-which is all that is needed to recompute a result from the answers.
-`MANIFEST.json` carries its hash so a reader can prove they hold the same
-instrument. Everything measured on it is withdrawn; it survives in this study as a
-thing that was evaluated and rejected, and nothing else.
+What is absent is the **retired** 62-item external questionnaire, and every record
+collected on it: the forced-choice arm of August and early September. It is a third
+party's licensed text, so neither it nor its records ship here. Everything measured
+on it is withdrawn, and the corrections that describe those claims are in
+`CORRECTIONS.md`; the figures they quote cannot be recomputed from this repository.
 
 The export is produced and re-verified against the fingerprint list by an operator
 tool that lives on the development side, not here — deliberately, so that the thing
