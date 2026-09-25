@@ -846,7 +846,7 @@ def main():
         print("D and P pooled: %d refusals in %d runs. Excluded as neither a refusal nor an "
               "answer sheet: %s." % (dp_ref, dp_n, ", ".join(
                   "%s %d" % (k, v) for k, v in sorted(other.items())) or "none"))
-        return report_unknown_conditions(skipped)
+        return report_unknown_conditions(skipped, prose=True)
 
     print("REFUSAL RATE BY VENDOR AND CONDITION -- recomputed from runs/")
     # DERIVED FROM THE LIVE BANK. Typed as 62 -- the retired questionnaire's length -- and
@@ -896,12 +896,15 @@ def main():
     return report_unknown_conditions(skipped)
 
 
-def report_unknown_conditions(skipped):
+def report_unknown_conditions(skipped, prose=False):
     """Name every condition this table did not place. A DROP NOBODY COUNTS IS A DROP NOBODY SEES.
 
     Returns 0 when everything skipped is deliberate, 1 when a condition is in the corpus and
     in neither CONDITIONS nor FACTORIAL_CONDITIONS -- an arm that is being collected and
     reported nowhere.
+
+    `prose` is the paper's form of the same lines: one sentence per arm, with the flag in
+    code, because the terminal form typeset a CLI hint as a sentence.
     """
     if not skipped:
         return 0
@@ -910,13 +913,23 @@ def report_unknown_conditions(skipped):
     sampling = {c: n for c, n in skipped.items() if c in SAMPLING_CONDITIONS}
     unknown = {c: n for c, n in skipped.items() if c not in KNOWN_CONDITIONS}
     print()
-    if factorial:
+    if prose:
+        arms = [(factorial, "clause-factorial", "cell", "--factorial"),
+                (rung2, "elicitation-rung", "arm", "--rung2"),
+                (sampling, "sampling-ladder", "arm", "--sampling")]
+        for group, what, unit, flag in arms:
+            if group:
+                k = len(group)
+                print("Kept out of this table by design: the %d %s sheets across %d %s%s, "
+                      "which `refusal_table.py %s` reports."
+                      % (sum(group.values()), what, k, unit, "" if k == 1 else "s", flag))
+    elif factorial:
         print("not in this table, by design: %d clause-factorial sheet(s) across %d cell(s) "
               "-- run with --factorial" % (sum(factorial.values()), len(factorial)))
-    if rung2:
+    if rung2 and not prose:
         print("not in this table, by design: %d elicitation-rung sheet(s) across %d arm(s) "
               "-- run with --rung2" % (sum(rung2.values()), len(rung2)))
-    if sampling:
+    if sampling and not prose:
         print("not in this table, by design: %d sampling-ladder sheet(s) across %d arm(s) "
               "-- run with --sampling" % (sum(sampling.values()), len(sampling)))
     if unknown:

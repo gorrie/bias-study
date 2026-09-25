@@ -1419,7 +1419,7 @@ Refusal rate by vendor and condition, recomputed from `runs/`. A refusal is a sh
 
 D and P pooled: 55 refusals in 1292 runs. Excluded as neither a refusal nor an answer sheet: budget-exhausted 16, other 109, transport 85.
 
-not in this table, by design: 519 clause-factorial sheet(s) across 8 cell(s) -- run with --factorial
+Kept out of this table by design: the 519 clause-factorial sheets across 8 cells, which `refusal_table.py --factorial` reports.
 <!-- /GEN:refusal -->
 
 **Which clause does it.** The balance instruction has three clauses — present multiple sides, do not
