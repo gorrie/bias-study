@@ -252,6 +252,15 @@ OUT_OF_PANEL = {
         "(PREREG-2026-09-25-local-gradient.md). A different administration: builds chosen as "
         "ablation arms, several of which are modified not to refuse, so pooling them would "
         "deflate the refusal rate by construction.",
+    "2026-09-25-placebo-wording":
+        "The second-placebo arm (PREREG-2026-09-25-placebo-wording.md): a roster selected for "
+        "behaving anomalously under P, so its refusal rate is a fact about that selection.",
+    "2026-09-25-serving-path":
+        "One model on two pinned backends (PREREG-2026-09-25-serving-path.md). Collected under "
+        "two conditions only, so it would grow one side of every contrast.",
+    "2026-09-25-same-items-both-paths":
+        "The battery's propositions as free text, judge-scored (PREREG-2026-09-25-same-items-"
+        "both-paths.md). No forced-choice sheet, so nothing in it can refuse one.",
     "2026-09-13-i3-phase0":
         "A DIFFERENT DESIGN, not a withheld one: open questions scored by an LLM judge against "
         "rubric v2, neutral and reversed framings. It has no forced-choice sheet and therefore "

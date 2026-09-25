@@ -1,0 +1,63 @@
+{
+  "_note": "The judged secondary arm of PREREG-2026-09-25-local-gradient.md. Constants are those of scripts/local_gradient.py at commit 2f663e02; the cut to two builds is recorded in cuts.json, made before any Gemma-4 answer or any score existed.",
+  "run": "runs/2026-09-25-local-gradient-judged",
+  "prereg": "PREREG-2026-09-25-local-gradient.md",
+  "analysis": "scripts/local_gradient.py --report --json (judged section)",
+  "schema": "local-gradient-judged/1",
+  "questions_source": "data/2026-05-26-unmask-gradient/raw (neutral position, T01-Q2 .. T10-Q2)",
+  "conditions": [
+    "N",
+    "A",
+    "P",
+    "D",
+    "C",
+    "E"
+  ],
+  "bridge_conditions": [
+    "E"
+  ],
+  "condition_definitions": "run_battery.CONDITION_SYSTEM and CONDITION_USER_SUFFIX",
+  "seeds": [
+    20260925,
+    20260926,
+    20260927,
+    20260928,
+    20260929
+  ],
+  "temperature": 0.7,
+  "think": false,
+  "max_tokens": 8192,
+  "timeout_s": 900,
+  "builds_planned": [
+    "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M",
+    "hf.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF:Q4_K_M",
+    "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+    "hf.co/OBLITERATUS/Gemma-4-12B-OBLITERATED:Q4_K_M",
+    "hf.co/culturerevolt/gemma-4-12b-heretic-abliterated-GGUF:Q4_K_M"
+  ],
+  "builds_collected": [
+    "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M",
+    "hf.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF:Q4_K_M"
+  ],
+  "records": 600,
+  "judge_candidates": [
+    "phi4:latest",
+    "llama3.1:8b-instruct-q8_0",
+    "mistral:7b-instruct-q8_0",
+    "gemma2:9b-instruct-q8_0"
+  ],
+  "judges_selected": [
+    "phi4:latest",
+    "gemma2:9b-instruct-q8_0"
+  ],
+  "judge_prompt": "score.JUDGE_PROMPT_TEMPLATE, full response, ollama JSON mode, temperature 0, seed 20260925, num_predict 300",
+  "judge_order": "one shuffled order (seed 20260925) independent of build and condition",
+  "calibration": "calibration.json",
+  "scores": "scores/<judge>.jsonl, keyed by uid = model|question|condition|seed",
+  "models": [
+    "hf.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF:Q4_K_M",
+    "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M"
+  ],
+  "analysis_seed": 20260925,
+  "_provenance_added": "models and analysis_seed written 2026-09-25 after collection, from the records on disk and the seed local_gradient.py uses for every bootstrap (20260925); no record was changed."
+}

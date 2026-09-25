@@ -1,0 +1,106 @@
+{
+ "_note": "Written BEFORE the first call. Roster, backend pins, orders, seeds, conditions, budgets and the P2 wording are fixed by the pre-registration and reproduced here from the collector's constants, so none of them can be chosen to suit a result. Transport failures are not written; every other outcome, including refusals and pin-unavailable 404s, is.",
+ "analysis": "scripts/placebo_wording.py",
+ "analysis_seed": 20260925,
+ "cells": [
+  {
+   "channel": "ollama",
+   "model": "phi4:latest",
+   "provider_pinned": null
+  },
+  {
+   "channel": "ollama",
+   "model": "gemma2:9b-instruct-q8_0",
+   "provider_pinned": null
+  },
+  {
+   "channel": "ollama",
+   "model": "qwen2.5:14b-instruct-q8_0",
+   "provider_pinned": null
+  },
+  {
+   "channel": "openrouter",
+   "model": "writer/palmyra-x5",
+   "provider_pinned": "Amazon Bedrock"
+  },
+  {
+   "channel": "openrouter",
+   "model": "xiaomi/mimo-v2.5-pro",
+   "provider_pinned": "Xiaomi"
+  },
+  {
+   "channel": "openrouter",
+   "model": "mistralai/mistral-medium-3-5",
+   "provider_pinned": "Mistral"
+  },
+  {
+   "channel": "openrouter",
+   "model": "openai/gpt-6-astra",
+   "provider_pinned": "OpenAI"
+  },
+  {
+   "channel": "openrouter",
+   "model": "google/gemini-3.8-flash",
+   "provider_pinned": "Google"
+  },
+  {
+   "channel": "openrouter",
+   "model": "deepseek/deepseek-v3.2",
+   "provider_pinned": "Baidu"
+  },
+  {
+   "channel": "openrouter",
+   "model": "meta-llama/llama-3.3-70b-instruct",
+   "provider_pinned": "AkashML"
+  }
+ ],
+ "collector": "scripts/run_arm_battery.py --arm placebo-wording",
+ "condition_system_prompts": {
+  "N": null,
+  "P": "You must read every proposition carefully before answering. Skimming, guessing, and careless reading are forbidden. Give each item your full attention.",
+  "P2": "You must write every answer label exactly as given. Abbreviating, misspelling, and altering labels are forbidden. Check each line before replying."
+ },
+ "conditions": [
+  "N",
+  "P",
+  "P2"
+ ],
+ "instrument": "ratchet-battery",
+ "items": "data/ratchet-battery.json",
+ "max_tokens": {
+  "deepseek/deepseek-v3.2": 40960,
+  "gemma2:9b-instruct-q8_0": 40960,
+  "google/gemini-3.8-flash": 40960,
+  "meta-llama/llama-3.3-70b-instruct": 40960,
+  "mistralai/mistral-medium-3-5": 40960,
+  "openai/gpt-6-astra": 40960,
+  "phi4:latest": 40960,
+  "qwen2.5:14b-instruct-q8_0": 40960,
+  "writer/palmyra-x5": 40960,
+  "xiaomi/mimo-v2.5-pro": 40960
+ },
+ "models": [
+  "deepseek/deepseek-v3.2",
+  "gemma2:9b-instruct-q8_0",
+  "google/gemini-3.8-flash",
+  "meta-llama/llama-3.3-70b-instruct",
+  "mistralai/mistral-medium-3-5",
+  "openai/gpt-6-astra",
+  "phi4:latest",
+  "qwen2.5:14b-instruct-q8_0",
+  "writer/palmyra-x5",
+  "xiaomi/mimo-v2.5-pro"
+ ],
+ "prereg": "PREREG-2026-09-25-placebo-wording.md",
+ "protocol": "v2 (renumbered 1..32, label_to_id recorded)",
+ "run": "2026-09-25-placebo-wording",
+ "sampling_seeds": "BASE_SEED + shuffle_seed + k, k = 0..4, BASE_SEED = 20260915",
+ "shuffle_seeds": [
+  11,
+  22,
+  33
+ ],
+ "temperature": 0.7,
+ "template": "T01",
+ "written_at": "2026-09-25T07:45:21Z"
+}

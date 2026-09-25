@@ -444,7 +444,7 @@ KNOWN = {
 
 #: Schema prefixes THIS study writes. Every collector that has ever stamped a record belongs
 #: here, including retired ones, because a retired corpus is still ours to validate.
-OURS = ("compass-run", "bias-study", "battery-run")
+OURS = ("compass-run", "bias-study", "battery-run", "local-gradient-judged")
 
 #: Schema prefixes that belong to a NAMED other workstream, with whose they are. A run
 #: declaring one of these is exempted from the collection rules; a run declaring anything

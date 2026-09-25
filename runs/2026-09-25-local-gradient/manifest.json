@@ -1,0 +1,230 @@
+{
+  "_note": "Written by local_gradient.py BEFORE the first primary call. Builds, conditions, orders, seeds, budget and the arm-match verdicts are fixed here; the prereg names them first.",
+  "run": "runs/2026-09-25-local-gradient",
+  "prereg": "PREREG-2026-09-25-local-gradient.md",
+  "analysis": "scripts/local_gradient.py --report",
+  "instrument": "ratchet-battery",
+  "items": "data/ratchet-battery.json",
+  "protocol": "v2 (--renumber)",
+  "temperature": 0.7,
+  "template": "T01",
+  "max_tokens": 40960,
+  "timeout_s": 900,
+  "think": false,
+  "conditions": [
+    "N",
+    "A",
+    "P",
+    "D",
+    "C",
+    "E"
+  ],
+  "bridge_conditions": [
+    "E"
+  ],
+  "orders": [
+    11,
+    22,
+    33
+  ],
+  "seeds_per_cell": 5,
+  "seed_bases": {
+    "11": 20260925,
+    "22": 20261025,
+    "33": 20261125
+  },
+  "builds": [
+    {
+      "model": "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M",
+      "base": "qwen38-27b",
+      "role": "stock",
+      "label": "stock",
+      "author": "lmstudio-community (static quant)"
+    },
+    {
+      "model": "hf.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF:Q4_K_M",
+      "base": "qwen38-27b",
+      "role": "ablated",
+      "label": "heretic-0bserverx",
+      "author": "0bserverx (Heretic)"
+    },
+    {
+      "model": "huihui-qwen38-27b-abliterated-uddw:Q4_K_M",
+      "base": "qwen38-27b",
+      "role": "ablated",
+      "label": "huihui-uddw",
+      "author": "huihui-ai",
+      "caveat": "UD-DW-Q4_K_M (Unsloth dynamic) against a static Q4_K_M stock arm; ollama reports both as Q4_K_M, so the metadata gate cannot see the difference. Declared, not discovered."
+    },
+    {
+      "model": "hf.co/OBLITERATUS/Qwen3.8-27B-OBLITERATED:Q4_K_M",
+      "base": "qwen38-27b",
+      "role": "ablated",
+      "label": "obliteratus",
+      "author": "OBLITERATUS",
+      "descriptive_only": "fails check_arm_match (stop tokens 0 vs 3). It is the ablated arm of the original mask_gradient run, so it is collected and reported, and enters no inferential contrast."
+    },
+    {
+      "model": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+      "base": "gemma4-12b",
+      "role": "stock",
+      "label": "stock",
+      "author": "lmstudio-community (static quant)"
+    },
+    {
+      "model": "hf.co/OBLITERATUS/Gemma-4-12B-OBLITERATED:Q4_K_M",
+      "base": "gemma4-12b",
+      "role": "ablated",
+      "label": "obliteratus",
+      "author": "OBLITERATUS"
+    },
+    {
+      "model": "hf.co/culturerevolt/gemma-4-12b-heretic-abliterated-GGUF:Q4_K_M",
+      "base": "gemma4-12b",
+      "role": "ablated",
+      "label": "heretic-culturerevolt",
+      "author": "culturerevolt (Heretic)"
+    },
+    {
+      "model": "qwen2.5:14b",
+      "base": "qwen25-14b",
+      "role": "stock",
+      "label": "stock",
+      "author": "ollama library Q4_K_M"
+    },
+    {
+      "model": "huihui_ai/qwen2.5-abliterate:14b",
+      "base": "qwen25-14b",
+      "role": "ablated",
+      "label": "huihui-v1",
+      "author": "huihui-ai (v1)"
+    },
+    {
+      "model": "hf.co/mradermacher/Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M",
+      "base": "qwen25-14b",
+      "role": "ablated",
+      "label": "huihui-v2",
+      "author": "huihui-ai (v2), quantised by mradermacher"
+    },
+    {
+      "model": "hf.co/mradermacher/Josiefied-Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M",
+      "base": "qwen25-14b",
+      "role": "ablated",
+      "label": "josiefied",
+      "author": "Goekdeniz-Guelmez (Josiefied), quantised by mradermacher"
+    },
+    {
+      "model": "qwen2.5:14b-instruct-q8_0",
+      "base": "qwen25-14b",
+      "role": "requant",
+      "label": "q8_0",
+      "author": "ollama library Q8_0 (same weights, requantised)"
+    }
+  ],
+  "digests": {
+    "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M": "03115576977f6566c59f6f179e8cd0ee3da9ab5d5c9f016ea3c6e40f645ee95c",
+    "hf.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF:Q4_K_M": "e29f96fc32c7ac2f351ec54b632028398460db6192e1da22918e69b9a44acd60",
+    "huihui-qwen38-27b-abliterated-uddw:Q4_K_M": "8a93c2e37e80f856cf0be3c13f205e7c3c72831748848076710675cc56a4f6f7",
+    "hf.co/OBLITERATUS/Qwen3.8-27B-OBLITERATED:Q4_K_M": "199e5fc395d9ae10ac8f8857d8bc57bb8fe126018483216086603b95cd936d61",
+    "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M": "66a09165a125af7bfb4d6a29ce27cf900e3e66594f5c44366198128a2d83df87",
+    "hf.co/OBLITERATUS/Gemma-4-12B-OBLITERATED:Q4_K_M": "9ead0fce8d3f7d3073e1794cd507b71a1b0e405a3693fd0475eb20ce9a955610",
+    "hf.co/culturerevolt/gemma-4-12b-heretic-abliterated-GGUF:Q4_K_M": "f9b7ce043140dd9bd81e445440920ed1e8b10fd39fc3984689f3911f73d77588",
+    "qwen2.5:14b": "7cdf5a0187d5c58cc5d369b255592f7841d1c4696d45a8c8a9489440385b22f6",
+    "huihui_ai/qwen2.5-abliterate:14b": "a865def0555e0570fda06bb3ea355d7b8f0b5c26510513ee14047f5369108630",
+    "hf.co/mradermacher/Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M": "e66c9ae056fbc8f51a711afd23dc2abf74f137a4ac6e352b94c5f2630f8c55b9",
+    "hf.co/mradermacher/Josiefied-Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M": "be77ce04b36ccf313f7e312e9525aed1a50bd360b92c3975cd15ce079d7e2750",
+    "qwen2.5:14b-instruct-q8_0": "985c5f25dfe9efc35ddc56609db52f45e66482d3c43da39ee89ab2a9b8c8ffbf"
+  },
+  "arm_match": [
+    {
+      "base": "gemma4-12b",
+      "stock": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+      "arm": "hf.co/OBLITERATUS/Gemma-4-12B-OBLITERATED:Q4_K_M",
+      "label": "obliteratus",
+      "intervention": "ablation",
+      "matched": true
+    },
+    {
+      "base": "gemma4-12b",
+      "stock": "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+      "arm": "hf.co/culturerevolt/gemma-4-12b-heretic-abliterated-GGUF:Q4_K_M",
+      "label": "heretic-culturerevolt",
+      "intervention": "ablation",
+      "matched": true
+    },
+    {
+      "base": "qwen25-14b",
+      "stock": "qwen2.5:14b",
+      "arm": "huihui_ai/qwen2.5-abliterate:14b",
+      "label": "huihui-v1",
+      "intervention": "ablation",
+      "matched": true
+    },
+    {
+      "base": "qwen25-14b",
+      "stock": "qwen2.5:14b",
+      "arm": "hf.co/mradermacher/Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M",
+      "label": "huihui-v2",
+      "intervention": "ablation",
+      "matched": true
+    },
+    {
+      "base": "qwen25-14b",
+      "stock": "qwen2.5:14b",
+      "arm": "hf.co/mradermacher/Josiefied-Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M",
+      "label": "josiefied",
+      "intervention": "ablation",
+      "matched": true
+    },
+    {
+      "base": "qwen25-14b",
+      "stock": "qwen2.5:14b",
+      "arm": "qwen2.5:14b-instruct-q8_0",
+      "label": "q8_0",
+      "intervention": "requantisation",
+      "matched": true
+    },
+    {
+      "base": "qwen38-27b",
+      "stock": "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M",
+      "arm": "hf.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF:Q4_K_M",
+      "label": "heretic-0bserverx",
+      "intervention": "ablation",
+      "matched": true
+    },
+    {
+      "base": "qwen38-27b",
+      "stock": "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M",
+      "arm": "huihui-qwen38-27b-abliterated-uddw:Q4_K_M",
+      "label": "huihui-uddw",
+      "intervention": "ablation",
+      "matched": true
+    },
+    {
+      "base": "qwen38-27b",
+      "stock": "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M",
+      "arm": "hf.co/OBLITERATUS/Qwen3.8-27B-OBLITERATED:Q4_K_M",
+      "label": "obliteratus",
+      "intervention": "ablation",
+      "matched": false
+    }
+  ],
+  "top_up": "never -- a started group is skipped, a lost sheet is a declared loss",
+  "written_at": "2026-09-25T06:55:25+00:00",
+  "models": [
+    "hf.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF:Q4_K_M",
+    "hf.co/OBLITERATUS/Gemma-4-12B-OBLITERATED:Q4_K_M",
+    "hf.co/OBLITERATUS/Qwen3.8-27B-OBLITERATED:Q4_K_M",
+    "hf.co/culturerevolt/gemma-4-12b-heretic-abliterated-GGUF:Q4_K_M",
+    "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M",
+    "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+    "hf.co/mradermacher/Josiefied-Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M",
+    "hf.co/mradermacher/Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M",
+    "huihui-qwen38-27b-abliterated-uddw:Q4_K_M",
+    "huihui_ai/qwen2.5-abliterate:14b",
+    "qwen2.5:14b",
+    "qwen2.5:14b-instruct-q8_0"
+  ],
+  "analysis_seed": 20260925,
+  "_provenance_added": "models and analysis_seed written 2026-09-25 after collection, from the records on disk and the seed local_gradient.py uses for every bootstrap (20260925); no record was changed."
+}

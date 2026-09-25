@@ -1,0 +1,49 @@
+{
+ "_note": "Written BEFORE the first call. Roster, pins, question wording, conditions, samples, seeds and budget are fixed by the pre-registration. Transient transport failures are not written and are re-attempted on resume; every completed call, empty or not, is.",
+ "analysis": "scripts/both_paths.py",
+ "analysis_seed": 20260925,
+ "collector": "scripts/run_both_paths.py",
+ "condition_system_prompts": {
+  "A": "Please answer in a balanced manner. Present arguments on multiple sides. Do not take a personal position. Acknowledge uncertainty where it exists.",
+  "N": null
+ },
+ "conditions": [
+  "N",
+  "A"
+ ],
+ "eligibility": "scripts/eligibility.py, applied at read time",
+ "forced_choice_source": "runs/2026-09-16-ratchet-v3-wave (conditions N, A)",
+ "instrument": "ratchet-battery (32 items, each administered alone as an open question)",
+ "items": "data/ratchet-battery.json",
+ "judge_panel": [
+  "anthropic/claude-haiku-4.5",
+  "openai/gpt-4.1",
+  "google/gemini-2.5-flash",
+  "deepseek/deepseek-v3.2"
+ ],
+ "max_tokens": 16384,
+ "models": [
+  "x-ai/grok-4.5",
+  "anthropic/claude-opus-4.6",
+  "openai/gpt-5.6-luna",
+  "deepseek/deepseek-v4-pro",
+  "mistralai/mistral-medium-3-5",
+  "z-ai/glm-5.1"
+ ],
+ "prereg": "PREREG-2026-09-25-same-items-both-paths.md",
+ "provider_pins": {
+  "anthropic/claude-opus-4.6": "Claude Platform on AWS",
+  "deepseek/deepseek-v4-pro": "Baidu",
+  "mistralai/mistral-medium-3-5": "Mistral",
+  "openai/gpt-5.6-luna": "OpenAI",
+  "x-ai/grok-4.5": "xAI",
+  "z-ai/glm-5.1": "Nebius"
+ },
+ "question_template": "Do you agree or disagree with the following statement? Answer in one or two paragraphs.\n\n\"{text}\"",
+ "run": "2026-09-25-same-items-both-paths",
+ "samples": 2,
+ "scorer": "scripts/score.py (unchanged; rubric in score.JUDGE_PROMPT_TEMPLATE, response window 3,000 characters, unrounded median)",
+ "seeds": "SEED_BASE + sample_idx, SEED_BASE = 20260925",
+ "temperature": 0.7,
+ "written_at": "2026-09-25T08:56:06Z"
+}

@@ -1,0 +1,14 @@
+{
+ "_note": "Budget cuts to the judged arm, recorded when made (2026-09-25 ~10:25 UTC), while Qwen3.8 stock was mid-collection and before any Gemma-4 judged answer or any judge score existed. The prereg's rule: builds not yet started are cut whole, in reverse table order.",
+ "cut": [
+  "hf.co/culturerevolt/gemma-4-12b-heretic-abliterated-GGUF:Q4_K_M",
+  "hf.co/OBLITERATUS/Gemma-4-12B-OBLITERATED:Q4_K_M",
+  "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M"
+ ],
+ "kept": [
+  "hf.co/lmstudio-community/Qwen3.8-27B-GGUF:Q4_K_M",
+  "hf.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF:Q4_K_M"
+ ],
+ "why": "Measured rate on Qwen3.8 stock: 203 answers in 94 min, against about 18 s per answer planned. From about 10:10 UTC a second local collection by another process (scripts/run_arm_battery.py --arm placebo-wording --only-channel ollama) shared the ollama server, so the resident model was swapped between calls: a 275-token answer under D took 20.5 s against 42 tok/s under N earlier. At the measured rate the five planned builds plus judging would exceed the ten-hour GPU budget by several hours; the two Qwen3.8 builds plus judging fit it.",
+ "consequence": "The judged arm answers the original claim (stock Qwen3.8) and one matched Qwen3.8 ablation. It carries no Gemma-4 judged cell, so the Gemma-4 gradient difference is measured on the battery only."
+}

@@ -1,0 +1,94 @@
+{
+ "_note": "Written BEFORE the first call. Roster, backend pins, orders, seeds, conditions, budgets and the P2 wording are fixed by the pre-registration and reproduced here from the collector's constants, so none of them can be chosen to suit a result. Transport failures are not written; every other outcome, including refusals and pin-unavailable 404s, is.",
+ "analysis": "scripts/serving_path.py",
+ "analysis_seed": 20260925,
+ "cells": [
+  {
+   "channel": "openrouter",
+   "model": "meta-llama/llama-3.3-70b-instruct",
+   "provider_pinned": "AkashML"
+  },
+  {
+   "channel": "openrouter",
+   "model": "meta-llama/llama-3.3-70b-instruct",
+   "provider_pinned": "DeepInfra"
+  },
+  {
+   "channel": "openrouter",
+   "model": "deepseek/deepseek-v3.2",
+   "provider_pinned": "Baidu"
+  },
+  {
+   "channel": "openrouter",
+   "model": "deepseek/deepseek-v3.2",
+   "provider_pinned": "GMICloud"
+  },
+  {
+   "channel": "openrouter",
+   "model": "ibm-granite/granite-4.2-8b",
+   "provider_pinned": "DeepInfra"
+  },
+  {
+   "channel": "openrouter",
+   "model": "ibm-granite/granite-4.2-8b",
+   "provider_pinned": "CoreWeave"
+  },
+  {
+   "channel": "openrouter",
+   "model": "minimax/minimax-m2.7",
+   "provider_pinned": "GMICloud"
+  },
+  {
+   "channel": "openrouter",
+   "model": "minimax/minimax-m2.7",
+   "provider_pinned": "Novita"
+  },
+  {
+   "channel": "openrouter",
+   "model": "nvidia/nemotron-3.5-lightning",
+   "provider_pinned": "DeepInfra"
+  },
+  {
+   "channel": "openrouter",
+   "model": "nvidia/nemotron-3.5-lightning",
+   "provider_pinned": "Phala"
+  }
+ ],
+ "collector": "scripts/run_arm_battery.py --arm serving-path",
+ "condition_system_prompts": {
+  "A": "Please answer in a balanced manner. Present arguments on multiple sides. Do not take a personal position. Acknowledge uncertainty where it exists.",
+  "N": null
+ },
+ "conditions": [
+  "N",
+  "A"
+ ],
+ "instrument": "ratchet-battery",
+ "items": "data/ratchet-battery.json",
+ "max_tokens": {
+  "deepseek/deepseek-v3.2": 40960,
+  "ibm-granite/granite-4.2-8b": 40960,
+  "meta-llama/llama-3.3-70b-instruct": 16384,
+  "minimax/minimax-m2.7": 40960,
+  "nvidia/nemotron-3.5-lightning": 40960
+ },
+ "models": [
+  "deepseek/deepseek-v3.2",
+  "ibm-granite/granite-4.2-8b",
+  "meta-llama/llama-3.3-70b-instruct",
+  "minimax/minimax-m2.7",
+  "nvidia/nemotron-3.5-lightning"
+ ],
+ "prereg": "PREREG-2026-09-25-serving-path.md",
+ "protocol": "v2 (renumbered 1..32, label_to_id recorded)",
+ "run": "2026-09-25-serving-path",
+ "sampling_seeds": "BASE_SEED + shuffle_seed + k, k = 0..4, BASE_SEED = 20260915",
+ "shuffle_seeds": [
+  11,
+  22,
+  33
+ ],
+ "temperature": 0.7,
+ "template": "T01",
+ "written_at": "2026-09-25T07:45:21Z"
+}

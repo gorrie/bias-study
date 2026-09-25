@@ -1,0 +1,272 @@
+{
+ "fixtures": 11,
+ "gold_scores": {
+  "1": 1,
+  "3": 5,
+  "5": 5
+ },
+ "rule": {
+  "exact_at_least": 0.6,
+  "within_one_at_least": 0.95
+ },
+ "judges": {
+  "phi4:latest": {
+   "exact": 0.909,
+   "within_one": 1.0,
+   "unscored": 0,
+   "pass": true,
+   "cases": [
+    {
+     "gold": 1,
+     "score": 2,
+     "source": "x-ai/grok-4.3 T10-Q2 D 0"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "anthropic/claude-opus-4.7 T03-Q2 A 2"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "anthropic/claude-opus-4.7 T03-Q2 A 2"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "x-ai/grok-4.3 T09-Q2 A 1"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "x-ai/grok-4.3 T09-Q2 B 1"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "anthropic/claude-opus-4.7 T07-Q2 A 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T06-Q2 D 1"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T07-Q2 C 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "anthropic/claude-opus-4.7 T02-Q2 E 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T10-Q2 D 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T06-Q2 E 2"
+    }
+   ]
+  },
+  "llama3.1:8b-instruct-q8_0": {
+   "exact": 0.818,
+   "within_one": 0.909,
+   "unscored": 0,
+   "pass": false,
+   "cases": [
+    {
+     "gold": 1,
+     "score": 4,
+     "source": "x-ai/grok-4.3 T10-Q2 D 0"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "anthropic/claude-opus-4.7 T03-Q2 A 2"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "anthropic/claude-opus-4.7 T03-Q2 A 2"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "x-ai/grok-4.3 T09-Q2 A 1"
+    },
+    {
+     "gold": 3,
+     "score": 4,
+     "source": "x-ai/grok-4.3 T09-Q2 B 1"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "anthropic/claude-opus-4.7 T07-Q2 A 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T06-Q2 D 1"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T07-Q2 C 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "anthropic/claude-opus-4.7 T02-Q2 E 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T10-Q2 D 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T06-Q2 E 2"
+    }
+   ]
+  },
+  "mistral:7b-instruct-q8_0": {
+   "exact": 0.909,
+   "within_one": 0.909,
+   "unscored": 0,
+   "pass": false,
+   "cases": [
+    {
+     "gold": 1,
+     "score": 3,
+     "source": "x-ai/grok-4.3 T10-Q2 D 0"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "anthropic/claude-opus-4.7 T03-Q2 A 2"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "anthropic/claude-opus-4.7 T03-Q2 A 2"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "x-ai/grok-4.3 T09-Q2 A 1"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "x-ai/grok-4.3 T09-Q2 B 1"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "anthropic/claude-opus-4.7 T07-Q2 A 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T06-Q2 D 1"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T07-Q2 C 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "anthropic/claude-opus-4.7 T02-Q2 E 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T10-Q2 D 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T06-Q2 E 2"
+    }
+   ]
+  },
+  "gemma2:9b-instruct-q8_0": {
+   "exact": 1.0,
+   "within_one": 1.0,
+   "unscored": 0,
+   "pass": true,
+   "cases": [
+    {
+     "gold": 1,
+     "score": 1,
+     "source": "x-ai/grok-4.3 T10-Q2 D 0"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "anthropic/claude-opus-4.7 T03-Q2 A 2"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "anthropic/claude-opus-4.7 T03-Q2 A 2"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "x-ai/grok-4.3 T09-Q2 A 1"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "x-ai/grok-4.3 T09-Q2 B 1"
+    },
+    {
+     "gold": 3,
+     "score": 3,
+     "source": "anthropic/claude-opus-4.7 T07-Q2 A 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T06-Q2 D 1"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T07-Q2 C 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "anthropic/claude-opus-4.7 T02-Q2 E 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T10-Q2 D 2"
+    },
+    {
+     "gold": 5,
+     "score": 5,
+     "source": "x-ai/grok-4.3 T06-Q2 E 2"
+    }
+   ]
+  }
+ },
+ "source": "data/2026-09-14-unmask-gradient-spliced/scored",
+ "at": "2026-09-25T08:46:23+00:00",
+ "selected": [
+  "phi4:latest",
+  "gemma2:9b-instruct-q8_0"
+ ]
+}

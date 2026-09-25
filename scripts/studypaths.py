@@ -613,6 +613,21 @@ def superseded_runs() -> set:
     return out
 
 
+#: JUDGE-SCORED RUNS THAT ARE NOT THE MAY DESIGN. The judge-lean figure (judge_lean.py, the paper's
+#: §3.2) is a property of the May judged corpus -- the author's ten civil-liberties questions,
+#: scored by the four-judge panel. A later arm that reuses the panel on different questions writes
+#: records of the same shape under `scored/`, and every glob over scored records then counts it
+#: into that figure. Found 2026-09-25: exporting the same-items arm to the mirror moved the published
+#: spread 0.2974 -> 0.3104 and its records 5,230 -> 5,993 with no change to the May corpus. The arm
+#: is its own analysis (both_paths.py); it is declared here, with its reason, and left out of the
+#: scored-corpus selection rather than filtered by name at each caller.
+SEPARATE_JUDGED_ARMS = {
+    "2026-09-25-same-items-both-paths":
+        "the battery's propositions as free text, scored by the same panel: a different "
+        "question set, analysed by both_paths.py, not part of the May judged corpus",
+}
+
+
 def scored_corpus_paths(pattern: str = "*/scored/**/*.jsonl") -> list:
     """Every scored record file, with superseded base runs dropped. ONE implementation.
 
@@ -620,7 +635,7 @@ def scored_corpus_paths(pattern: str = "*/scored/**/*.jsonl") -> list:
     double-counts the repair. See `superseded_runs()`.
     """
     import glob as _glob
-    skip = superseded_runs()
+    skip = superseded_runs() | set(SEPARATE_JUDGED_ARMS)
     out = []
     for root in run_roots():
         for path in _glob.glob(str(root / pattern), recursive=True):

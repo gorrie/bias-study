@@ -2443,6 +2443,10 @@ def _mirror_judge_stats():
             if os.path.isdir(d):
                 present |= {n for n in os.listdir(d) if os.path.isdir(os.path.join(d, n))}
         superseded = {b for b, rep in _REPAIRS.items() if rep in present and b in present}
+        # Judge-scored arms that are not the May design are not this figure's corpus; the one
+        # declaration lives beside the selector judge_lean.py uses.
+        from studypaths import SEPARATE_JUDGED_ARMS as _SEPARATE
+        superseded |= set(_SEPARATE)
         paths = []
         for layout in ("data", "runs"):
             for path in _glob.glob(os.path.join(mirror, layout, "*", "scored", "**", "*.jsonl"),

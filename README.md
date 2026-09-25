@@ -90,6 +90,15 @@ study's own transport, a jailbreak-grade system prompt and a sampling sweep from
 to 1.6 moved no frontier model beyond its own order floor; one refused every sheet under an order
 never to refuse (§3.6, §5.7).
 
+### 7. Judged and forced choice agree on direction, and on nothing else
+
+Put to the same 32 propositions as free text scored by model judges, six models agree with their
+own forced-choice answers on direction 0.917 of the time, against about 0.98 for each method
+against itself, while the rank of how strongly they hold each answer barely carries over
+(ρ = 0.339). Under the balance instruction 97.6% of judged answers score exactly the rubric's
+midpoint, so the judged method stops measuring where the forced-choice one keeps a direction
+(§5.11).
+
 ---
 
 ## The rule this is for
