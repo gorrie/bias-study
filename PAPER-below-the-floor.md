@@ -1170,7 +1170,7 @@ On the same class of model our order floor is p90 11, max 12 — a different fac
 different laboratory, pointing the same way. And their forecast that newer models would be
 steadier is confirmed: the same measurement on 2026 frontier models gives p90 3. Those two are
 the pooled order row split by class, pooled across collections, which §2's floors table does
-not print; the one-sitting class rows it does print, and §2 argues from, read p90 6 and max 11
+not print (`floor_table.py --order-by-class` prints it); the one-sitting class rows it does print, and §2 argues from, read p90 6 and max 11
 on the local class and p90 1 on the frontier. Both splits point the same way. *(The two splits
 were not distinguished until 2026-09-23, so a reader met "11 against 6" in §2 as a corrected
 copy and 11 here as a live figure. Both are true, of different rows.)*
@@ -1494,7 +1494,9 @@ printed numeral resolves only on the local arm, which had the depth for it; the 
 establishes that the arms differ, not why. Full record in
 `RESULTS-2026-09-18-omission-orders.md` and `RESULTS-2026-09-21-omission-pinned.md`,
 pre-registered in `PREREG-2026-09-18-omission-orders.md`, counts and both p-values from
-`scripts/omission_arms.py`.
+`scripts/omission_arms.py`, and the serving-path contrast from
+`scripts/omission_arms.py --backends 2026-09-20-omission-hosted-pinned
+2026-09-21-omission-nemotron-phala --model nvidia/nemotron-3.5-lightning`.
 
 ---
 

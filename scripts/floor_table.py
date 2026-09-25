@@ -2181,12 +2181,24 @@ def main(argv=None):
                          % INSTRUMENT_DEFAULT)
     ap.add_argument("--class-split", action="store_true",
                     help="the 2x2 of nuisance-vs-manipulation by model class, as markdown")
+    ap.add_argument("--order-by-class", action="store_true",
+                    help="the pooled presentation-order floor split by model class (§5)")
     ap.add_argument("--uncomputed", action="store_true",
                     help="list only the arms that produced no row, and why. Exit 1 when an "
                          "arm reads a path that matches no file -- that is a broken arm, not "
                          "an empty one -- and 2 when arms are merely awaiting collection.")
     args = ap.parse_args(argv)
     set_instrument(args.instrument)
+
+    if args.order_by_class:
+        # The pooled order floor split by class. Section 5 quotes it ("p90 11, max 12" local,
+        # "p90 3" frontier) and until 2026-09-24 the only way to get it was to call
+        # floor_order_by_class() by hand.
+        for label, r in floor_order_by_class().items():
+            med, p90, mx = r["side"]
+            print("%-40s %4d pairs   side-flip med / p90 / max  %s / %s / %s"
+                  % (label, r["n"], med, p90, mx))
+        return 0
 
     rows = list(all_floors().values())
     rows.sort(key=lambda r: -r["side"][1])

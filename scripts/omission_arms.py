@@ -104,9 +104,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--run", default="2026-09-18-omission-orders")
     ap.add_argument("--also", action="append", default=[],
-                    help="another run to POOL with --run. The published pooled figure "
-                         "(local 5 builds + 2 hosted models, p = 2.7e-5) was reproducible "
-                         "only by hand until this existed.")
+                    help="another run to POOL with --run, so a pooled figure across arms has "
+                         "a command rather than a hand calculation.")
     ap.add_argument("--only-models", default=None,
                     help="comma-separated model ids; restrict the pool to these. Used for "
                          "the 2-model hosted slice, which is a SUBSET of a run that has "
@@ -114,6 +113,12 @@ def main(argv=None):
     ap.add_argument("--items", default="data/ratchet-battery.json")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--backends", nargs=2, metavar=("RUN_A", "RUN_B"),
+                    help="the SERVING-PATH contrast: one model's as-is arm in two runs that "
+                         "differ only in backend, tested A > B. Needs --model. This is the "
+                         "7/23 against 1/23 (p = 0.0235) the paper states in section 6b, which "
+                         "had no command until 2026-09-24.")
+    ap.add_argument("--model", help="the model for --backends")
     a = ap.parse_args(argv)
 
     if a.selftest:
@@ -121,6 +126,28 @@ def main(argv=None):
 
     items = load_bank(os.path.join(studypaths.STUDY_DIR, a.items))
     expected = {it["id"] for it in items}
+
+    if a.backends:
+        if not a.model:
+            print("--backends needs --model", file=sys.stderr)
+            return 2
+        arms = []
+        for name in a.backends:
+            run_dir = os.path.join(studypaths.STUDY_DIR, "runs", name)
+            got, _ = load_sheets(run_dir, expected)
+            cell = arm_counts([s for s in got if s["model"] == a.model])[a.model]["asis"]
+            if not sum(cell):
+                print("CHECKED NOTHING -- %s has no as-is sheet for %s in %s. NOT a pass."
+                      % (name, a.model, run_dir), file=sys.stderr)
+                return 2
+            arms.append((name, cell))
+        (na, (pa, ca)), (nb, (pb, cb)) = arms
+        p = fisher_one_sided(pa, ca, pb, cb)
+        print("  SERVING-PATH CONTRAST, as-is arm, %s" % a.model)
+        print("  %-44s %d / %d partial" % (na, pa, pa + ca))
+        print("  %-44s %d / %d partial" % (nb, pb, pb + cb))
+        print("  Fisher exact, one-sided (first > second): p = %.3g" % p)
+        return 0
     sheets, skipped = [], collections.Counter()
     for name in [a.run] + a.also:
         run_dir = (name if os.path.isdir(name)

@@ -237,6 +237,14 @@ def compare_status(doc=None):
 
 
 def main(argv=None):
+    # This report prints arrows. On a default-codepage Windows console that raised
+    # UnicodeEncodeError and exited 1 -- a crash reading as a failed check. Same trap as
+    # ablation_equivalence.py.
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)

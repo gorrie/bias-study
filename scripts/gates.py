@@ -124,7 +124,7 @@ GATES = [
     Gate("gen_readme.py", ["--check"], tree="mirror", stage="release",
          label="9  README generated blocks fresh",
          covers="the README's generated tables against runs/"),
-    Gate("gen_paper.py", ["--check"], tree="study", stage="release",
+    Gate("gen_paper.py", ["--check"], tree="either", stage="release",
          label="3  paper generated blocks fresh",
          covers="the paper's eight generated tables"),
 
@@ -182,7 +182,7 @@ GATES = [
     # named derive_manifest as "check 3b" -- so the gate existed in a hand-typed list and not
     # in the registry the list was replaced by. That is the cost of two sessions holding two
     # copies of the same inventory, which is why the literal list is gone.
-    Gate("derive_manifest.py", ["--check"], tree="study", stage="release",
+    Gate("derive_manifest.py", ["--check"], tree="either", stage="release",
          label="3b frozen manifests still match their records",
          covers="38 run directories holding ~8,674 records were collected by tools that never "
                 "wrote a manifest, so validate_runs can only call them NOT VALIDATED. This "
@@ -360,7 +360,7 @@ GATES = [
     # ---- added 2026-09-18. Four tools were built that day, none was registered, and an
     # unregistered gate is a gate that does not run. The estimator defect they exist to
     # prevent was found by a check that had never been written down anywhere.
-    Gate("null_audit.py", tree="study", stage="release",
+    Gate("null_audit.py", tree="either", stage="release",
          label="6  every null carries a minimum detectable effect",
          covers="the effect each null this study REPORTS could have detected, by simulation "
                 "through the same test the paper ran. This study scores twelve other papers "
@@ -376,6 +376,12 @@ GATES = [
                 "and therefore decides nothing. Three declared item-omission patterns were "
                 "slot patterns at one presentation order, and a permutation test called every "
                 "one of them p < 0.001"),
+    # BOTH TREES CHECK THE RECORD THAT SHIPS. From the study tree that is the mirror's file,
+    # reached by path; in the mirror it is its own. Until 2026-09-24 only the first existed,
+    # so a clone's release_check reported this DOI-fitness check as not applicable.
+    Gate("check_citation.py", tree="mirror", stage="release",
+         label="10 the citation record is fit to mint a PERMANENT DOI",
+         covers="CITATION.cff in this, the shipping tree"),
     Gate("check_citation.py", ["--path", "../../../bias-study-release/CITATION.cff"],
          tree="study", stage="release",
          label="10 the citation record is fit to mint a PERMANENT DOI",
@@ -387,7 +393,7 @@ GATES = [
                 "instrument. A Release fires the Zenodo webhook and the DOI carries that text "
                 "forever, so a stale sentence here is not a correction, it is a permanent "
                 "citation to a study that does not exist"),
-    Gate("gen_zenodo.py", ["--check"], tree="study", stage="release",
+    Gate("gen_zenodo.py", ["--check"], tree="either", stage="release",
          label="10 what a Release would actually mint",
          covers="`.zenodo.json` in the tree that SHIPS, derived from CITATION.cff so the two "
                 "cannot disagree. Zenodo reads that file in preference to the .cff and falls "
@@ -424,14 +430,14 @@ GATES = [
                 "against the wrong propositions, including one frontier model at 0.62 by id "
                 "against 0.88 by slot. Protocol v2 renumbering dissolves the ambiguity: the "
                 "printed number IS the slot, so the two mappings coincide"),
-    Gate("gen_deviations.py", ["--check"], tree="study", stage="release",
+    Gate("gen_deviations.py", ["--check"], tree="either", stage="release",
          label="7  the deviation record matches its sources",
          covers="PROTOCOL-DEVIATIONS.md against data/wave-panel.json, "
                 "data/collection-limitations.json and the PREREG headers -- every "
                 "pre-registration, every roster amendment with the rule that selected it, "
                 "every rejected listing with its reason. This study scores others on whether "
                 "a reader can tell what was planned from what was done"),
-    Gate("gen_vintage.py", ["--check"], tree="study", stage="release",
+    Gate("gen_vintage.py", ["--check"], tree="either", stage="release",
          label="7  every model in runs/ has a recorded release date",
          covers="data/model-vintage.json against the models actually in the corpus. A study "
                 "about how a measured position MOVES has to be able to cut its figures by "
@@ -549,7 +555,7 @@ GATES = [
          label="10 no-key reproduction",
          covers="the documented reproduction runs with no API key AND returns the "
                 "committed artifacts byte-for-byte"),
-    Gate("check_release_table.py", ["--quiet"], tree="study", stage="release",
+    Gate("check_release_table.py", ["--quiet"], tree="either", stage="release",
          label="2  RELEASE-2026-09-07 arm inventory matches runs/",
          covers="the release definition's hand-typed arm table against the generated one"),
 

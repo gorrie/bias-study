@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-146 script(s). 0 carry no module docstring and are listed at the end.
+147 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -134,6 +134,7 @@
 - **`gen_deviations.py`** — Generate PROTOCOL-DEVIATIONS.md: what was pre-registered, what was done, what changed.
 - **`gen_provenance.py`** — One machine-readable index per corpus root: what each run is, and what may be concluded.
 - **`gen_readme.py`** — Fill the README's generated blocks from the run data. Nothing in them is hand-written.
+- **`gen_vintage.py`** — Record each model's release date, so every claim in this study can be read by generation.
 - **`gen_zenodo.py`** — Generate `.zenodo.json` from CITATION.cff, and gate what a Release will mint.
 - **`instantiate_stems.py`** — Build the factions bank from four authored stems and four authored path phrases.
 - **`intensity_by_claim.py`** — Does the panel reserve its strongest answer for claims with a record behind them?

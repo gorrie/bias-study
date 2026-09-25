@@ -3998,7 +3998,10 @@ def main(argv=None):
         # surface path -- the two checkers disagreeing about that was the defect.
         if expected not in text:
             spelled = _spell(r["value"])
-            alt = (r["phrase"] % spelled) if spelled is not None else None
+            # A spelled number is a word, and `%d` refuses one: this raised TypeError and took
+            # the whole check down the first time a `%d` phrase failed to match, so a broken
+            # sentence surfaced as a crash instead of a finding (2026-09-24).
+            alt = (r["phrase"].replace("%d", "%s") % spelled) if spelled is not None else None
             if not (alt and alt in text):
                 bad.append(r)
     if unresolved:
