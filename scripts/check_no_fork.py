@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail if any script exists in both trees with different content.
+"""Fail if any script or test exists in both trees with different content.
 
 WHY
 ---
@@ -83,6 +83,9 @@ ALLOWED = {
     "release_check.py": "operator tool that runs the release checklist over both trees",
 }
 
+#: The directories whose shared files must be one implementation. `tests/` joined 2026-09-24.
+SHARED_DIRS = ("scripts", "tests")
+
 
 def read(path):
     try:
@@ -125,14 +128,8 @@ def main(argv=None):
                     help="development check: no entry point may forward into a release checkout")
     args = ap.parse_args(argv)
 
-    if PUBLIC_SCRIPTS is None or not os.path.isdir(PUBLIC_SCRIPTS):
-        print("NOT APPLICABLE -- this check compares the working study tree against the")
-        print("public mirror, and only one tree is present here. Run it from the study")
-        print("tree; in a public clone there is nothing to diff against.")
-        print("")
-        print("This is NOT a pass. A gate that cannot run has not run.")
-        return 2
-
+    # --source-only reads this tree alone, so it runs where the mirror is absent (CI). It sat
+    # behind the mirror check and returned NOT APPLICABLE on every CI run.
     if args.source_only:
         shims = [p.name for p in Path(HERE).glob('*.py') if is_shim(read(p) or '')]
         shims += [p.name for p in Path(HERE).glob('*.sh')
@@ -144,39 +141,63 @@ def main(argv=None):
         print('Release parity is a separate gate; run without --source-only against the staged export.')
         return 0
 
+    if PUBLIC_SCRIPTS is None or not os.path.isdir(PUBLIC_SCRIPTS):
+        print("NOT APPLICABLE -- this check compares the working study tree against the")
+        print("public mirror, and only one tree is present here. Run it from the study")
+        print("tree; in a public clone there is nothing to diff against.")
+        print("")
+        print("This is NOT a pass. A gate that cannot run has not run.")
+        return 2
+
     if not os.path.isdir(PUBLIC_SCRIPTS):
         print("FAIL: public mirror absent at %s; set BIAS_STUDY_PUBLIC_ROOT" % PUBLIC)
         return 1
 
     forks, shims, identical, allowed, unavailable = [], [], [], [], []
     shared = []
-    for name in sorted(os.listdir(HERE)):
-        if not (name.endswith(".py") or name.endswith(".sh")):
+    # `tests/` AS WELL AS `scripts/`, since 2026-09-24. This compared scripts only, and the
+    # regression tests are the other half of every gate: the mirror's `test_release_counts.py`
+    # still looked for `RELEASE-v2.md` after the file was renamed, so all three of its tests
+    # SKIPPED in the tree that ships while the count they guard went stale -- and three more
+    # shared tests had fallen 31 to 108 lines behind the study's. A test has no retirement
+    # shim: present in both trees, it is either the same test or a fork.
+    for sub in SHARED_DIRS:
+        here = os.path.join(STUDY, sub)
+        there = os.path.join(PUBLIC, sub)
+        if not os.path.isdir(here) and not os.path.isdir(there):
             continue
-        mine = os.path.join(HERE, name)
-        theirs = os.path.join(PUBLIC_SCRIPTS, name)
-        if not os.path.isfile(theirs):
-            if is_shim(read(mine) or ""):
-                unavailable.append(name + " (shim target missing)")
+        if not os.path.isdir(here) or not os.path.isdir(there):
+            unavailable.append(sub + "/ (directory missing in one tree)")
             continue
-        if name in ALLOWED:
-            allowed.append(name)
-            continue
-        shared.append(name)
-        # COMMITTED content, falling back to the working tree only when a file is not yet
-        # tracked (a genuinely new script, which is not a fork). An uncommitted fix on either
-        # side is now a FORK, because what ships is HEAD.
-        a = read_committed(STUDY, "scripts/" + name)
-        b = read_committed(PUBLIC, "scripts/" + name)
-        if a is None or b is None:
-            unavailable.append(name + " (committed content unavailable)")
-            continue
-        if a == b:
-            identical.append(name)
-        elif is_shim(a):
-            shims.append(name)
-        else:
-            forks.append(name)
+        for name in sorted(os.listdir(here)):
+            if not (name.endswith(".py") or name.endswith(".sh")):
+                continue
+            rel = sub + "/" + name
+            label = name if sub == "scripts" else rel
+            mine = os.path.join(here, name)
+            theirs = os.path.join(there, name)
+            if not os.path.isfile(theirs):
+                if sub == "scripts" and is_shim(read(mine) or ""):
+                    unavailable.append(label + " (shim target missing)")
+                continue
+            if sub == "scripts" and name in ALLOWED:
+                allowed.append(name)
+                continue
+            shared.append(rel)
+            # COMMITTED content, falling back to the working tree only when a file is not yet
+            # tracked (a genuinely new script, which is not a fork). An uncommitted fix on
+            # either side is now a FORK, because what ships is HEAD.
+            a = read_committed(STUDY, rel)
+            b = read_committed(PUBLIC, rel)
+            if a is None or b is None:
+                unavailable.append(label + " (committed content unavailable)")
+                continue
+            if a == b:
+                identical.append(label)
+            elif sub == "scripts" and is_shim(a):
+                shims.append(label)
+            else:
+                forks.append(label)
 
     # UNCOMMITTED WORK ON A SHARED SCRIPT MAKES THIS COMPARISON MEANINGLESS, in the other
     # direction. HEAD-vs-HEAD is the right question -- what ships is HEAD -- but if either side
@@ -187,7 +208,7 @@ def main(argv=None):
     for repo, label in ((STUDY, "working tree"), (PUBLIC, "mirror")):
         if not shared:
             continue
-        paths = [str(Path(repo) / "scripts" / name) for name in shared]
+        paths = [str(Path(repo) / rel) for rel in shared]
         out = subprocess.run(["git", "-C", repo, "diff", "--name-only", "HEAD", "--", *paths],
                              capture_output=True, text=True, encoding="utf-8", errors="replace")
         if out.returncode:

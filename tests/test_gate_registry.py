@@ -130,6 +130,9 @@ def test_a_gate_declared_for_the_other_tree_really_exists_there():
     import pytest
     if G.THIS_IS_MIRROR:
         pytest.skip("the mirror cannot see the study tree; the working study verifies this")
+    if G.MIRROR is None:
+        pytest.skip("no mirror checked out beside this study tree (CI); the author's "
+                    "workstation, which holds both, verifies this")
     sibling_scripts = os.path.join(G.MIRROR, "scripts")
     ghosts = sorted(g.script for g in G.GATES
                     if g.tree == "mirror" and g.script != "pytest"

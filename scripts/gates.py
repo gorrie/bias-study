@@ -54,8 +54,11 @@ STUDY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _SIBLING = os.path.normpath(os.path.join(STUDY, "..", "..", "..", "bias-study-release"))
 MIRROR = _SIBLING if os.path.isdir(_SIBLING) else None
 
-#: True when the tree this file sits in is the public mirror.
-THIS_IS_MIRROR = MIRROR is None
+#: True when the tree this file sits in is the public mirror. Decided by where the tree IS,
+#: not by whether a sibling exists: the study tree always sits at research/bias-study in
+#: the series repo. `MIRROR is None` used to decide it, so a study checkout with no sibling
+#: (every CI run) took itself for the mirror and demanded mirror-only scripts.
+THIS_IS_MIRROR = os.path.basename(os.path.dirname(STUDY)) != "research"
 
 #: Where a gate can run. "either" means the question is the same in both trees.
 TREES = ("mirror", "study", "either")
