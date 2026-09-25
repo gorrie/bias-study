@@ -1,0 +1,140 @@
+{
+  "_analysis_seed_note": "Recorded 2026-09-21. This collector did not write the field, so every analysis of this run has inherited studypaths.LEGACY_SEED. The inherited value is written here rather than a date-derived one, because changing it would change what a re-analysis reproduces. Collectors now write their own.",
+  "_note": "The SEEDS, orders, conditions and numbering arms are fixed by the pre-registration and were written here before the first call. `models` was not: it records who was collected and was reconstructed from the records. See _reconstructed.",
+  "_reconstructed": "2026-09-21. `models` read from the records: the file named 2 and the directory holds 18. The collector wrote this manifest once, at the first invocation, and the roster grew afterwards. `backends_per_model` is recorded because 8 of these models were served by more than one backend, which is why they were re-collected pinned into runs/2026-09-20-omission-hosted-pinned. See Amendment 1 of the prereg.",
+  "analysis": "scripts/item_omission.py",
+  "analysis_seed": 20260527,
+  "arms": [
+    "asis (printed number = item id)",
+    "renum (printed number = slot + 1)"
+  ],
+  "backends_per_model": {
+    "aion-labs/aion-3.0-mini": [
+      "AionLabs"
+    ],
+    "amazon/nova-micro-v1": [
+      "Amazon Bedrock"
+    ],
+    "cohere/command-a": [
+      "Cohere"
+    ],
+    "deepseek/deepseek-v3.2": [
+      "AtlasCloud",
+      "Baidu",
+      "DigitalOcean",
+      "Friendli",
+      "GMICloud",
+      "SiliconFlow",
+      "StreamLake"
+    ],
+    "google/gemma-2-27b-it": [
+      "NextBit"
+    ],
+    "ibm-granite/granite-4.2-8b": [
+      "CoreWeave",
+      "DeepInfra"
+    ],
+    "meituan/longcat-2.0": [
+      "AtlasCloud"
+    ],
+    "meta-llama/llama-3.3-70b-instruct": [
+      "AkashML",
+      "CoreWeave"
+    ],
+    "minimax/minimax-m2.7": [
+      "AtlasCloud",
+      "GMICloud",
+      "Groq",
+      "Mara",
+      "Minimax",
+      "Novita"
+    ],
+    "moonshotai/kimi-k2-thinking": [
+      "Google",
+      "Novita"
+    ],
+    "nvidia/nemotron-3.5-lightning": [
+      "CoreWeave",
+      "DeepInfra",
+      "Phala"
+    ],
+    "qwen/qwen3.8-2.4t-a95b": [
+      "Alibaba",
+      "DeepInfra",
+      "Modal",
+      "Novita",
+      "SiliconFlow",
+      "Together",
+      "Venice"
+    ],
+    "stepfun/step-3.5-flash": [
+      "SiliconFlow"
+    ],
+    "tencent/hy4-preview": [
+      "Tencent"
+    ],
+    "upstage/solar-pro4": [
+      "Upstage"
+    ],
+    "writer/palmyra-x5": [
+      "Amazon Bedrock"
+    ],
+    "xiaomi/mimo-v2.5-pro": [
+      "AtlasCloud",
+      "DeepInfra",
+      "DigitalOcean",
+      "GMICloud",
+      "Novita",
+      "Xiaomi"
+    ],
+    "z-ai/glm-5-turbo": [
+      "Z.AI"
+    ]
+  },
+  "conditions": [
+    "N",
+    "P"
+  ],
+  "instrument": "ratchet-battery",
+  "items": "data/ratchet-battery.json",
+  "max_tokens": 16384,
+  "models": [
+    "aion-labs/aion-3.0-mini",
+    "amazon/nova-micro-v1",
+    "cohere/command-a",
+    "deepseek/deepseek-v3.2",
+    "google/gemma-2-27b-it",
+    "ibm-granite/granite-4.2-8b",
+    "meituan/longcat-2.0",
+    "meta-llama/llama-3.3-70b-instruct",
+    "minimax/minimax-m2.7",
+    "moonshotai/kimi-k2-thinking",
+    "nvidia/nemotron-3.5-lightning",
+    "qwen/qwen3.8-2.4t-a95b",
+    "stepfun/step-3.5-flash",
+    "tencent/hy4-preview",
+    "upstage/solar-pro4",
+    "writer/palmyra-x5",
+    "xiaomi/mimo-v2.5-pro",
+    "z-ai/glm-5-turbo"
+  ],
+  "prereg": "PREREG-2026-09-18-omission-orders.md",
+  "run": "2026-09-18-omission-hosted",
+  "seed_expression": "sorted(random.Random(20260918).sample(range(1, 1000), 12))",
+  "shuffle_seeds": [
+    52,
+    158,
+    316,
+    361,
+    442,
+    622,
+    633,
+    823,
+    841,
+    890,
+    902,
+    938
+  ],
+  "temperature": 0.7,
+  "written_at": "2026-09-18T16:55:32Z"
+}

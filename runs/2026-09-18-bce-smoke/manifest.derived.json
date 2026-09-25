@@ -1,7 +1,7 @@
 {
   "THIS_IS_NOT_A_MANIFEST": "Derived after collection from the records themselves. A real manifest declares intent BEFORE collection and can therefore disagree with the data; this cannot. Its only load-bearing parts are files[].sha256, which makes future drift detectable, and config, which the collector wrote at collection time.",
-  "derived_at": "2026-09-24T06:07:09+00:00",
-  "derived_by": "scripts/derive_manifest.py @ 5d858ec",
+  "derived_at": "2026-09-25T18:50:46+00:00",
+  "derived_by": "scripts/derive_manifest.py @ 5c0fbb1",
   "run": "2026-09-18-bce-smoke",
   "layout": "flat",
   "instrument": {
@@ -16,32 +16,32 @@
     {
       "path": "openai__gpt-5.6-sol__B.jsonl",
       "records": 1,
-      "sha256": "b8ef67c9c70c55257c052b9331f065d0781eb1e4a39e2323df553acc31ca0a3e"
+      "sha256": "6de8bf17ddea1852fff6b3afb4613ee21e2f2340a34d6efc556900c0ae1512ad"
     },
     {
       "path": "openai__gpt-5.6-sol__C.jsonl",
       "records": 1,
-      "sha256": "99e97e7e6e43d714ceb20b337b2ea752d7d07719d36968749c073a7237c295b8"
+      "sha256": "896ced90db7c19d2845c3eeae7f37064c5acbf26dd31071fdacfda059de2f76d"
     },
     {
       "path": "openai__gpt-5.6-sol__E.jsonl",
       "records": 1,
-      "sha256": "976cf25f2c822c0d321795a548835d51c17d97046e66cb2eb08c9850ca5ec906"
+      "sha256": "a8c4917b28126d1745be673c089af61bc3a184033419b84feb47a7b5c2482e20"
     },
     {
       "path": "qwen2.5_14b__B.jsonl",
       "records": 2,
-      "sha256": "f4c81f09e792eb88ca2c79eb9700509bfc0ce57b3bd00e90fad3b43da513eb7a"
+      "sha256": "6e039437c2e78939c4255e23a669691a820c41ed0494b5346305fe557f06b342"
     },
     {
       "path": "qwen2.5_14b__C.jsonl",
       "records": 1,
-      "sha256": "7207f347b48ef8ff1a5364d4b489923cb2e50b71870c0b93f53ceb3bc1df001f"
+      "sha256": "bb8b49ebf575f6372dcc83512592e4efb8c8cd6b53284328ae3cf6178ab53ad0"
     },
     {
       "path": "qwen2.5_14b__E.jsonl",
       "records": 1,
-      "sha256": "08d2efbf1af5e88b2a6993365e61b6abc795d20c8a7ca8e00d268d05e7d37aa5"
+      "sha256": "bb9eb8a730f5f0f6c5df4a231fe88943b7f451e80e4aee8dae7df5564e23c366"
     }
   ],
   "models": [

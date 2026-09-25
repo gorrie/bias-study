@@ -58,7 +58,7 @@ DESCRIPTIONS = {
     "system_prompt": "The system turn as sent, or null where none was used. The presence or absence of a directive here is the manipulation in most arms.",
     # the condition
     "condition": "Experimental arm. `A` is the fairness-instructed condition and `B` the bare ask in the main battery; `C`/`D`/`E` and the hyphenated variants are additional arms defined per run. Read the run's own prereg before pooling conditions.",
-    "position": "Framing register of the item as administered: `neutral`, `mild`, `pointed`, plus `ood`, `para1..3` and `reversed` for the robustness arms.",
+    "position": "Framing register of the item as administered: `neutral`, `mild`, `pointed`, plus `ood`, `para1..3` and `reversed` for the robustness arms. On the 2026-09-25 both-paths records it is the pair half, `critic` or `defender`.",
     "seed": "RNG seed for this call. Both arms of a stock/abliterated pair MUST carry the same one -- `run_local.py` warns that differing seeds make the contrast measure resampling rather than the intervention.",
     "sample_idx": "Replicate index within a cell, where the run collected replicates. Absent means one draw.",
     "temperature": "Sampling temperature where the collector recorded it. Absent does not mean zero.",
@@ -97,6 +97,17 @@ DESCRIPTIONS = {
     "spliced_from": "For derived corpora: the run this record was taken from.",
     "spliced_replaces": "For derived corpora: the record it stands in for.",
     "spliced_base_exclusion": "For derived corpora: why the base record was excluded, where it was.",
+    # the 2026-09-25 both-paths free-text records: runs/2026-09-25-same-items-both-paths/{raw,scored}.
+    # Same layout and scorer as the May corpus, so they share this table; these fields are theirs.
+    "arm": "The pre-registered arm the record belongs to (`same-items-both-paths`). Present only on the 2026-09-25 free-text records; the May records predate the field.",
+    "prereg": "Filename of the pre-registration that fixed the record's design before collection. Present only on the 2026-09-25 free-text records.",
+    "instrument": "Item bank the free-text question was built from: `ratchet-battery`, meaning one of the 32 propositions asked as a one-or-two-paragraph question. Present only on the 2026-09-25 both-paths records; the May records were asked the institutional-framing question set and carry no `instrument`.",
+    "item_id": "Battery item id (1-32) the question was built from. Both-paths records only; the join key to the forced-choice sheets in `runs/2026-09-16-ratchet-v3-wave`.",
+    "pair_no": "The mirrored pair (1-16) the item belongs to. Both-paths records only.",
+    "frame": "Which half of the mirrored pair the item is, `critic` or `defender`. Both-paths records only; `position` carries the same value there.",
+    "path": "Scoring path of the record: `free-text`, meaning it was scored by the judge panel. The forced-choice half of the comparison is read from the wave, not stored here.",
+    "provider": "The backend that served the call over OpenRouter. Both-paths records only.",
+    "provider_pinned": "The backend requested with fallbacks off. Both-paths records only, where it equals `provider` on every record.",
 }
 
 #: THE PRESENT STUDY'S RECORDS -- one JSON line per administration of the 32-item battery, in
@@ -121,7 +132,10 @@ BATTERY_DESCRIPTIONS = {
     "forcing_prompt": "The user turn as sent: the fixed instruction and the 32 items in presentation order. Shipped in full.",
     "forcing_prompt_sha256": "Hash of the forcing prompt, so a reader can verify a regenerated prompt matches what was administered.",
     "forcing_prompt_chars": "Length of the forcing prompt in characters.",
-    "forcing_prompt_note": "Export note about the forcing prompt field (the live instrument ships in full; nothing is withheld).",
+    "forcing_prompt_note": "Present only on a `--scrub` export, where `forcing_prompt` was dropped; says so and how to rebuild the prompt. The shipped corpus keeps the prompt and carries no note.",
+    "arm": "The pre-registered arm the sheet belongs to (`placebo-wording`, `serving-path`), stamped by `run_arm_battery.py`. Absent on runs collected by `run_battery.py`, where the directory is the arm.",
+    "prereg": "Filename of the pre-registration that fixed the sheet's design before collection, on the arms that stamp it.",
+    "placebo_wording": "Which placebo sentence the sheet carried: `P2` on the second-wording arm. Absent under P itself and on every other condition.",
     "template": "Wording of the forcing instruction: `T01` canonical; `T02`-`T10` the paraphrase arm only.",
     "shuffle_seed": "Presentation order. Items are shuffled by this seed; the same seed is the same order. The wave uses 11, 22 and 33.",
     "renumbered": "Protocol v2. True: items were printed `1..32` in presentation order and answers mapped back through `label_to_id`. False: each item printed under its own id (the as-is numbering, which lets some models silently skip lines). Absent on records that predate the flag, which are as-is.",
@@ -163,31 +177,106 @@ BATTERY_DESCRIPTIONS = {
     "sampling_preset": "Rung 2 sampling ladder: `S-Precise`, `S-Balanced`, `S-Creative`, `S-Chaotic`, or null.",
     "preset_full": "The complete sampling preset as defined, including fields the channel does not accept.",
     "preset_fields_not_sent": "Preset fields NOT sent because the channel does not accept them, so the arm's effective sampling is stated rather than assumed.",
-    # study-tree arms not shipped in the public release
     "question_id": "Item id, on the rung-2 control arms that re-administer the earlier free-text questions.",
     "question_text": "Item text for those questions.",
-    "id": "Refusal-ablation prompt id (XSTest; third-party text, private tree only).",
+}
+
+#: RECORDS WITH NO `schema` IN THE FLAT LAYOUT: the runs `export_scrubbed.NOT_SHIPPED` keeps
+#: back (the XSTest refusal-ablation series, the superseded first local gradient, the
+#: development fixtures). Present in the private tree only; in the public mirror this table
+#: renders nothing and is omitted. Described so the private tree's dictionary is complete, and
+#: kept apart so an unshipped arm's fields never read as fields of the published corpus.
+UNSHIPPED_DESCRIPTIONS = {
+    "model": "Model identifier as the channel names it.",
+    "arm": "Which build of the refusal-ablation series answered, or the dose arm's name.",
+    "id": "Refusal-ablation prompt id (XSTest; third-party text, not shipped).",
     "type": "XSTest prompt category.",
     "label": "XSTest's label for the prompt: `safe` or `unsafe`.",
-    "prompt": "The prompt administered in the refusal-ablation and dose arms.",
-    "reply": "The model's reply in those arms.",
-    "arm": "Which build of the refusal-ablation series answered.",
+    "prompt": "The prompt administered: XSTest's text in the refusal-ablation series; the fixture's request text in the 2026-09-08 evidence pilots.",
+    "reply": "The model's reply in the refusal-ablation series.",
     "gen": "Generation settings for that arm.",
+    "think": "Reasoning mode requested on the local build.",
     "keyword_refused": "Keyword-rule refusal verdict for that reply.",
-    "judge_model": "Local judge model that classified the reply.",
+    "judge_model": "Local judge model that classified or scored the reply.",
     "judge_verdict": "The judge's verdict (e.g. `COMPLIED`).",
     "judge_raw": "The judge's raw output.",
-    "request_id": "Channel request id, where returned.",
-    "score_local_judge": "Local judge score, dose arms only.",
+    "request_id": "Channel request id, where returned (the 2026-09-08 evidence pilots).",
+    "condition": "The battery condition applied to a free-text question in the superseded first local gradient (`mask-gradient`).",
+    "system_prompt": "The system turn as sent in that arm, or null.",
+    "question_id": "Which of the earlier free-text questions was asked in that arm.",
+    "question_text": "The question as asked.",
+    "response_text": "The model's reply verbatim in that arm.",
+    "score_local_judge": "Local judge score in that arm.",
 }
+UNSHIPPED_CATEGORICAL = {"arm", "type", "label", "condition", "judge_verdict", "keyword_refused"}
 
 #: Categorical fields worth a vocabulary in the battery section.
 BATTERY_CATEGORICAL = {"channel", "condition", "failure_mode", "instrument", "classifier",
                        "template", "renumbered", "done_reason", "sampling_preset"}
 
+#: THE JUDGED ARM OF THE LOCAL GRADIENT -- `runs/2026-09-25-local-gradient-judged/*.jsonl`,
+#: schema `local-gradient-judged/1`. One record per free-text answer: ten of the earlier
+#: institutional-framing questions (`T01-Q2`..`T10-Q2`, neutral register) put to a stock build
+#: and its abliteration under the six battery conditions, so the judge-free and the judged
+#: instruments can be compared on the same builds. Scores are NOT on the record: they are in
+#: `scores/<judge>.jsonl`, keyed by `uid`, described in SCORES_DESCRIPTIONS below. Added
+#: 2026-09-25, when the flat `runs/*/*.jsonl` glob first met a second schema and would have
+#: pooled it into the battery table with fifteen undescribed fields.
+JUDGED_DESCRIPTIONS = {
+    "schema": "Record schema: `local-gradient-judged/1`.",
+    "model": "The local build as ollama names it (`hf.co/...:Q4_K_M` or a library tag).",
+    "build": "Short label for the build: `stock`, or the abliteration's label (`heretic-0bserverx`). The stock/ablated contrast is a groupby on this.",
+    "base": "The base model both builds derive from (`qwen38-27b`).",
+    "channel": "`ollama`: local inference on the study's GPU, no API call.",
+    "question_id": "Which of the earlier free-text questions was asked, `T01-Q2`..`T10-Q2`. Same ids as the May corpus under `data/`.",
+    "question_text": "The question as asked, verbatim.",
+    "position": "Framing register of the question: `neutral` throughout this arm.",
+    "condition": "The battery condition applied to a free-text question: `N` bare, `A` balance instruction, `P` content-free placebo, `D` commitment directive, `C`, `E`. Definitions are `run_battery.CONDITION_SYSTEM` and `CONDITION_USER_SUFFIX`, the same text the forced-choice sheets received.",
+    "condition_note": "One-line description of the condition, stamped by the collector.",
+    "seed": "Sampling seed for the call; replicates within a cell differ by seed.",
+    "temperature": "Sampling temperature, 0.7.",
+    "think": "Reasoning mode requested (false).",
+    "max_tokens": "Completion budget requested.",
+    "timeout_s": "Per-call timeout in seconds. A call that hit it is a failed call, not a refusal.",
+    "system_prompt": "The system turn as sent, or null under `N`.",
+    "user_prompt": "The user turn as sent: the question plus any condition suffix.",
+    "collected_at": "UTC timestamp of the call.",
+    "ok": "The call completed. False is a transport failure or a timeout.",
+    "error": "Error string on a failed call, else null.",
+    "response_text": "The model's reply verbatim.",
+    "tokens_in": "Prompt tokens as ollama counted them.",
+    "tokens_out": "Completion tokens as ollama counted them.",
+    "latency_ms": "Wall-clock time of the call.",
+    "done_reason": "ollama's stop reason: `stop` or `length`.",
+    "thinking_chars": "Characters of reasoning trace returned, if any.",
+}
+JUDGED_CATEGORICAL = {"build", "base", "condition", "position", "done_reason", "channel"}
 
-def scan(*patterns, categorical=CATEGORICAL):
+#: `runs/2026-09-25-local-gradient-judged/scores/<judge>.jsonl` -- one line per (answer, judge).
+SCORES_DESCRIPTIONS = {
+    "uid": "Key of the answer scored: `model|question_id|condition|seed`, matching the record in the run's top-level sheets.",
+    "judge": "The local judge model that scored the answer. Two judges, each selected by the calibration in `calibration.json` before any answer was scored.",
+    "score": "The judge's 1-5 rubric score, as parsed from `raw`.",
+    "raw": "The judge's full JSON reply, score and reasoning, verbatim.",
+    "at": "UTC timestamp of the judging call.",
+}
+SCORES_CATEGORICAL = {"judge", "score"}
+
+#: Schemas the flat `runs/*/*.jsonl` layout may carry. A record of any other schema there is
+#: an undescribed SCHEMA and fails --check the way an undescribed field does.
+from studypaths import SCHEMA_ACCEPTED  # noqa: E402
+
+BATTERY_SCHEMAS = SCHEMA_ACCEPTED
+JUDGED_SCHEMA = "local-gradient-judged/1"
+
+
+def scan(*patterns, categorical=CATEGORICAL, keep=None):
     """Every record matching ANY of these globs. Takes several, and scans all of them.
+
+    `keep(record)` selects by content -- by `schema`, in practice -- because one glob can now
+    reach two record kinds: the flat `runs/<run>/*.jsonl` layout holds battery sheets AND the
+    judged arm's free-text records. A record `keep` rejects is counted in `others` by its
+    schema, so a schema nobody described is reported rather than silently dropped.
 
     THIS TOOK ONE PATTERN AND `render()` TRIED THEM IN TURN -- `data/*/raw/*.jsonl` first,
     falling back to `runs/*/raw/*.jsonl` only when the first yielded nothing. That is a
@@ -205,11 +294,12 @@ def scan(*patterns, categorical=CATEGORICAL):
     """
     fields = collections.defaultdict(collections.Counter)
     vocab = collections.defaultdict(collections.Counter)
+    others = collections.Counter()
     n, nfiles = 0, 0
     paths = sorted({p for pattern in patterns
                     for p in glob.glob(os.path.join(STUDY, pattern))})
     for path in paths:
-        nfiles += 1
+        seen_here = False
         for line in io.open(path, encoding="utf-8", errors="replace"):
             if not line.strip():
                 continue
@@ -219,27 +309,57 @@ def scan(*patterns, categorical=CATEGORICAL):
                 continue
             if not isinstance(r, dict):
                 continue
+            if keep is not None and not keep(r):
+                others[str(r.get("schema"))] += 1
+                continue
+            seen_here = True
             n += 1
             for k, v in r.items():
                 fields[k][type(v).__name__ if v is not None else "null"] += 1
                 if k in categorical and not isinstance(v, (dict, list)):
                     vocab[k][str(v)] += 1
+        if seen_here:
+            nfiles += 1
+    scan.others = others
     return n, nfiles, fields, vocab
 
 
+#: The flat `runs/<run>/` layout, with every subdirectory layout a collector writes there
+#: EXCEPT the ones described as their own record kind (`raw/`, `scored/`, `scores/`). The
+#: local-gradient collector keeps its smoke and replicate sheets in `smoke/` and `replicate/`.
+FLAT = ("runs/*/*.jsonl", "runs/*/smoke/*.jsonl", "runs/*/replicate/*.jsonl")
+
+
 def render():
-    """(label, patterns, descriptions, categorical) per record layout.
+    """(label, patterns, descriptions, categorical, keep) per record kind.
 
     `battery` is the present study, flat under `runs/<run>/`, and comes first because it is
-    the corpus the paper is about. `raw`/`scored` are the earlier corpus under `data/`.
+    the corpus the paper is about. `judged` and `scores` are the judged arm of the local
+    gradient, which lives in the same root under its own schema. `raw`/`scored` are the
+    earlier corpus under `data/`, and the 2026-09-25 both-paths free-text records under
+    `runs/`, which use the same layout and scorer.
     """
-    layouts = [("battery", ("runs/*/*.jsonl",), BATTERY_DESCRIPTIONS, BATTERY_CATEGORICAL),
-               ("raw", ("data/*/raw/*.jsonl", "runs/*/raw/*.jsonl"), DESCRIPTIONS, CATEGORICAL),
+    layouts = [("battery", FLAT, BATTERY_DESCRIPTIONS, BATTERY_CATEGORICAL,
+                lambda r: r.get("schema") in BATTERY_SCHEMAS),
+               ("judged", FLAT, JUDGED_DESCRIPTIONS, JUDGED_CATEGORICAL,
+                lambda r: r.get("schema") == JUDGED_SCHEMA),
+               ("scores", ("runs/*/scores/*.jsonl",), SCORES_DESCRIPTIONS, SCORES_CATEGORICAL,
+                None),
+               ("unshipped", FLAT, UNSHIPPED_DESCRIPTIONS, UNSHIPPED_CATEGORICAL,
+                lambda r: r.get("schema") is None),
+               ("raw", ("data/*/raw/*.jsonl", "runs/*/raw/*.jsonl"), DESCRIPTIONS, CATEGORICAL,
+                None),
                ("scored", ("data/*/scored/*.jsonl", "runs/*/scored/*.jsonl"), DESCRIPTIONS,
-                CATEGORICAL)]
+                CATEGORICAL, None)]
     blocks, undescribed = [], set()
-    for label, patterns, descriptions, categorical in layouts:
-        n, nf, fields, vocab = scan(*patterns, categorical=categorical)
+    flat_schemas, flat_counted = collections.Counter(), False
+    for label, patterns, descriptions, categorical, keep in layouts:
+        n, nf, fields, vocab = scan(*patterns, categorical=categorical, keep=keep)
+        if patterns is FLAT and not flat_counted:
+            # Once: every FLAT scan rejects the same records, so counting each scan's
+            # rejects would report the same schema as many times as there are kinds.
+            flat_schemas.update(scan.others)
+            flat_counted = True
         if not n:
             continue
         rows = []
@@ -251,6 +371,12 @@ def render():
             desc = descriptions.get(k, "**UNDESCRIBED -- see gen_data_dictionary**")
             rows.append(f"| `{k}` | {tot / n:.1%} | {types} | {desc} |")
         blocks.append((label, n, nf, len(fields), rows, vocab))
+    # A THIRD SCHEMA IN THE FLAT LAYOUT IS AN UNDESCRIBED SCHEMA, reported like an undescribed
+    # field. Without this, a collector writing a new record kind under runs/ would see every one
+    # of its records silently fall out of both tables and the document would still read complete.
+    for schema, count in sorted(flat_schemas.items()):
+        if schema not in BATTERY_SCHEMAS and schema != JUDGED_SCHEMA and schema != "None":
+            undescribed.add("schema:%s (%d record(s) in runs/*/*.jsonl)" % (schema, count))
     return blocks, undescribed
 
 
@@ -288,6 +414,14 @@ def build_text():
             "",
             "Each root has its own README describing what may and may not be concluded from it.",
             "",
+            "Two arms collected on 2026-09-25 sit under `runs/` and use the free-text design:",
+            "`2026-09-25-same-items-both-paths` asks the 32 battery propositions as free-text",
+            "questions and scores them with the May judge panel (the `raw`/`scored` tables below",
+            "cover its records, with the fields marked as its own), and",
+            "`2026-09-25-local-gradient-judged` puts ten of the earlier questions to a stock build",
+            "and its abliteration under the battery's conditions, scored by two local judges (the",
+            "`judged` and `scores` tables).",
+            "",
             "**The one field difference that bites:** records in `runs/` carry an `instrument`",
             "field and records in `data/` do not, because the field postdates them. Code that",
             "filters on `instrument == \"ratchet-battery\"` drops the whole earlier corpus, and",
@@ -316,15 +450,10 @@ def build_text():
             "32 author-written propositions in 16 mirrored pairs, MIT-licensed with everything",
             "else, with no fetch step and nothing to take on trust.",
             "",
-            "What is absent is the **retired** 62-item external questionnaire, and every record",
-            "collected on it: the forced-choice arm of August and early September. It is a third",
-            "party's licensed text, so neither it nor its records ship here. Everything measured",
-            "on it is withdrawn, and the corrections that describe those claims are in",
-            "`CORRECTIONS.md`; the figures they quote cannot be recomputed from this repository.",
-            "",
-            "The export is produced and re-verified against the fingerprint list by an operator",
-            "tool that lives on the development side, not here — deliberately, so that the thing",
-            "which generates a release is not shipped inside it.", ""]
+            "Records carrying third-party text are not in this repository: the runs on the retired",
+            "62-item external questionnaire (a licensed text, retired 2026-09-16), and the",
+            "refusal-ablation series, whose prompts are XSTest's. `MANIFEST.json` lists every",
+            "directory the export keeps back, with the reason.", ""]
     # EXACTLY ONE TRAILING NEWLINE. The last element of `out` is "", so joining and appending
     # produced a trailing BLANK line. The public mirror's `fix end of files` hook removes it at
     # commit time, which left `--check` reporting this file stale immediately after every sync

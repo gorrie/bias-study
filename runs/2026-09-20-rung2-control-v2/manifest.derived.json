@@ -1,7 +1,7 @@
 {
   "THIS_IS_NOT_A_MANIFEST": "Derived after collection from the records themselves. A real manifest declares intent BEFORE collection and can therefore disagree with the data; this cannot. Its only load-bearing parts are files[].sha256, which makes future drift detectable, and config, which the collector wrote at collection time.",
-  "derived_at": "2026-09-24T06:07:10+00:00",
-  "derived_by": "scripts/derive_manifest.py @ 5d858ec",
+  "derived_at": "2026-09-25T18:50:46+00:00",
+  "derived_by": "scripts/derive_manifest.py @ 5c0fbb1",
   "run": "2026-09-20-rung2-control-v2",
   "layout": "flat",
   "instrument": {
@@ -16,37 +16,37 @@
     {
       "path": "anthropic__claude-fable-5.1__B.jsonl",
       "records": 10,
-      "sha256": "ca81268876a160a0579d650d55000e375826e599e7a67e5b9048adfd839d80ad"
+      "sha256": "b2db61510b861969bec031a0c6d79243b04d037c3b5202a272bb0004692ffb90"
     },
     {
       "path": "google__gemini-3.7-flash__B.jsonl",
       "records": 10,
-      "sha256": "38b8e402c51bb92b84ae2bad85df01fae4d585b23f6335b7c44c87021fac024f"
+      "sha256": "d1f4b45274a0cb36bf925c9605e4f77741dc66df0d995fc3ca219a383eeffea9"
     },
     {
       "path": "google__gemini-3.8-flash__B.jsonl",
       "records": 10,
-      "sha256": "ccbacf09f0896c7a703f4c97d7831f0033c7d0fad9f96ee6b09bae0c2f347d37"
+      "sha256": "4bd813e7d87a0b1b383ce6f23c3dd8785c6710b00fc830e9bc81a1552db156c7"
     },
     {
       "path": "moonshotai__kimi-k2.5__B.jsonl",
       "records": 10,
-      "sha256": "0281a2adcdd6d52fcdd9f586074f9357075f19e50508b2876938f68e0b268257"
+      "sha256": "79f188de52b09094ada3e2e1e55c7ac183f077ed57674b006206111c0208fd92"
     },
     {
       "path": "openai__gpt-6-astra-pro__B.jsonl",
       "records": 10,
-      "sha256": "65ff91be29f70d138de6e746f804e89b872826c1a71b6f5a3d7099ef3b309b76"
+      "sha256": "7d277288be24f77f4b882465f04c495bebe979612ae464def2f7d0322b89dd18"
     },
     {
       "path": "openai__gpt-6-astra__B.jsonl",
       "records": 10,
-      "sha256": "5dcf833723e394674436fc1631dfdde48bc01f675dba0723465c66a978809aa3"
+      "sha256": "d017781f06f7d14c9fb1f8dbcd157e90d5963947e2da1cc6c986ae14deb1acb9"
     },
     {
       "path": "x-ai__grok-4.3__B.jsonl",
       "records": 10,
-      "sha256": "4d0364f600694493efc7d2584bf159f44e886763ae24a4db340c2a8f111de680"
+      "sha256": "c6df962134dcd27f40f4491bcaff42ac8a0e03a441d923c6663e6823b679b2d9"
     }
   ],
   "models": [

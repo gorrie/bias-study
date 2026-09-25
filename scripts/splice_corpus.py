@@ -229,6 +229,38 @@ def write(records, out_name):
     return d
 
 
+def derived_markdown():
+    """The derived-corpora table for CORPUS-MAP, measured off the records under the CURRENT
+    eligibility rule. `gen_corpus_docs.py` fills it between GEN markers.
+
+    Hand-typed, this table drifted twice: the study and the mirror disagreed on the repaired
+    main run (779 against 778) within a week of the export, and neither number was what the
+    rule gives today, because `eligibility.py` changed what counts as truncated on 2026-09-25
+    and the views were re-spliced. A table that states a count under a rule the reader can
+    re-run is worth something; a table that states last week's count is not.
+    """
+    rows = ["| corpus | base run | eligible in the base | eligible in the view | of |",
+            "|---|---|---:|---:|---:|"]
+    for base_name, spec in sorted(CORPUS_REPAIRS.items(), key=lambda kv: kv[1]["out"]):
+        pair = []
+        for name in (base_name, spec["out"]):
+            d = _run_dir(name)
+            if d is None:
+                pair.append(None)
+                continue
+            _kept, q = E.inspect_scored_records(d)
+            pair.append(q)
+        qb, qd = pair
+        if qb is None or qd is None:
+            rows.append("| `%s` | `%s` | — | — | — |" % (spec["out"], base_name))
+            continue
+        rows.append("| `%s` | `%s` | %d | **%d** | %d |"
+                    % (spec["out"], base_name, qb["eligible"], qd["eligible"], qd["attempted"]))
+    if len(rows) == 2:
+        raise SystemExit("splice_corpus --derived-markdown: no derived corpora registered")
+    return "\n".join(rows)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--plan", action="store_true", help="what would change; writes nothing")
@@ -237,7 +269,13 @@ def main(argv=None):
     ap.add_argument("--out", default=None)
     ap.add_argument("--all", action="store_true",
                     help="splice every damaged corpus in CORPUS_REPAIRS")
+    ap.add_argument("--derived-markdown", action="store_true",
+                    help="print the derived-corpora table for CORPUS-MAP; reads only")
     args = ap.parse_args(argv)
+
+    if args.derived_markdown:
+        print(derived_markdown())
+        return 0
 
     if args.all:
         rc = 0

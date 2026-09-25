@@ -1,0 +1,84 @@
+{
+  "_analysis_seed_note": "Recorded 2026-09-21. This collector did not write the field, so every analysis of this run has inherited studypaths.LEGACY_SEED. The inherited value is written here rather than a date-derived one, because changing it would change what a re-analysis reproduces. Collectors now write their own.",
+  "_reconstructed": "2026-09-21. models_attempted and the sheet counts are read from the records. The collector rewrites this file per invocation, so it held the last one's roster (5 models, 97 valid) over a directory holding 7 models and 280 sheets.",
+  "analysis_seed": 20260527,
+  "arm_settings": {
+    "S-Balanced": {
+      "frequency_penalty": 0.1,
+      "presence_penalty": 0.1,
+      "system_prompt_chars": 0,
+      "temperature": 0.7
+    },
+    "S-Chaotic": {
+      "frequency_penalty": 0.7,
+      "presence_penalty": 0.8,
+      "system_prompt_chars": 0,
+      "temperature": 1.6
+    },
+    "S-Creative": {
+      "frequency_penalty": 0.4,
+      "presence_penalty": 0.6,
+      "system_prompt_chars": 0,
+      "temperature": 1.1
+    },
+    "S-Precise": {
+      "frequency_penalty": 0.3,
+      "presence_penalty": 0.1,
+      "system_prompt_chars": 0,
+      "temperature": 0.2
+    }
+  },
+  "arms": [
+    "S-Precise",
+    "S-Balanced",
+    "S-Creative",
+    "S-Chaotic"
+  ],
+  "base_condition": "B",
+  "collector": "run_rung2.py",
+  "completed_at": "2026-09-20T07:10:39.683241+00:00",
+  "control": "rung-1 condition B (no proxy path to control for)",
+  "g0dm0d3_provenance": {
+    "boost": {
+      "frequency_penalty": 0.1,
+      "presence_penalty": 0.15,
+      "temperature": 0.1
+    },
+    "boost_ceiling": 2.0,
+    "checkout": "G0DM0D3",
+    "depth_directive": {
+      "chars": 1702,
+      "path": "G0DM0D3/api/lib/ultraplinian.ts",
+      "sha256_12": "5bec4e781c49"
+    },
+    "godmode_system_prompt": {
+      "chars": 3049,
+      "path": "G0DM0D3/src/lib/godmode-prompt.ts",
+      "sha256_12": "2d49a5d231a1"
+    }
+  },
+  "instrument": "ratchet-battery",
+  "max_tokens": 8192,
+  "models_attempted": [
+    "anthropic/claude-fable-5.1",
+    "google/gemini-3.7-flash",
+    "google/gemini-3.8-flash",
+    "moonshotai/kimi-k2.5",
+    "openai/gpt-6-astra",
+    "openai/gpt-6-astra-pro",
+    "x-ai/grok-4.3"
+  ],
+  "not_collected": {
+    "autotune": "parameters come from server-side learned state (EMA feedback loop); not reproducible and not recorded in our rows",
+    "parseltongue": "0 triggers in 32 items and 0 in the assembled prompt (parseltongue_triggers.py); out of domain, not broken",
+    "stm": "0 of 2,645 battery sheets contain a hedge phrase; the regex fires on nothing"
+  },
+  "renumbered": true,
+  "replicate": 5,
+  "replicate_seed": 11,
+  "run_date": "2026-09-19-rung2-elicitation",
+  "rung": 2,
+  "sheets_invalid": 31,
+  "sheets_valid": 249,
+  "started_at": "2026-09-20T04:52:34.233066+00:00"
+}

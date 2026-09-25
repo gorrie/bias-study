@@ -136,8 +136,10 @@ def block_body(name, blocks=None):
     unfenced = ("floors", "controls", "references", "timeline", "position", "bycondition",
                 "refusal", "power", "gaps", "null",
                 "training", "intensity", "comparisons", "conditions",
-                # The corpus READMEs (gen_corpus_docs.py). All three emit real tables.
-                "corpus-inventory-data", "corpus-inventory-runs", "corpus-scale")
+                # The corpus READMEs and the corpus map (gen_corpus_docs.py). All four emit
+                # real tables.
+                "corpus-inventory-data", "corpus-inventory-runs", "corpus-scale",
+                "corpus-derived")
     fence = "" if name in unfenced else "```\n"
     close = "" if name in unfenced else "\n```"
     # NO TRAILING WHITESPACE. The fixed-width blocks right-pad their columns, so `power` and

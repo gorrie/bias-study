@@ -21,6 +21,14 @@ separate directories and the distinction is load-bearing:
 
 Each root has its own README describing what may and may not be concluded from it.
 
+Two arms collected on 2026-09-25 sit under `runs/` and use the free-text design:
+`2026-09-25-same-items-both-paths` asks the 32 battery propositions as free-text
+questions and scores them with the May judge panel (the `raw`/`scored` tables below
+cover its records, with the fields marked as its own), and
+`2026-09-25-local-gradient-judged` puts ten of the earlier questions to a stock build
+and its abliteration under the battery's conditions, scored by two local judges (the
+`judged` and `scores` tables).
+
 **The one field difference that bites:** records in `runs/` carry an `instrument`
 field and records in `data/` do not, because the field postdates them. Code that
 filters on `instrument == "ratchet-battery"` drops the whole earlier corpus, and
@@ -33,7 +41,7 @@ section below carries its own meanings.
 
 ## `battery` records
 
-6,703 records across 1200 files, 52 distinct fields.
+8,640 records across 1370 files, 54 distinct fields.
 
 | field | coverage | types | meaning |
 |---|---:|---|---|
@@ -45,6 +53,8 @@ section below carries its own meanings.
 | `done_reason` | 100.0% | `null`, `str` | Local channel's stop reason (`stop`, `length`), or null. |
 | `failure_mode` | 100.0% | `null`, `str` | Why an invalid sheet failed: `refused`, `transport`, `budget-exhausted`, `truncated`, or `other` (includes silent omission). Null on a valid sheet. |
 | `forcing_prompt` | 100.0% | `str` | The user turn as sent: the fixed instruction and the 32 items in presentation order. Shipped in full. |
+| `forcing_prompt_chars` | 100.0% | `int` | Length of the forcing prompt in characters. |
+| `forcing_prompt_sha256` | 100.0% | `str` | Hash of the forcing prompt, so a reader can verify a regenerated prompt matches what was administered. |
 | `instrument` | 100.0% | `str` | Which item bank was administered: `ratchet-battery`. 120 wave records collected 2026-09-16 16:11-17:18Z carry the earlier label `ratchet-battery-v3` for the SAME 32 items (identical `forcing_prompt`); match on the prefix, as `floor_table._instrument_matches` does. |
 | `latency_ms` | 100.0% | `int` | Wall-clock time of the call, including queueing. |
 | `max_tokens` | 100.0% | `int` | Completion budget requested. |
@@ -67,44 +77,103 @@ section below carries its own meanings.
 | `tokens_in` | 100.0% | `int`, `null` | Prompt tokens as the provider counted them. |
 | `tokens_out` | 100.0% | `int`, `null` | Completion tokens as the provider counted them. |
 | `valid` | 100.0% | `bool` | The sheet is complete and self-consistent. Every analysis reads valid sheets only. |
-| `classifier` | 98.6% | `str` | Version of the validity/failure rule that labelled this record (`structural/1`-`/3`). `run_battery.CLASSIFIER_VERSION` documents each; `refusal_table --audit` holds current-version rows to exact agreement. |
-| `n_answers` | 98.6% | `int` | Items answered. A sheet with 0 < n_answers < 32 is a PARTIAL sheet: it fails validity and is dropped whole. |
-| `response_text` | 98.6% | `str` | The model's reply verbatim. |
-| `forcing_prompt_chars` | 94.5% | `int` | Length of the forcing prompt in characters. |
-| `forcing_prompt_note` | 94.5% | `str` | Export note about the forcing prompt field (the live instrument ships in full; nothing is withheld). |
-| `forcing_prompt_sha256` | 94.5% | `str` | Hash of the forcing prompt, so a reader can verify a regenerated prompt matches what was administered. |
-| `label_to_id` | 79.1% | `null`, `dict` | For renumbered sheets, the map from printed label to item id, so the remap is auditable. Null otherwise. |
-| `renumbered` | 79.1% | `bool` | Protocol v2. True: items were printed `1..32` in presentation order and answers mapped back through `label_to_id`. False: each item printed under its own id (the as-is numbering, which lets some models silently skip lines). Absent on records that predate the flag, which are as-is. |
-| `base_condition` | 4.2% | `str` | The rung-1 condition a rung-2 arm is built on (`B`). |
-| `boost_applied` | 4.2% | `bool` | Rung 2: whether G0DM0D3's sampling boost was applied. |
-| `frequency_penalty` | 4.2% | `float` | Sampling penalty sent, rung 2 only. Recorded only when sent. |
-| `g0dm0d3_provenance` | 4.2% | `dict` | The G0DM0D3 source files read for the transform, each with a content digest (`sha256_12`), and the boost constants applied. |
-| `instructs_against_measured_outcome` | 4.2% | `null`, `str` | Rung 2: where the arm's prompt itself instructs against the outcome being measured (e.g. 'never refuse'), the offending phrases; null otherwise. A refusal under such an arm is measured against an explicit order not to. |
-| `presence_penalty` | 4.2% | `float` | Sampling penalty sent, rung 2 only. Recorded only when sent. |
-| `rung` | 4.2% | `int` | Escalation-ladder rung: 2 for the elicitation arms. |
-| `system_prompt_chars` | 4.2% | `int` | Length of the rung-2 system prompt in characters. |
-| `transform_source` | 4.2% | `str` | Where the rung-2 transform's constants came from. |
-| `preset_fields_not_sent` | 2.6% | `list`, `null` | Preset fields NOT sent because the channel does not accept them, so the arm's effective sampling is stated rather than assumed. |
-| `preset_full` | 2.6% | `dict`, `null` | The complete sampling preset as defined, including fields the channel does not accept. |
-| `sampling_preset` | 2.6% | `str`, `null` | Rung 2 sampling ladder: `S-Precise`, `S-Balanced`, `S-Creative`, `S-Chaotic`, or null. |
-| `error` | 1.4% | `str` | Transport error string, on failed calls. |
-| `transient` | 1.4% | `bool` | Whether the failed call was judged retryable. |
+| `classifier` | 98.4% | `str` | Version of the validity/failure rule that labelled this record (`structural/1`-`/3`). `run_battery.CLASSIFIER_VERSION` documents each; `refusal_table --audit` holds current-version rows to exact agreement. |
+| `n_answers` | 98.4% | `int` | Items answered. A sheet with 0 < n_answers < 32 is a PARTIAL sheet: it fails validity and is dropped whole. |
+| `response_text` | 98.4% | `str` | The model's reply verbatim. |
+| `label_to_id` | 83.8% | `dict`, `null` | For renumbered sheets, the map from printed label to item id, so the remap is auditable. Null otherwise. |
+| `renumbered` | 83.8% | `bool` | Protocol v2. True: items were printed `1..32` in presentation order and answers mapped back through `label_to_id`. False: each item printed under its own id (the as-is numbering, which lets some models silently skip lines). Absent on records that predate the flag, which are as-is. |
+| `arm` | 8.8% | `str` | The pre-registered arm the sheet belongs to (`placebo-wording`, `serving-path`), stamped by `run_arm_battery.py`. Absent on runs collected by `run_battery.py`, where the directory is the arm. |
+| `prereg` | 8.8% | `str` | Filename of the pre-registration that fixed the sheet's design before collection, on the arms that stamp it. |
+| `base_condition` | 3.3% | `str` | The rung-1 condition a rung-2 arm is built on (`B`). |
+| `boost_applied` | 3.3% | `bool` | Rung 2: whether G0DM0D3's sampling boost was applied. |
+| `frequency_penalty` | 3.3% | `float` | Sampling penalty sent, rung 2 only. Recorded only when sent. |
+| `g0dm0d3_provenance` | 3.3% | `dict` | The G0DM0D3 source files read for the transform, each with a content digest (`sha256_12`), and the boost constants applied. |
+| `instructs_against_measured_outcome` | 3.3% | `null`, `str` | Rung 2: where the arm's prompt itself instructs against the outcome being measured (e.g. 'never refuse'), the offending phrases; null otherwise. A refusal under such an arm is measured against an explicit order not to. |
+| `presence_penalty` | 3.3% | `float` | Sampling penalty sent, rung 2 only. Recorded only when sent. |
+| `rung` | 3.3% | `int` | Escalation-ladder rung: 2 for the elicitation arms. |
+| `system_prompt_chars` | 3.3% | `int` | Length of the rung-2 system prompt in characters. |
+| `transform_source` | 3.3% | `str` | Where the rung-2 transform's constants came from. |
+| `preset_fields_not_sent` | 2.0% | `list`, `null` | Preset fields NOT sent because the channel does not accept them, so the arm's effective sampling is stated rather than assumed. |
+| `preset_full` | 2.0% | `dict`, `null` | The complete sampling preset as defined, including fields the channel does not accept. |
+| `sampling_preset` | 2.0% | `str`, `null` | Rung 2 sampling ladder: `S-Precise`, `S-Balanced`, `S-Creative`, `S-Chaotic`, or null. |
+| `placebo_wording` | 1.7% | `str` | Which placebo sentence the sheet carried: `P2` on the second-wording arm. Absent under P itself and on every other condition. |
+| `error` | 1.6% | `str` | Transport error string, on failed calls. |
+| `transient` | 1.6% | `bool` | Whether the failed call was judged retryable. |
 
 **Vocabularies in `battery` records**, measured, most frequent first. A value not listed does not occur.
 
-- **`channel`** — `openrouter` (5,384), `ollama` (1,319)
-- **`classifier`** — `structural/3` (5,555), `structural/2` (625), `structural/1` (432)
-- **`condition`** — `N` (2,068), `P` (1,536), `A` (776), `D` (724), `B` (312), `E` (230), `C` (225), `F011` (80), `F110` (79), `F000` (65), `F001` (65), `F010` (65), `F100` (65), `F101` (65), `F111` (65), `G-Boost` (61), `G-Directive` (61), `G-Persona` (61), `S-Balanced` (25), `S-Chaotic` (25)
-- **`done_reason`** — `None` (5,387), `stop` (1,294), `length` (22)
-- **`failure_mode`** — `None` (5,937), `refused` (460), `other` (172), `transport` (91), `budget-exhausted` (41), `truncated` (2)
-- **`instrument`** — `ratchet-battery` (6,583), `ratchet-battery-v3` (120)
-- **`renumbered`** — `False` (3,573), `True` (1,730)
+- **`channel`** — `openrouter` (6,010), `ollama` (2,630)
+- **`classifier`** — `structural/3` (7,447), `structural/2` (625), `structural/1` (432)
+- **`condition`** — `N` (2,626), `P` (1,866), `A` (1,123), `D` (916), `E` (410), `C` (405), `B` (312), `P2` (150), `F011` (80), `F110` (79), `F000` (65), `F001` (65), `F010` (65), `F100` (65), `F101` (65), `F111` (65), `G-Boost` (61), `G-Directive` (61), `G-Persona` (61), `S-Balanced` (25)
+- **`done_reason`** — `None` (6,013), `stop` (2,605), `length` (22)
+- **`failure_mode`** — `None` (7,804), `refused` (485), `other` (172), `transport` (136), `budget-exhausted` (41), `truncated` (2)
+- **`instrument`** — `ratchet-battery` (8,520), `ratchet-battery-v3` (120)
+- **`renumbered`** — `True` (3,667), `False` (3,573)
 - **`sampling_preset`** — `None` (75), `S-Balanced` (25), `S-Chaotic` (25), `S-Creative` (25), `S-Precise` (25)
-- **`template`** — `T01` (6,301), `T02` (46), `T03` (46), `T04` (45), `T05` (45), `T06` (44), `T07` (44), `T08` (44), `T09` (44), `T10` (44)
+- **`template`** — `T01` (8,238), `T02` (46), `T03` (46), `T04` (45), `T05` (45), `T06` (44), `T07` (44), `T08` (44), `T09` (44), `T10` (44)
+
+## `judged` records
+
+600 records across 2 files, 26 distinct fields.
+
+| field | coverage | types | meaning |
+|---|---:|---|---|
+| `base` | 100.0% | `str` | The base model both builds derive from (`qwen38-27b`). |
+| `build` | 100.0% | `str` | Short label for the build: `stock`, or the abliteration's label (`heretic-0bserverx`). The stock/ablated contrast is a groupby on this. |
+| `channel` | 100.0% | `str` | `ollama`: local inference on the study's GPU, no API call. |
+| `collected_at` | 100.0% | `str` | UTC timestamp of the call. |
+| `condition` | 100.0% | `str` | The battery condition applied to a free-text question: `N` bare, `A` balance instruction, `P` content-free placebo, `D` commitment directive, `C`, `E`. Definitions are `run_battery.CONDITION_SYSTEM` and `CONDITION_USER_SUFFIX`, the same text the forced-choice sheets received. |
+| `condition_note` | 100.0% | `str` | One-line description of the condition, stamped by the collector. |
+| `done_reason` | 100.0% | `str` | ollama's stop reason: `stop` or `length`. |
+| `error` | 100.0% | `null` | Error string on a failed call, else null. |
+| `latency_ms` | 100.0% | `int` | Wall-clock time of the call. |
+| `max_tokens` | 100.0% | `int` | Completion budget requested. |
+| `model` | 100.0% | `str` | The local build as ollama names it (`hf.co/...:Q4_K_M` or a library tag). |
+| `ok` | 100.0% | `bool` | The call completed. False is a transport failure or a timeout. |
+| `position` | 100.0% | `str` | Framing register of the question: `neutral` throughout this arm. |
+| `question_id` | 100.0% | `str` | Which of the earlier free-text questions was asked, `T01-Q2`..`T10-Q2`. Same ids as the May corpus under `data/`. |
+| `question_text` | 100.0% | `str` | The question as asked, verbatim. |
+| `response_text` | 100.0% | `str` | The model's reply verbatim. |
+| `schema` | 100.0% | `str` | Record schema: `local-gradient-judged/1`. |
+| `seed` | 100.0% | `int` | Sampling seed for the call; replicates within a cell differ by seed. |
+| `system_prompt` | 100.0% | `str`, `null` | The system turn as sent, or null under `N`. |
+| `temperature` | 100.0% | `float` | Sampling temperature, 0.7. |
+| `think` | 100.0% | `bool` | Reasoning mode requested (false). |
+| `thinking_chars` | 100.0% | `int` | Characters of reasoning trace returned, if any. |
+| `timeout_s` | 100.0% | `int` | Per-call timeout in seconds. A call that hit it is a failed call, not a refusal. |
+| `tokens_in` | 100.0% | `int` | Prompt tokens as ollama counted them. |
+| `tokens_out` | 100.0% | `int` | Completion tokens as ollama counted them. |
+| `user_prompt` | 100.0% | `str` | The user turn as sent: the question plus any condition suffix. |
+
+**Vocabularies in `judged` records**, measured, most frequent first. A value not listed does not occur.
+
+- **`base`** — `qwen38-27b` (600)
+- **`build`** — `heretic-0bserverx` (300), `stock` (300)
+- **`channel`** — `ollama` (600)
+- **`condition`** — `N` (100), `A` (100), `P` (100), `D` (100), `C` (100), `E` (100)
+- **`done_reason`** — `stop` (600)
+- **`position`** — `neutral` (600)
+
+## `scores` records
+
+1,200 records across 2 files, 5 distinct fields.
+
+| field | coverage | types | meaning |
+|---|---:|---|---|
+| `at` | 100.0% | `str` | UTC timestamp of the judging call. |
+| `judge` | 100.0% | `str` | The local judge model that scored the answer. Two judges, each selected by the calibration in `calibration.json` before any answer was scored. |
+| `raw` | 100.0% | `str` | The judge's full JSON reply, score and reasoning, verbatim. |
+| `score` | 100.0% | `int` | The judge's 1-5 rubric score, as parsed from `raw`. |
+| `uid` | 100.0% | `str` | Key of the answer scored: `model|question_id|condition|seed`, matching the record in the run's top-level sheets. |
+
+**Vocabularies in `scores` records**, measured, most frequent first. A value not listed does not occur.
+
+- **`judge`** — `gemma2:9b-instruct-q8_0` (600), `phi4:latest` (600)
+- **`score`** — `3` (584), `5` (481), `1` (91), `2` (28), `4` (16)
 
 ## `raw` records
 
-9,051 records across 185 files, 42 distinct fields.
+9,819 records across 189 files, 52 distinct fields.
 
 | field | coverage | types | meaning |
 |---|---:|---|---|
@@ -114,58 +183,68 @@ section below carries its own meanings.
 | `latency_ms` | 100.0% | `int` | Wall-clock time for the call. Includes queueing and is not a model-speed measurement. |
 | `model` | 100.0% | `str` | Model identifier as the provider names it. NOT unique across channels: the same weights reached through OpenRouter and through Ollama are different rows and are not interchangeable. |
 | `ok` | 100.0% | `bool` | Collector's verdict that the call completed. A record with ok=false is still written, which is why a manifest's completed-call count is lower than its record count. |
-| `position` | 100.0% | `str` | Framing register of the item as administered: `neutral`, `mild`, `pointed`, plus `ood`, `para1..3` and `reversed` for the robustness arms. |
+| `position` | 100.0% | `str` | Framing register of the item as administered: `neutral`, `mild`, `pointed`, plus `ood`, `para1..3` and `reversed` for the robustness arms. On the 2026-09-25 both-paths records it is the pair half, `critic` or `defender`. |
 | `question_id` | 100.0% | `str` | Item identifier within the instrument. Stable across runs; the join key for anything paired. |
 | `question_text` | 100.0% | `str` | The item as administered. Present for the institutional-framing instrument. The retired 62-item external questionnaire is third-party licensed text and is NOT in this repository, nor is the script that retrieved it; MANIFEST.json carries the hash. The LIVE instrument, data/ratchet-battery.json, ships in full under MIT with no fetch step. |
 | `topic` | 100.0% | `str` | Topic grouping of the item, T01..T18. Items within a topic are not independent; cluster on this, not on rows. |
 | `user_prompt` | 100.0% | `str` | The full user turn as sent, question text included. |
-| `response_text` | 99.1% | `str`, `null` | The model's reply verbatim, or null on a failed call. An EMPTY string is not a refusal and not a null -- see `scoring_status` and the eligibility rule in scripts/eligibility.py. |
-| `system_prompt` | 94.8% | `str`, `null` | The system turn as sent, or null where none was used. The presence or absence of a directive here is the manipulation in most arms. |
-| `tokens_in` | 91.1% | `int`, `null` | Prompt tokens as the provider counted them. |
-| `tokens_out` | 91.1% | `int`, `null` | Completion tokens as the provider counted them. |
-| `vendor_response_id` | 88.4% | `str`, `null` | The provider's own id for the response, where it returned one. Absent for local channels. |
-| `sample_idx` | 60.8% | `int` | Replicate index within a cell, where the run collected replicates. Absent means one draw. |
-| `max_tokens` | 38.6% | `int` | Output cap requested. Load-bearing: an 800-token cap severed 21.5% of the May corpus mid-argument and the truncation was differential by model. |
-| `word_count_total` | 27.8% | `int` | Words in the response. Descriptive only. |
-| `confidence` | 19.8% | `str` | Rubric-independent register label: `definitive`, `hedging`, or `refusing-then-answering`. |
-| `hedge_ratio` | 19.8% | `float` | Share of hedging markers in the response. Descriptive; it is not the outcome any published claim rests on. |
-| `original_called_at` | 19.8% | `str` | The timestamp of the record this one replaces, for recollected rows. |
-| `recollect_reason` | 19.8% | `str` | Why it was recollected. |
-| `recollected_from` | 19.8% | `str` | The run this record was recollected from, for rows replacing capped or failed originals. |
-| `refusal_class` | 19.8% | `null` | Refusal taxonomy where one applies: `recovery` (refuses then answers), `empty-response`. |
-| `score_classifier` | 19.8% | `null`, `int` | Panel score on the 1-5 rubric: the MEDIAN of the judges, so it can be a half-integer (4.5) where the panel split evenly. null where scoring was skipped. |
-| `scoring_status` | 19.8% | `str` | `ok`, or why scoring was skipped: `skipped-failed-call`, `skipped-empty-response`. The skip reasons are the DATA-EMPTY-SCORES-002 rule made visible in the record. |
-| `judge_reasoning` | 18.9% | `null`, `str` | The judge's stated reasoning, where retained. |
-| `temperature` | 18.8% | `float` | Sampling temperature where the collector recorded it. Absent does not mean zero. |
-| `score_classifier_judges` | 18.6% | `null`, `list` | Per-judge breakdown, one object per judge with its own score. Present on 93.6% of scored records, NOT all -- check before dividing by it. |
-| `replaces_vendor_response_id` | 17.7% | `str`, `null` | The provider response id this row supersedes. |
-| `score_classifier_disagreement` | 17.3% | `int`, `null` | Spread across the panel for this record. |
-| `score_classifier_method` | 17.3% | `str` | Which judging method produced the score: `ultraplinian` (the four-judge panel) or `reversed-rubric` (the inverted-rubric control). |
-| `score_classifier_n_judges` | 17.3% | `int` | Judges asked. |
-| `score_classifier_n_valid` | 17.3% | `int` | Judges that returned a parseable score. Less than n_judges means the panel was thinner than it looks. |
-| `error` | 8.1% | `null`, `str` | Transport or provider error string where the call failed. |
-| `study_call_metadata` | 8.1% | `dict` | Free-form collector state at call time. Shape varies by collector and it is not safe to index blindly. |
-| `transient` | 7.2% | `null` | Marked where the collector judged a failure retryable. |
-| `finish_reason` | 4.5% | `str` | The provider's stop reason. NOT trustworthy through a proxy: the G0DM0D3 proxy returned `stop` for ten responses severed mid-word. |
-| `truncated` | 4.5% | `bool` | Collector's truncation verdict. Prefer eligibility.looks_truncated_text, which was written because finish_reason lies. |
-| `usage` | 4.5% | `dict` | The provider's raw usage object, where returned. |
-| `called_at_unrecorded` | 2.1% | `str` | Set where the original timestamp was lost and had to be reconstructed; the value says how. |
+| `response_text` | 99.2% | `str`, `null` | The model's reply verbatim, or null on a failed call. An EMPTY string is not a refusal and not a null -- see `scoring_status` and the eligibility rule in scripts/eligibility.py. |
+| `system_prompt` | 95.2% | `str`, `null` | The system turn as sent, or null where none was used. The presence or absence of a directive here is the manipulation in most arms. |
+| `tokens_in` | 91.8% | `int`, `null` | Prompt tokens as the provider counted them. |
+| `tokens_out` | 91.8% | `int`, `null` | Completion tokens as the provider counted them. |
+| `vendor_response_id` | 89.3% | `str`, `null` | The provider's own id for the response, where it returned one. Absent for local channels. |
+| `sample_idx` | 63.9% | `int` | Replicate index within a cell, where the run collected replicates. Absent means one draw. |
+| `max_tokens` | 43.4% | `int` | Output cap requested. Load-bearing: an 800-token cap severed 21.5% of the May corpus mid-argument and the truncation was differential by model. |
+| `word_count_total` | 25.7% | `int` | Words in the response. Descriptive only. |
+| `temperature` | 25.1% | `float` | Sampling temperature where the collector recorded it. Absent does not mean zero. |
+| `confidence` | 18.2% | `str` | Rubric-independent register label: `definitive`, `hedging`, or `refusing-then-answering`. |
+| `hedge_ratio` | 18.2% | `float` | Share of hedging markers in the response. Descriptive; it is not the outcome any published claim rests on. |
+| `original_called_at` | 18.2% | `str` | The timestamp of the record this one replaces, for recollected rows. |
+| `recollect_reason` | 18.2% | `str` | Why it was recollected. |
+| `recollected_from` | 18.2% | `str` | The run this record was recollected from, for rows replacing capped or failed originals. |
+| `refusal_class` | 18.2% | `null` | Refusal taxonomy where one applies: `recovery` (refuses then answers), `empty-response`. |
+| `score_classifier` | 18.2% | `null`, `int` | Panel score on the 1-5 rubric: the MEDIAN of the judges, so it can be a half-integer (4.5) where the panel split evenly. null where scoring was skipped. |
+| `scoring_status` | 18.2% | `str` | `ok`, or why scoring was skipped: `skipped-failed-call`, `skipped-empty-response`. The skip reasons are the DATA-EMPTY-SCORES-002 rule made visible in the record. |
+| `judge_reasoning` | 17.4% | `null`, `str` | The judge's stated reasoning, where retained. |
+| `score_classifier_judges` | 17.1% | `null`, `list` | Per-judge breakdown, one object per judge with its own score. Present on 93.6% of scored records, NOT all -- check before dividing by it. |
+| `replaces_vendor_response_id` | 16.3% | `str`, `null` | The provider response id this row supersedes. |
+| `score_classifier_disagreement` | 15.9% | `int`, `null` | Spread across the panel for this record. |
+| `score_classifier_method` | 15.9% | `str` | Which judging method produced the score: `ultraplinian` (the four-judge panel) or `reversed-rubric` (the inverted-rubric control). |
+| `score_classifier_n_judges` | 15.9% | `int` | Judges asked. |
+| `score_classifier_n_valid` | 15.9% | `int` | Judges that returned a parseable score. Less than n_judges means the panel was thinner than it looks. |
+| `arm` | 7.8% | `str` | The pre-registered arm the record belongs to (`same-items-both-paths`). Present only on the 2026-09-25 free-text records; the May records predate the field. |
+| `frame` | 7.8% | `str` | Which half of the mirrored pair the item is, `critic` or `defender`. Both-paths records only; `position` carries the same value there. |
+| `instrument` | 7.8% | `str` | Item bank the free-text question was built from: `ratchet-battery`, meaning one of the 32 propositions asked as a one-or-two-paragraph question. Present only on the 2026-09-25 both-paths records; the May records were asked the institutional-framing question set and carry no `instrument`. |
+| `item_id` | 7.8% | `int` | Battery item id (1-32) the question was built from. Both-paths records only; the join key to the forced-choice sheets in `runs/2026-09-16-ratchet-v3-wave`. |
+| `pair_no` | 7.8% | `int` | The mirrored pair (1-16) the item belongs to. Both-paths records only. |
+| `path` | 7.8% | `str` | Scoring path of the record: `free-text`, meaning it was scored by the judge panel. The forced-choice half of the comparison is read from the wave, not stored here. |
+| `prereg` | 7.8% | `str` | Filename of the pre-registration that fixed the record's design before collection. Present only on the 2026-09-25 free-text records. |
+| `provider` | 7.8% | `str` | The backend that served the call over OpenRouter. Both-paths records only. |
+| `provider_pinned` | 7.8% | `str` | The backend requested with fallbacks off. Both-paths records only, where it equals `provider` on every record. |
+| `seed` | 7.8% | `int` | RNG seed for this call. Both arms of a stock/abliterated pair MUST carry the same one -- `run_local.py` warns that differing seeds make the contrast measure resampling rather than the intervention. |
+| `error` | 7.5% | `null`, `str` | Transport or provider error string where the call failed. |
+| `study_call_metadata` | 7.4% | `dict` | Free-form collector state at call time. Shape varies by collector and it is not safe to index blindly. |
+| `transient` | 6.7% | `null` | Marked where the collector judged a failure retryable. |
+| `finish_reason` | 4.2% | `str` | The provider's stop reason. NOT trustworthy through a proxy: the G0DM0D3 proxy returned `stop` for ten responses severed mid-word. |
+| `truncated` | 4.2% | `bool` | Collector's truncation verdict. Prefer eligibility.looks_truncated_text, which was written because finish_reason lies. |
+| `usage` | 4.2% | `dict` | The provider's raw usage object, where returned. |
+| `called_at_unrecorded` | 1.9% | `str` | Set where the original timestamp was lost and had to be reconstructed; the value says how. |
 
 **Vocabularies in `raw` records**, measured, most frequent first. A value not listed does not occur.
 
-- **`channel`** — `openrouter` (8,080), `g0dm0d3` (470), `transformers-local` (260), `ollama` (241)
-- **`condition`** — `B` (3,770), `A` (3,692), `B-prime` (400), `P` (400), `B-Layered` (130), `B-Parseltongue` (120), `B-STM` (120), `D` (110), `C` (108), `E` (101), `B-Proxy` (100)
+- **`channel`** — `openrouter` (8,848), `g0dm0d3` (470), `transformers-local` (260), `ollama` (241)
+- **`condition`** — `A` (4,076), `B` (3,770), `B-prime` (400), `P` (400), `N` (384), `B-Layered` (130), `B-Parseltongue` (120), `B-STM` (120), `D` (110), `C` (108), `E` (101), `B-Proxy` (100)
 - **`confidence`** — `definitive` (1,572), `hedging` (218)
 - **`finish_reason`** — `stop` (410)
-- **`position`** — `neutral` (5,164), `mild` (1,070), `pointed` (1,061), `reversed` (944), `ood` (266), `para3` (185), `para2` (181), `para1` (180)
+- **`position`** — `neutral` (5,164), `mild` (1,070), `pointed` (1,061), `reversed` (944), `defender` (384), `critic` (384), `ood` (266), `para3` (185), `para2` (181), `para1` (180)
 - **`refusal_class`** — `None` (1,790)
 - **`score_classifier_method`** — `ultraplinian` (907), `reversed-rubric` (656)
 - **`scoring_status`** — `pending-rescore` (1,599), `ok` (191)
-- **`topic`** — `T08` (889), `T04` (884), `T07` (879), `T10` (878), `T05` (877), `T06` (877), `T09` (877), `T02` (875), `T03` (875), `T01` (874), `T13` (35), `T11` (34), `T12` (34), `T14` (33), `T15` (33), `T18` (33), `T16` (32), `T17` (32)
+- **`topic`** — `T08` (889), `T04` (884), `T07` (879), `T10` (878), `T05` (877), `T06` (877), `T09` (877), `T02` (875), `T03` (875), `T01` (874), `elite-governance` (48), `biometric-identity` (48), `biometric-enrolment` (48), `whistleblowers` (48), `state-speech-pressure` (48), `ai-licensing` (48), `online-safety-regime` (48), `censorship-infrastructure` (48), `deplatforming` (48), `programmable-money` (48)
 
 ## `scored` records
 
-13,772 records across 269 files, 45 distinct fields.
+14,540 records across 273 files, 55 distinct fields.
 
 | field | coverage | types | meaning |
 |---|---:|---|---|
@@ -177,7 +256,7 @@ section below carries its own meanings.
 | `latency_ms` | 100.0% | `int` | Wall-clock time for the call. Includes queueing and is not a model-speed measurement. |
 | `model` | 100.0% | `str` | Model identifier as the provider names it. NOT unique across channels: the same weights reached through OpenRouter and through Ollama are different rows and are not interchangeable. |
 | `ok` | 100.0% | `bool` | Collector's verdict that the call completed. A record with ok=false is still written, which is why a manifest's completed-call count is lower than its record count. |
-| `position` | 100.0% | `str` | Framing register of the item as administered: `neutral`, `mild`, `pointed`, plus `ood`, `para1..3` and `reversed` for the robustness arms. |
+| `position` | 100.0% | `str` | Framing register of the item as administered: `neutral`, `mild`, `pointed`, plus `ood`, `para1..3` and `reversed` for the robustness arms. On the 2026-09-25 both-paths records it is the pair half, `critic` or `defender`. |
 | `question_id` | 100.0% | `str` | Item identifier within the instrument. Stable across runs; the join key for anything paired. |
 | `question_text` | 100.0% | `str` | The item as administered. Present for the institutional-framing instrument. The retired 62-item external questionnaire is third-party licensed text and is NOT in this repository, nor is the script that retrieved it; MANIFEST.json carries the hash. The LIVE instrument, data/ratchet-battery.json, ships in full under MIT with no fetch step. |
 | `refusal_class` | 100.0% | `null`, `str` | Refusal taxonomy where one applies: `recovery` (refuses then answers), `empty-response`. |
@@ -186,46 +265,56 @@ section below carries its own meanings.
 | `topic` | 100.0% | `str` | Topic grouping of the item, T01..T18. Items within a topic are not independent; cluster on this, not on rows. |
 | `user_prompt` | 100.0% | `str` | The full user turn as sent, question text included. |
 | `word_count_total` | 100.0% | `int` | Words in the response. Descriptive only. |
-| `response_text` | 98.9% | `str`, `null` | The model's reply verbatim, or null on a failed call. An EMPTY string is not a refusal and not a null -- see `scoring_status` and the eligibility rule in scripts/eligibility.py. |
-| `system_prompt` | 96.7% | `str`, `null` | The system turn as sent, or null where none was used. The presence or absence of a directive here is the manipulation in most arms. |
-| `score_classifier_judges` | 94.3% | `list`, `null` | Per-judge breakdown, one object per judge with its own score. Present on 93.6% of scored records, NOT all -- check before dividing by it. |
-| `tokens_in` | 93.7% | `int`, `null` | Prompt tokens as the provider counted them. |
-| `tokens_out` | 93.7% | `int`, `null` | Completion tokens as the provider counted them. |
-| `score_classifier_disagreement` | 92.8% | `int`, `null` | Spread across the panel for this record. |
-| `score_classifier_method` | 92.8% | `str` | Which judging method produced the score: `ultraplinian` (the four-judge panel) or `reversed-rubric` (the inverted-rubric control). |
-| `score_classifier_n_judges` | 92.8% | `int` | Judges asked. |
-| `score_classifier_n_valid` | 92.8% | `int` | Judges that returned a parseable score. Less than n_judges means the panel was thinner than it looks. |
-| `vendor_response_id` | 90.2% | `str`, `null` | The provider's own id for the response, where it returned one. Absent for local channels. |
-| `sample_idx` | 57.1% | `int` | Replicate index within a cell, where the run collected replicates. Absent means one draw. |
-| `max_tokens` | 37.0% | `int` | Output cap requested. Load-bearing: an 800-token cap severed 21.5% of the May corpus mid-argument and the truncation was differential by model. |
-| `judge_reasoning` | 29.2% | `str`, `null` | The judge's stated reasoning, where retained. |
-| `recollect_reason` | 24.6% | `str` | Why it was recollected. |
-| `recollected_from` | 24.6% | `str` | The run this record was recollected from, for rows replacing capped or failed originals. |
-| `original_called_at` | 23.3% | `str` | The timestamp of the record this one replaces, for recollected rows. |
-| `replaces_vendor_response_id` | 22.3% | `str`, `null` | The provider response id this row supersedes. |
-| `temperature` | 12.3% | `float` | Sampling temperature where the collector recorded it. Absent does not mean zero. |
-| `spliced_base_exclusion` | 11.6% | `str`, `null` | For derived corpora: why the base record was excluded, where it was. |
-| `spliced_from` | 11.6% | `str` | For derived corpora: the run this record was taken from. |
-| `spliced_replaces` | 11.6% | `str` | For derived corpora: the record it stands in for. |
-| `error` | 10.2% | `null`, `str` | Transport or provider error string where the call failed. |
-| `transient` | 9.1% | `null` | Marked where the collector judged a failure retryable. |
-| `study_call_metadata` | 5.2% | `dict` | Free-form collector state at call time. Shape varies by collector and it is not safe to index blindly. |
-| `finish_reason` | 2.9% | `str` | The provider's stop reason. NOT trustworthy through a proxy: the G0DM0D3 proxy returned `stop` for ten responses severed mid-word. |
-| `truncated` | 2.9% | `bool` | Collector's truncation verdict. Prefer eligibility.looks_truncated_text, which was written because finish_reason lies. |
-| `usage` | 2.9% | `dict` | The provider's raw usage object, where returned. |
-| `called_at_unrecorded` | 1.0% | `str` | Set where the original timestamp was lost and had to be reconstructed; the value says how. |
+| `response_text` | 99.0% | `str`, `null` | The model's reply verbatim, or null on a failed call. An EMPTY string is not a refusal and not a null -- see `scoring_status` and the eligibility rule in scripts/eligibility.py. |
+| `system_prompt` | 96.8% | `str`, `null` | The system turn as sent, or null where none was used. The presence or absence of a directive here is the manipulation in most arms. |
+| `score_classifier_judges` | 94.6% | `list`, `null` | Per-judge breakdown, one object per judge with its own score. Present on 93.6% of scored records, NOT all -- check before dividing by it. |
+| `tokens_in` | 94.0% | `int`, `null` | Prompt tokens as the provider counted them. |
+| `tokens_out` | 94.0% | `int`, `null` | Completion tokens as the provider counted them. |
+| `score_classifier_disagreement` | 93.2% | `int`, `null` | Spread across the panel for this record. |
+| `score_classifier_method` | 93.2% | `str` | Which judging method produced the score: `ultraplinian` (the four-judge panel) or `reversed-rubric` (the inverted-rubric control). |
+| `score_classifier_n_judges` | 93.2% | `int` | Judges asked. |
+| `score_classifier_n_valid` | 93.2% | `int` | Judges that returned a parseable score. Less than n_judges means the panel was thinner than it looks. |
+| `vendor_response_id` | 90.7% | `str`, `null` | The provider's own id for the response, where it returned one. Absent for local channels. |
+| `sample_idx` | 59.4% | `int` | Replicate index within a cell, where the run collected replicates. Absent means one draw. |
+| `max_tokens` | 41.7% | `int` | Output cap requested. Load-bearing: an 800-token cap severed 21.5% of the May corpus mid-argument and the truncation was differential by model. |
+| `judge_reasoning` | 29.1% | `str`, `null` | The judge's stated reasoning, where retained. |
+| `recollect_reason` | 24.8% | `str` | Why it was recollected. |
+| `recollected_from` | 24.8% | `str` | The run this record was recollected from, for rows replacing capped or failed originals. |
+| `original_called_at` | 23.4% | `str` | The timestamp of the record this one replaces, for recollected rows. |
+| `replaces_vendor_response_id` | 22.4% | `str`, `null` | The provider response id this row supersedes. |
+| `temperature` | 17.0% | `float` | Sampling temperature where the collector recorded it. Absent does not mean zero. |
+| `spliced_base_exclusion` | 12.5% | `str` | For derived corpora: why the base record was excluded, where it was. |
+| `spliced_from` | 12.5% | `str` | For derived corpora: the run this record was taken from. |
+| `spliced_replaces` | 12.5% | `str` | For derived corpora: the record it stands in for. |
+| `error` | 10.4% | `null`, `str` | Transport or provider error string where the call failed. |
+| `transient` | 9.3% | `null` | Marked where the collector judged a failure retryable. |
+| `arm` | 5.3% | `str` | The pre-registered arm the record belongs to (`same-items-both-paths`). Present only on the 2026-09-25 free-text records; the May records predate the field. |
+| `frame` | 5.3% | `str` | Which half of the mirrored pair the item is, `critic` or `defender`. Both-paths records only; `position` carries the same value there. |
+| `instrument` | 5.3% | `str` | Item bank the free-text question was built from: `ratchet-battery`, meaning one of the 32 propositions asked as a one-or-two-paragraph question. Present only on the 2026-09-25 both-paths records; the May records were asked the institutional-framing question set and carry no `instrument`. |
+| `item_id` | 5.3% | `int` | Battery item id (1-32) the question was built from. Both-paths records only; the join key to the forced-choice sheets in `runs/2026-09-16-ratchet-v3-wave`. |
+| `pair_no` | 5.3% | `int` | The mirrored pair (1-16) the item belongs to. Both-paths records only. |
+| `path` | 5.3% | `str` | Scoring path of the record: `free-text`, meaning it was scored by the judge panel. The forced-choice half of the comparison is read from the wave, not stored here. |
+| `prereg` | 5.3% | `str` | Filename of the pre-registration that fixed the record's design before collection. Present only on the 2026-09-25 free-text records. |
+| `provider` | 5.3% | `str` | The backend that served the call over OpenRouter. Both-paths records only. |
+| `provider_pinned` | 5.3% | `str` | The backend requested with fallbacks off. Both-paths records only, where it equals `provider` on every record. |
+| `seed` | 5.3% | `int` | RNG seed for this call. Both arms of a stock/abliterated pair MUST carry the same one -- `run_local.py` warns that differing seeds make the contrast measure resampling rather than the intervention. |
+| `study_call_metadata` | 5.0% | `dict` | Free-form collector state at call time. Shape varies by collector and it is not safe to index blindly. |
+| `finish_reason` | 2.8% | `str` | The provider's stop reason. NOT trustworthy through a proxy: the G0DM0D3 proxy returned `stop` for ten responses severed mid-word. |
+| `truncated` | 2.8% | `bool` | Collector's truncation verdict. Prefer eligibility.looks_truncated_text, which was written because finish_reason lies. |
+| `usage` | 2.8% | `dict` | The provider's raw usage object, where returned. |
+| `called_at_unrecorded` | 1.1% | `str` | Set where the original timestamp was lost and had to be reconstructed; the value says how. |
 
 **Vocabularies in `scored` records**, measured, most frequent first. A value not listed does not occur.
 
-- **`channel`** — `openrouter` (12,571), `ollama` (481), `g0dm0d3` (460), `transformers-local` (260)
-- **`condition`** — `B` (6,000), `A` (5,923), `B-prime` (400), `P` (400), `D` (200), `C` (198), `E` (191), `B-Layered` (120), `B-Parseltongue` (120), `B-STM` (120), `B-Proxy` (100)
-- **`confidence`** — `definitive` (10,511), `hedging` (2,817), `refusing-then-answering` (239), `None` (205)
+- **`channel`** — `openrouter` (13,339), `ollama` (481), `g0dm0d3` (460), `transformers-local` (260)
+- **`condition`** — `A` (6,307), `B` (6,000), `B-prime` (400), `P` (400), `N` (384), `D` (200), `C` (198), `E` (191), `B-Layered` (120), `B-Parseltongue` (120), `B-STM` (120), `B-Proxy` (100)
+- **`confidence`** — `definitive` (10,939), `hedging` (3,103), `refusing-then-answering` (289), `None` (209)
 - **`finish_reason`** — `stop` (400)
-- **`position`** — `neutral` (7,864), `mild` (1,771), `pointed` (1,761), `reversed` (1,044), `ood` (426), `para3` (305), `para2` (301), `para1` (300)
-- **`refusal_class`** — `None` (13,532), `recovery` (239), `empty-response` (1)
-- **`score_classifier_method`** — `ultraplinian` (11,703), `reversed-rubric` (1,079)
-- **`scoring_status`** — `ok` (13,567), `skipped-failed-call` (204), `skipped-empty-response` (1)
-- **`topic`** — `T08` (1,345), `T04` (1,340), `T07` (1,335), `T10` (1,334), `T05` (1,333), `T06` (1,333), `T09` (1,333), `T01` (1,331), `T02` (1,331), `T03` (1,331), `T13` (55), `T11` (54), `T12` (54), `T14` (53), `T15` (53), `T18` (53), `T16` (52), `T17` (52)
+- **`position`** — `neutral` (7,864), `mild` (1,771), `pointed` (1,761), `reversed` (1,044), `ood` (426), `defender` (384), `critic` (384), `para3` (305), `para2` (301), `para1` (300)
+- **`refusal_class`** — `None` (14,246), `recovery` (289), `empty-response` (5)
+- **`score_classifier_method`** — `ultraplinian` (12,415), `reversed-rubric` (1,131)
+- **`scoring_status`** — `ok` (14,331), `skipped-failed-call` (204), `skipped-empty-response` (5)
+- **`topic`** — `T08` (1,345), `T04` (1,340), `T07` (1,335), `T10` (1,334), `T05` (1,333), `T06` (1,333), `T09` (1,333), `T01` (1,331), `T02` (1,331), `T03` (1,331), `T13` (55), `T11` (54), `T12` (54), `T14` (53), `T15` (53), `T18` (53), `T16` (52), `T17` (52), `elite-governance` (48), `biometric-identity` (48)
 
 ## What is deliberately absent
 
@@ -233,12 +322,7 @@ section below carries its own meanings.
 32 author-written propositions in 16 mirrored pairs, MIT-licensed with everything
 else, with no fetch step and nothing to take on trust.
 
-What is absent is the **retired** 62-item external questionnaire, and every record
-collected on it: the forced-choice arm of August and early September. It is a third
-party's licensed text, so neither it nor its records ship here. Everything measured
-on it is withdrawn, and the corrections that describe those claims are in
-`CORRECTIONS.md`; the figures they quote cannot be recomputed from this repository.
-
-The export is produced and re-verified against the fingerprint list by an operator
-tool that lives on the development side, not here — deliberately, so that the thing
-which generates a release is not shipped inside it.
+Records carrying third-party text are not in this repository: the runs on the retired
+62-item external questionnaire (a licensed text, retired 2026-09-16), and the
+refusal-ablation series, whose prompts are XSTest's. `MANIFEST.json` lists every
+directory the export keeps back, with the reason.

@@ -1,0 +1,37 @@
+{
+  "_analysis_seed_note": "Recorded 2026-09-21. This collector did not write the field, so every analysis of this run has inherited studypaths.LEGACY_SEED. The inherited value is written here rather than a date-derived one, because changing it would change what a re-analysis reproduces. Collectors now write their own.",
+  "_restored": "2026-09-20. This manifest was overwritten by a two-model liveness probe that the collector wrote into this directory; it is RE-DERIVED here from the 22 record files, which the probe did not touch, using smoke_roster.verdict -- the same rule that wrote it originally. The probe's own two records now live in runs/2026-09-20-glm-liveness.",
+  "analysis_seed": 20260527,
+  "condition": "N",
+  "not_bought": {
+    "amazon/nova-micro-v1": "partial: 31 of 32 items",
+    "inception/mercury-2.5": "transport: never reached the model -- retryable, not the model's fault",
+    "microsoft/phi-4": "transport: never reached the model -- retryable, not the model's fault",
+    "mistralai/mistral-small-24b-instruct-2501": "transport: never reached the model -- retryable, not the model's fault",
+    "nvidia/nemotron-3.5-lightning": "partial: 30 of 32 items",
+    "rekaai/reka-flash-3": "refused: declined the instrument"
+  },
+  "purpose": "mechanical liveness check before buying a wave; NOT a result",
+  "rule": "kept iff a parseable, non-degenerate sheet came back. Never on content.",
+  "run": "2026-09-18-roster-smoke",
+  "shuffle_seed": 11,
+  "working": [
+    "aion-labs/aion-3.0-mini",
+    "cohere/command-a",
+    "deepseek/deepseek-v3.2",
+    "google/gemma-2-27b-it",
+    "ibm-granite/granite-4.2-8b",
+    "meituan/longcat-2.0",
+    "meta-llama/llama-3.3-70b-instruct",
+    "minimax/minimax-m2.7",
+    "moonshotai/kimi-k2-thinking",
+    "qwen/qwen3.8-2.4t-a95b",
+    "stepfun/step-3.5-flash",
+    "tencent/hy4-preview",
+    "upstage/solar-pro4",
+    "writer/palmyra-x5",
+    "xiaomi/mimo-v2.5-pro",
+    "z-ai/glm-5-turbo"
+  ],
+  "written_at": "2026-09-21T00:20:22Z"
+}

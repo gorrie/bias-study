@@ -1,7 +1,7 @@
 {
   "THIS_IS_NOT_A_MANIFEST": "Derived after collection from the records themselves. A real manifest declares intent BEFORE collection and can therefore disagree with the data; this cannot. Its only load-bearing parts are files[].sha256, which makes future drift detectable, and config, which the collector wrote at collection time.",
-  "derived_at": "2026-09-24T06:07:09+00:00",
-  "derived_by": "scripts/derive_manifest.py @ 5d858ec",
+  "derived_at": "2026-09-25T18:50:46+00:00",
+  "derived_by": "scripts/derive_manifest.py @ 5c0fbb1",
   "run": "2026-09-16-ratchet-v3-wave-budget-probe",
   "layout": "flat",
   "instrument": {
@@ -16,357 +16,357 @@
     {
       "path": "aion-labs__aion-3.0-mini__N.jsonl",
       "records": 1,
-      "sha256": "4f87905b5af571be3c58f26baf014c5ecb83527f242ad9745e4f6f20170aa253"
+      "sha256": "adc6c1ea2e69c58ad66b9b1a971b920b8799a22e500fe206856db47b76630b8f"
     },
     {
       "path": "amazon__nova-micro-v1__N.jsonl",
       "records": 1,
-      "sha256": "c04eca67965a7e0fb3e64b6e2d9e626ef29d35f44762c2a12cafdd15296c32ee"
+      "sha256": "aa6fb7d57ef06821df65b6f19e923c791cd622321d09ec40e65eb2fe56c3b90d"
     },
     {
       "path": "anthropic__claude-fable-5.1__N.jsonl",
       "records": 1,
-      "sha256": "c6a179c9ebad707888791a23ba84ee7895d8b3e798a64abe4e6de4e87fd6278b"
+      "sha256": "acb42c212a2d194bcfbfd2726e767eefd68e6b39422f5c598519832e66c931ab"
     },
     {
       "path": "anthropic__claude-opus-4.6__N.jsonl",
       "records": 1,
-      "sha256": "7d28cff3c086bebd262d2d71e4bac6985b7142218eecfdf5e0279e5985d1a628"
+      "sha256": "9acdc690edb3f5b175dc6f272ecc093a68750dac984f750fb7f1052b9745fb40"
     },
     {
       "path": "anthropic__claude-opus-5__N.jsonl",
       "records": 1,
-      "sha256": "14a73705aa248a0ac6ed0f79e1eab86c17fd1ffb40507724b5a4e050046008b7"
+      "sha256": "2de124b59472096e3dc374f82b14f2ef67b31e356138c99fae4bdb51718789d4"
     },
     {
       "path": "cohere__command-a__N.jsonl",
       "records": 1,
-      "sha256": "225e18adf302ea81d2a0825f9d33f5065dabf5eef2f9ef1b0a61f96850a658c3"
+      "sha256": "ab1ffafae2624f1004ddc8518e298347c67f84a6450fd0c8d368c41d4d607683"
     },
     {
       "path": "deepseek__deepseek-v3.2__N.jsonl",
       "records": 1,
-      "sha256": "0a02fa5247da6f5063cec31bbab8f8a32140f383e54c6f750bde602bde801d9c"
+      "sha256": "2df459a7560f4fac7cd91564ccf334b0d423a1428116f5f45435f3e8c7af5386"
     },
     {
       "path": "deepseek__deepseek-v4-flash-0731__N.jsonl",
       "records": 1,
-      "sha256": "85cdb5719608b2d9272a79265e2194be86c4d188461e43b57be2d4299aa709cb"
+      "sha256": "b6622d0a1fc07cfaed77a18203fbb9f88fe1d736d8542113dabc6c52eb810a24"
     },
     {
       "path": "deepseek__deepseek-v4-flash__N.jsonl",
       "records": 1,
-      "sha256": "229e946c69326121379970cd4bcf4c1ca878329b56d11ddd801dfd023861f946"
+      "sha256": "c0d70161b9002db0c32bac038c78cd80956e0060311750b9d5dcca44f0f5a416"
     },
     {
       "path": "deepseek__deepseek-v4-pro-0813__N.jsonl",
       "records": 1,
-      "sha256": "34d8cdffc7c62c24a0017cc044a090fada6e00cedf567b78e687f1ba7d545e5a"
+      "sha256": "762eedd82edc1a5711060c6e81c8bed8f233a9a8fb4580c8d7c1765adab0a414"
     },
     {
       "path": "deepseek__deepseek-v4-pro__N.jsonl",
       "records": 1,
-      "sha256": "0c07f0d6f353ff3d5016ba1d0bab4ce11bedc777a3a882064f6b45ec2c29b9e7"
+      "sha256": "a64c975d3b09943eb8819dbe0c9b4f913ab52696220f70fa6d5163b2ad034884"
     },
     {
       "path": "gemma2_9b-instruct-q8_0__N.jsonl",
       "records": 1,
-      "sha256": "5dedf6ed44ef0c637400da969db9cf3e89ae18854a2170df60466ddba8c37f32"
+      "sha256": "56cf07680207ca848a89858991301d5ccbd507e61df4d1c54f24c3de374362fd"
     },
     {
       "path": "gemma2_latest__N.jsonl",
       "records": 1,
-      "sha256": "cd422147fb3cd8c63384cbbb8c985a1b6d8212b012998d2fdd16d18374d1d5b4"
+      "sha256": "720781d0589d152f01adb4842f196f3e8ad60d1a46352096f2498fb462356b7b"
     },
     {
       "path": "google__gemini-3.7-flash__N.jsonl",
       "records": 1,
-      "sha256": "57903a11be45d966aa41631fca96c66d714990358c7122b4589f0ede9b377e75"
+      "sha256": "0a2b7adad04e6ed6569cbd944b7b7e594c64febe01a0bba50c9819a6a5518cbb"
     },
     {
       "path": "google__gemini-3.8-flash__N.jsonl",
       "records": 1,
-      "sha256": "6960c4335fefdc04dabd8b7f93b1f1f0c44020db5ba7219a162e77ebe461791d"
+      "sha256": "165a46fc8481e3b663ae38a8a11063f532199f10973e26849709e717bfb5cd45"
     },
     {
       "path": "google__gemma-2-27b-it__N.jsonl",
       "records": 1,
-      "sha256": "5e724ab82f17d9a927176aecbb899bfbbc283361ef1d44d6b86ee3363174def9"
+      "sha256": "4466803c74235ba6edce3f500b8de8f8e52a4035abea4065055452d97034ec1c"
     },
     {
       "path": "hf.co__0bserverx__Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF_Q4_K_M__N.jsonl",
       "records": 1,
-      "sha256": "743861919b9d96f689ad2ffd7e7ce649f5877a65d7848fbaf9774d3c1a76288e"
+      "sha256": "b79b930a255f29a54354ef97bac0e02fb9bfd0759801d2155d8d1ebe8b34700b"
     },
     {
       "path": "hf.co__culturerevolt__gemma-4-12b-heretic-abliterated-GGUF_Q4_K_M__N.jsonl",
       "records": 1,
-      "sha256": "7b959ae9b2c15e805dc24ccdb757b78127c1729dc23704c8c616717b0431a90b"
+      "sha256": "daaaccb49341616f28fcc42d1597c98cd30b00a50ac6663c805384be1102727a"
     },
     {
       "path": "hf.co__lmstudio-community__gemma-4-12B-it-GGUF_Q4_K_M__N.jsonl",
       "records": 1,
-      "sha256": "b135a9fe0bd5f74d99d0a9aa2e4bc43a60b9cbfbbbc1f2f5469f3d98ea590e3b"
+      "sha256": "56439c7187355235d3086b6b220e225d69baaf784227453dfb3d806500862a99"
     },
     {
       "path": "hf.co__lmstudio-community__Qwen3.8-27B-GGUF_Q4_K_M__N.jsonl",
       "records": 1,
-      "sha256": "efca7ebee9f89c59ad1edabf7aff7e187671fc14456be0656f9c606cfb746c85"
+      "sha256": "5c6e90b940b78cd7d0c3010428bb774345e21b1e24888ed3360511fd0b2946d9"
     },
     {
       "path": "hf.co__OBLITERATUS__Gemma-4-12B-OBLITERATED_Q4_K_M__N.jsonl",
       "records": 1,
-      "sha256": "f5c20debf832dae96430ec06d2876deb6162a4bb3525576b0ec3d090f10624cb"
+      "sha256": "afdc85b717b866fb2f61b4ef47303ae050b8125dc2844438d0ee2c324a8e6a25"
     },
     {
       "path": "hf.co__OBLITERATUS__Qwen3.8-27B-OBLITERATED_Q4_K_M__N.jsonl",
       "records": 1,
-      "sha256": "e047fc12810bf640db418b977cdf60cb9301c92227f47ee0eed0a94ce6f5f7a7"
+      "sha256": "78e80902cd1dd9a8e89c2918e93cc009094a9642dd68ac5c514ea7e784e51c97"
     },
     {
       "path": "huihui_ai__phi4-abliterated_latest__N.jsonl",
       "records": 1,
-      "sha256": "64bc1ac7001d0e1609a4b748a21da568ec86fa7fc6c5207dbd2cf20aab8572ce"
+      "sha256": "128e220a492319371b2869d673009961beda2bd89f0f0b2f6aa2df728c55533c"
     },
     {
       "path": "huihui_ai__qwen2.5-abliterate_14b__N.jsonl",
       "records": 1,
-      "sha256": "85b0b5eadcfc04d416ab3f96423ba850d9ff4e0dcf3f6f83ea0f0ebd207ff253"
+      "sha256": "961dbd13fef2203044a76eea5fcd4b7534b09b5ef4c5b80536231f3d639646be"
     },
     {
       "path": "ibm-granite__granite-4.2-8b__N.jsonl",
       "records": 1,
-      "sha256": "e1a6b46a0a1cfeaabb42947fc9ddfee06bf0e973b11b227cddc18b632242070c"
+      "sha256": "6a6e737b9dfc5cb5b178a630d8f55e5f12878a4554bee740850eeeddb673f263"
     },
     {
       "path": "inception__mercury-2.5__N.jsonl",
       "records": 1,
-      "sha256": "bdd94894cab51250c78ab163ef0d6f5f2226374a1942076acbf4b387a6b8d01e"
+      "sha256": "0929c67761d57f1cdc57851f014a1ee2302a8d38767112535f150c557f767d8c"
     },
     {
       "path": "llama3.1_8b-instruct-q8_0__N.jsonl",
       "records": 1,
-      "sha256": "45c4dca7af5937883b7b6d5fd4cf9d69c666449b2e5eea8c032b8d0639648f72"
+      "sha256": "7b4e11b5b5120147b150809c4b3e24403c1484258131767ece55db58e762a525"
     },
     {
       "path": "llama3.1_8b__N.jsonl",
       "records": 1,
-      "sha256": "8de20233e36fad229d54702beb1c6ccf0117c94c9fd28227eee5ee536a56c335"
+      "sha256": "0a5aa41231cb8189f1f9cec5910c5f707df0156a7d1628ae27ce349fa9cf1dbf"
     },
     {
       "path": "llama3.2_3b-instruct-q8_0__N.jsonl",
       "records": 1,
-      "sha256": "5f6cebbc6a7fe8df07f3114740314dc23a4f4a8f2beabd7fd9f73ce7254327ed"
+      "sha256": "92a304b0973f26cde076dd9fd06d5be309ff2ea1f09bfc528da75d306c1a9c8e"
     },
     {
       "path": "llama3.2_latest__N.jsonl",
       "records": 1,
-      "sha256": "0096536e13fe8c23a18a231b9d3c6d6e35cac85cff42cc624a50c00cbda372c2"
+      "sha256": "74ad64dad76de224bb7b59a2200eab6c9172b5eefd2c1ae15053856a583a77d4"
     },
     {
       "path": "meituan__longcat-2.0__N.jsonl",
       "records": 1,
-      "sha256": "7917919bf6c848a4032f7fdc74a4ad479a1f1944c8921a9f9a40fd5c1b07b133"
+      "sha256": "08580f3abb4856f76951752d976eabb97757aff05cda096bf3b6b30ab011eb8a"
     },
     {
       "path": "meta-llama__llama-3.3-70b-instruct__N.jsonl",
       "records": 1,
-      "sha256": "024056a5bb709d1135b77c1e25bf929369724cde2071a97f6d8a07e6a8db61ab"
+      "sha256": "4cacfa24d78c372fbecae6c64b6128b6cd137931cee5fb5f74cfe51fe138a1a5"
     },
     {
       "path": "microsoft__phi-4__N.jsonl",
       "records": 1,
-      "sha256": "be4f85e1a6db508ec5f121030d9433dcb33486e31070c94c77d9096dca2b8c54"
+      "sha256": "d8c61f2cb561f75a8d40ae375d308728a54acd653f93612acf5a337788ac4a3e"
     },
     {
       "path": "minimax__minimax-m2.7__N.jsonl",
       "records": 1,
-      "sha256": "0f3f2699761fd0d6a913a42c33379dc9e56b11d89033f968c7c87af1a982bb2b"
+      "sha256": "0de908a410548fe8b2049b582b68329ba7145d4845ba75fd6e9463b231d17b3e"
     },
     {
       "path": "mistral_7b-instruct-q8_0__N.jsonl",
       "records": 1,
-      "sha256": "92e87aeb134e4cbdacf3c5a3e0c1c0b613298994c7559b15c9428349b635c7d8"
+      "sha256": "9e7f6eaf9eca0565d376b5f21f9b079b75f33fe6c6078dfe93a71e0b7f949941"
     },
     {
       "path": "mistral_latest__N.jsonl",
       "records": 1,
-      "sha256": "fdd23122613609b0025cc3b95679b5fb0a49346c1c9384b96c0321cb00a9564b"
+      "sha256": "7e7fccc134dd7f9925cb7cdd3239a909a0e1a5df96d36ffc52c0517d96b8e6fd"
     },
     {
       "path": "mistralai__mistral-medium-3-5__N.jsonl",
       "records": 1,
-      "sha256": "59e939b10f0efcb85fb75b223494523b0956860aa6788ed6caaeb8ebfd7b91b6"
+      "sha256": "a660e465c87ac3f52d6bce172af9450e9b0b8aefdbe9122bdadeccdb31fd1aae"
     },
     {
       "path": "mistralai__mistral-small-24b-instruct-2501__N.jsonl",
       "records": 1,
-      "sha256": "c5061cc6a0c7f076eafb2c607121f6c65c23b93a2decb8b058ce16b032ba5a20"
+      "sha256": "c562d79e0d9e49cd3e4c85ec1559287a72cd86af59c0ccb4d564b5f6823252a0"
     },
     {
       "path": "moonshotai__kimi-k2-thinking__N.jsonl",
       "records": 1,
-      "sha256": "edb302a39b1248b6ebcc914d0a2c494ae7e8c67eebb90e92d589cb25155ae509"
+      "sha256": "26834e30da3b0dd1fa08b213f27cf3bbb431506b001e682b6583fd6d044d629e"
     },
     {
       "path": "moonshotai__kimi-k2.5__N.jsonl",
       "records": 1,
-      "sha256": "dc91ec6459f1294dd440afb7f0365695327e0ecf0eb912cb6e0f68a4ace790cf"
+      "sha256": "30b8bfbae77099879c72616ad6476ca69e57961e3ba520bfe1bbb532c6743026"
     },
     {
       "path": "moonshotai__kimi-k2.6__N.jsonl",
       "records": 1,
-      "sha256": "24d3a3e90253613d4e46bf6dbd540b6823d19ccc17f1a5f11314036d741bcd68"
+      "sha256": "642737ce368776b4f2b90c80f740ffb1346c1a2778cc0cb7f0969b92c2fbda3a"
     },
     {
       "path": "moonshotai__kimi-k3__N.jsonl",
       "records": 1,
-      "sha256": "a38473d5cefec06da9acfc86a542b108baf0d62710b0419e23e8ab887919346d"
+      "sha256": "77ed4265a0f271f48d6206fe0ab2f19595c030099b077bde723b9ad05df28be9"
     },
     {
       "path": "nvidia__nemotron-3.5-lightning__N.jsonl",
       "records": 1,
-      "sha256": "59444509ed5ece111f63b9c08cbf01d26d0553b29ae524bcbc808bb46414dbb6"
+      "sha256": "36e51059ce30f13b0c3111ad3ddc8cebcd002898d15ae7ef2a73967edeacaa55"
     },
     {
       "path": "openai__gpt-5.6-luna-pro__N.jsonl",
       "records": 1,
-      "sha256": "f20eabcf1352d84682265f6b9d41e945624c8287940a22a2affbfc31d0c1a29d"
+      "sha256": "09ab19d0c7f0d4d350e48618fe205246c731db7b5069324e53621b31637c3404"
     },
     {
       "path": "openai__gpt-5.6-luna__N.jsonl",
       "records": 1,
-      "sha256": "903d037b996fcc6527af75887eb877351a0ba35d773beff267332ec13abbc247"
+      "sha256": "59621b254d70662503d16e1b11c50c7f312e8bb0e980f82f577cc1d3be33d6fb"
     },
     {
       "path": "openai__gpt-5.6-sol-pro__N.jsonl",
       "records": 1,
-      "sha256": "46ef5862f2abd3ce9b7d92c126ca065d68bfdf59f9e55d30109a443962126d54"
+      "sha256": "5f1a407bd889565ffc8c654f1337494d14a33c1c48aacb95db5e694a707e952a"
     },
     {
       "path": "openai__gpt-5.6-sol__N.jsonl",
       "records": 1,
-      "sha256": "7dc9f0f5190523c7dd2f35ce311f5b3e53c8d8dc70a52b9392c514c60a46547a"
+      "sha256": "35d2532f88be97ef809dda11a19d75e344ab1759ef4a3ab87a7338fd054dcec3"
     },
     {
       "path": "openai__gpt-5.6-terra-pro__N.jsonl",
       "records": 1,
-      "sha256": "e0c53afe7bd4f0f0fa65451fad5cc88e4fc4bac2f073a21d4a6cf543ca823606"
+      "sha256": "b55170a19ce970e9e379c65478303acb042c5ec975caa339d33916e96acf8119"
     },
     {
       "path": "openai__gpt-5.6-terra__N.jsonl",
       "records": 1,
-      "sha256": "0e018c4886604119f2b59f561ae199493f2f7a8528ccf04fa1f993c926215b06"
+      "sha256": "99c50ab366d32556ebf18a43339e4a20b2adb5343591c7244a926c4c02a2a2ab"
     },
     {
       "path": "openai__gpt-6-astra-pro__N.jsonl",
       "records": 1,
-      "sha256": "d7bf0751683288b529ca7ab5c12568ec43fc95ebbf996c16ed44d77832b28317"
+      "sha256": "13de2191de9a3c9e0259106e0f4c0f1c210a7e27baaf835d635c9d55dd144756"
     },
     {
       "path": "openai__gpt-6-astra__N.jsonl",
       "records": 1,
-      "sha256": "63cf58ee31b3f470948c6b9bfd9770157e91a968d37d6c040e24684aed544f72"
+      "sha256": "95ba2711bddd33b3e9f6f3efa0d896525d39987fb33800ecf0cce4d1e914c55d"
     },
     {
       "path": "phi4_latest__N.jsonl",
       "records": 1,
-      "sha256": "a38b0d3b856dd39ba4b87541373c59f009e69593b5b25c397f2014d2efd1d33f"
+      "sha256": "358aef9f280d4048ef141cebe160875ca4adf3e8048aa84c7097063e8966df26"
     },
     {
       "path": "qwen2.5_14b-instruct-q8_0__N.jsonl",
       "records": 1,
-      "sha256": "f40127680c6cfa25e0e79d5b9971f9999a2b22a6e2198384c0c841ac38156d12"
+      "sha256": "3f03008b9414207f7e84e9397b7310337059c5cce1b9e752f9d1eee8c1414ef5"
     },
     {
       "path": "qwen2.5_14b__N.jsonl",
       "records": 1,
-      "sha256": "d586d38e460e9c8ec3bae7410dc631aedbdaa9c17ddd1ccfa6a5f52fec1a45a2"
+      "sha256": "632e4c7a21d45b9eb6c9ee18232717bbd0c11db653f6c913fe8aaeb2d5d2d017"
     },
     {
       "path": "qwen__qwen3.8-2.4t-a95b__N.jsonl",
       "records": 1,
-      "sha256": "0ee87fe580e1c9d62d74bdd0242828a1d189d6e62f133fb5e9c36b54192ed61d"
+      "sha256": "7eda1a9da3af67953e3843c94eadfe5d7e0c7be54d42d3e011840c74c60cf78f"
     },
     {
       "path": "qwen__qwen3.8-max-0902__N.jsonl",
       "records": 1,
-      "sha256": "1b8115c2085953bd895d8b903721560478772332ff703a7aef6a46839d847f7f"
+      "sha256": "0399a8d7638f94fbd874864a589209c38b8b6fcf70d83a1054298897543469d0"
     },
     {
       "path": "qwen__qwen3.8-max__N.jsonl",
       "records": 1,
-      "sha256": "c77b4173ec7b979e5f375332e62a66838692569d7995587ccef6a2a41fd0ded4"
+      "sha256": "a99736e54a118ad5a59d8b95e43eb67bd1732601ae33014387de3faf1b3c2792"
     },
     {
       "path": "rekaai__reka-flash-3__N.jsonl",
       "records": 1,
-      "sha256": "0db18b332fd1740de8d4f653fdd774d763918365662aa3c099bb70043c72e097"
+      "sha256": "103452821b27b15ef378fa228f7aeddd0097c2bf8b51395756904469fb04a33a"
     },
     {
       "path": "stepfun__step-3.5-flash__N.jsonl",
       "records": 1,
-      "sha256": "1f05e3b7d65ea45b11b0266521a13b78091c09bdc7cdfb93b3b7e539096f1812"
+      "sha256": "8138684f58b6ac7401fd55ebe22e72d3fea17738fcab62979450d552390ebe6b"
     },
     {
       "path": "tencent__hy4-preview__N.jsonl",
       "records": 1,
-      "sha256": "426ac9875bc1536b3e6ec18f8987aea8edd7f89ec2b8215dad64ffa6666863bf"
+      "sha256": "b2b49378f5da5a1d4dbecacbcea6fe69fda64f64ac118f0b9b4bea7d877482b3"
     },
     {
       "path": "upstage__solar-pro4__N.jsonl",
       "records": 1,
-      "sha256": "afad052ad931b2c56c2dc8f34edd9bb2e83065edfe0685abf520aa5a5c757b4a"
+      "sha256": "e7f5b8e95bf1a12ed8bc87b206fb5df219612ea566f7e2e1c97962984ca12f84"
     },
     {
       "path": "writer__palmyra-x5__N.jsonl",
       "records": 1,
-      "sha256": "be420b417523a403fcbe424a9923acf590e603e2a28d2506087c5f93db7111f2"
+      "sha256": "3788f2f1a6bbd10bebde4893141621efeeb253ba4eb947c743a60b6dcbe7374c"
     },
     {
       "path": "x-ai__grok-4.3__N.jsonl",
       "records": 1,
-      "sha256": "a88cc7367c44cd2a84302511d1fa43e6ade4dd385e48508da14626f4295fc0f2"
+      "sha256": "e346b9f8180bff729dd2382426f6212bcce64db42948ecec1622677a31adc5de"
     },
     {
       "path": "x-ai__grok-4.5__N.jsonl",
       "records": 1,
-      "sha256": "8a55e7117375009d6386efaf1d69df407805dd5b9bc09ad3bef9b47d3f9442c7"
+      "sha256": "b5dfca218e0c40d9929f8ff3f2f77c8c307775fe3e601d55eff8b699e354685c"
     },
     {
       "path": "x-ai__grok-4.6__N.jsonl",
       "records": 1,
-      "sha256": "7b757306fdb48415a837c10cdd3a84833687adf9dcd102d7147526ba2e848273"
+      "sha256": "cc445c898a171605e27ae47ed091580c4bd56fd557e1cc5d8d376231998cbd8b"
     },
     {
       "path": "xiaomi__mimo-v2.5-pro__N.jsonl",
       "records": 1,
-      "sha256": "251463e0e1cc41154c777fe1fa00be9d7138fe34ad736308949a874766cfac6a"
+      "sha256": "309e415b43b97a186e47ac1db940bbf3da741953116fbb79b7e05c036748b38d"
     },
     {
       "path": "z-ai__glm-5-turbo__N.jsonl",
       "records": 1,
-      "sha256": "7d0b59401ca4ba1818d1e4945561e25cb0346946658be25007d36ae75c903a4e"
+      "sha256": "fd74f659351ff8fbf8f78789c8c6a3017475820234ed17c7c12bfa2152a19539"
     },
     {
       "path": "z-ai__glm-5.1__N.jsonl",
       "records": 1,
-      "sha256": "14053caf3ea46867b00ef83e83f2340e8c5f0e61e2d8c2efbf1557167931542f"
+      "sha256": "4b2c7027fb77cd0d0085eae9b9d50f4df3f0e4f1b12959b757a468f066bc01f4"
     },
     {
       "path": "z-ai__glm-5.2__N.jsonl",
       "records": 1,
-      "sha256": "04a3c9b75e7712a343fb40dd9e10869ac3e2fa9ce2c109eb7156670432dc3eab"
+      "sha256": "e8cbb19c24b5422dc9ea70a1f6818410eb427677d99c2a02fa78e5897f18739c"
     },
     {
       "path": "z-ai__glm-5.3-flash__N.jsonl",
       "records": 1,
-      "sha256": "dd334ea2d2a1c31bacbe1239d564170e40ba8cc9ac0d805a8ab1f36d9e1cf7cf"
+      "sha256": "6a5efb47480d935c4cdd14d4a75f63d0b6d725011e8c022ca2eb07ab797de38c"
     },
     {
       "path": "z-ai__glm-5.3__N.jsonl",
       "records": 1,
-      "sha256": "b104169a09c3a3abefe1301d4c1bce28dd960047628476564802529c8f8fb878"
+      "sha256": "0e9e40815111cc083c7e6c52017033079511876188a3a36387d3254b7e457226"
     }
   ],
   "models": [

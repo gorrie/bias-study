@@ -1,5 +1,25 @@
 #!/usr/bin/env python3
-"""Export the forced-choice runs for publication, with any third-party text removed.
+"""Export the current study's corpus root (`runs/`) for publication, scanned for third-party text.
+
+WHAT IT SHIPS
+-------------
+Every complete run directory under `runs/` that is not declared in `NOT_SHIPPED`, whole:
+the record sheets, the collector's `manifest.json`, `collection-log.ndjson`, cached analysis
+output and calibration files. Plus the two evidence directories under `withdrawn/` that the
+withdrawals registry cites (`EVIDENCE_DIRS`): sheets on the author's own instrument that were
+withdrawn from the panel and are kept because a withdrawal whose evidence is gone is a claim
+about a claim.
+
+Battery sheets (`schema` in `studypaths.SCHEMA_ACCEPTED`) get two derived integrity fields,
+`forcing_prompt_sha256` and `forcing_prompt_chars`, so a reader who regenerates a prompt can
+prove it matches what was administered. Records of any other schema in a shipped run -- the
+judged free-text arm, its judge scores, the both-paths free-text records -- travel as they are.
+Every string field of every record is scanned against the fingerprint oracle either way.
+
+`--into <mirror>` writes the verified staging export over the mirror's `runs/<run>/` and
+`withdrawn/<dir>/` directories and its `MANIFEST.json`. It never commits. `manifest.derived.json`
+is NOT exported: it is a per-tree freeze that `derive_manifest.py --write` regenerates in the
+tree that ships it (LEARNINGS 101 -- a generated file copied across trees is a fork).
 
 WHAT CHANGED, 2026-09-17
 ------------------------
@@ -17,20 +37,21 @@ release repository's own fingerprint oracle is the part that must never be remov
 `--scrub` selects the old behaviour. The default is a full export, which is then scanned
 exactly as hard: an export of the author's own text still must not carry anyone else's.
 
-The compass-era paths are gone with the bank: `data/compass-propositions.json` moved to
-`withdrawn/`, and the reader-side fetcher -- whose only job was retrieving it -- moved with
-it. This file imported that module for the reader-side hash functions and would now raise on
-import, which is how it was found: a dead cross-tree reference, caught by
-`test_cross_tree_references.py`, in the script that produces the public data release.
+WHAT CHANGED, 2026-09-25
+------------------------
+Until this date the exporter wrote `forcing_prompt_note` -- "Instrument text withheld from THIS
+record" -- on every battery record, including the default export in which the prompt is KEPT.
+The public mirror carried that sentence beside the full prompt on 1,170 files. The note is now
+written only when the prompt is actually dropped (`--scrub`). The exporter also shipped only
+`*.jsonl` records of the battery schema, so a run's own `manifest.json` and the non-battery
+records of the 2026-09-25 arms never reached the mirror through it and were hand-copied; it
+now ships each run directory whole.
 
 WHY THE SCRUBBING EXISTS AT ALL
 -------------------------------
 The paper's numbers once came from 1,678 records carrying a retired 62-item external
 questionnaire verbatim in `forcing_prompt`. That text was licensed third-party work and not
-the author's, so those runs could not be published as they stood -- which
-is why the public repository currently carries a provenance note saying the corpus, the floor
-scripts and the controls audit are not in it, and why the website carries an undated promise
-that the record is coming.
+the author's, so those runs could not be published as they stood.
 
 On 2026-09-01, 525 of these files were copied into the public working tree while staging a
 release and 460 carried the text. A `git add -A` would have published someone else's
@@ -41,10 +62,8 @@ WHAT MAKES A NUMBER RECOMPUTABLE WITHOUT THE TEXT
 -------------------------------------------------
 Every answer is already keyed by item id -- `answers` is a list of `{"q": 17, "position": 2}`.
 The proposition text is needed to ADMINISTER the instrument, never to recompute a result from
-the answers. So a scrubbed export keeps the answers and drops the text, and the reader retrieves
-the items at the reader's end from the same source this study used. A reader can then verify
-the prompt they reconstruct hashes to the `forcing_prompt_sha256` recorded here, which proves
-they are holding the same instrument without this repository ever shipping it.
+the answers. So a scrubbed export keeps the answers and drops the text, and a reader can verify
+the prompt they reconstruct hashes to the `forcing_prompt_sha256` recorded here.
 
 VERIFICATION IS NOT OPTIONAL
 ----------------------------
@@ -53,8 +72,10 @@ the same oracle its pre-commit hook uses, not a reimplementation of it. If one f
 survives anywhere in the output, this exits 1 and says where. An export that cannot prove
 itself clean is worse than no export, because it looks like diligence.
 
-    python scripts/export_scrubbed.py --out export
-    python scripts/export_scrubbed.py --out export --audit-only   # scan, write nothing
+    python scripts/export_scrubbed.py --plan                        # what would ship; writes nothing
+    python scripts/export_scrubbed.py --out export/battery          # stage, verify
+    python scripts/export_scrubbed.py --out export/battery --into ../../../bias-study-release
+    python scripts/export_scrubbed.py --audit-only                  # scan, write nothing
 """
 from __future__ import annotations
 
@@ -77,9 +98,54 @@ STUDY = os.path.dirname(HERE)
 DEFAULT_FINGERPRINTS = os.path.join(STUDY, '.corpus-fingerprint')
 
 SCHEMA = _SP.SCHEMA
+SCHEMA_ACCEPTED = _SP.SCHEMA_ACCEPTED
 
-# Dropped outright. forcing_prompt is the instrument; the rest are recomputable or empty.
+#: The root this exporter ships: the current study's corpus. The earlier corpus under `data/`
+#: is exported by `export_repairs.py`, which derives its list from the repair registries.
+SOURCE_ROOT = "runs"
+
+# Dropped outright under --scrub. forcing_prompt is the instrument; the rest are recomputable.
 DROP_FIELDS = ("forcing_prompt",)
+
+#: Never exported, whatever they hold.
+SKIP_FILES = ("manifest.derived.json",)
+SKIP_SUFFIXES = (".log", ".pyc")
+
+#: Run directories under `runs/` that are deliberately NOT exported, each with the reason. The
+#: public README's "What is not shipped" table is written from the same facts. A run directory
+#: that is neither here nor complete is HELD and reported; one that is complete ships. Adding a
+#: run to the public tree is therefore the default, and keeping one back is the decision that
+#: has to be written down.
+NOT_SHIPPED = {
+    "refusal-ablation":
+        "carries 450 verbatim XSTest prompts (Roettger et al.), a third party's text",
+    "mask-gradient":
+        "the superseded first attempt at the local gradient: 226 judged free-text answers on "
+        "the author's own questions (NOT XSTest, checked 2026-09-25), read only by "
+        "RESULTS-2026-09-19-dose-response.md, which stays private because its other half is "
+        "refusal-ablation. Withheld pending the author's decision; 2026-09-25-local-gradient "
+        "is the collection that replaced it and ships",
+    "test-refusal": "empty scratch directory, no records",
+    "2026-05-26": "empty directory left by a May collector; the May runs are under data/",
+    "2026-09-08-evidence-collector-fake":
+        "development fixture: a fake backend for the collector's interruption/retry tests",
+    "2026-09-08-evidence-qwen-pilot":
+        "evidence-use pilot of a different design, on one model",
+    "2026-09-08-evidence-review-export-01":
+        "offline exporter output for pack review, not a model measurement",
+    "2026-09-08-residency-smoke-01": "residency smoke that returned no records",
+    "2026-09-08-residency-smoke-02": "residency smoke that returned no records",
+    "2026-09-08-residency-smoke-03": "residency smoke that returned no records",
+    "2026-09-08-residency-smoke-04": "residency smoke that returned no records",
+    "2026-09-08-residency-smoke-05": "residency smoke that returned no records",
+}
+
+#: Directories under `withdrawn/` that ship with the corpus because `data/withdrawals.json`
+#: cites them as evidence. Both hold sheets on the author's own instrument.
+EVIDENCE_DIRS = (
+    os.path.join("withdrawn", "backend-split-precollection"),
+    os.path.join("withdrawn", "pre-repair-snapshots"),
+)
 
 
 def instrument_texts():
@@ -322,7 +388,7 @@ def hits(text, fingerprints):
     return found
 
 
-def scrub_record(rec, fingerprints, tally, drop_fields=DROP_FIELDS):
+def scrub_record(rec, fingerprints, tally, drop_fields=DROP_FIELDS, battery=True):
     """Return a publishable copy, and record every field touched.
 
     `drop_fields` is a parameter so the DEFAULT export keeps `forcing_prompt`. On the author's
@@ -330,6 +396,10 @@ def scrub_record(rec, fingerprints, tally, drop_fields=DROP_FIELDS):
     correct only while the prompt carried someone else's licensed text. The per-field
     fingerprint scan below still runs either way, so keeping the prompt cannot smuggle a
     third-party item back in -- if one is there, the field is withheld and the export says so.
+
+    `battery` records get the prompt's hash and length. The "withheld" note is written ONLY
+    when the prompt is actually dropped: until 2026-09-25 it was written unconditionally, so
+    every published sheet said its prompt was withheld while carrying it in full.
     """
     out = {}
     for key, value in rec.items():
@@ -344,20 +414,204 @@ def scrub_record(rec, fingerprints, tally, drop_fields=DROP_FIELDS):
                 continue
         out[key] = value
 
-    prompt = rec.get("forcing_prompt")
+    prompt = rec.get("forcing_prompt") if battery else None
     if prompt:
         out["forcing_prompt_sha256"] = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
         out["forcing_prompt_chars"] = len(prompt)
-        out["forcing_prompt_note"] = (
-            "Instrument text withheld from THIS record because it carries third-party "
-            "material. Rebuild the prompt from the published bank and this record's "
-            "shuffle_seed, then check your reconstruction against this sha256.")
+        if "forcing_prompt" in drop_fields:
+            out["forcing_prompt_note"] = (
+                "Instrument text withheld from THIS record because it carries third-party "
+                "material. Rebuild the prompt from the published bank and this record's "
+                "shuffle_seed, then check your reconstruction against this sha256.")
+        else:
+            # A note left by the pre-2026-09-25 exporter on a record whose prompt is present
+            # must not survive a re-export.
+            out.pop("forcing_prompt_note", None)
     return out
+
+
+def _complete(path):
+    """Is this run finished? A missing manifest means in-flight, not fine.
+
+    A run with a collector manifest, a derived freeze, or a `raw/`+`scored/` layout is
+    complete. A flat directory with neither is still collecting, and a half-copied collection
+    in a public tree is worse than an absent one: it looks complete and nobody re-reads it.
+    """
+    if os.path.isfile(os.path.join(path, "manifest.json")):
+        return True, "manifest present"
+    if os.path.isfile(os.path.join(path, "manifest.derived.json")):
+        return True, "no manifest; content frozen by derive_manifest"
+    return False, "no manifest and no freeze -- treated as still collecting"
+
+
+def _files(path):
+    out = []
+    for dp, dn, fn in os.walk(path):
+        dn[:] = sorted(d for d in dn if d != "__pycache__")
+        for f in sorted(fn):
+            if f in SKIP_FILES or f.endswith(SKIP_SUFFIXES):
+                continue
+            out.append(os.path.join(dp, f))
+    return out
+
+
+def plan():
+    """(shipped, not_shipped, held): what would leave this tree, and why the rest stays."""
+    root = os.path.join(STUDY, SOURCE_ROOT)
+    shipped, not_shipped, held = [], [], []
+    for name in sorted(os.listdir(root)):
+        path = os.path.join(root, name)
+        if not os.path.isdir(path) or name.startswith(("_", ".")):
+            continue
+        if name in NOT_SHIPPED:
+            not_shipped.append((name, NOT_SHIPPED[name]))
+            continue
+        ok, note = _complete(path)
+        if not ok:
+            held.append((name, note))
+            continue
+        shipped.append((SOURCE_ROOT + "/" + name, path, note))
+    for rel in EVIDENCE_DIRS:
+        path = os.path.join(STUDY, rel)
+        if os.path.isdir(path):
+            shipped.append((rel.replace(os.sep, "/"), path, "evidence cited by data/withdrawals.json"))
+        else:
+            held.append((rel.replace(os.sep, "/"), "evidence directory missing from this tree"))
+    return shipped, not_shipped, held
+
+
+def _write_text(dest, text):
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
+    with io.open(dest, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+
+
+def export_dir(rel, src, out_root, fingerprints, tally, drop_fields, raw):
+    """Export one directory whole. Returns per-directory counts."""
+    counts = {"records": 0, "files": 0, "schemas": {}}
+    for path in _files(src):
+        sub = os.path.relpath(path, src).replace(os.sep, "/")
+        dest = os.path.join(out_root, rel.replace("/", os.sep), sub.replace("/", os.sep))
+        if path.endswith(".jsonl"):
+            keep = []
+            for line in io.open(path, encoding="utf-8"):
+                line = line.strip()
+                if not line:
+                    continue
+                rec = json.loads(line)
+                schema = rec.get("schema") or "(none)"
+                battery = rec.get("schema") in SCHEMA_ACCEPTED
+                if battery and rec.get("forcing_prompt"):
+                    tally["with_prompt"] += 1
+                raw.append(rec)
+                keep.append(scrub_record(rec, fingerprints, tally, drop_fields, battery=battery))
+                counts["schemas"][schema] = counts["schemas"].get(schema, 0) + 1
+                counts["records"] += 1
+                tally["records"] += 1
+            if not keep:
+                # A sheet file with no records is a collector that opened a file and wrote
+                # nothing (eight such files sit in the wave). Not a sheet; not exported.
+                continue
+            text = "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in keep)
+        else:
+            text = io.open(path, encoding="utf-8", errors="replace").read()
+            found = hits(text, fingerprints)
+            if found:
+                raise SystemExit("export_scrubbed: %s/%s carries instrument text (%s); a "
+                                 "side file cannot be scrubbed field by field. Remove it or "
+                                 "add the run to NOT_SHIPPED." % (rel, sub, found[0][:60]))
+        _write_text(dest, text)
+        # THE EXPORTED FILE KEEPS THE SOURCE'S TIMESTAMP. derive_manifest's live-window guard
+        # reads mtimes to tell a finished run from one still being written; a copy stamped
+        # "now" would read as collecting for the next fifteen minutes in the mirror.
+        st = os.stat(path)
+        os.utime(dest, (st.st_atime, st.st_mtime))
+        counts["files"] += 1
+        tally["files"] += 1
+    return counts
+
+
+def install(out_root, mirror, shipped):
+    """Write the verified staging export over the mirror's directories. Never commits.
+
+    FILE BY FILE, NOT rmtree-THEN-copytree. On 2026-09-25 the first version removed the
+    mirror's wave directory while that tree's test suite had one sheet open; Windows refused
+    the unlink, rmtree stopped half way, and the mirror was left with 86 of 441 files and no
+    manifest until the export was re-run. Overwriting each file in place cannot leave that
+    state: a file that cannot be replaced is reported and the rest of the directory is still
+    whole. Files in the mirror that the staging export does not carry are removed afterwards,
+    and a removal that fails is reported rather than fatal. Do not export while another
+    process is reading the mirror.
+    """
+    replaced, stuck = [], []
+    for rel, _src, _note in shipped:
+        src = os.path.join(out_root, rel.replace("/", os.sep))
+        dest = os.path.join(mirror, rel.replace("/", os.sep))
+        wanted = set()
+        for path in _files(src):
+            sub = os.path.relpath(path, src)
+            wanted.add(sub)
+            target = os.path.join(dest, sub)
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            try:
+                shutil.copy2(path, target)
+            except OSError as exc:
+                stuck.append((rel + "/" + sub.replace(os.sep, "/"), "copy: %s" % exc))
+        if os.path.isdir(dest):
+            for dp, dn, fn in os.walk(dest):
+                dn[:] = [d for d in dn if d != "__pycache__"]
+                for f in fn:
+                    sub = os.path.relpath(os.path.join(dp, f), dest)
+                    # The mirror's own per-tree freeze stays; it is regenerated there, never
+                    # shipped from here.
+                    if sub in wanted or f in SKIP_FILES:
+                        continue
+                    try:
+                        os.remove(os.path.join(dp, f))
+                    except OSError as exc:
+                        stuck.append((rel + "/" + sub.replace(os.sep, "/"), "remove: %s" % exc))
+        replaced.append(rel)
+    if stuck:
+        print("INSTALL INCOMPLETE -- %d file(s) could not be written or removed:" % len(stuck))
+        for rel, why in stuck[:20]:
+            print("   %s  (%s)" % (rel, why))
+        print("Close whatever holds them and re-run; nothing else in the mirror was skipped.")
+        return replaced, [], stuck
+    for rel in ("MANIFEST.json", os.path.join("data", "controls-audit.json")):
+        src = os.path.join(out_root, rel)
+        dest = os.path.join(mirror, rel)
+        if not os.path.exists(src):
+            continue
+        if os.path.exists(dest):
+            # A REWRITE THAT CHANGES ONLY THE FORMATTING IS NOISE: json.dump's layout is not
+            # the file's content, and an 800-line diff of reflowed JSON hides the one line
+            # that matters on the day a redaction actually moves.
+            try:
+                same = (json.load(io.open(src, encoding="utf-8"))
+                        == json.load(io.open(dest, encoding="utf-8")))
+            except ValueError:
+                same = False
+            if same:
+                continue
+        shutil.copy2(src, dest)
+    # A MIRROR DIRECTORY THE PLAN DOES NOT NAME IS REPORTED, NOT DELETED. It may be a run the
+    # mirror ships from another export, or a leftover; either way a person decides.
+    mirror_root = os.path.join(mirror, SOURCE_ROOT)
+    planned = {rel.split("/", 1)[1] for rel in replaced if rel.startswith(SOURCE_ROOT + "/")}
+    stray = sorted(d for d in os.listdir(mirror_root)
+                   if os.path.isdir(os.path.join(mirror_root, d))
+                   and not d.startswith(("_", ".")) and d not in planned)
+    return replaced, stray, []
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--out", default="export", help="output directory, relative to the study")
+    ap.add_argument("--out", default=os.path.join("export", "battery"),
+                    help="staging directory, relative to the study; must not exist")
+    ap.add_argument("--into", default=None, metavar="MIRROR",
+                    help="after verification, write the export over this mirror's runs/, "
+                         "withdrawn/ evidence directories and MANIFEST.json")
+    ap.add_argument("--plan", action="store_true", help="list what would ship; write nothing")
     ap.add_argument("--scrub", action="store_true",
                     help="drop %s from every record. The pre-2026-09-17 behaviour, correct "
                          "while the prompt carried licensed third-party text. The live "
@@ -366,8 +620,22 @@ def main(argv=None):
                          % ", ".join(DROP_FIELDS))
     ap.add_argument("--fingerprints", default=DEFAULT_FINGERPRINTS)
     ap.add_argument("--audit-only", action="store_true",
-                    help="scan the whole runs tree and report; write nothing")
+                    help="scan every shipped record and report; write nothing")
     args = ap.parse_args(argv)
+
+    shipped, not_shipped, held = plan()
+    print("EXPORT PLAN from %s/" % SOURCE_ROOT)
+    for rel, _src, note in shipped:
+        print("  ship  %-48s %s" % (rel, note))
+    for name, why in not_shipped:
+        print("  keep  %-48s %s" % (name, why))
+    for name, why in held:
+        print("  HELD  %-48s %s" % (name, why))
+    if not shipped:
+        print("nothing to ship -- this is not a pass; check %s/" % SOURCE_ROOT)
+        return 1
+    if args.plan:
+        return 0
 
     fingerprints = load_fingerprints(args.fingerprints)
     drop_fields = DROP_FIELDS if args.scrub else ()
@@ -377,105 +645,69 @@ def main(argv=None):
           % ("DROPPED (--scrub)" if drop_fields
              else "kept -- the instrument is the author's and ships with the paper"))
 
-    tally = {"records": 0, "files": 0, "with_prompt": 0, "scrubbed_fields": {},
-             "other_schema_carrying_text": []}
-    exported = {}
+    out_root = os.path.join(STUDY, args.out)
+    if not args.audit_only and os.path.exists(out_root):
+        raise SystemExit('output already exists: %s; choose a fresh export path'
+                         % os.path.relpath(out_root, STUDY))
+    if args.into and not os.path.isdir(os.path.join(args.into, SOURCE_ROOT)):
+        raise SystemExit("--into %s has no %s/ root" % (args.into, SOURCE_ROOT))
+
+    tally = {"records": 0, "files": 0, "with_prompt": 0, "scrubbed_fields": {}}
     raw = []
+    if args.audit_only:
+        import tempfile
+        out_root = tempfile.mkdtemp(prefix="export-audit-")
+    per_dir = {}
+    for rel, src, _note in shipped:
+        per_dir[rel] = export_dir(rel, src, out_root, fingerprints, tally, drop_fields, raw)
 
-    # ACROSS BOTH CORPUS ROOTS. `RUNS` was `STUDY/runs`, spelled. Only `SCHEMA` records are
-    # exported and every battery run is under `runs/` today, so this loses nothing right now --
-    # but this is the RELEASE GENERATOR, and the failure mode of a spelled root here is that a
-    # battery run living in the other corpus is simply not in the release, with the export
-    # reporting its own tally cheerfully. `rel` is computed against each sheet's OWN root, so
-    # the exported paths are unchanged.
-    _sheets = sorted((q, str(r)) for r in _SP.run_roots()
-                     for q in glob.glob(os.path.join(str(r), "**", "*.jsonl"), recursive=True))
-    for path, _root in _sheets:
-        rel = os.path.relpath(path, _root).replace(chr(92), "/")
-        keep = []
-        for line in io.open(path, encoding="utf-8"):
-            line = line.strip()
-            if not line:
-                continue
-            rec = json.loads(line)
-            if rec.get("schema") != SCHEMA:
-                # Not the forced-choice corpus. It should not carry the instrument at all --
-                # if it does, that is a finding about the OLD study's files, not this export.
-                blob = json.dumps(rec, ensure_ascii=False)
-                if hits(blob, fingerprints):
-                    tally["other_schema_carrying_text"].append(rel)
-                continue
-            if rec.get("forcing_prompt"):
-                tally["with_prompt"] += 1
-            raw.append(rec)
-            keep.append(scrub_record(rec, fingerprints, tally, drop_fields))
-            tally["records"] += 1
-        if keep:
-            exported[rel] = keep
-            tally["files"] += 1
-
-    # Checked on the RAW records, before anything is written: a record whose instrument text
+    # Checked on the RAW records, before anything is kept: a record whose instrument text
     # this repository no longer holds cannot be scrubbed, so it must not be exported at all.
     _no_retired_text_to_scrub(raw)
 
-    print("scanned runs/: %d records in %d file(s) carry schema %s; %d of them carried the "
-          "instrument" % (tally["records"], tally["files"], SCHEMA, tally["with_prompt"]))
+    print("scanned %d records in %d file(s) across %d directory(ies); %d battery records "
+          "carried the instrument" % (tally["records"], tally["files"], len(per_dir),
+                                       tally["with_prompt"]))
     if tally["scrubbed_fields"]:
         print("fields emptied because they contained instrument text:")
         for k, v in sorted(tally["scrubbed_fields"].items()):
             print("   %-18s %d record(s)" % (k, v))
     else:
-        print("no retained field contained instrument text -- only forcing_prompt did")
-    others = sorted(set(tally["other_schema_carrying_text"]))
-    if others:
-        print("WARNING: %d non-compass file(s) also carry instrument text: %s"
-              % (len(others), ", ".join(others[:5])))
+        print("no retained field contained instrument text")
 
     if args.audit_only:
+        shutil.rmtree(out_root, ignore_errors=True)
         return 0
 
-    out_root = os.path.join(STUDY, args.out)
-    runs_out = os.path.join(out_root, "runs")
-    if os.path.exists(out_root):
-        raise SystemExit('output already exists; choose a fresh export path')
-    os.makedirs(out_root)
-    for rel, records in exported.items():
-        dest = os.path.join(runs_out, rel)
-        os.makedirs(os.path.dirname(dest), exist_ok=True)
-        with io.open(dest, "w", encoding="utf-8", newline="\n") as fh:
-            for rec in records:
-                fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
-
-    # Both hashes of the instrument go in the manifest, and NEITHER contains the instrument.
-    # A reader who fetches the items compares against these to learn which of two different
-    # things they have: the same propositions (normalized), or the same bytes we sent
-    # (canonical). Only the second makes prompt-hash reproduction possible, and as of
-    # 2026-09-01 the recorded API provenance is down, so most readers reach only the first.
     inst = instrument_hashes()
-
     manifest = {
-        "schema": "battery-export/1",
+        "schema": "battery-export/2",
+        "source_root": SOURCE_ROOT + "/",
         "source_schema": SCHEMA,
+        "generated_by": "scripts/export_scrubbed.py",
+        "instrument": ("The Ratchet battery (data/ratchet-battery.json): 32 forced-choice "
+                       "items in 16 mirrored pairs, written by Ian Gorrie, MIT-licensed with "
+                       "the rest of the repository. The item text SHIPS -- there is no fetch "
+                       "step and no carve-out."),
         "instrument_canonical_sha256": inst["canonical"],
         "instrument_normalized_sha256": inst["normalized"],
         "instrument_hash_note": (
             "canonical = byte-exact item set; normalized = same after folding curly quotes, "
-            "dashes and entities to ASCII. Rebuild prompts only if canonical matches."),
+            "dashes and entities to ASCII. `forcing_prompt_sha256` on each battery record is "
+            "the hash of that record's own prompt as sent."),
         "records": tally["records"],
         "files": tally["files"],
+        "directories": {rel: per_dir[rel] for rel, _s, _n in shipped},
+        "not_shipped": dict(NOT_SHIPPED),
+        "held": dict(held),
         "dropped_fields": list(drop_fields),
         "scrubbed_fields": tally["scrubbed_fields"],
-        "instrument": ("The Ratchet battery (data/ratchet-battery.json): 32 forced-choice "
-                       "items in 16 mirrored pairs, written by Ian Gorrie, MIT. The "
-                       "item text SHIPS -- there is no fetch step and no carve-out. This "
-                       "field named a retired external questionnaire until 2026-09-17."),
-        "verification": ("Every record was scanned against the release repo's "
-                         ".corpus-fingerprint list after writing; see the exporter's output."),
+        "verification": ("Every written file was re-scanned against the release repo's "
+                         ".corpus-fingerprint list and its hashed n-gram oracle after "
+                         "writing; the exporter exits 1 if anything survives."),
     }
-    with io.open(os.path.join(out_root, "MANIFEST.json"), "w",
-                 encoding="utf-8", newline="\n") as fh:
-        json.dump(manifest, fh, indent=2, ensure_ascii=False)
-        fh.write("\n")
+    _write_text(os.path.join(out_root, "MANIFEST.json"),
+                json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
 
     redactions = export_controls_audit(out_root, fingerprints)
     if redactions is None:
@@ -513,11 +745,25 @@ def main(argv=None):
         # public gate refused 11 files of on 2026-09-02.
         print("PARTIALLY VERIFIED: 0 of %d plaintext fragment(s), and the hashed n-gram "
               "oracle was NOT AVAILABLE." % len(fingerprints))
-        print("Do not treat this export as clean: the plaintext list covers 10 of 62 "
-              "propositions. Generate .corpus-fingerprint-hashed and re-run.")
+        print("Do not treat this export as clean. Generate .corpus-fingerprint-hashed and re-run.")
         return 1
     print("The answers are keyed by item id, so every published number recomputes from this.")
     print("The instrument ships with the paper: data/ratchet-battery.json, 32 items, MIT.")
+
+    if args.into:
+        replaced, stray, stuck = install(out_root, args.into, shipped)
+        if stuck:
+            return 1
+        print()
+        print("installed %d directory(ies) and MANIFEST.json into %s" % (len(replaced), args.into))
+        if stray:
+            print("mirror %s/ directories NOT in this plan, left untouched:" % SOURCE_ROOT)
+            for d in stray:
+                print("   %s" % d)
+        print("Next, IN THE MIRROR: derive_manifest.py --write (its freezes are per tree), then "
+              "gen_provenance.py --write, gen_corpus_docs.py, gen_data_dictionary.py.")
+        print("Nothing is committed. Review `git status` there; the pre-commit corpus gate runs "
+              "on commit.")
     return 0
 
 

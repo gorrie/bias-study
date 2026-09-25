@@ -67,6 +67,10 @@ def build():
     # CLASSIFY, do not just scan. `scan()` returns rows without `role`; the first version
     # shipped `"role": null` for all 70 runs, which is a field that looks answered and is not.
     rows = RI.classify(RI.scan(STUDY), RI.documented(STUDY))
+    # WHICH documents, not just whether one exists. The pre-registration and the results
+    # document of a run are what a reader needs next, and until 2026-09-25 the index only
+    # said "named in a document" and left the search to them.
+    naming = RI.documents_naming(STUDY)
     by_root: dict[str, list] = {}
     for root in RI._corpus_roots(STUDY):
         name = os.path.basename(root.rstrip(os.sep)) or root
@@ -89,6 +93,8 @@ def build():
                 "corpus": r.get("corpus"),
                 "status": r.get("status"),
                 "role": r.get("role"),
+                "why": r.get("why"),
+                "documents": naming.get(r["run"], []),
             }
             if r.get("status") == "withdrawn":
                 import derive_manifest

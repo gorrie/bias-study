@@ -51,12 +51,17 @@ BLOCKS = {
     "corpus-inventory-data": ("run_inventory.py", ["--corpus-markdown", "data"], None),
     "corpus-inventory-runs": ("run_inventory.py", ["--corpus-markdown", "runs"], None),
     "corpus-scale": ("controls_audit.py", ["--scale-markdown"], None),
+    # The derived-corpora table in CORPUS-MAP: eligible records in each May run against its
+    # spliced view, under the eligibility rule as it stands. Hand-typed it read 779 in one tree
+    # and 778 in the other, and neither was the rule's answer after the 2026-09-25 re-splice.
+    "corpus-derived": ("splice_corpus.py", ["--derived-markdown"], None),
 }
 
 #: README path -> the blocks it must carry.
 TARGETS = {
     os.path.join(STUDY, "data", "README.md"): ("corpus-inventory-data", "corpus-scale"),
     os.path.join(STUDY, "runs", "README.md"): ("corpus-inventory-runs",),
+    os.path.join(STUDY, "CORPUS-MAP-2026-09-14.md"): ("corpus-derived",),
 }
 
 
@@ -69,7 +74,8 @@ def main(argv=None):
     # markdown table inside a code fence renders as literal pipes -- the defect that shipped
     # three of the paper's tables as raw `|` characters. These names are registered there.
     for name in BLOCKS:
-        if name not in ("corpus-inventory-data", "corpus-inventory-runs", "corpus-scale"):
+        if name not in ("corpus-inventory-data", "corpus-inventory-runs", "corpus-scale",
+                        "corpus-derived"):
             raise SystemExit("unregistered block %r" % name)
 
     missing = [p for p in TARGETS if not os.path.exists(p)]

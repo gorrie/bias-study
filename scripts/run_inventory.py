@@ -341,6 +341,47 @@ def readers(name, globs=None):
     return hits
 
 
+#: Where a study document can sit, in either tree's layout: flat at the root in the private
+#: tree; under `prereg/`, `results/` and `withdrawn/results/` in the public mirror.
+DOC_PATTERNS = ("*.md", os.path.join("prereg", "*.md"), os.path.join("results", "*.md"),
+                os.path.join("withdrawn", "results", "*.md"))
+
+#: Generated inventories that name every run by construction; not evidence that a run is
+#: described anywhere, and excluded from the per-run document list.
+GENERATED_DOCS = frozenset({"SCRIPTS.md", "DATA-DICTIONARY.md"})
+
+
+def documents_naming(study=STUDY):
+    """run name -> the study documents that name it, as paths relative to the tree root.
+
+    The README table's `read by` column says THAT a run is named in a document; a reader
+    then has to grep for which. `PROVENANCE.json` carries the list, so the pre-registration
+    and results document of every run are findable from the run directory's own index
+    without a search. Derived from the documents on disk, in whichever layout this tree uses.
+    """
+    docs = {}
+    for pattern in DOC_PATTERNS:
+        for path in sorted(glob.glob(os.path.join(study, pattern))):
+            # GENERATED INVENTORIES NAME EVERY RUN and say nothing about any of them; listing
+            # them would put the same two files on every entry. They are also regenerated in
+            # the same sync as this index, so counting them made `--check` disagree with a
+            # `--write` from a minute earlier, depending on which generator ran first.
+            if os.path.basename(path) in GENERATED_DOCS:
+                continue
+            try:
+                with open(path, encoding="utf-8", errors="replace") as fh:
+                    docs[os.path.relpath(path, study).replace(os.sep, "/")] = fh.read()
+            except OSError:
+                pass
+    out = {}
+    for root in _corpus_roots(study):
+        for name in sorted(os.listdir(root)):
+            if not os.path.isdir(os.path.join(root, name)) or name in NOT_RUNS:
+                continue
+            out[name] = [rel for rel, text in docs.items() if name in text]
+    return out
+
+
 def documented(study=STUDY):
     """Every study document, in EITHER tree's layout.
 
@@ -353,8 +394,7 @@ def documented(study=STUDY):
     cannot see half the tree reports absence it did not establish.
     """
     text = ""
-    for pattern in ("*.md", os.path.join("prereg", "*.md"),
-                    os.path.join("results", "*.md")):
+    for pattern in DOC_PATTERNS:
         for path in glob.glob(os.path.join(study, pattern)):
             try:
                 with open(path, encoding="utf-8", errors="replace") as fh:

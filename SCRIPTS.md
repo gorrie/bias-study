@@ -66,7 +66,7 @@
 
 - **`build_corpus_fingerprint.py`** — Generate the hashed instrument fingerprint that guards the public repository.
 - **`check_corpus.py`** — Refuse any commit that would publish third-party instrument text.
-- **`export_scrubbed.py`** — Export the forced-choice runs for publication, with any third-party text removed.
+- **`export_scrubbed.py`** — Export the current study's corpus root (`runs/`) for publication, scanned for third-party text.
 - **`studypaths.py`** — Shared run-directory resolution and deterministic RNG streams.
 - **`sweep_status.py`** — Single source of truth for judgement-tool sweep state.
 

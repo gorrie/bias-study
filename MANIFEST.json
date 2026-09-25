@@ -1,17 +1,174 @@
 {
-  "schema": "battery-export/1",
-  "source_schema": "compass-run/1",
-  "instrument_canonical_sha256": "6b86822f1b9ead5cdb906761c99ffa1a691ed59ead168978bf654f5c13d354b8",
-  "instrument_normalized_sha256": "c49d38f9adf050002f4bdbdf38d79bb1a8a7a4fc452a042e6225f7d5ede2be17",
-  "instrument_hash_note": "canonical = byte-exact item set; normalized = same after folding curly quotes, dashes and entities to ASCII. Rebuild prompts only if canonical matches. AS OF 2026-09-12 IT DOES NOT: a fresh fetch returns canonical 111a2811... against the 6b86822f... recorded here, while normalized reproduces exactly (c49d38f9...). The item set is confirmable; the bytes are not, because the source changed its typography after collection. --verify-run reports prompt-hash verification unavailable rather than passing, which is the correct behaviour and is now documented instead of surprising.",
-  "records": 3381,
-  "files": 884,
-  "dropped_fields": [
-    "forcing_prompt"
-  ],
-  "scrubbed_fields": {
-    "response_text": 33
+  "schema": "battery-export/2",
+  "source_root": "runs/",
+  "source_schema": "battery-run/1",
+  "generated_by": "scripts/export_scrubbed.py",
+  "instrument": "The Ratchet battery (data/ratchet-battery.json): 32 forced-choice items in 16 mirrored pairs, written by Ian Gorrie, MIT-licensed with the rest of the repository. The item text SHIPS -- there is no fetch step and no carve-out.",
+  "instrument_canonical_sha256": "1ba8b0fd4097bd9c023c4f9ccf40b05860b7932f4ee69d2a4615da40a80767d1",
+  "instrument_normalized_sha256": "cd98fdf48a8eafff98f9e6aed61cfc1946b62e6ee78bab4153a3d0c790bd7965",
+  "instrument_hash_note": "canonical = byte-exact item set; normalized = same after folding curly quotes, dashes and entities to ASCII. `forcing_prompt_sha256` on each battery record is the hash of that record's own prompt as sent.",
+  "records": 12245,
+  "files": 1460,
+  "directories": {
+    "runs/2026-09-16-ratchet-v3-wave": {
+      "records": 3897,
+      "files": 441,
+      "schemas": {
+        "battery-run/1": 3897
+      }
+    },
+    "runs/2026-09-16-ratchet-v3-wave-budget-probe": {
+      "records": 71,
+      "files": 71,
+      "schemas": {
+        "battery-run/1": 71
+      }
+    },
+    "runs/2026-09-18-bce-smoke": {
+      "records": 7,
+      "files": 6,
+      "schemas": {
+        "battery-run/1": 7
+      }
+    },
+    "runs/2026-09-18-omission-hosted": {
+      "records": 864,
+      "files": 73,
+      "schemas": {
+        "battery-run/1": 864
+      }
+    },
+    "runs/2026-09-18-omission-orders": {
+      "records": 240,
+      "files": 21,
+      "schemas": {
+        "battery-run/1": 240
+      }
+    },
+    "runs/2026-09-18-paraphrase": {
+      "records": 448,
+      "files": 449,
+      "schemas": {
+        "battery-run/1": 448
+      }
+    },
+    "runs/2026-09-18-roster-smoke": {
+      "records": 22,
+      "files": 23,
+      "schemas": {
+        "battery-run/1": 22
+      }
+    },
+    "runs/2026-09-19-rung2-elicitation": {
+      "records": 280,
+      "files": 42,
+      "schemas": {
+        "battery-run/1": 280
+      }
+    },
+    "runs/2026-09-19-rung2-smoke": {
+      "records": 3,
+      "files": 4,
+      "schemas": {
+        "battery-run/1": 3
+      }
+    },
+    "runs/2026-09-20-omission-hosted-pinned": {
+      "records": 384,
+      "files": 33,
+      "schemas": {
+        "battery-run/1": 384
+      }
+    },
+    "runs/2026-09-20-rung2-control-v2": {
+      "records": 70,
+      "files": 7,
+      "schemas": {
+        "battery-run/1": 70
+      }
+    },
+    "runs/2026-09-21-omission-nemotron-phala": {
+      "records": 48,
+      "files": 5,
+      "schemas": {
+        "battery-run/1": 48
+      }
+    },
+    "runs/2026-09-24-partials-renumbered": {
+      "records": 369,
+      "files": 36,
+      "schemas": {
+        "battery-run/1": 369
+      }
+    },
+    "runs/2026-09-25-local-gradient": {
+      "records": 1176,
+      "files": 126,
+      "schemas": {
+        "battery-run/1": 1176
+      }
+    },
+    "runs/2026-09-25-local-gradient-judged": {
+      "records": 1800,
+      "files": 7,
+      "schemas": {
+        "local-gradient-judged/1": 600,
+        "(none)": 1200
+      }
+    },
+    "runs/2026-09-25-placebo-wording": {
+      "records": 450,
+      "files": 31,
+      "schemas": {
+        "battery-run/1": 450
+      }
+    },
+    "runs/2026-09-25-same-items-both-paths": {
+      "records": 1536,
+      "files": 13,
+      "schemas": {
+        "(none)": 1536
+      }
+    },
+    "runs/2026-09-25-serving-path": {
+      "records": 311,
+      "files": 21,
+      "schemas": {
+        "battery-run/1": 311
+      }
+    },
+    "withdrawn/backend-split-precollection": {
+      "records": 196,
+      "files": 41,
+      "schemas": {
+        "compass-run/1": 60,
+        "battery-run/1": 136
+      }
+    },
+    "withdrawn/pre-repair-snapshots": {
+      "records": 73,
+      "files": 10,
+      "schemas": {
+        "compass-run/1": 73
+      }
+    }
   },
-  "instrument": "SUPERSEDED MANIFEST. These records were exported from the retired 62-item external questionnaire, whose text was licensed third-party work and is not included. The study's instrument since 2026-09-16 is data/ratchet-battery.json -- 32 forced-choice items in 16 mirrored pairs, written by Ian Gorrie and MIT-licensed with the rest of this repository -- and it ships in full with no fetch step. Regenerate this file with scripts/export_scrubbed.py when the battery corpus is exported.",
-  "verification": "Every record was scanned against the release repo's .corpus-fingerprint list after writing; see the exporter's output."
+  "not_shipped": {
+    "refusal-ablation": "carries 450 verbatim XSTest prompts (Roettger et al.), a third party's text",
+    "mask-gradient": "the superseded first attempt at the local gradient: 226 judged free-text answers on the author's own questions (NOT XSTest, checked 2026-09-25), read only by RESULTS-2026-09-19-dose-response.md, which stays private because its other half is refusal-ablation. Withheld pending the author's decision; 2026-09-25-local-gradient is the collection that replaced it and ships",
+    "test-refusal": "empty scratch directory, no records",
+    "2026-05-26": "empty directory left by a May collector; the May runs are under data/",
+    "2026-09-08-evidence-collector-fake": "development fixture: a fake backend for the collector's interruption/retry tests",
+    "2026-09-08-evidence-qwen-pilot": "evidence-use pilot of a different design, on one model",
+    "2026-09-08-evidence-review-export-01": "offline exporter output for pack review, not a model measurement",
+    "2026-09-08-residency-smoke-01": "residency smoke that returned no records",
+    "2026-09-08-residency-smoke-02": "residency smoke that returned no records",
+    "2026-09-08-residency-smoke-03": "residency smoke that returned no records",
+    "2026-09-08-residency-smoke-04": "residency smoke that returned no records",
+    "2026-09-08-residency-smoke-05": "residency smoke that returned no records"
+  },
+  "held": {},
+  "dropped_fields": [],
+  "scrubbed_fields": {},
+  "verification": "Every written file was re-scanned against the release repo's .corpus-fingerprint list and its hashed n-gram oracle after writing; the exporter exits 1 if anything survives."
 }

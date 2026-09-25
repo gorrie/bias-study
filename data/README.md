@@ -1,25 +1,35 @@
-# `data/` — the previous corpus, and the study’s configuration
+# `data/` — the previous corpus, and the study's configuration
 
-This directory is the immutable record of the study's earlier design: the May 2026
-judge-scored study on the author's **institutional-framing question set** (topics
-`T01`..`T18`, question text in every record), its September repairs and replications,
-and the withdrawn I3 Phase 0 arm — together with the flat JSON files the study is
-configured from. One subdirectory per run; runs are named by the date they began (`YYYY-MM-DD`
-or `YYYY-MM-DD-<slug>`).
+This directory holds two different things, and a reader should not have to guess which is
+which:
 
-The **current** study’s corpus is in **`runs/`**, collected on the Ratchet battery,
-and it has its own README. **The two roots are different corpora, not two names for
-one thing.**
+1. The configuration the study runs on: the live instrument, the panel, the withdrawals
+   registry, the controls audit, and the cached estimator outputs. Flat JSON files at the top
+   level, listed below.
+2. Every run collected before the current instrument: the May 2026 judge-scored study on the
+   author's institutional-framing question set (topics `T01`..`T18`, question text in every
+   record), its September repairs and replications, and the withdrawn I3 Phase 0 arm. One
+   subdirectory per run, named by the date collection began.
 
-> *Corrected 2026-09-23.* This paragraph used to say an internal working copy uses the
-> name `runs/` instead of `data/`, content identical, scripts auto-detect either. That
-> was true while the private tree kept everything in one root and only this release
-> separated them. It stopped being true when the two trees were given the same shape,
-> and it was the kind of sentence that stays plausible long after it stops being
-> correct: a reader following it would pool two instruments.
+The current study's corpus is in [`../runs/`](../runs/README.md), collected on the Ratchet
+battery, and it has its own README. The two roots are different corpora, not two names for one
+thing.
 
-`external/` is **not ours** — Röttger et al.’s published codes, kept for the controls
-audit — and is excluded from every corpus enumerator by name (`studypaths.NOT_RUNS`).
+## The configuration files
+
+| file | what it is |
+|---|---|
+| [`ratchet-battery.json`](ratchet-battery.json) | the instrument: 32 forced-choice items in 16 mirrored pairs, schema `item-bank/1`, with the design notes and the position scale |
+| [`wave-panel.json`](wave-panel.json) | the wave's declared roster: the breadth and ablation panels, the criteria that admitted each model, and every dated amendment |
+| [`withdrawals.json`](withdrawals.json) | one record per withdrawn claim, with the correction that withdrew it and the evidence it rests on. The source every other surface derives from |
+| [`controls-audit.json`](controls-audit.json) | the audit of other studies' controls, from which the paper's controls matrix and the scale table below are rendered |
+| [`collection-limitations.json`](collection-limitations.json) | the wave's declared losses: cells that could not be collected, with the shapes measured rather than written |
+| [`unattributable-sheets.json`](unattributable-sheets.json) | sheets whose serving backend could not be attributed, counted by model |
+| [`model-vintage.json`](model-vintage.json) | release dates of the panel's models, in bands fixed before use |
+| [`numbers-snapshot.json`](numbers-snapshot.json) | the recorded key numbers and the commands that produced them |
+| [`calibration.json`](calibration.json), [`exact-vs-bootstrap.json`](exact-vs-bootstrap.json), [`modal-noise.json`](modal-noise.json), [`position-floor.json`](position-floor.json), [`placebo-control.json`](placebo-control.json), [`partials-sensitivity.json`](partials-sensitivity.json) | caches of estimator output the paper's generated tables read, each naming the script that regenerates it and carrying its own `--check`. Derived, never hand-edited |
+| [`PROVENANCE.json`](PROVENANCE.json) | generated index of every run in this root: records, models, instrument, status, role, and the documents that name it |
+| `_aggregated/` | cross-method outputs of the May study: the runs index, the cross-method report, the drift time series and the vendor arcs |
 
 ## What is here
 
@@ -33,7 +43,6 @@ audit — and is excluded from every corpus enumerator by name (`studypaths.NOT_
 | `2026-05-26-timeseries` | 1,440 | 12 | previous | active | named in a script, named in a document |
 | `2026-05-26-unmask-gradient` | 900 | 3 | previous | active | named in a script, named in a document |
 | `2026-05-26-variance` | 2,400 | 12 | previous | active | named in a script, named in a document |
-| `2026-05-27` | 0 | — | empty | active | named in a script, named in a document |
 | `2026-05-27-abliteration` | 1,120 | 8 | previous | active | named in a script, named in a document |
 | `2026-05-27-abliteration-controls` | 420 | 3 | previous | active | named in a script, named in a document |
 | `2026-05-27-abliteration-gemma2` | 80 | 2 | previous | active | named in a script, named in a document |
@@ -41,7 +50,6 @@ audit — and is excluded from every corpus enumerator by name (`studypaths.NOT_
 | `2026-05-27-ood` | 1,120 | 10 | previous | active | named in a script, named in a document |
 | `2026-05-27-paraphrase` | 2,520 | 6 | previous | active | named in a script, named in a document |
 | `2026-05-27-reversed-premise` | 1,400 | 5 | previous | active | named in a script, named in a document |
-| `2026-08-28` | 0 | — | empty | active | named in a script, named in a document |
 | `2026-09-05-recollect` | 758 | 9 | previous | active | named in a script, named in a document |
 | `2026-09-13-g0dm0d3-replicate` | 600 | 2 | previous | active | named in a script, named in a document |
 | `2026-09-13-g0dm0d3-replicate-baseline` | 200 | 2 | previous | active | named in a script, named in a document |
@@ -71,26 +79,91 @@ audit — and is excluded from every corpus enumerator by name (`studypaths.NOT_
 | `2026-09-14-variance-spliced` | 1,200 | 12 | previous | active | named in a script, named in a document |
 | `2026-09-15-paraphrase-spliced` | 360 | 6 | previous | active | named in a script, named in a document |
 | `2026-09-15-reversed-premise-spliced` | 200 | 5 | previous | active | named in a script, named in a document |
-| **45 directories** | **31,723** | | | | |
+| **43 directories** | **31,723** | | | | |
 <!-- /GEN:corpus-inventory-data -->
 
-`instrument` is read off each record’s own fields, not inferred from the directory name.
-`status` comes from `data/withdrawals.json` — which is why `2026-09-13-i3-phase0` is marked
-**withdrawn** in the table above and not only in a correction document three files away. Its
-B−A contrast cannot be computed from this corpus; the records ship because they are the
-evidence for *why that design cannot answer the question*, not an answer to it.
+`instrument` is read off each record's own fields, not inferred from the directory name.
+`status` comes from `withdrawals.json`, which is why `2026-09-13-i3-phase0` is marked
+withdrawn in the table above and not only in a correction document three files away.
+
+## A guide to the directories
+
+The May study asked 30 questions on institutional framing to 13 models under two conditions,
+A (fairness-instructed) and B (the bare ask), and scored the free-text answers 1–5 on a rubric
+with a cross-vendor panel of four judges, then re-scored the same answers under five alternative
+judging methods. The write-up of that study is
+[`../results/WRITEUP-2026-05-26.md`](../results/WRITEUP-2026-05-26.md); the arms are its
+sections. What each later directory is for is recorded in
+[`../CORPUS-MAP-2026-09-14.md`](../CORPUS-MAP-2026-09-14.md).
+
+| directory | what it is |
+|---|---|
+| `2026-05-25` | the pilot main run: 13 models, 10 questions, conditions A and B |
+| `2026-05-25-full` | the main run: 13 models, 30 questions, A and B, 780 responses; scored by the panel and by every alternative method |
+| `2026-05-26-variance` | the same-version floor: five draws per cell on 12 models, to measure what one model gives itself |
+| `2026-05-26-timeseries` | the version arc: successive versions of the same lineages, the barometer's longitudinal series |
+| `2026-05-26-augmentation` | seven further models added to the main design |
+| `2026-05-26-cn-expansion` | Chinese-closed models added to the main design |
+| `2026-05-26-unmask-gradient` | the dose curve: conditions A through E on Claude Opus 4.7, GPT-5 and Grok 4.3, three samples each |
+| `2026-05-27-abliteration` | the weight rung: stock and abliterated builds of five open-weight families, run locally |
+| `2026-05-27-abliteration-controls` | the temperature-0 and ablation-strength controls for that arm |
+| `2026-05-27-abliteration-gemma2` | the Gemma-2-9B stock/ablated pair, run separately on Apple Silicon |
+| `2026-05-27-g0dm0d3` | the pipeline rung: the G0DM0D3 elicitation sweep over condition B on two models |
+| `2026-05-27-ood` | the out-of-domain arm: questions outside the institutional-framing set, 10 models |
+| `2026-05-27-paraphrase` | the paraphrase-robustness arm: the four FDR-surviving unmaskers and two flat controls under reworded questions |
+| `2026-05-27-reversed-premise` | the sycophancy control: the same questions with the premise reversed, to separate frame-following from a position |
+| `2026-09-05-recollect` | an early re-collection at a larger token budget, 9 models, conditions A and B; the source `2026-09-14-full-spliced` draws on |
+| `2026-09-13-g0dm0d3-replicate`, `-replicate-baseline` | rung 2 re-collected with five replicates per cell, and its same-sitting plain-B baseline (`PREREG-2026-09-13-pipeline-rung.md`) |
+| `2026-09-14-g0dm0d3-baseline-4k` | the same baseline re-collected at a recorded 4,000-token budget; the corpus map records why that replacement was reverted |
+| `2026-09-14-g0dm0d3-proxy-control` | plain condition B sent through the G0DM0D3 proxy with every transform off: the cost of the path itself |
+| `2026-09-13-i3-phase0` | I3 Phase 0: four models, 3,200 records, the frame-and-placebo design of `PREREG-2026-09-13-frame-and-placebo.md`. Its B−A contrast is withdrawn; see below |
+| `2026-09-13-truncation-proof` | ten sheets showing that a response severed by the proxy comes back with `finish_reason: stop`. Evidence, not a measurement |
+| `2026-09-14-recollect-*` | the twelve repair runs: cells of the May runs re-asked at 4,000 tokens where the original was severed or empty. Each record names the run it repairs |
+| `*-spliced` | the ten derived views: a May run's records where usable, the repair's where not. Read these, not the bare May runs |
+
+## What you may conclude from it, and what you may not
+
+This is the judge-scored study: model responses scored 1–5 by a cross-vendor judge panel, with
+alternate judging methods (`scored-grok-solo`, `scored-reversed-rubric`, `scored-blind-condition`
+and others) collected over the same responses so a reader can ask what the scorer contributed.
+That cross-method comparison is the strongest thing in this corpus and it is here in full.
+
+Read this before computing anything:
+
+- `2026-09-13-i3-phase0`: its B−A contrast is withdrawn. The 3,200 records ship and the
+  manifest reads as a clean success (1,600 calls, 0 failed) because the arm is the evidence for
+  why that design cannot answer the question, not an answer to it. Condition A is pinned at the
+  rubric midpoint (exactly 3 on 100% of records for three of four models), the baseline
+  instructs "do not take a personal position" and the rubric scores 3 as "does not commit", so
+  every B−A is arithmetically B−3, a measurement of instruction-following. A content-free
+  placebo reproduces 78% of one model's effect. See
+  [`../CORRECTIONS-2026-09-17-power.md`](../CORRECTIONS-2026-09-17-power.md) and
+  [`../withdrawn/results/RESULTS-2026-09-14-I3-phase0.md`](../withdrawn/results/RESULTS-2026-09-14-I3-phase0.md).
+- The May collection was truncated at 800 tokens, which severed or emptied about a third of it,
+  differentially by model: three models had zero usable A/B pairs and GPT-5 had none in any
+  run. The `-spliced` directories are the repaired corpora, and `studypaths.REPAIRS` maps each
+  original to its replacement. The repaired corpus is the study. The originals are kept because
+  the corrections ledger cites them and because deleting evidence is not how this project
+  handles being wrong.
+- 547 scored records in this corpus are empty responses that nevertheless carry a score. They
+  are not deleted; they are excluded at read time by `scripts/eligibility.py`, and
+  `scripts/audit_response_quality.py --check` reports them every time, by design. The
+  correction is [`../CORRECTIONS-2026-09-08.md`](../CORRECTIONS-2026-09-08.md).
+- No figure from this corpus may be set beside one from `runs/`. They are different designs:
+  judge-scored free text on the institutional-framing questions here, forced-choice positions on
+  the 32-item battery there.
 
 ## Scale, against the studies this one audits
 
-The argument is not that we collected more. It is that **a nuisance floor cannot be measured
-at n=1** — you cannot ask how large an effect must be to be visible above your own noise until
-you have sampled the noise — and that is why most of the audited studies report no minimum
-detectable effect. The two columns below are that claim as a property of the designs.
+The argument is not that we collected more. It is that a nuisance floor cannot be measured at
+n=1: you cannot ask how large an effect must be to be visible above your own noise until you
+have sampled the noise, and that is why most of the audited studies report no minimum detectable
+effect. The two columns below are that claim as a property of the designs.
 
-Rendered from `data/controls-audit.json`, the same source as the paper’s controls matrix. Row
-order is the audit’s own, this study last; it is **not** sorted by scale, because ranking
-free-text descriptions of heterogeneous designs would be a judgement of ours dressed as an
-ordering, in the table where that is least affordable.
+Rendered from `controls-audit.json`, the same source as the paper's controls matrix. Row order
+is the audit's own, this study last; it is not sorted by scale, because ranking free-text
+descriptions of heterogeneous designs would be a judgement of ours dressed as an ordering, in
+the table where that is least affordable.
 
 <!-- GEN:corpus-scale -->
 | study | year | what it collected | reports an MDE |
@@ -114,96 +187,87 @@ ordering, in the table where that is least affordable.
 
 ## Licence for the data in this directory
 
-**Everything in this repository that is the author's to license is MIT** (see `LICENSE`) —
-the code, and the run records here alike: reuse, redistribute and build on them,
-including commercially. That covers the model responses as assembled and scored
-here, the judge scores, the per-run manifests and the aggregates.
+Everything in this repository that is the author's to license is MIT (see
+[`../LICENSE`](../LICENSE)): the code, and the run records here alike. Reuse, redistribute and
+build on them, including commercially. That covers the model responses as assembled and scored
+here, the judge scores, the per-run manifests and the aggregates. Attribution is the decent
+thing, and the root README's *Cite* section says how, but it is not a licence term for the data.
 
-One licence, MIT, covers the whole repository: code, records and documents.
-Attribution is still the decent thing, and the root README's *Cite* section says
-how, but it is not a licence term for the data.
+Two things to know before redistributing:
 
-Two carve-outs, and both matter to anyone redistributing:
-
-1. **The instrument IS ours, and it is here in full.** `data/ratchet-battery.json` —
-   32 forced-choice items in 16 mirrored pairs, written by Ian Gorrie, MIT with the rest of the repository.
-   Item text and response text both publish; there is no fetch step and no
-   carve-out.
-
-   *Corrected 2026-09-17.* This carve-out previously read "the instrument is not
-   ours to license and is not here", because the study then ran on a 62-item
-   external questionnaire. That instrument was retired on 2026-09-16, and neither
-   it nor any record collected on it is in this repository. `scripts/check_corpus.py`
-   runs in CI to keep it that way, and pointedly does not guard the author's own
-   instrument, which would mean withholding the thing this repository exists to publish.
-2. **Model responses are model output.** Each vendor's terms governed the
-   account that generated them. We assert no ownership over a model's words and
-   cannot grant you rights we do not hold; the MIT grant covers this project's
-   own contribution — the collection, the scoring, the structure and the
-   aggregates.
+1. The instrument is the author's and is here in full. `ratchet-battery.json` is 32
+   forced-choice items in 16 mirrored pairs, written by Ian Gorrie, MIT with the rest of the
+   repository. Item text and response text both publish. The 62-item external questionnaire the
+   study administered before 2026-09-16 was a third party's licensed text, and neither it nor
+   any record collected on it is in this repository.
+2. Model responses are model output. Each vendor's terms governed the account that generated
+   them. We assert no ownership over a model's words and cannot grant you rights we do not
+   hold; the MIT grant covers this project's own contribution: the collection, the scoring, the
+   structure and the aggregates.
 
 No record's response text is withheld: every shipped record carries the model's reply as
 returned. `python scripts/key_numbers.py` recounts `[withheld: …]` markers from the shipped
 files, and `--check-release` fails if the root README's statement of that count drifts.
 
-## If you just want the data — start here, not with the run layout
+## If you just want the data, start here, not with the run layout
 
-**`python scripts/export_analysis_ready.py --out export/`**
+`python scripts/export_analysis_ready.py --out export/`
 
 One CSV, one row per scored record, every run and every judging method, with the columns a
 reanalysis needs and nothing to learn about this directory's structure first. Plus
 `manifest.json`, which reports what is in the file before you start rather than after you have
 drawn a conclusion.
 
-**Read this paragraph before you compute a mean.** 466 records in the primary scored corpus, and
-547 across all six judging methods, carry a classifier score derived from an **empty response**.
-An empty string scores a 3; 3 is the balanced answer. So every blank silently became a data
-point saying the model was perfectly even-handed. Nothing in the raw record warns you —
-`response_text` is `""` and the score beside it looks like every other score — and every reader
-in this project filtered on `score_classifier is not None`, which is exactly the filter a scored
-blank passes. It took us four months and a dedicated audit to find. The export gives you an
-`eligible` column so it takes you zero.
+Read this paragraph before you compute a mean. 466 records in the primary scored corpus, and
+547 across all six judging methods, carry a classifier score derived from an empty response. An
+empty string scores a 3; 3 is the balanced answer. So every blank silently became a data point
+saying the model was perfectly even-handed. Nothing in the raw record warns you: `response_text`
+is `""` and the score beside it looks like every other score, and every reader in this project
+filtered on `score_classifier is not None`, which is exactly the filter a scored blank passes.
+The export gives you an `eligible` column so it takes you zero time to find.
 
-**Three states, not two**, and the distinction matters if you are counting refusals:
+Three states, not two, and the distinction matters if you are counting refusals:
 
 | `eligible` | `exclusion_reason` | `is_defect` | what it is |
 |---|---|---|---|
 | `True` | `""` | `False` | usable |
-| `False` | `empty-or-missing-response` | `True` | scored from a blank string — **the defect** |
+| `False` | `empty-or-missing-response` | `True` | scored from a blank string: the defect |
+| `False` | `truncated-response` | `True` | severed at the token cap, and scored anyway |
 | `False` | `failed-call` | `True` | transport failure |
-| `False` | `no-classifier-score` | `False` | real text, no score — **mostly substantive refusals** |
+| `False` | `no-classifier-score` | `False` | real text, no score: mostly substantive refusals |
 
 That last row is not a defect and must not be dropped. A model returning an essay about why it
-will not answer is a *result* in this study: 148 refusals in 1,076 no-directive runs against 4 in
+will not answer is a result in this study: 148 refusals in 1,076 no-directive runs against 4 in
 907 directive runs is a published finding, and the original pipeline discarded exactly those
 records as collection errors. Count them; do not average them.
 
-**Ineligible rows are in the file**, flagged, not filtered. `--eligible-only` drops them if you
+Ineligible rows are in the file, flagged, not filtered. `--eligible-only` drops them if you
 insist, and the manifest still reports what went, because a cleaned corpus that silently omits
-its own exclusions cannot be checked — which is the complaint this study makes about other
+its own exclusions cannot be checked, which is the complaint this study makes about other
 people's work. If you disagree with our eligibility rule, the rows are there so you can apply
 your own.
 
 ### For abliteration work
 
-`model` is split for you: `base`, `build`, `is_ablated`. So
-`qwen2.5-7b-abliterated-strong` is base `qwen2.5-7b`, build `abliterated-strong` — a stock/ablated
-contrast is a groupby rather than a parsing exercise, across every abliterated build in the
-corpus including the quantisation-matched Qwen3.8-27B set.
+`model` is split for you: `base`, `build`, `is_ablated`. So `qwen2.5-7b-abliterated-strong` is
+base `qwen2.5-7b`, build `abliterated-strong`, and a stock/ablated contrast is a groupby rather
+than a parsing exercise, across every abliterated build in the corpus including the
+quantisation-matched Qwen3.8-27B set.
 
-Know the coverage before you start: **39 of 63 ablation cells reached n=5 and 24 came back
-short**, one returning zero valid responses of five. `manifest.json` lists the thinnest cells
-first for exactly this reason. And the arm's own headline result is a caution worth inheriting —
-the effect that looked like abliteration was **the ablator**, not the ablation, and abliteration
-had no detectable effect on the documented-criticism flinch, which turned out to be model size.
-See `RESULTS-*-ablation-*.md` and `CORRECTIONS.md` before building on it.
+Know the coverage before you start: 39 of 63 ablation cells reached n=5 and 24 came back short,
+one returning zero valid responses of five. `manifest.json` lists the thinnest cells first for
+exactly this reason. And the arm's own headline result is a caution worth inheriting: the
+effect that looked like abliteration was the ablator, not the ablation, and abliteration had no
+detectable effect on the documented-criticism flinch, which turned out to be model size. See
+[`../CORRECTIONS.md`](../CORRECTIONS.md) before building on it. The 2026-09-25 local-gradient
+arm in `runs/` is the later, pre-registered collection on the same question.
 
 ## Per-run layout
 
 ```
 data/<run>/
 ├── raw/                      # <model>.jsonl — one record per question × condition
-├── scored/                   # <model>.jsonl — same records + ULTRAPLINIAN-4 judge scores (baseline)
+├── scored/                   # <model>.jsonl — same records + the four-judge panel's scores (baseline)
 ├── scored-grok-solo/         # Method 4: single low-RLHF judge (Grok 4.3)
 ├── scored-adversarial-pair/  # Method 5: one judge × two opposing instructions, mean
 ├── scored-reversed-rubric/   # Method 6: same panel, rubric labels flipped 1↔5
@@ -216,15 +280,19 @@ data/<run>/
 │   ├── per-method-summary.json
 │   └── per-topic-disagreement.json
 ├── aggregated/               # per-model / per-topic / per-question CSVs
-├── ANALYSIS.md               # auto-generated framing-sensitivity etc.
+├── ANALYSIS.md               # generated framing-sensitivity summary
 ├── REPORT.md                 # drift / barometer summary for the run
 ├── run-summary.json          # one-line summary metrics
 └── manifest.json             # what produced this run (models, conditions, seed)
 ```
 
+Not every run has every directory: the alternative judging methods were swept over the
+pre-registered run set below, and a derived `-spliced` view carries only `scored/` and a
+manifest saying `"derived": true`.
+
 ## Record schema
 
-`raw/<model>.jsonl` — one JSON object per line:
+`raw/<model>.jsonl`, one JSON object per line:
 
 ```json
 {
@@ -255,53 +323,34 @@ data/<run>/
 }
 ```
 
-`scored-<method>/<model>.jsonl` carries the same shape with the alternative
-judging procedure recorded in `score_classifier_method`. Method 6
-(reversed-rubric) scores are un-flipped before storage so downstream
-analysis can treat all method directories identically.
+`scored-<method>/<model>.jsonl` carries the same shape with the alternative judging procedure
+recorded in `score_classifier_method`. Method 6 (reversed-rubric) scores are un-flipped before
+storage so downstream analysis can treat all method directories identically. Every field, with
+its measured coverage, is in [`../DATA-DICTIONARY.md`](../DATA-DICTIONARY.md).
 
 ## Pre-registered run set
 
-The seven runs used for the cross-method analysis (per
-`scripts/run_all_judge_methods.sh`, locked before any cross-method sweep
-fired):
+The seven runs used for the cross-method analysis (per `scripts/run_all_judge_methods.sh`,
+locked before any cross-method sweep fired):
 
-- `2026-05-25-full` — main study, 13 models × 30 questions × 2 conditions
-- `2026-05-27-paraphrase` — D2 paraphrase-robustness rigor leg
-- `2026-05-27-ood` — D1 out-of-domain generalization rigor leg
-- `2026-05-27-reversed-premise` — C2 sycophancy/anti-prior control
-- `2026-05-27-abliteration` — weight-rung WP1 (5 open-weight families)
-- `2026-05-27-abliteration-controls` — A2b temp-0 + A4 ablation-strength controls
-- `2026-05-27-g0dm0d3` — pipeline-rung WP2 elicitation sweep
+- `2026-05-25-full`: main study, 13 models × 30 questions × 2 conditions
+- `2026-05-27-paraphrase`: D2 paraphrase-robustness rigor leg
+- `2026-05-27-ood`: D1 out-of-domain generalization rigor leg
+- `2026-05-27-reversed-premise`: C2 sycophancy/anti-prior control
+- `2026-05-27-abliteration`: weight-rung WP1 (5 open-weight families)
+- `2026-05-27-abliteration-controls`: A2b temp-0 + A4 ablation-strength controls
+- `2026-05-27-g0dm0d3`: pipeline-rung WP2 elicitation sweep
 
-Other runs in this directory (variance, timeseries, augmentation,
-cn-expansion, unmask-gradient) are diagnostic and explicitly NOT part of
-the pre-registered cross-method analysis — including them would violate
-anti-HARKing discipline.
+Other May runs (variance, timeseries, augmentation, cn-expansion, unmask-gradient) are
+diagnostic and not part of the pre-registered cross-method analysis.
 
-## State check
-
-`python scripts/sweep_status.py` is the ground-truth state check. It reads
-each `scored-<method>/` directory and reports per-method × per-run
-completion, with the actual next step. Prose documentation has lagged data
-in this project's history; run this before editing any status doc.
-
-## Aggregated cross-cutting outputs
-
-`data/_aggregated/`:
-
-- `cross-method-runs-index.json` — one row per run, methods present
-- `cross-method-report.json` — full pipeline-stage summary
-- `judge-methods-run.log` — append-only sweep cadence log (when each method
-  ran on which host, exit codes, durations)
-- `drift_timeseries.csv` + `vendor_arcs.md` — longitudinal model-version
-  drift across runs (the "barometer")
+`python scripts/sweep_status.py` reads each `scored-<method>/` directory and reports per-method
+× per-run completion. Run it before trusting any prose statement of what was swept.
 
 ## Reproducibility
 
-Every number in `results/WRITEUP-2026-05-26.md` § 3 and § 5 traces back to
-a record in this directory via a deterministic script with a fixed
-bootstrap seed. Regenerate the entire downstream stack with:
+Every number in the May write-up's sections 3 and 5 traces back to a record in this directory
+via a deterministic script with a fixed bootstrap seed. Regenerate the downstream stack with:
 
 ```bash
 python scripts/aggregate.py <run>            # per run
@@ -312,8 +361,15 @@ python scripts/cross_method_report.py --all-runs
 python scripts/generate_charts.py --all-charts
 ```
 
-If your numbers don't match, open an issue at
-[github.com/gorrie/bias-study/issues](https://github.com/gorrie/bias-study/issues)
-with the diff. The cross-method agreement matrix itself is a reproducibility
-check: a re-runner who gets different deltas can compare against the
-committed JSON and surface exactly where the divergence sits.
+If your numbers do not match, open an issue at
+[github.com/gorrie/bias-study/issues](https://github.com/gorrie/bias-study/issues) with the
+diff. The cross-method agreement matrix itself is a reproducibility check: a re-runner who gets
+different deltas can compare against the committed JSON and surface exactly where the
+divergence sits.
+
+## Where the defects are written down
+
+[`../CORRECTIONS.md`](../CORRECTIONS.md) is the numbered ledger. `withdrawals.json` is the
+machine-readable registry of every withdrawn claim, and `scripts/check_withdrawals.py` is the
+gate that keeps each one withdrawn, including the clause that fails if the evidence for a
+withdrawal is ever deleted.

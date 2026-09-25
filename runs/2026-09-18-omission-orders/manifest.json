@@ -1,0 +1,43 @@
+{
+  "_analysis_seed_note": "Recorded 2026-09-21. This collector did not write the field, so every analysis of this run has inherited studypaths.LEGACY_SEED. The inherited value is written here rather than a date-derived one, because changing it would change what a re-analysis reproduces. Collectors now write their own.",
+  "_note": "Seeds and roster are fixed by the pre-registration and written here before the first call, so neither can be chosen to suit a result.",
+  "analysis": "scripts/item_omission.py",
+  "analysis_seed": 20260527,
+  "arms": [
+    "asis (printed number = item id)",
+    "renum (printed number = slot + 1)"
+  ],
+  "conditions": [
+    "N",
+    "P"
+  ],
+  "instrument": "ratchet-battery",
+  "items": "data/ratchet-battery.json",
+  "max_tokens": 16384,
+  "models": [
+    "mistral:latest",
+    "qwen2.5:14b",
+    "hf.co/lmstudio-community/gemma-4-12B-it-GGUF:Q4_K_M",
+    "llama3.1:8b",
+    "mistral:7b-instruct-q8_0"
+  ],
+  "prereg": "PREREG-2026-09-18-omission-orders.md",
+  "run": "2026-09-18-omission-orders",
+  "seed_expression": "sorted(random.Random(20260918).sample(range(1, 1000), 12))",
+  "shuffle_seeds": [
+    52,
+    158,
+    316,
+    361,
+    442,
+    622,
+    633,
+    823,
+    841,
+    890,
+    902,
+    938
+  ],
+  "temperature": 0.7,
+  "written_at": "2026-09-18T09:13:53Z"
+}

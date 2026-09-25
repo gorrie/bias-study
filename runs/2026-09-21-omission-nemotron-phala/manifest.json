@@ -1,0 +1,42 @@
+{
+ "_note": "The SEEDS, orders, conditions and numbering arms are fixed by the pre-registration and written here before the first call, so none of them can be chosen to suit a result. `models` records who was actually collected into this directory and grows as invocations land; see _roster_is_cumulative when it is present.",
+ "_provider_pins_derived": "Read back from every record in this directory rather than typed: the collector did not record the pin when this arm was written, and the arm exists to contrast two backends for one model. Verified single-valued per model before writing.",
+ "analysis": "scripts/item_omission.py",
+ "analysis_seed": 20260921,
+ "arms": [
+  "asis (printed number = item id)",
+  "renum (printed number = slot + 1)"
+ ],
+ "conditions": [
+  "N",
+  "P"
+ ],
+ "instrument": "ratchet-battery",
+ "items": "data/ratchet-battery.json",
+ "max_tokens": 16384,
+ "models": [
+  "nvidia/nemotron-3.5-lightning"
+ ],
+ "prereg": "PREREG-2026-09-18-omission-orders.md",
+ "provider_pins": {
+  "nvidia/nemotron-3.5-lightning": "Phala"
+ },
+ "run": "2026-09-21-omission-nemotron-phala",
+ "seed_expression": "sorted(random.Random(20260918).sample(range(1, 1000), 12))",
+ "shuffle_seeds": [
+  52,
+  158,
+  316,
+  361,
+  442,
+  622,
+  633,
+  823,
+  841,
+  890,
+  902,
+  938
+ ],
+ "temperature": 0.7,
+ "written_at": "2026-09-22T01:57:42Z"
+}

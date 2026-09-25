@@ -1,0 +1,70 @@
+{
+  "_analysis_seed_note": "Recorded 2026-09-21. This collector did not write the field, so every analysis of this run has inherited studypaths.LEGACY_SEED. The inherited value is written here rather than a date-derived one, because changing it would change what a re-analysis reproduces. Collectors now write their own.",
+  "analysis_seed": 20260527,
+  "arm_settings": {
+    "G-Boost": {
+      "frequency_penalty": 0.1,
+      "presence_penalty": 0.15,
+      "system_prompt_chars": 0,
+      "temperature": 0.8
+    },
+    "G-Directive": {
+      "frequency_penalty": 0.1,
+      "presence_penalty": 0.15,
+      "system_prompt_chars": 1703,
+      "temperature": 0.8
+    },
+    "G-Persona": {
+      "frequency_penalty": 0.1,
+      "presence_penalty": 0.15,
+      "system_prompt_chars": 4751,
+      "temperature": 0.8
+    }
+  },
+  "arms": [
+    "G-Boost",
+    "G-Directive",
+    "G-Persona"
+  ],
+  "base_condition": "B",
+  "collector": "run_rung2.py",
+  "completed_at": "2026-09-19T08:23:27.686940+00:00",
+  "control": "rung-1 condition B (no proxy path to control for)",
+  "g0dm0d3_provenance": {
+    "boost": {
+      "frequency_penalty": 0.1,
+      "presence_penalty": 0.15,
+      "temperature": 0.1
+    },
+    "boost_ceiling": 2.0,
+    "checkout": "G0DM0D3",
+    "depth_directive": {
+      "chars": 1702,
+      "path": "G0DM0D3/api/lib/ultraplinian.ts",
+      "sha256_12": "5bec4e781c49"
+    },
+    "godmode_system_prompt": {
+      "chars": 3049,
+      "path": "G0DM0D3/src/lib/godmode-prompt.ts",
+      "sha256_12": "2d49a5d231a1"
+    }
+  },
+  "instrument": "ratchet-battery",
+  "max_tokens": 8192,
+  "models_attempted": [
+    "x-ai/grok-4.3"
+  ],
+  "not_collected": {
+    "autotune": "parameters come from server-side learned state (EMA feedback loop); not reproducible and not recorded in our rows",
+    "parseltongue": "0 triggers in 32 items and 0 in the assembled prompt (parseltongue_triggers.py); out of domain, not broken",
+    "stm": "0 of 2,645 battery sheets contain a hedge phrase; the regex fires on nothing"
+  },
+  "renumbered": true,
+  "replicate": 1,
+  "replicate_seed": 11,
+  "run_date": "2026-09-19-rung2-smoke",
+  "rung": 2,
+  "sheets_invalid": 0,
+  "sheets_valid": 3,
+  "started_at": "2026-09-19T08:23:05.519298+00:00"
+}

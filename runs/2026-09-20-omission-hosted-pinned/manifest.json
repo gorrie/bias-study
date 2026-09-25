@@ -1,0 +1,58 @@
+{
+  "_analysis_seed_note": "Recorded 2026-09-21. This collector did not write the field, so every analysis of this run has inherited studypaths.LEGACY_SEED. The inherited value is written here rather than a date-derived one, because changing it would change what a re-analysis reproduces. Collectors now write their own.",
+  "_note": "The SEEDS, orders, conditions and numbering arms are fixed by the pre-registration and were written here before the first call, so none of them can be chosen to suit a result. `models` and `provider_pins` record what was actually collected and were reconstructed from the records -- see _reconstructed, and Amendment 1 of the prereg for why each backend was chosen and what the per-backend omission split looks like.",
+  "_reconstructed": "2026-09-21. `models` and `provider_pins` are READ FROM THE RECORDS in this directory, because the collector wrote this file on its first invocation and never updated it: it named 2 model(s) over a directory holding 8. The arm is filled one model per call, each pinned to its own backend, so the first call's roster is not the run's roster. Fixed in run_omission_orders.py for future runs; this file could only be repaired from the data.",
+  "_roster_is_cumulative": "This directory is filled one model per invocation, because each is pinned to its own backend. `models` is the union of every invocation so far and grows as they land -- it is NOT a roster fixed before the first call, and the pre-registration fixes the ORDERS, CONDITIONS and NUMBERING ARMS here, not which models were re-collected or onto which backend.",
+  "analysis": "scripts/item_omission.py",
+  "analysis_seed": 20260527,
+  "arms": [
+    "asis (printed number = item id)",
+    "renum (printed number = slot + 1)"
+  ],
+  "conditions": [
+    "N",
+    "P"
+  ],
+  "instrument": "ratchet-battery",
+  "items": "data/ratchet-battery.json",
+  "max_tokens": 16384,
+  "models": [
+    "deepseek/deepseek-v3.2",
+    "ibm-granite/granite-4.2-8b",
+    "meta-llama/llama-3.3-70b-instruct",
+    "minimax/minimax-m2.7",
+    "moonshotai/kimi-k2-thinking",
+    "nvidia/nemotron-3.5-lightning",
+    "qwen/qwen3.8-2.4t-a95b",
+    "xiaomi/mimo-v2.5-pro"
+  ],
+  "prereg": "PREREG-2026-09-18-omission-orders.md",
+  "provider_pins": {
+    "deepseek/deepseek-v3.2": "Baidu",
+    "ibm-granite/granite-4.2-8b": "DeepInfra",
+    "meta-llama/llama-3.3-70b-instruct": "AkashML",
+    "minimax/minimax-m2.7": "Minimax",
+    "moonshotai/kimi-k2-thinking": "Novita",
+    "nvidia/nemotron-3.5-lightning": "DeepInfra",
+    "qwen/qwen3.8-2.4t-a95b": "SiliconFlow",
+    "xiaomi/mimo-v2.5-pro": "Xiaomi"
+  },
+  "run": "runs/2026-09-20-omission-hosted-pinned",
+  "seed_expression": "sorted(random.Random(20260918).sample(range(1, 1000), 12))",
+  "shuffle_seeds": [
+    52,
+    158,
+    316,
+    361,
+    442,
+    622,
+    633,
+    823,
+    841,
+    890,
+    902,
+    938
+  ],
+  "temperature": 0.7,
+  "written_at": "2026-09-21T01:25:01Z"
+}
