@@ -1,0 +1,93 @@
+{
+ "_README": "Zero-byte record files under runs/ and data/, each with the reason it is empty. An empty file and an absent measurement are indistinguishable to every reader, human or scripted, so one that is deliberate has to say so here. Gated by scripts/check_empty_records.py --check. See that script's docstring for the 2026-09-20 incident that produced this file: an independent reviewer read the fourteen abliteration stubs below, concluded a live evilrobots.lol claim was fabricated, and wrote it up as a known-bad public-facing item. The claim was correct and the data was in a sibling directory.",
+ "files": {
+  "data/2026-05-27-abliteration/raw/gemma-2-9b-abliterated.jsonl": {
+   "reason": "STUB from the FIRST abliteration attempt, which failed at the SVD step: `linalg.eigh` exploded on the Gemma architecture on an Intel/MKL box and was logged for three weeks as a backend-specific failure. The same OBLITERATUS code path cleared in one shot on a 32 GB M5 and the successful run wrote to a NEW directory, leaving these behind. Not a measurement, not a missing measurement -- a file the failed attempt opened and never wrote to.",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/ -- 20 stock and 20 abliterated scored records, which is the 40 behind the website's '39 of 40 judge cells unanimous'"
+  },
+  "data/2026-05-27-abliteration/raw/gemma-2-9b-stock.jsonl": {
+   "reason": "as above -- the stock arm of the same failed first attempt",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/"
+  },
+  "data/2026-05-27-abliteration/scored/gemma-2-9b-abliterated.jsonl": {
+   "reason": "as above -- nothing to score, because the raw file it reads is a stub",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/scored/"
+  },
+  "data/2026-05-27-abliteration/scored/gemma-2-9b-stock.jsonl": {
+   "reason": "as above",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/scored/"
+  },
+  "data/2026-05-27-abliteration/scored-abliterated-gemma/gemma-2-9b-abliterated.jsonl": {
+   "reason": "as above -- one of six re-scoring views, each of which globbed the raw stubs and produced an empty scored file of its own. Six views times two arms is why fourteen files carry one cause.",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/"
+  },
+  "data/2026-05-27-abliteration/scored-abliterated-gemma/gemma-2-9b-stock.jsonl": {
+   "reason": "as above -- re-scoring view over a stub",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/"
+  },
+  "data/2026-05-27-abliteration/scored-adversarial-pair/gemma-2-9b-abliterated.jsonl": {
+   "reason": "as above -- re-scoring view over a stub",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/"
+  },
+  "data/2026-05-27-abliteration/scored-adversarial-pair/gemma-2-9b-stock.jsonl": {
+   "reason": "as above -- re-scoring view over a stub",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/"
+  },
+  "data/2026-05-27-abliteration/scored-blind-condition/gemma-2-9b-abliterated.jsonl": {
+   "reason": "as above -- re-scoring view over a stub",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/"
+  },
+  "data/2026-05-27-abliteration/scored-blind-condition/gemma-2-9b-stock.jsonl": {
+   "reason": "as above -- re-scoring view over a stub",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/"
+  },
+  "data/2026-05-27-abliteration/scored-grok-solo/gemma-2-9b-abliterated.jsonl": {
+   "reason": "as above -- re-scoring view over a stub",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/"
+  },
+  "data/2026-05-27-abliteration/scored-grok-solo/gemma-2-9b-stock.jsonl": {
+   "reason": "as above -- re-scoring view over a stub",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/"
+  },
+  "data/2026-05-27-abliteration/scored-reversed-rubric/gemma-2-9b-abliterated.jsonl": {
+   "reason": "as above -- re-scoring view over a stub",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/"
+  },
+  "data/2026-05-27-abliteration/scored-reversed-rubric/gemma-2-9b-stock.jsonl": {
+   "reason": "as above -- re-scoring view over a stub",
+   "data_elsewhere": "data/2026-05-27-abliteration-gemma2/"
+  },
+  "runs/2026-09-16-ratchet-v3-wave/z-ai__glm-5.2__B.jsonl": {
+   "reason": "TRANSPORT, not refusal, and this is the availability blocker showing up as a file. The model was pinned to a backend that stopped serving it -- 25 HTTP 404s and zero successes in twenty-seven hours -- so the collector opened a file per cell and wrote nothing to it. The model is NOT delisted: the OpenRouter catalogue lists 30 live endpoints for it and our pin is simply not among them. No re-collect on a live backend is part of this release, so these cells are absent from the wave's analysis.",
+   "data_elsewhere": null
+  },
+  "runs/2026-09-16-ratchet-v3-wave/z-ai__glm-5.2__C.jsonl": {
+   "reason": "as above -- glm-5.2 stale pin",
+   "data_elsewhere": null
+  },
+  "runs/2026-09-16-ratchet-v3-wave/z-ai__glm-5.2__E.jsonl": {
+   "reason": "as above -- glm-5.2 stale pin",
+   "data_elsewhere": null
+  },
+  "runs/2026-09-16-ratchet-v3-wave/z-ai__glm-5.2__F000.jsonl": {
+   "reason": "as above -- glm-5.2 stale pin",
+   "data_elsewhere": null
+  },
+  "runs/2026-09-16-ratchet-v3-wave/z-ai__glm-5.2__F001.jsonl": {
+   "reason": "as above -- glm-5.2 stale pin",
+   "data_elsewhere": null
+  },
+  "runs/2026-09-16-ratchet-v3-wave/z-ai__glm-5.2__F010.jsonl": {
+   "reason": "as above -- glm-5.2 stale pin",
+   "data_elsewhere": null
+  },
+  "runs/2026-09-16-ratchet-v3-wave/hf.co__culturerevolt__gemma-4-12b-heretic-abliterated-GGUF_Q4_K_M__B.jsonl": {
+   "reason": "A LOCAL build, so there is no transport to blame. The cell was opened and the build returned nothing for it. Conditions B and C only; the same build answers N/A/P/D normally, so this is not a model that cannot be run. Undiagnosed, and declared rather than deleted so the next person to look at conditions B and C on local abliterated builds finds it.",
+   "data_elsewhere": null
+  },
+  "runs/2026-09-16-ratchet-v3-wave/hf.co__culturerevolt__gemma-4-12b-heretic-abliterated-GGUF_Q4_K_M__C.jsonl": {
+   "reason": "as above -- same local build, condition C",
+   "data_elsewhere": null
+  }
+ }
+}

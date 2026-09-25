@@ -57,13 +57,23 @@ DEFAULT_DEST = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.dirname(HERE)))), "bias-study-release", "data")
 
 #: Rung 2, which is a collection rather than a repair and appears in no registry.
-#: The decomposition run is deliberately absent while it is still collecting; add
-#: it when it lands, with its result, not before.
+#: The decomposition run was held back while it was still collecting; it landed with its
+#: result (RESULTS-2026-09-15-rung2-decomposed.md) and ships like the other four.
 RUNG2_RUNS = (
     "2026-09-13-g0dm0d3-replicate",
     "2026-09-13-g0dm0d3-replicate-baseline",
     "2026-09-14-g0dm0d3-baseline-4k",
     "2026-09-14-g0dm0d3-proxy-control",
+    "2026-09-15-g0dm0d3-decomposition",
+)
+
+#: The truncation detector's known-good validation sets. Cited as evidence in
+#: data/2026-09-13-g0dm0d3-replicate/MANIFEST.md beside 2026-09-13-truncation-proof, which
+#: already ships as a repair source; a validation table whose PASS rows point at absent
+#: directories asserts its evidence.
+FIXTURE_RUNS = (
+    "2026-09-13-g0dm0d3-smoke",
+    "2026-09-13-g0dm0d3-smoke2",
 )
 
 SKIP_SUFFIXES = (".log",)
@@ -87,6 +97,14 @@ COMPLETE_WITHOUT_MANIFEST = {
         "truncated, and collection_check ACCEPTED. Recorded in "
         "RESULTS-2026-09-13-pipeline-rung-replicate.md, written before the "
         "manifest gap was known.",
+    "2026-09-13-g0dm0d3-smoke":
+        "run_g0dm0d3.py wrote no manifest until 2026-09-14. Complete on independent "
+        "evidence: the 10 records the detector validation table in "
+        "2026-09-13-g0dm0d3-replicate/MANIFEST.md counts (grok @800, 10 flagged 0).",
+    "2026-09-13-g0dm0d3-smoke2":
+        "run_g0dm0d3.py wrote no manifest until 2026-09-14. Complete on independent "
+        "evidence: the 10 records the detector validation table in "
+        "2026-09-13-g0dm0d3-replicate/MANIFEST.md counts (opus @4000, 10 flagged 0).",
 }
 
 
@@ -139,6 +157,8 @@ def plan():
         wanted.append((src, "repair run spliced into a derived corpus"))
     for r in RUNG2_RUNS:
         wanted.append((r, "rung-2 collection"))
+    for r in FIXTURE_RUNS:
+        wanted.append((r, "detector validation set"))
 
     seen, rows = set(), []
     for run, why in wanted:

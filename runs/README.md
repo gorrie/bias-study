@@ -1,6 +1,6 @@
 # `runs/` — the current study's corpus
 
-Every run here was collected on the Ratchet battery: 32 forced-choice items in 16 mirrored
+Every run here but the two described under the inventory was collected on the Ratchet battery: 32 forced-choice items in 16 mirrored
 pairs, written by Ian Gorrie, MIT-licensed and published in full at
 [`../data/ratchet-battery.json`](../data/ratchet-battery.json). There is no fetch step and no
 third-party item text to withhold. Everything collected before this instrument is in
@@ -42,10 +42,14 @@ directory's name or date. `status` comes from [`../data/withdrawals.json`](../da
 [`PROVENANCE.json`](PROVENANCE.json) beside this file lists, for every run, which documents name
 it and what the study classified it as.
 
-One directory reports `previous` on purpose: `2026-09-25-local-gradient-judged` puts ten of the
+Two directories report `previous`. `2026-09-25-local-gradient-judged` puts ten of the
 earlier free-text questions (the `data/` instrument) to a stock build and its abliteration under
 the battery's six conditions, so that the judge-free and the judged instruments can be compared
 on the same builds. It is part of the current study and none of its records is a battery sheet.
+`mask-gradient` is the superseded first attempt at the local gradient: free-text questions
+T01-Q2…T10-Q2 under conditions A–E on four local builds, 226 records, sampled at temperature 0.7
+with no seed. It is kept as reference, no figure in the paper reads it, and
+`2026-09-25-local-gradient` replaced it.
 
 ## A guide to the directories
 
@@ -54,7 +58,7 @@ call of the arm they govern; each results document names the script that compute
 
 | directory | what it is | pre-registration | results |
 |---|---|---|---|
-| `2026-09-16-ratchet-v3-wave` | the wave: 65 models, conditions N (bare), A (balance instruction), D (commitment directive), P (content-free placebo), three presentation orders, five draws per cell; a subset of models also under the further prompt arms B, C and E, and three under the eight-cell clause factorial F000–F111. Every floor in the paper is computed from it | [`PREREG-2026-09-14-i3-phase4.md`](../prereg/PREREG-2026-09-14-i3-phase4.md), Amendment 2 | [`PAPER-below-the-floor.md`](../PAPER-below-the-floor.md) |
+| `2026-09-16-ratchet-v3-wave` | the wave: 65 models, conditions N (bare), A (balance instruction), D (commitment directive), P (content-free placebo), three presentation orders, five draws per cell; a subset of models also under the further prompt arms B, C and E, and seven under the eight-cell clause factorial F000–F111, three of them at all three orders (an eighth, glm-5.2, returned nothing; see [`../data/empty-records.json`](../data/empty-records.json)). Every floor in the paper is computed from it | [`PREREG-2026-09-14-i3-phase4.md`](../prereg/PREREG-2026-09-14-i3-phase4.md), Amendment 2 | [`PAPER-below-the-floor.md`](../PAPER-below-the-floor.md) |
 | `2026-09-16-ratchet-v3-wave-budget-probe` | 71 single sheets that measured the token budget the wave then ran at. A fixture, not a measurement of any model | — | — |
 | `2026-09-18-bce-smoke` | seven sheets confirming conditions B, C and E render and parse. A fixture | — | — |
 | `2026-09-18-roster-smoke` | one sheet per hosted model, confirming the roster answered before the wave paid for it. A fixture | — | — |
@@ -72,6 +76,7 @@ call of the arm they govern; each results document names the script that compute
 | `2026-09-25-placebo-wording` | a second content-free placebo, P2, beside P and N: 10 models, three orders, five draws | [`PREREG-2026-09-25-placebo-wording.md`](../prereg/PREREG-2026-09-25-placebo-wording.md) | [`RESULTS-2026-09-25-placebo-wording.md`](../results/RESULTS-2026-09-25-placebo-wording.md) |
 | `2026-09-25-serving-path` | one model on two pinned backends, interleaved draw by draw: is access tier a serving-path effect? 5 models, conditions N and A | [`PREREG-2026-09-25-serving-path.md`](../prereg/PREREG-2026-09-25-serving-path.md) | [`RESULTS-2026-09-25-serving-path.md`](../results/RESULTS-2026-09-25-serving-path.md) |
 | `2026-09-25-same-items-both-paths` | the 32 propositions asked as free-text questions and scored by the May judge panel, 6 models, conditions N and A, against the same models' forced-choice sheets in the wave: convergent validity of the two scoring paths. `raw/` and `scored/` as in `data/` | [`PREREG-2026-09-25-same-items-both-paths.md`](../prereg/PREREG-2026-09-25-same-items-both-paths.md) | [`RESULTS-2026-09-25-same-items-both-paths.md`](../results/RESULTS-2026-09-25-same-items-both-paths.md) |
+| `mask-gradient` | the superseded first attempt at the local gradient: free-text questions under conditions A–E on four local builds, 226 records, temperature 0.7 with no seed. Kept as reference; no figure in the paper reads it | [`PREREG-2026-08-28-refusal-direction.md`](../prereg/PREREG-2026-08-28-refusal-direction.md) | replaced by `2026-09-25-local-gradient` |
 
 Two further pre-registered analyses collected nothing and read sheets already here:
 [`PREREG-2026-09-25-factorial-floor-calibration.md`](../prereg/PREREG-2026-09-25-factorial-floor-calibration.md)
@@ -113,7 +118,7 @@ Three layouts, all JSON Lines:
 - `2026-09-25-same-items-both-paths`: `raw/` and `scored/` per model, the May layout.
 
 Each directory carries the collector's `manifest.json`, written before the first call, or, for
-the three collected by a tool that wrote none, a `manifest.derived.json` content freeze that
+the four collected by a tool that wrote none, a `manifest.derived.json` content freeze that
 `scripts/derive_manifest.py --check` verifies. Resolve a run by name rather than by spelling a
 path; the resolver searches both corpus roots:
 
@@ -143,5 +148,5 @@ including the clause that fails if the evidence for one is ever deleted.
 ## What is not here
 
 [`../MANIFEST.json`](../MANIFEST.json) lists every directory the export keeps back, with the
-reason: the refusal-ablation series, whose prompts are XSTest's (a third party's text); the
-superseded first attempt at the local gradient; and the development fixtures of 2026-09-08.
+reason: the refusal-ablation series, whose prompts are XSTest's (a third party's text), and the
+development fixtures of 2026-09-08.

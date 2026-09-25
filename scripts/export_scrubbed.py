@@ -474,6 +474,16 @@ def plan():
     return shipped, not_shipped, held
 
 
+def _declared_empty():
+    """Paths data/empty-records.json declares as deliberately empty record files."""
+    path = os.path.join(STUDY, "data", "empty-records.json")
+    try:
+        with io.open(path, encoding="utf-8") as fh:
+            return set((json.load(fh).get("files") or {}))
+    except (OSError, ValueError):
+        return set()
+
+
 def _write_text(dest, text):
     os.makedirs(os.path.dirname(dest), exist_ok=True)
     with io.open(dest, "w", encoding="utf-8", newline="\n") as fh:
@@ -504,8 +514,11 @@ def export_dir(rel, src, out_root, fingerprints, tally, drop_fields, raw):
                 tally["records"] += 1
             if not keep:
                 # A sheet file with no records is a collector that opened a file and wrote
-                # nothing (eight such files sit in the wave). Not a sheet; not exported.
-                continue
+                # nothing (eight such files sit in the wave). It ships as the empty file when
+                # data/empty-records.json declares it, so the release shows the cell was
+                # opened and says why it holds nothing; an undeclared one is not exported.
+                if "%s/%s" % (rel, sub) not in _declared_empty():
+                    continue
             text = "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in keep)
         else:
             text = io.open(path, encoding="utf-8", errors="replace").read()

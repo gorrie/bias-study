@@ -27,7 +27,7 @@ stubs left behind -- nothing here would have caught that either.
 
 WHAT IT DOES
 ------------
-Finds every zero-byte `.jsonl` under `runs/` and requires each to be DECLARED: named in
+Finds every zero-byte `.jsonl` under `runs/` and `data/` and requires each to be DECLARED: named in
 `data/empty-records.json` with a reason and, where the data lives elsewhere, where. An
 undeclared empty file is a defect. A declared one is a fact somebody decided.
 
@@ -35,7 +35,7 @@ undeclared empty file is a defect. A declared one is a fact somebody decided.
     python scripts/check_empty_records.py --check     # exit 1 on an undeclared empty file
     python scripts/check_empty_records.py --write     # seed the declaration file for editing
 
-Exit 0 all declared, 1 undeclared files, 2 NOT APPLICABLE (no runs/ tree here).
+Exit 0 all declared, 1 undeclared or stale declarations, 2 NOT APPLICABLE (neither root here).
 """
 from __future__ import annotations
 
@@ -49,13 +49,20 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
 RUNS = os.path.join(STUDY, "runs")
+DATA = os.path.join(STUDY, "data")
 DECL = os.path.join(STUDY, "data", "empty-records.json")
+#: Both record roots. This walked runs/ alone; the fourteen abliteration stubs that caused
+#: the 2026-09-20 incident moved to data/ with the May runs, and from then on the gate
+#: checked none of them while their declarations went stale under runs/ paths.
+ROOTS = (RUNS, DATA)
 
 
 def empty_files():
-    """Every zero-byte .jsonl under runs/, as paths relative to the study root."""
+    """Every zero-byte .jsonl under runs/ and data/, as paths relative to the study root."""
     out = []
-    for path in sorted(glob.glob(os.path.join(RUNS, "**", "*.jsonl"), recursive=True)):
+    paths = [p for root in ROOTS
+             for p in glob.glob(os.path.join(root, "**", "*.jsonl"), recursive=True)]
+    for path in sorted(paths):
         try:
             if os.path.getsize(path) == 0:
                 out.append(os.path.relpath(path, STUDY).replace("\\", "/"))
@@ -84,8 +91,8 @@ def main(argv=None):
                          "carrying a TODO reason for a human to replace")
     a = ap.parse_args(argv)
 
-    if not os.path.isdir(RUNS):
-        print("NOT APPLICABLE: no runs/ tree in %s." % STUDY)
+    if not any(os.path.isdir(r) for r in ROOTS):
+        print("NOT APPLICABLE: no runs/ or data/ tree in %s." % STUDY)
         return 2
 
     found = empty_files()
@@ -97,7 +104,7 @@ def main(argv=None):
 
     if a.write:
         rec = {"_README": (
-            "Zero-byte record files under runs/, each with the reason it is empty. An empty "
+            "Zero-byte record files under runs/ and data/, each with the reason it is empty. An empty "
             "file and an absent measurement are indistinguishable to every reader, so one "
             "that is deliberate has to say so here. See check_empty_records.py for the "
             "incident that produced this file."),
@@ -112,7 +119,7 @@ def main(argv=None):
               % (DECL, len(rec["files"]), len(undeclared)))
         return 0
 
-    print("ZERO-BYTE RECORD FILES UNDER runs/")
+    print("ZERO-BYTE RECORD FILES UNDER runs/ AND data/")
     print("  An empty file and an arm that was never collected look identical. This says")
     print("  which is which, because on 2026-09-20 the difference was read the wrong way")
     print("  and a correct published claim was written up as fabricated.")
@@ -153,7 +160,7 @@ def main(argv=None):
 
     if not a.check:
         return 0
-    return 1 if undeclared else 0
+    return 1 if (undeclared or stale) else 0
 
 
 if __name__ == "__main__":

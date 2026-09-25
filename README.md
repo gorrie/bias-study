@@ -223,7 +223,7 @@ from [`runs/`](runs/), so a disagreement between the two is a bug worth an issue
 
 | not shipped | why | what cannot be recomputed here |
 |---|---|---|
-| `2026-09-15-g0dm0d3-decomposition` | a pipeline-rung arm of the retired design | The decomposition run is not in this repository. [`pipeline_decomposition.py`](scripts/pipeline_decomposition.py) exits 2 here, so the B-Godmode / B-Autotune split cannot be recomputed |
+| `2026-09-20-gemma2-recollect` | collected on a separate local machine and held there | the Gemma-2-9B stock-against-abliterated wording overlap in §3.7 and [`RESULTS-2026-09-20-gemma2-recollect.md`](results/RESULTS-2026-09-20-gemma2-recollect.md) (Jaccard 0.339 / 0.380 / 0.377) |
 | `refusal-ablation` | it carries verbatim XSTest prompts, a third party's text | the refusal dose series; `RESULTS-2026-09-19-dose-response.md`, named in the paper's provenance table, stays in the private tree for the same reason |
 | the 62-item questionnaire and every record collected on it | a third party's licensed text; the forced-choice arm of August and early September ran on it | the withdrawn claims measured on it: the figures [`CORRECTIONS.md`](CORRECTIONS.md) #1–#14 and #29 quote cannot be recomputed here |
 | internal working documents (`STATUS`, backlogs, plans) | process records, not results | nothing in the paper; where [`data/withdrawals.json`](data/withdrawals.json) cites one as evidence, the claim is withdrawn either way |

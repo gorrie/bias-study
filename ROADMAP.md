@@ -32,7 +32,7 @@ breaks, or only along with it. **Needs:** the above.
 
 **Scoring by logprob instead of parsing prose — PROTOTYPED 2026-09-07, AND IT FAILED ITS
 AGREEMENT CHECK.** Full measurement in
-[`results/RESULTS-2026-09-07-logit-scoring-fails-agreement.md`](withdrawn/results/RESULTS-2026-09-07-logit-scoring-fails-agreement.md);
+[`withdrawn/results/RESULTS-2026-09-07-logit-scoring-fails-agreement.md`](withdrawn/results/RESULTS-2026-09-07-logit-scoring-fails-agreement.md);
 the prototype is retired with the instrument it probed.
 
 Three findings, because the entry below was written as though this were a small change:
@@ -65,7 +65,7 @@ measure rather than a four-point one, which tightens every floor in the study.
 
 **Grammar-constrained decoding instead of parsing prose — PROTOTYPED 2026-09-07, AND IT WORKS,
 at the third attempt.** Full measurement in
-[`results/RESULTS-2026-09-07-constrained-decoding-batch-size.md`](withdrawn/results/RESULTS-2026-09-07-constrained-decoding-batch-size.md);
+[`withdrawn/results/RESULTS-2026-09-07-constrained-decoding-batch-size.md`](withdrawn/results/RESULTS-2026-09-07-constrained-decoding-batch-size.md);
 the prototype is `scripts/constrained_probe.py`.
 
 This is the other route to removing the parser, and unlike logit scoring it keeps the

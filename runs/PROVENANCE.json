@@ -124,11 +124,7 @@
    "role": "documented",
    "why": "named in a study document",
    "documents": [
-    "CORRECTIONS-2026-09-18-bootstrap.md",
-    "PAPER-below-the-floor.md",
-    "PROTOCOL-DEVIATIONS.md",
     "prereg/PREREG-2026-09-18-omission-orders.md",
-    "prereg/PREREG-2026-09-18-paraphrase.md",
     "prereg/README.md",
     "results/RESULTS-2026-09-18-omission-orders.md",
     "results/RESULTS-2026-09-21-omission-pinned.md"
@@ -148,9 +144,6 @@
    "role": "documented",
    "why": "named in a study document",
    "documents": [
-    "PAPER-below-the-floor.md",
-    "PROTOCOL-DEVIATIONS.md",
-    "RELEASE-2026-09-07.md",
     "prereg/README.md",
     "results/RESULTS-2026-09-21-paraphrase.md"
    ]
@@ -252,8 +245,6 @@
    "role": "documented",
    "why": "named in a study document",
    "documents": [
-    "PAPER-below-the-floor.md",
-    "PROTOCOL-DEVIATIONS.md",
     "prereg/PREREG-2026-09-20-rung2-control-v2.md",
     "prereg/PREREG-2026-09-25-rung2-within-depth10.md",
     "prereg/README.md",
@@ -303,9 +294,6 @@
    "role": "documented",
    "why": "named in a study document",
    "documents": [
-    "PAPER-below-the-floor.md",
-    "PROTOCOL-DEVIATIONS.md",
-    "README.md",
     "prereg/PREREG-2026-09-24-partials-renumbered.md",
     "prereg/README.md"
    ]
@@ -329,8 +317,6 @@
    "role": "documented",
    "why": "named in a study document",
    "documents": [
-    "PAPER-below-the-floor.md",
-    "PROTOCOL-DEVIATIONS.md",
     "prereg/PREREG-2026-09-25-local-gradient.md",
     "prereg/README.md",
     "results/RESULTS-2026-09-25-local-gradient.md",
@@ -377,8 +363,6 @@
    "role": "documented",
    "why": "named in a study document",
    "documents": [
-    "PAPER-below-the-floor.md",
-    "PROTOCOL-DEVIATIONS.md",
     "prereg/PREREG-2026-09-25-placebo-wording.md",
     "prereg/README.md",
     "results/RESULTS-2026-09-25-placebo-wording.md"
@@ -399,8 +383,6 @@
    "role": "documented",
    "why": "named in a study document",
    "documents": [
-    "PAPER-below-the-floor.md",
-    "PROTOCOL-DEVIATIONS.md",
     "prereg/PREREG-2026-09-25-same-items-both-paths.md",
     "prereg/README.md",
     "results/RESULTS-2026-09-25-same-items-both-paths.md"
@@ -421,8 +403,6 @@
    "role": "documented",
    "why": "named in a study document",
    "documents": [
-    "PAPER-below-the-floor.md",
-    "PROTOCOL-DEVIATIONS.md",
     "prereg/PREREG-2026-09-25-serving-path.md",
     "prereg/README.md",
     "results/RESULTS-2026-09-25-serving-path.md",
@@ -447,14 +427,10 @@
    "role": "documented",
    "why": "named in a study document",
    "documents": [
-    "CORPUS-MAP-2026-09-14.md",
-    "CORRECTIONS.md",
     "LEARNINGS.md",
-    "README.md",
     "prereg/PREREG-2026-09-25-local-gradient.md",
     "prereg/README.md",
-    "results/RESULTS-2026-09-25-local-gradient.md",
-    "results/WRITEUP-2026-05-26.md"
+    "results/RESULTS-2026-09-25-local-gradient.md"
    ]
   }
  }

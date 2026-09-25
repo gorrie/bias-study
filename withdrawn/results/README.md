@@ -17,6 +17,12 @@ the one to recompute from. Where a document here disagrees with
 [`../../data/withdrawals.json`](../../data/withdrawals.json) is the single record of what is
 withdrawn. §3 of the paper tells the story these documents record.
 
+Paths in them are as written at the time. A May run they call `runs/<run>` is now
+[`../../data/<run>`](../../data/); runs they name that are in neither directory were collected on
+the retired questionnaire and are not shipped (see
+[`../../prereg/README.md`](../../prereg/README.md)), and scripts they name that are not in
+[`../../scripts/`](../../scripts/) were retired with that instrument.
+
 Two documents from the same period sit at the repository root instead, because the README
 lists them there:
 [`../../RESULTS-2026-09-14-rung2-transform-audit.md`](../../RESULTS-2026-09-14-rung2-transform-audit.md)

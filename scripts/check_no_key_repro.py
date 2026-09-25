@@ -90,11 +90,12 @@ def differs_from_committed():
     anything move in the last minute" -- it is "does the documented reproduction return the
     artifact this repository ships". That question has exactly one baseline: HEAD.
 
-    Uses git's own comparison so line-ending normalisation is the repository's, not ours.
+    Uses git's own comparison, ignoring CR at end of line: the reproduction writes LF, and a
+    Windows checkout with core.autocrlf holds CRLF, so a byte-identical result read as changed.
     """
     out = []
     for rel in tracked_outputs():
-        r = subprocess.run(["git", "diff", "--quiet", "HEAD", "--", rel],
+        r = subprocess.run(["git", "diff", "--quiet", "--ignore-cr-at-eol", "HEAD", "--", rel],
                            cwd=ROOT, capture_output=True, text=True, timeout=120)
         if r.returncode != 0:
             out.append(rel)

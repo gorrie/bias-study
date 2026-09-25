@@ -1022,8 +1022,8 @@ itself is unaffected — it is computed entirely from battery floors and describ
 instrument can resolve.
 
 **Reach, stated honestly.** Claims 1, 2, 3 and 5 were asserted in the pushed README, in
-`scripts/power.py`, in `LESSONS.md` (5), in `results/RESULTS-2026-09-05-frontier-v3.md` (2) and
-in `results/RESULTS-2026-08-28-stance-survives-ablation.md` (3), and on the live research page.
+`scripts/power.py`, in `LESSONS.md` (5), in [`withdrawn/results/RESULTS-2026-09-05-frontier-v3.md`](withdrawn/results/RESULTS-2026-09-05-frontier-v3.md) (2) and
+in [`withdrawn/results/RESULTS-2026-08-28-stance-survives-ablation.md`](withdrawn/results/RESULTS-2026-08-28-stance-survives-ablation.md) (3), and on the live research page.
 Claim 4 was public only as a line of `power.py`: its source document was never in this
 repository, and neither was claim 5's. Both are in the private tree's `withdrawn/results/` and
 are named here so the record of what was claimed stays traceable — not because a reader of this

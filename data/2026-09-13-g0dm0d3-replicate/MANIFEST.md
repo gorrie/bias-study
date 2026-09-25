@@ -59,9 +59,9 @@ which is validated against known sets before use:
 
 | set | run directory | n | flagged | expected |
 |---|---|---:|---:|---|
-| opus @800, known truncated | `runs/2026-09-13-truncation-proof/` | 10 | 10 | all — PASS |
-| opus @4000, known good | `runs/2026-09-13-g0dm0d3-smoke2/` | 10 | 0 | none — PASS |
-| grok @800, known good | `runs/2026-09-13-g0dm0d3-smoke/` | 10 | 0 | none — PASS |
+| opus @800, known truncated | `data/2026-09-13-truncation-proof/` | 10 | 10 | all — PASS |
+| opus @4000, known good | `data/2026-09-13-g0dm0d3-smoke2/` | 10 | 0 | none — PASS |
+| grok @800, known good | `data/2026-09-13-g0dm0d3-smoke/` | 10 | 0 | none — PASS |
 
 Those three directories are kept as the detector's validation evidence, not as study data.
 The grok cell is the one that matters for over-flagging: a terse model finishing well inside

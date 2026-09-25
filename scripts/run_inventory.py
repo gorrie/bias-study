@@ -287,6 +287,15 @@ def analysis_globs(script_dir=HERE):
     return sorted(out)
 
 
+def _names(name, text):
+    """True when `text` names the run `name` as a whole token, not inside a longer name.
+
+    A plain substring test credited `mask-gradient` with every document that mentions
+    `2026-05-26-unmask-gradient`. Run names carry hyphens, so a hyphen is part of the word.
+    """
+    return re.search(r"(?<![\w-])%s(?![\w-])" % re.escape(name), text) is not None
+
+
 def _script_text(script_dir=HERE):
     """Every script's source, concatenated. Cached on the function."""
     if getattr(_script_text, "_cache", None) is None:
@@ -328,7 +337,7 @@ def readers(name, globs=None):
         if any(fnmatch.fnmatch(p, base) or p.startswith(base.rstrip("*").rstrip("/") + "/")
                for p in probes):
             hits.append(g)
-    if name in _script_text():
+    if _names(name, _script_text()):
         hits.append("named in a script")
     # THE THIRD ROUTE, and the weakest: a run reachable only because a document prints the
     # command that reads it -- `item_omission.py --run 2026-09-18-omission-hosted` in PLAN.md.
@@ -336,7 +345,7 @@ def readers(name, globs=None):
     # hosted omission arm is 864 records behind a headline finding and this is how it is read)
     # and it is genuinely more fragile than a glob, so it is named differently rather than
     # folded in. A run with NONE of the three is the one that cost money.
-    if name in documented():
+    if _names(name, documented()):
         hits.append("named in a document")
     return hits
 
@@ -378,7 +387,7 @@ def documents_naming(study=STUDY):
         for name in sorted(os.listdir(root)):
             if not os.path.isdir(os.path.join(root, name)) or name in NOT_RUNS:
                 continue
-            out[name] = [rel for rel, text in docs.items() if name in text]
+            out[name] = [rel for rel, text in docs.items() if _names(name, text)]
     return out
 
 

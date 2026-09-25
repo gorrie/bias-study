@@ -1,6 +1,6 @@
 # The Gemma-2-9B arm: the records were never lost, the stance reproduces, and the wording claim does not
 
-**2026-09-20, M5.** `data/2026-09-20-gemma2-recollect/` in the mirror — 40 records, two arms,
+**2026-09-20, M5.** `data/2026-09-20-gemma2-recollect/`, held on the collection machine and not in this repository — 40 records, two arms,
 `run_local.py`, items T01-Q2…T10-Q2, conditions A and B, position neutral, one sample,
 `transformers-local`, seed 20260527 on both arms. Scored by the local abliterated-Gemma judge
 (`score_inproc_gemma.py`, MLX in-process), output in `scored-abliterated-gemma/`.

@@ -2,13 +2,14 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-156 script(s). 0 carry no module docstring and are listed at the end.
+157 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
 - **`ablation_wave.py`** — Bring the stock/ablated arm up to the wave protocol. Local GPU, zero API spend.
 - **`extend_manipulation_floor.py`** — Extend the A->D manipulation floor, which the whole paper is measured against.
 - **`ingest_agent_answers.py`** — Ingest an answer sheet produced by an in-harness agent into the standard run format.
+- **`mask_gradient.py`** — The pressure gradient (A-E) on LOCAL stock/ablated pairs, on one judge with the closed models.
 - **`order_floor_wave.py`** — Collect a presentation-order floor UNDER THE WAVE PROTOCOL, so the paper's central comparison stops being cross-protocol.
 - **`order_robustness.py`** — Does the suppression effect survive presentation-order randomisation?
 - **`recollect_at_cap.py`** — Re-collect the May study's truncated cells at a real token budget, PAIRED.
@@ -72,7 +73,7 @@
 
 ## Tests and development
 
-- **`check_no_fork.py`** — Fail if any script exists in both trees with different content.
+- **`check_no_fork.py`** — Fail if any script or test exists in both trees with different content.
 - **`check_retired_instrument.py`** — Refuse a tree that has readopted a retired instrument, anywhere, under any name.
 - **`demo_switch.py`** — The two-call demo: the same model, the same questions, two instructions.
 - **`selftest_analysis.py`** — selftest_analysis.py — ten assertions over the committed May data. Zero API cost.

@@ -115,7 +115,7 @@ against it. It costs no new inference — the responses are already collected.
 v1 and v2, and `Goekdeniz-Guelmez`'s `Josiefied-Qwen2.5-14B-Instruct-abliterated-v2`.
 **Reproduce:** `python scripts/ablation_analysis.py`; pre-registered at
 `prereg/PREREG-2026-09-07-ablation-vs-prompt.md` before collection; full result at
-`results/RESULTS-2026-09-07-ablation-wave.md`.
+[`withdrawn/results/RESULTS-2026-09-07-ablation-wave.md`](withdrawn/results/RESULTS-2026-09-07-ablation-wave.md).
 
 A growing amount of work uses off-the-shelf abliterated weights as if the abliteration were a
 controlled edit — measure the stock model, measure the abliterated model, attribute the
