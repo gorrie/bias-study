@@ -42,10 +42,12 @@ jobs:
       - name: No third-party instrument text
         run: python scripts/check_corpus.py --all
 
-      # The answer parser is what turns 62 lines of prose into a scoreable sheet. Every number
+      # The answer parser is what turns a model's reply into a scoreable sheet. Every number
       # downstream depends on it being strict, so its fixtures run before anything else.
+      # (This ran test_compass_parser.py until 2026-09-24, two days after that file was
+      # retired with the old instrument, so every push since failed here.)
       - name: Parser fixtures
-        run: python scripts/test_compass_parser.py
+        run: python scripts/test_sheet_parser.py
 
       # BOTH DIRECTORIES. `pytest scripts/` alone collected 53 of 144 tests, so 91
       # of them -- 63% -- never ran in CI. The unrun ones are the regressions for
@@ -96,8 +98,13 @@ jobs:
           # collecting more data. The promise a reader checks is the README's own table; this
           # step asserts a fresh computation still matches it, which is the actual guarantee.
           readme = open("README.md", encoding="utf-8").read()
+          # ONLY THE GENERATED FLOORS BLOCK. This read every `| row | n |` line in the README,
+          # so the results table above it (balance instruction 61 pairs, reordering 108) was
+          # asserted against floor_table rows that do not exist and failed.
+          block = re.search(r"<!-- GEN:floors.*?-->(.*?)<!-- /GEN:floors -->", readme, re.S)
           want = {row: int(n) for row, n in
-                  re.findall(r"^\| ([a-z][^|]*?) \| *(\d+) \|", readme, re.M)}
+                  re.findall(r"^\| ([a-z][^|]*?) \| *(\d+) \|", block.group(1) if block else "",
+                             re.M)}
           if not want:
               print("CHECKED NOTHING -- no generated floors table found in README.md.")
               print("This is not a pass: the step exists to compare the README to the data.")
