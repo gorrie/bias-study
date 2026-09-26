@@ -12,8 +12,9 @@ and the title on that record was
 
 which is FINDINGS #13 -- a claim this study withdrew on 2026-09-13 and registered in
 `key_numbers.RETRACTED`. The author deleted that record on 2026-09-22 (Zenodo allows an owner
-30 days), so it resolves to a tombstone and no DOI is live today. The next Release therefore
-mints a FRESH concept DOI -- one chance, no prior version to hide a bad title behind.
+30 days), so it resolves to a tombstone. Deleting a version does NOT retire its concept: the
+next Release, release-2026-09-26, minted version DOI 10.5281/zenodo.22980856 under the SAME
+concept 10.5281/zenodo.22719011, which now resolves to it and lists no other public version.
 
 That happened because there was no `.zenodo.json` in the repository, so Zenodo fell back to
 the GitHub repo's own description -- which still advertises "three force-escalation rungs"
@@ -21,8 +22,7 @@ and "five judging methods", both retired. **Zenodo reads `.zenodo.json` in prefe
 CITATION.cff, and it reads whatever is in the tarball at the moment the Release is created.**
 So the metadata has to be committed BEFORE the Release, not fixed after it.
 
-With the old record gone there is no prior version to sit behind: the next Release is the
-study's first live DOI and whatever this file says becomes its permanent metadata.
+Whatever this file says at the moment of a Release becomes that version's permanent metadata.
 
 WHAT THIS DOES
 --------------

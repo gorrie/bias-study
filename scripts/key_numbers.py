@@ -1761,28 +1761,41 @@ SURFACES = {
     # costs most, and it was the one nothing checked.
     #
     # AUDIT-2026-09-14-book-numbers.md verified every figure in this chapter
-    # against the corpus. The four phrases below are the ones that moved and are
-    # mechanically checkable; they are expected to FAIL until the correction pass,
-    # and that failure is the point.
+    # against the corpus and found four that moved. The 2026-09-26 correction pass
+    # removed all four with the judged design they belonged to (FINDINGS #13-17,
+    # paper §3.8), so the gate now holds the chapter to the battery figures that
+    # replaced them. The retired phrases are RETRACTED-list material, not phrases
+    # to match: a template for a sentence the chapter no longer says is a gate
+    # that is permanently red.
+    #
+    # Single-key phrases only where the book spells the number: the speller is
+    # applied to `%s`/`%d` templates, not to `%(key)` ones.
     "book-ratchet-ch22": {
         "path": _find_surface("books", "the-ratchet", "chapters",
                               "22-the-cat-or-the-dog.md"),
         "phrases": {
-            # "thirty-six frontier AI models" -- 36 sums the per-run counts and
-            # double-counts z-ai/glm-4.7, which appears in two of the four runs.
-            # %s, not %d: the spelled alternative is a string, and %d rejects one.
-            "may_models_distinct": "to %s frontier AI models",
-            # "across nineteen hundred scored responses" sits directly above a
-            # table whose cells total 780.
-            "may_records_main": "Across %s scored responses",
-            # "seven times the rhetorical hedge ratio" -- 7.2x is score-3 against
-            # score-1 ALONE on 19 records. The sentence says "a 1 or a 5", which
-            # is the pooled figure. Stored in tenths.
-            "hedge_multiple_pooled": "carried %s times the rhetorical hedge ratio",
-            # "five open-weight models" -- one clears the resample noise floor.
-            # The noun is left out of the template so the count can go singular
-            # without the gate demanding "one open-weight models".
-            "ablation_families_confirmed": "We did the abliteration. %s open-weight",
+            "scored_empty_main": "scored every one of the %d blank answers",
+            "corpus_runs": "%s answer sheets",
+            "position_manip_median": "position by a median of %.3f",
+            "position_order_median": "in a different order moves it by %.3f",
+            "audit_external": "Of %s published studies",
+            "astra_balance": "declines the sheet %s times out of",
+            "astra_balance_runs": "times out of %s. Replace it",
+        },
+    },
+    # THE BOOK'S OPENING. "The Proof" restates ch22's lead figures on page one and
+    # was the one book surface never registered, so it carried the withdrawn hedge
+    # ratio and the Grok persona swing after ch22's own ledger forbade them.
+    "book-ratchet-ch00": {
+        "path": _find_surface("books", "the-ratchet", "chapters",
+                              "00-the-proof.md"),
+        "phrases": {
+            "corpus_runs": "%s answer sheets",
+            "position_order_median": "the median model moves %.3f",
+            "position_manip_median": "the fairness instruction moves it %.3f",
+            "audit_external": "Of %s published studies",
+            "astra_balance": "declines the sheet %s times out of",
+            "astra_balance_runs": "times out of %s. Replace it",
         },
     },
     # THE TALK. What gets said to a room is a shipping surface with no errata page, and the

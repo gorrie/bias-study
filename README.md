@@ -15,6 +15,8 @@ a score.
 - **Instrument:** [`data/ratchet-battery.json`](data/ratchet-battery.json), shipped in full
 - **Corpus:** [`runs/`](runs/), every record the paper's figures are computed from
 - **Corrections:** [`CORRECTIONS.md`](CORRECTIONS.md). Read it before quoting anything here.
+- **DOI:** [10.5281/zenodo.22719011](https://doi.org/10.5281/zenodo.22719011), which resolves to
+  the newest release; release-2026-09-26 is [10.5281/zenodo.22980856](https://doi.org/10.5281/zenodo.22980856)
 - **Licence:** MIT
 
 ---
@@ -317,7 +319,11 @@ above, and §3 of the paper reports what each part of it found and failed to fin
 
 ## Cite
 
-Cite this study using [`CITATION.cff`](CITATION.cff).
+Cite this study using [`CITATION.cff`](CITATION.cff), or as:
+
+> Gorrie, I. (2026). *No position, only consensus: what political instruments actually measure
+> in language models* (release-2026-09-26) [Preprint]. Zenodo.
+> https://doi.org/10.5281/zenodo.22980856
 
 ## Licence
 

@@ -12,8 +12,10 @@ corpus and found four that moved, including "thirty-six frontier AI models" (35;
 abliterated (one clears the measured resample floor). Nothing would have caught
 any of them, because nothing was looking.
 
-The gate is EXPECTED TO FAIL until the correction pass. A gate that goes green
-before the prose is fixed would be worse than none.
+The 2026-09-26 correction pass removed those figures with the judged design, and
+the surfaces now hold ch22 and ch00 to the battery figures that replaced them.
+The four generators stay tested: they are what the retraction scan and the audit
+ledger are checked against.
 """
 import os
 import sys
@@ -105,25 +107,27 @@ def test_large_and_non_integers_are_not_spelled():
 def test_a_spelled_number_satisfies_a_digit_template():
     """The point of the speller: correct prose must be able to pass.
 
-    Without this, a chapter correctly reading "thirty-five frontier AI models"
-    would fail a gate whose template says %d -- and a gate that correct prose
+    Without this, a chapter correctly reading "Of fourteen published studies"
+    would fail a gate whose template says %s -- and a gate that correct prose
     cannot satisfy is one that gets switched off.
     """
     import tempfile
-    rows = _rows()
-    if rows.get("may_models_distinct") is None:
-        return
-    spelled = K._spell(rows["may_models_distinct"])
+    # audit_external is a paper row, not a surface row; check_surface merges both.
+    paper_rows = list(K.build())
+    rows = {r["key"]: r["value"] for r in paper_rows + K.surface_numbers()}
+    assert rows.get("audit_external") is not None, "the audit count is not computed"
+    spelled = K._spell(rows["audit_external"])
+    assert spelled, "the audit count has no spelled form"
     with tempfile.TemporaryDirectory() as d:
         path = os.path.join(d, "ch.md")
         with open(path, "w", encoding="utf-8") as fh:
-            fh.write("sent to %s frontier AI models, in three framings each.\n" % spelled)
+            fh.write("Of %s published studies of political bias.\n" % spelled)
         saved = K.SURFACES["book-ratchet-ch22"]["path"]
         try:
             K.SURFACES["book-ratchet-ch22"]["path"] = path
-            failures = K.check_surface("book-ratchet-ch22", [])
+            failures = K.check_surface("book-ratchet-ch22", paper_rows)
         finally:
             K.SURFACES["book-ratchet-ch22"]["path"] = saved
     keys = [f[0] for f in failures]
-    assert "may_models_distinct" not in keys, (
+    assert "audit_external" not in keys, (
         "spelled-out prose failed the digit template; the speller is not being applied")

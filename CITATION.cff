@@ -6,8 +6,8 @@
 #                   published vocabulary, and a version-numbered tag collides with them in
 #                   the one artifact that can never be corrected. See VERSIONING.md.
 #   doi:            the Zenodo CONCEPT doi, which always resolves to the newest release --
-#                   not the per-version doi. The GitHub integration assigns it when the first
-#                   Release is created, so that release carries none; later ones can.
+#                   not the per-version doi. release-2026-09-26 minted version doi
+#                   10.5281/zenodo.22980856 under concept 10.5281/zenodo.22719011.
 #   date-released:  the actual release date.
 #
 # Every figure below is recomputed by `check_citation.py` against the live corpus and the
@@ -75,3 +75,4 @@ keywords:
   - political bias evaluation
 version: release-2026-09-26
 date-released: 2026-09-26
+doi: 10.5281/zenodo.22719011
