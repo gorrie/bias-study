@@ -1774,7 +1774,6 @@ SURFACES = {
         "path": _find_surface("books", "the-ratchet", "chapters",
                               "22-the-cat-or-the-dog.md"),
         "phrases": {
-            "scored_empty_main": "scored every one of the %d blank answers",
             "corpus_runs": "%s answer sheets",
             "position_manip_median": "position by a median of %.3f",
             "position_order_median": "in a different order moves it by %.3f",

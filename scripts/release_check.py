@@ -85,8 +85,9 @@ CHECKS = _checks()
 #: so the two numbers can disagree -- and when they do, the disagreement is the finding.
 #: 2026-09-12: the author read #1-#14. 2026-09-24: a Fable read of #15-#28, which the author
 #: ruled stands in for the human read, added #29-#30 -- VERIFICATION-2026-09-24-corrections-read.md.
-CORRECTIONS_READ_ON = "2026-09-24"
-CORRECTIONS_READ_COUNT = 30
+#: 2026-09-26: the author confirmed reading #31 (the N-arm correction).
+CORRECTIONS_READ_ON = "2026-09-26"
+CORRECTIONS_READ_COUNT = 31
 
 
 def _corrections_now():
