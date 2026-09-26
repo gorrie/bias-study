@@ -258,6 +258,11 @@ OUT_OF_PANEL = {
     "2026-09-25-serving-path":
         "One model on two pinned backends (PREREG-2026-09-25-serving-path.md). Collected under "
         "two conditions only, so it would grow one side of every contrast.",
+    "2026-09-25-wave-completion":
+        "The wave's short cells, completed after the panel froze "
+        "(PREREG-2026-09-25-wave-completion.md). Read by --factorial and "
+        "--factorial-calibration only when --with-completion is passed; adding it to the panel "
+        "would move every panel figure after the fact.",
     "2026-09-25-same-items-both-paths":
         "The battery's propositions as free text, judge-scored (PREREG-2026-09-25-same-items-"
         "both-paths.md). No forced-choice sheet, so nothing in it can refuse one.",
@@ -333,7 +338,7 @@ class UnclassifiedRun(Exception):
     """A battery run belongs to the panel or is excluded from it. There is no third state."""
 
 
-def load(exclude=None, strict=True):
+def load(exclude=None, strict=True, extra=()):
     """Every scoreable row of the declared refusal PANEL.
 
     `exclude` still works and still defaults to DEFAULT_EXCLUDE, because callers pass it and
@@ -389,7 +394,9 @@ def load(exclude=None, strict=True):
             "OUT_OF_PANEL:\n  %s\nDecide which, in refusal_table.py, with the rule it falls "
             "under. The refusal panel is a declared population, not whatever is on disk."
             % (len(unclassified), "\n  ".join(unclassified)))
-    kept = [r for r in rows if r["_bucket"] in PANEL]
+    # `extra` admits named OUT_OF_PANEL runs for one view (--with-completion); it never
+    # changes what PANEL is, so no panel figure moves when it is passed.
+    kept = [r for r in rows if r["_bucket"] in PANEL or r["_bucket"] in extra]
     if strict and not kept:
         raise UnclassifiedRun(
             "PANEL matched NO rows -- %d battery row(s) were read and every one was "
@@ -727,6 +734,9 @@ def main():
     ap.add_argument("--exclude", nargs="*", default=sorted(DEFAULT_EXCLUDE),
                     help="run dirs to withhold (default: DEFAULT_EXCLUDE; pass with no "
                          "values for the whole corpus)")
+    ap.add_argument("--with-completion", action="store_true",
+                    help="also read the OUT_OF_PANEL wave-completion arm, for the two "
+                         "factorial views (PREREG-2026-09-25-wave-completion.md)")
     ap.add_argument("--audit", action="store_true")
     ap.add_argument("--switch", action="store_true",
                     help="per-model refusal by condition -- which prompt a model declines, "
@@ -768,7 +778,8 @@ def main():
                          "block that scrolls sideways.")
     args = ap.parse_args()
 
-    rows = load(set(args.exclude))
+    rows = load(set(args.exclude),
+                extra=("2026-09-25-wave-completion",) if args.with_completion else ())
     if args.by_condition:
         return print_by_condition(rows)
     if args.audit:
@@ -782,7 +793,9 @@ def main():
         return print_switch(per_model, totals)
 
     if args.factorial_calibration:
-        return print_factorial_calibration(rows, draws=args.draws, seed=args.seed)
+        return print_factorial_calibration(
+            rows, draws=args.draws, seed=args.seed,
+            models=CALIBRATION_MODELS + (COMPLETION_CALIBRATION_MODELS if args.with_completion else ()))
     if args.factorial:
         return print_factorial(rows)
     if args.rung2:
@@ -1142,6 +1155,9 @@ def order_floor_refusal(rows, models, conditions=FLOOR_CONDITIONS):
 #: PREREG-2026-09-25-factorial-floor-calibration. The three models with a usable A floor.
 CALIBRATION_MODELS = ("anthropic/claude-fable-5.1", "openai/gpt-6-astra",
                       "openai/gpt-6-astra-pro")
+#: The one varying model the wave held at a single order; PREREG-2026-09-25-wave-completion
+#: collects its second and third, and --with-completion adds it to the calibration.
+COMPLETION_CALIBRATION_MODELS = ("google/gemini-3.8-flash",)
 
 #: What the Correction to Amendment 2 recorded, computed then on the seed-11 F cells alone and
 #: written down only in prose. C1 must reproduce it before C2 is believed.
@@ -1194,7 +1210,7 @@ def _floor_from_rates(rates):
     return max(rates) - min(rates)
 
 
-def print_factorial_calibration(rows, draws=20000, seed=20260925):
+def print_factorial_calibration(rows, draws=20000, seed=20260925, models=None):
     """PREREG-2026-09-25-factorial-floor-calibration: C1-C6.
 
     The rule is not changed. This asks how often it clears a clause when no clause does
@@ -1202,6 +1218,7 @@ def print_factorial_calibration(rows, draws=20000, seed=20260925):
     collected after it was written. Order and numbering protocol change together between seed
     11 (v1) and seeds 22/33 (v2), so every figure is also given on the v2 orders alone.
     """
+    models = CALIBRATION_MODELS if models is None else models
     import random
     import statistics as st
 
@@ -1213,7 +1230,7 @@ def print_factorial_calibration(rows, draws=20000, seed=20260925):
     protocol = collections.defaultdict(set)
     for row in rows:
         m, c, s = row.get("model"), row.get("condition"), row.get("shuffle_seed")
-        if m not in CALIBRATION_MODELS or s is None or not usable(row):
+        if m not in models or s is None or not usable(row):
             continue
         ref = classify(row) == "refused"
         if c in FACTORIAL_CONDITIONS:
@@ -1240,7 +1257,7 @@ def print_factorial_calibration(rows, draws=20000, seed=20260925):
     print()
     print("  depth per F cell and numbering protocol, per order:")
     a_seeds = {}
-    for m in CALIBRATION_MODELS:
+    for m in models:
         parts = []
         for s in (11, 22, 33):
             ns = [f_cell[(m, c, s)][1] for c in FACTORIAL_CONDITIONS]
@@ -1263,7 +1280,7 @@ def print_factorial_calibration(rows, draws=20000, seed=20260925):
     rng = random.Random(seed)
     results = {}
     for label, seeds in CALIBRATION_ORDER_SETS:
-        for m in CALIBRATION_MODELS:
+        for m in models:
             ns = {c: pooled(m, c, seeds)[1] for c in FACTORIAL_CONDITIONS}
             r_f = sum(pooled(m, c, seeds)[0] for c in FACTORIAL_CONDITIONS)
             p_f = r_f / max(1, sum(ns.values()))
@@ -1307,11 +1324,12 @@ def print_factorial_calibration(rows, draws=20000, seed=20260925):
         print("    %-24s %6s %6s  %8s %8s %8s  %-16s %-16s %s"
               % ("model", "p_F", "p_A", "V1", "V2", "V3 diag", "floor V1 p10/50/90",
                  "floor V2 p10/50/90", "recorded"))
-        for m in CALIBRATION_MODELS:
+        for m in models:
             v1, v2 = results[(label, m, "V1")], results[(label, m, "V2")]
             v3 = results[(label, m, "V3")]
             rec = ""
-            if label.startswith("seed 11"):
+            if label.startswith("seed 11") and m in RECORDED_NULL_CLEARS:
+                # A model added by --with-completion has no calibration recorded before this arm.
                 want = RECORDED_NULL_CLEARS[m]
                 rec = "%.1f%%  V1 %s  V2 %s" % (
                     100 * want,
@@ -1327,17 +1345,17 @@ def print_factorial_calibration(rows, draws=20000, seed=20260925):
         print("    no floor at all (every A order saturated), V2: %s"
               % ", ".join("%s %.0f%%" % (m.split("/")[-1],
                                          100 * results[(label, m, "V2")]["no_floor"])
-                          for m in CALIBRATION_MODELS))
+                          for m in models))
 
     # ---- C3: the rule's verdict, per order set ----------------------------------------
     print()
     print("  C3/C5 -- the rule's effect per model and clause, against the unchanged A floor")
-    floors = order_floor_refusal(rows, list(CALIBRATION_MODELS), conditions=("A", "N"))
+    floors = order_floor_refusal(rows, list(models), conditions=("A", "N"))
     sets = [("11", (11,)), ("22", (22,)), ("33", (33,)), ("v2 22+33", (22, 33)),
             ("all", (11, 22, 33))]
     print("    %-24s %-24s %6s  %s" % ("model", "clause", "floor",
                                        "  ".join("%9s" % s for s, _ in sets)))
-    for m in CALIBRATION_MODELS:
+    for m in models:
         fl = (floors.get(m) or {}).get("floor")
         effs = []
         for _l, seeds in sets:
@@ -1365,7 +1383,7 @@ def print_factorial_calibration(rows, draws=20000, seed=20260925):
                          ("all orders -- descriptive, pooled figures already seen",
                           (11, 22, 33))):
         print("    %s" % label)
-        for m in CALIBRATION_MODELS:
+        for m in models:
             parts = []
             for pos, name in enumerate(CLAUSE_NAMES):
                 on = [pooled(m, c, seeds) for c in FACTORIAL_CONDITIONS if c[1 + pos] == "1"]
@@ -1381,7 +1399,7 @@ def print_factorial_calibration(rows, draws=20000, seed=20260925):
     # ---- C6: what changed between seed 11 and the others ------------------------------
     print()
     print("  C6 -- refusal over the eight F cells, by order (descriptive)")
-    for m in CALIBRATION_MODELS:
+    for m in models:
         tot = {s: (sum(f_cell[(m, c, s)][0] for c in FACTORIAL_CONDITIONS),
                    sum(f_cell[(m, c, s)][1] for c in FACTORIAL_CONDITIONS))
                for s in (11, 22, 33)}

@@ -95,6 +95,13 @@ COMMANDS = [
      ["scripts/refusal_table.py", "--factorial-calibration"]),
     ("elicitation rung", ["scripts/refusal_table.py", "--rung2"]),
     ("elicitation rung contrasts", ["scripts/rung2_contrast.py"]),
+    # PREREG-2026-09-25-wave-completion: the factorial with its eighth model, and the
+    # calibration with gemini-3.8-flash at three orders. The view flag leads, so the
+    # coverage test reads it.
+    ("clause factorial with the completion arm",
+     ["scripts/refusal_table.py", "--with-completion", "--factorial"]),
+    ("clause factorial calibration with the completion arm",
+     ["scripts/refusal_table.py", "--with-completion", "--factorial-calibration"]),
     ("sampling ladder", ["scripts/refusal_table.py", "--sampling"]),
     ("order floor in position units", ["scripts/order_floor_position.py"]),
     ("item vs slot vs numeral", ["scripts/item_omission.py", "--matrix"]),

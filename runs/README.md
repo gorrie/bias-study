@@ -32,8 +32,9 @@ The inventory below is generated from the records themselves. Do not edit it by 
 | `2026-09-25-placebo-wording` | 450 | 10 | `ratchet-battery` | active | named in a script, named in a document |
 | `2026-09-25-same-items-both-paths` | 1,536 | 6 | `ratchet-battery` | active | named in a script, named in a document |
 | `2026-09-25-serving-path` | 311 | 5 | `ratchet-battery` | active | named in a script, named in a document |
+| `2026-09-25-wave-completion` | 145 | 3 | `ratchet-battery` | active | named in a script, named in a document |
 | `mask-gradient` | 226 | 4 | previous | active | named in a script, named in a document |
-| **19 directories** | **12,202** | | | | |
+| **20 directories** | **12,347** | | | | |
 <!-- /GEN:corpus-inventory-runs -->
 
 `instrument` is read off each record's own `instrument` field, not inferred from the
@@ -58,7 +59,7 @@ call of the arm they govern; each results document names the script that compute
 
 | directory | what it is | pre-registration | results |
 |---|---|---|---|
-| `2026-09-16-ratchet-v3-wave` | the wave: 65 models, conditions N (bare), A (balance instruction), D (commitment directive), P (content-free placebo), three presentation orders, five draws per cell; a subset of models also under the further prompt arms B, C and E, and seven under the eight-cell clause factorial F000–F111, three of them at all three orders (an eighth, glm-5.2, returned nothing; see [`../data/empty-records.json`](../data/empty-records.json)). Every floor in the paper is computed from it | [`PREREG-2026-09-14-i3-phase4.md`](../prereg/PREREG-2026-09-14-i3-phase4.md), Amendment 2 | [`PAPER-below-the-floor.md`](../PAPER-below-the-floor.md) |
+| `2026-09-16-ratchet-v3-wave` | the wave: 65 models, conditions N (bare), A (balance instruction), D (commitment directive), P (content-free placebo), three presentation orders, five draws per cell; a subset of models also under the further prompt arms B, C and E, and seven under the eight-cell clause factorial F000–F111, three of them at all three orders (an eighth, glm-5.2, returned nothing, see [`../data/empty-records.json`](../data/empty-records.json), and was completed in `2026-09-25-wave-completion`). Every floor in the paper is computed from it | [`PREREG-2026-09-14-i3-phase4.md`](../prereg/PREREG-2026-09-14-i3-phase4.md), Amendment 2 | [`PAPER-below-the-floor.md`](../PAPER-below-the-floor.md) |
 | `2026-09-16-ratchet-v3-wave-budget-probe` | 71 single sheets that measured the token budget the wave then ran at. A fixture, not a measurement of any model | — | — |
 | `2026-09-18-bce-smoke` | seven sheets confirming conditions B, C and E render and parse. A fixture | — | — |
 | `2026-09-18-roster-smoke` | one sheet per hosted model, confirming the roster answered before the wave paid for it. A fixture | — | — |
@@ -75,6 +76,7 @@ call of the arm they govern; each results document names the script that compute
 | `2026-09-25-local-gradient-judged` | the judged half of the same arm: 600 free-text answers on ten earlier questions from two Qwen3.8-27B builds, scored by two local judges (`scores/`), with the judge calibration and the budget cut recorded before any score existed | same file | same file |
 | `2026-09-25-placebo-wording` | a second content-free placebo, P2, beside P and N: 10 models, three orders, five draws | [`PREREG-2026-09-25-placebo-wording.md`](../prereg/PREREG-2026-09-25-placebo-wording.md) | [`RESULTS-2026-09-25-placebo-wording.md`](../results/RESULTS-2026-09-25-placebo-wording.md) |
 | `2026-09-25-serving-path` | one model on two pinned backends, interleaved draw by draw: is access tier a serving-path effect? 5 models, conditions N and A | [`PREREG-2026-09-25-serving-path.md`](../prereg/PREREG-2026-09-25-serving-path.md) | [`RESULTS-2026-09-25-serving-path.md`](../results/RESULTS-2026-09-25-serving-path.md) |
+| `2026-09-25-wave-completion` | the wave's short cells, completed after the panel froze: glm-5.2's B, C, E and clause-factorial cells, gemini-3.8-flash's second and third factorial orders, and the culturerevolt build's B and C; 145 sheets, out of the panel | [`PREREG-2026-09-25-wave-completion.md`](../prereg/PREREG-2026-09-25-wave-completion.md) | [`RESULTS-2026-09-25-wave-completion.md`](../results/RESULTS-2026-09-25-wave-completion.md) |
 | `2026-09-25-same-items-both-paths` | the 32 propositions asked as free-text questions and scored by the May judge panel, 6 models, conditions N and A, against the same models' forced-choice sheets in the wave: convergent validity of the two scoring paths. `raw/` and `scored/` as in `data/` | [`PREREG-2026-09-25-same-items-both-paths.md`](../prereg/PREREG-2026-09-25-same-items-both-paths.md) | [`RESULTS-2026-09-25-same-items-both-paths.md`](../results/RESULTS-2026-09-25-same-items-both-paths.md) |
 | `mask-gradient` | the superseded first attempt at the local gradient: free-text questions under conditions A–E on four local builds, 226 records, temperature 0.7 with no seed. Kept as reference; no figure in the paper reads it | [`PREREG-2026-08-28-refusal-direction.md`](../prereg/PREREG-2026-08-28-refusal-direction.md) | replaced by `2026-09-25-local-gradient` |
 

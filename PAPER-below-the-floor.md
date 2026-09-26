@@ -1034,7 +1034,7 @@ Budget exhaustion, transport failure and unparseable output are classified separ
 counted as refusals. The population is declared rather than globbed: the panel is the frozen wave,
 and every other collection on the battery — smokes, budget probes, arms run under one or two
 conditions, re-collections selected on a behaviour, and designs that are different administrations
-— sits outside it under a recorded rule. In the working corpus that rule sets aside 9,489 records
+— sits outside it under a recorded rule. In the working corpus that rule sets aside 9,634 records
 against the 3,897 it keeps, the largest single exclusion being a 3,200-record judge-scored
 collection that has no forced-choice sheet and so cannot refuse one. The rule exists because a
 targeted re-collection of the Google models that refuse most, run to extend the order floor,
@@ -1391,7 +1391,7 @@ never the commitment directive; three decline the commitment directive or the pl
 balance instruction; one declines only the bare question; and one declines everything.
 
 <!-- GEN:refusal -->
-Refusal rate by vendor and condition, recomputed from `runs/`. A refusal is a sheet declining all 32 items: prose returned, zero answers, budget intact. Each cell is the rate, with the runs it is computed over in brackets. The panel is `2026-09-16-ratchet-v3-wave`; the 19 other battery collections are outside it by rule (`refusal_table.OUT_OF_PANEL`).
+Refusal rate by vendor and condition, recomputed from `runs/`. A refusal is a sheet declining all 32 items: prose returned, zero answers, budget intact. Each cell is the rate, with the runs it is computed over in brackets. The panel is `2026-09-16-ratchet-v3-wave`; the 20 other battery collections are outside it by rule (`refusal_table.OUT_OF_PANEL`).
 
 | vendor | N | A | B | C | D | E | P |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -1444,6 +1444,20 @@ per-order effects of the first two point the same way. One pattern remains a lea
 result: the third clause does nothing until both others are present, and then reduces refusal —
 on one model by 60 points — which is what a model refusing the *forcing* rather than the subject
 would do.
+
+**The short cells, completed.** Three sets of wave cells had come back short, and a pre-registered
+arm completed them after the panel froze, in its own run directory so that no panel figure moves.
+`glm-5.2`, the factorial's eighth model, refuses only with all three clauses present — 3 of 5
+sheets, and none in any other cell or under B, C or E — so five models now vary, and over the five
+*multiple sides* raises refusal by 32 points and *no personal position* by 40, each in the same
+direction on all five, and *acknowledge uncertainty* moves it by −2. `gemini-3.8-flash`, the one
+varying model the wave held at a single order, was collected at the other two; it refuses the
+balance instruction on every sheet at all three orders, so its between-order floor is saturated
+and the rule returns no verdict for it at any depth. Descriptively the first two clauses drive its
+refusal on the new orders (p = 0.012) and the third does not (p = 1.0), and under the renumbered
+protocol it also refuses the stem alone, 5 of 5 sheets at one order against none under the as-is
+numbering — one model and one protocol change, reported as an observation. The local build whose
+B and C cells were empty answered all ten sheets, so that loss was transient.
 
 **The control's own anomaly belongs to its wording.** `phi4` refusing only the placebo raised the
 question whether a content-free instruction provokes refusal in general. A second placebo, matched
@@ -2057,6 +2071,7 @@ python scripts/jurisdiction_gradient.py    # §5.6
 python scripts/crossover_jurisdiction.py   # §5.6 loyalty crossover; null_audit.py for its bound
 python scripts/rung2_contrast.py           # §5.7
 python scripts/gemma2_recollect_jaccard.py # §3.7
+python scripts/wave_completion.py --report # §5.4
 python scripts/omission_arms.py            # §5.8; item_omission.py --matrix for the three-way test
 python scripts/partials_sensitivity.py     # §5.8 re-collection sensitivity
 python scripts/null_audit.py               # §5.9 and every null's detection limit
@@ -2114,6 +2129,7 @@ results document exists it is named beside the section.
 | the elicitation rung on the battery | [`PREREG-2026-09-20-rung2-control-v2.md`](prereg/PREREG-2026-09-20-rung2-control-v2.md) | §5.7 · [`RESULTS-2026-09-21-rung2-control-v2.md`](results/RESULTS-2026-09-21-rung2-control-v2.md) |
 | the within-rung contrasts at ten sheets per arm | [`PREREG-2026-09-25-rung2-within-depth10.md`](prereg/PREREG-2026-09-25-rung2-within-depth10.md) | §5.7 · [`RESULTS-2026-09-25-rung2-within-depth10.md`](results/RESULTS-2026-09-25-rung2-within-depth10.md) |
 | calibrating the clause factorial's clearing rule | [`PREREG-2026-09-25-factorial-floor-calibration.md`](prereg/PREREG-2026-09-25-factorial-floor-calibration.md) | §5.4 · [`RESULTS-2026-09-25-factorial-floor-calibration.md`](results/RESULTS-2026-09-25-factorial-floor-calibration.md) |
+| completing the wave's short cells | [`PREREG-2026-09-25-wave-completion.md`](prereg/PREREG-2026-09-25-wave-completion.md) | §5.4 · [`RESULTS-2026-09-25-wave-completion.md`](results/RESULTS-2026-09-25-wave-completion.md) |
 | a second placebo wording | [`PREREG-2026-09-25-placebo-wording.md`](prereg/PREREG-2026-09-25-placebo-wording.md) | §5.4 · [`RESULTS-2026-09-25-placebo-wording.md`](results/RESULTS-2026-09-25-placebo-wording.md) |
 | one model on two pinned backends | [`PREREG-2026-09-25-serving-path.md`](prereg/PREREG-2026-09-25-serving-path.md) | §5.8 · [`RESULTS-2026-09-25-serving-path.md`](results/RESULTS-2026-09-25-serving-path.md) |
 | the same items, judged and forced | [`PREREG-2026-09-25-same-items-both-paths.md`](prereg/PREREG-2026-09-25-same-items-both-paths.md) | §5.11 · [`RESULTS-2026-09-25-same-items-both-paths.md`](results/RESULTS-2026-09-25-same-items-both-paths.md) |

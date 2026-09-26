@@ -4,3 +4,10 @@
 * text=auto
 *.sh text eol=lf
 *.py text eol=lf
+# Data files MUST stay LF too: the run manifests record a SHA-256 of each record file's
+# bytes, and a CRLF checkout (Windows, core.autocrlf) changes those bytes, so every recorded
+# hash would fail on the platform the reader happens to use. Pinned so a checkout on any
+# platform reproduces the committed bytes the hashes were taken from.
+*.jsonl text eol=lf
+*.json text eol=lf
+*.csv text eol=lf

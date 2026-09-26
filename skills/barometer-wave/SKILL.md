@@ -390,5 +390,7 @@ Each was pre-registered before its first call; the collector writes the manifest
   beside the same models' forced-choice sheets.
 - `scripts/local_gradient.py` — the pressure gradient on stock and ablated local builds, on the
   battery with a bare baseline, a placebo, three orders and five seeds per cell.
+- `scripts/wave_completion.py` — completes the wave's short cells into their own run
+  directory (`PREREG-2026-09-25-wave-completion.md`); `--smoke` first, then `--run`.
 - `scripts/mask_gradient.py` — the superseded first attempt at the local gradient, kept so
   `runs/mask-gradient/` names the tool that wrote it. Do not use it for new collection.

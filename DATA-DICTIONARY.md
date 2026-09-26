@@ -41,7 +41,7 @@ section below carries its own meanings.
 
 ## `battery` records
 
-8,640 records across 1370 files, 54 distinct fields.
+8,785 records across 1391 files, 54 distinct fields.
 
 | field | coverage | types | meaning |
 |---|---:|---|---|
@@ -53,8 +53,6 @@ section below carries its own meanings.
 | `done_reason` | 100.0% | `null`, `str` | Local channel's stop reason (`stop`, `length`), or null. |
 | `failure_mode` | 100.0% | `null`, `str` | Why an invalid sheet failed: `refused`, `transport`, `budget-exhausted`, `truncated`, or `other` (includes silent omission). Null on a valid sheet. |
 | `forcing_prompt` | 100.0% | `str` | The user turn as sent: the fixed instruction and the 32 items in presentation order. Shipped in full. |
-| `forcing_prompt_chars` | 100.0% | `int` | Length of the forcing prompt in characters. |
-| `forcing_prompt_sha256` | 100.0% | `str` | Hash of the forcing prompt, so a reader can verify a regenerated prompt matches what was administered. |
 | `instrument` | 100.0% | `str` | Which item bank was administered: `ratchet-battery`. 120 wave records collected 2026-09-16 16:11-17:18Z carry the earlier label `ratchet-battery-v3` for the SAME 32 items (identical `forcing_prompt`); match on the prefix, as `floor_table._instrument_matches` does. |
 | `latency_ms` | 100.0% | `int` | Wall-clock time of the call, including queueing. |
 | `max_tokens` | 100.0% | `int` | Completion budget requested. |
@@ -77,40 +75,42 @@ section below carries its own meanings.
 | `tokens_in` | 100.0% | `int`, `null` | Prompt tokens as the provider counted them. |
 | `tokens_out` | 100.0% | `int`, `null` | Completion tokens as the provider counted them. |
 | `valid` | 100.0% | `bool` | The sheet is complete and self-consistent. Every analysis reads valid sheets only. |
-| `classifier` | 98.4% | `str` | Version of the validity/failure rule that labelled this record (`structural/1`-`/3`). `run_battery.CLASSIFIER_VERSION` documents each; `refusal_table --audit` holds current-version rows to exact agreement. |
-| `n_answers` | 98.4% | `int` | Items answered. A sheet with 0 < n_answers < 32 is a PARTIAL sheet: it fails validity and is dropped whole. |
-| `response_text` | 98.4% | `str` | The model's reply verbatim. |
-| `label_to_id` | 83.8% | `dict`, `null` | For renumbered sheets, the map from printed label to item id, so the remap is auditable. Null otherwise. |
-| `renumbered` | 83.8% | `bool` | Protocol v2. True: items were printed `1..32` in presentation order and answers mapped back through `label_to_id`. False: each item printed under its own id (the as-is numbering, which lets some models silently skip lines). Absent on records that predate the flag, which are as-is. |
-| `arm` | 8.8% | `str` | The pre-registered arm the sheet belongs to (`placebo-wording`, `serving-path`), stamped by `run_arm_battery.py`. Absent on runs collected by `run_battery.py`, where the directory is the arm. |
-| `prereg` | 8.8% | `str` | Filename of the pre-registration that fixed the sheet's design before collection, on the arms that stamp it. |
-| `base_condition` | 3.3% | `str` | The rung-1 condition a rung-2 arm is built on (`B`). |
-| `boost_applied` | 3.3% | `bool` | Rung 2: whether G0DM0D3's sampling boost was applied. |
-| `frequency_penalty` | 3.3% | `float` | Sampling penalty sent, rung 2 only. Recorded only when sent. |
-| `g0dm0d3_provenance` | 3.3% | `dict` | The G0DM0D3 source files read for the transform, each with a content digest (`sha256_12`), and the boost constants applied. |
-| `instructs_against_measured_outcome` | 3.3% | `null`, `str` | Rung 2: where the arm's prompt itself instructs against the outcome being measured (e.g. 'never refuse'), the offending phrases; null otherwise. A refusal under such an arm is measured against an explicit order not to. |
-| `presence_penalty` | 3.3% | `float` | Sampling penalty sent, rung 2 only. Recorded only when sent. |
-| `rung` | 3.3% | `int` | Escalation-ladder rung: 2 for the elicitation arms. |
-| `system_prompt_chars` | 3.3% | `int` | Length of the rung-2 system prompt in characters. |
-| `transform_source` | 3.3% | `str` | Where the rung-2 transform's constants came from. |
+| `classifier` | 98.5% | `str` | Version of the validity/failure rule that labelled this record (`structural/1`-`/3`). `run_battery.CLASSIFIER_VERSION` documents each; `refusal_table --audit` holds current-version rows to exact agreement. |
+| `n_answers` | 98.5% | `int` | Items answered. A sheet with 0 < n_answers < 32 is a PARTIAL sheet: it fails validity and is dropped whole. |
+| `response_text` | 98.5% | `str` | The model's reply verbatim. |
+| `forcing_prompt_chars` | 98.3% | `int` | Length of the forcing prompt in characters. |
+| `forcing_prompt_sha256` | 98.3% | `str` | Hash of the forcing prompt, so a reader can verify a regenerated prompt matches what was administered. |
+| `label_to_id` | 84.1% | `dict`, `null` | For renumbered sheets, the map from printed label to item id, so the remap is auditable. Null otherwise. |
+| `renumbered` | 84.1% | `bool` | Protocol v2. True: items were printed `1..32` in presentation order and answers mapped back through `label_to_id`. False: each item printed under its own id (the as-is numbering, which lets some models silently skip lines). Absent on records that predate the flag, which are as-is. |
+| `arm` | 8.7% | `str` | The pre-registered arm the sheet belongs to (`placebo-wording`, `serving-path`), stamped by `run_arm_battery.py`. Absent on runs collected by `run_battery.py`, where the directory is the arm. |
+| `prereg` | 8.7% | `str` | Filename of the pre-registration that fixed the sheet's design before collection, on the arms that stamp it. |
+| `base_condition` | 3.2% | `str` | The rung-1 condition a rung-2 arm is built on (`B`). |
+| `boost_applied` | 3.2% | `bool` | Rung 2: whether G0DM0D3's sampling boost was applied. |
+| `frequency_penalty` | 3.2% | `float` | Sampling penalty sent, rung 2 only. Recorded only when sent. |
+| `g0dm0d3_provenance` | 3.2% | `dict` | The G0DM0D3 source files read for the transform, each with a content digest (`sha256_12`), and the boost constants applied. |
+| `instructs_against_measured_outcome` | 3.2% | `null`, `str` | Rung 2: where the arm's prompt itself instructs against the outcome being measured (e.g. 'never refuse'), the offending phrases; null otherwise. A refusal under such an arm is measured against an explicit order not to. |
+| `presence_penalty` | 3.2% | `float` | Sampling penalty sent, rung 2 only. Recorded only when sent. |
+| `rung` | 3.2% | `int` | Escalation-ladder rung: 2 for the elicitation arms. |
+| `system_prompt_chars` | 3.2% | `int` | Length of the rung-2 system prompt in characters. |
+| `transform_source` | 3.2% | `str` | Where the rung-2 transform's constants came from. |
 | `preset_fields_not_sent` | 2.0% | `list`, `null` | Preset fields NOT sent because the channel does not accept them, so the arm's effective sampling is stated rather than assumed. |
 | `preset_full` | 2.0% | `dict`, `null` | The complete sampling preset as defined, including fields the channel does not accept. |
 | `sampling_preset` | 2.0% | `str`, `null` | Rung 2 sampling ladder: `S-Precise`, `S-Balanced`, `S-Creative`, `S-Chaotic`, or null. |
 | `placebo_wording` | 1.7% | `str` | Which placebo sentence the sheet carried: `P2` on the second-wording arm. Absent under P itself and on every other condition. |
-| `error` | 1.6% | `str` | Transport error string, on failed calls. |
-| `transient` | 1.6% | `bool` | Whether the failed call was judged retryable. |
+| `error` | 1.5% | `str` | Transport error string, on failed calls. |
+| `transient` | 1.5% | `bool` | Whether the failed call was judged retryable. |
 
 **Vocabularies in `battery` records**, measured, most frequent first. A value not listed does not occur.
 
-- **`channel`** — `openrouter` (6,010), `ollama` (2,630)
-- **`classifier`** — `structural/3` (7,447), `structural/2` (625), `structural/1` (432)
-- **`condition`** — `N` (2,626), `P` (1,866), `A` (1,123), `D` (916), `E` (410), `C` (405), `B` (312), `P2` (150), `F011` (80), `F110` (79), `F000` (65), `F001` (65), `F010` (65), `F100` (65), `F101` (65), `F111` (65), `G-Boost` (61), `G-Directive` (61), `G-Persona` (61), `S-Balanced` (25)
-- **`done_reason`** — `None` (6,013), `stop` (2,605), `length` (22)
-- **`failure_mode`** — `None` (7,804), `refused` (485), `other` (172), `transport` (136), `budget-exhausted` (41), `truncated` (2)
-- **`instrument`** — `ratchet-battery` (8,520), `ratchet-battery-v3` (120)
-- **`renumbered`** — `True` (3,667), `False` (3,573)
+- **`channel`** — `openrouter` (6,145), `ollama` (2,640)
+- **`classifier`** — `structural/3` (7,592), `structural/2` (625), `structural/1` (432)
+- **`condition`** — `N` (2,626), `P` (1,866), `A` (1,123), `D` (916), `C` (415), `E` (415), `B` (322), `P2` (150), `F011` (95), `F110` (94), `F000` (80), `F001` (80), `F010` (80), `F100` (80), `F101` (80), `F111` (80), `G-Boost` (61), `G-Directive` (61), `G-Persona` (61), `S-Balanced` (25)
+- **`done_reason`** — `None` (6,148), `stop` (2,615), `length` (22)
+- **`failure_mode`** — `None` (7,873), `refused` (561), `other` (172), `transport` (136), `budget-exhausted` (41), `truncated` (2)
+- **`instrument`** — `ratchet-battery` (8,665), `ratchet-battery-v3` (120)
+- **`renumbered`** — `True` (3,747), `False` (3,638)
 - **`sampling_preset`** — `None` (75), `S-Balanced` (25), `S-Chaotic` (25), `S-Creative` (25), `S-Precise` (25)
-- **`template`** — `T01` (8,238), `T02` (46), `T03` (46), `T04` (45), `T05` (45), `T06` (44), `T07` (44), `T08` (44), `T09` (44), `T10` (44)
+- **`template`** — `T01` (8,383), `T02` (46), `T03` (46), `T04` (45), `T05` (45), `T06` (44), `T07` (44), `T08` (44), `T09` (44), `T10` (44)
 
 ## `judged` records
 

@@ -1,0 +1,82 @@
+{
+ "_note": "Written BEFORE the first call, from this collector's DESIGN, which reproduces PREREG-2026-09-25-wave-completion.md. Not rewritten after collection.",
+ "run": "2026-09-25-wave-completion",
+ "prereg": "PREREG-2026-09-25-wave-completion.md",
+ "collector": "scripts/wave_completion.py --run (driving scripts/run_battery.py)",
+ "schema": "battery-run/1",
+ "instrument": "ratchet-battery",
+ "models": [
+  "z-ai/glm-5.2",
+  "google/gemini-3.8-flash",
+  "hf.co/culturerevolt/gemma-4-12b-heretic-abliterated-GGUF:Q4_K_M"
+ ],
+ "cells": [
+  {
+   "model": "z-ai/glm-5.2",
+   "channel": "openrouter",
+   "provider_pinned": "Z.AI",
+   "conditions": [
+    "B",
+    "C",
+    "E",
+    "F000",
+    "F001",
+    "F010",
+    "F011",
+    "F100",
+    "F101",
+    "F110",
+    "F111"
+   ],
+   "shuffle_seeds": [
+    11
+   ],
+   "renumbered": false,
+   "seed_base": 20260926
+  },
+  {
+   "model": "google/gemini-3.8-flash",
+   "channel": "openrouter",
+   "provider_pinned": "Google",
+   "conditions": [
+    "F000",
+    "F001",
+    "F010",
+    "F011",
+    "F100",
+    "F101",
+    "F110",
+    "F111"
+   ],
+   "shuffle_seeds": [
+    22,
+    33
+   ],
+   "renumbered": true,
+   "seed_base": 20260953
+  },
+  {
+   "model": "hf.co/culturerevolt/gemma-4-12b-heretic-abliterated-GGUF:Q4_K_M",
+   "channel": "ollama",
+   "provider_pinned": null,
+   "conditions": [
+    "B",
+    "C"
+   ],
+   "shuffle_seeds": [
+    11
+   ],
+   "renumbered": false,
+   "seed_base": 20260926
+  }
+ ],
+ "runs_per_cell": 5,
+ "seeds_note": "--seed-sweep: run k of a cell carries seed_base + k",
+ "temperature": 0.7,
+ "max_tokens": 40960,
+ "template": "T01",
+ "planned_sheets": 145,
+ "analysis": "scripts/refusal_table.py --factorial; the factorial floor calibration",
+ "analysis_seed": 20260925,
+ "panel": "OUT_OF_PANEL: the wave is frozen as the refusal panel; nothing here enters it"
+}

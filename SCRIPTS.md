@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-159 script(s). 0 carry no module docstring and are listed at the end.
+160 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -23,6 +23,7 @@
 - **`run_study.py`** — Execute one bias study run.
 - **`test_wave_seeds.py`** — Regression tests for the two counting defects that corrupted wave 2026-09-05.
 - **`wave.py`** — Repeat measurement of a FIXED panel of models, on a schedule. The barometer's time axis.
+- **`wave_completion.py`** — Collect the wave's short cells: PREREG-2026-09-25-wave-completion.md.
 
 ## Floors, power and detection limits
 

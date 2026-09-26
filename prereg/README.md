@@ -14,8 +14,8 @@ forward-looking entries that they were "published in advance for the same reason
 pre-registrations are." That reason did not apply to the pre-registrations, because they were
 not published. They are now.
 
-There are twenty-one. Seventeen were collected or analysed — fifteen collections and two
-analyses of sheets already on disk — twelve of them on the 32-item battery; the
+There are twenty-two. Eighteen were collected or analysed — sixteen collections and two
+analyses of sheets already on disk — thirteen of them on the 32-item battery; the
 earlier ones ran on the questionnaire the study retired on 2026-09-16 or on the judge-scored
 design, and the claims measured on those are withdrawn with those designs, as the table records.
 Four were never collected: two superseded by the instrument change, one superseded the same day
@@ -55,6 +55,7 @@ retired questionnaire; the mechanism is kept as the model for the plans after it
 | `PREREG-2026-09-25-factorial-floor-calibration.md` | an analysis of sheets already in the wave; no collection. The reproduction check failed as registered and both null variants are reported; the three predictions held | the F cells of `runs/2026-09-16-ratchet-v3-wave/` at three presentation orders | [`RESULTS-2026-09-25-factorial-floor-calibration.md`](../results/RESULTS-2026-09-25-factorial-floor-calibration.md); the paper, §5.4 |
 | `PREREG-2026-09-25-placebo-wording.md` | collected; one prediction was not testable, because the bare-condition refusal it presupposed did not reproduce in full | `runs/2026-09-25-placebo-wording/` | [`RESULTS-2026-09-25-placebo-wording.md`](../results/RESULTS-2026-09-25-placebo-wording.md); the paper, §5.4 |
 | `PREREG-2026-09-25-serving-path.md` | collected; one of five models was not served by its second backend and is excluded under the registration's own rule; the prediction that conviction would move between backends was refuted | `runs/2026-09-25-serving-path/` | [`RESULTS-2026-09-25-serving-path.md`](../results/RESULTS-2026-09-25-serving-path.md); the paper, §5.8 |
+| `PREREG-2026-09-25-wave-completion.md` | collected; predictions 1 and 2 held, prediction 2 descriptively, because gemini-3.8-flash's condition-A floor is saturated at every order and the rule returns no verdict | `runs/2026-09-25-wave-completion/` | [`RESULTS-2026-09-25-wave-completion.md`](../results/RESULTS-2026-09-25-wave-completion.md); the paper, §5.4 |
 | `PREREG-2026-09-25-same-items-both-paths.md` | collected; all five predictions held | `runs/2026-09-25-same-items-both-paths/` | [`RESULTS-2026-09-25-same-items-both-paths.md`](../results/RESULTS-2026-09-25-same-items-both-paths.md); the paper, §5.11 |
 | `PREREG-2026-09-25-local-gradient.md` | collected; the judged arm was cut to two builds under the registration's budget rule; four of six hypotheses were refuted as written | `runs/2026-09-25-local-gradient/`, `runs/2026-09-25-local-gradient-judged/` | [`RESULTS-2026-09-25-local-gradient.md`](../results/RESULTS-2026-09-25-local-gradient.md); the paper, §3.7 |
 | `PREREG-DRAFT-factions.md` | draft, undated by design; never collected; continuing work | none | — |

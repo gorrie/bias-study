@@ -58,35 +58,35 @@
    "data_elsewhere": "data/2026-05-27-abliteration-gemma2/"
   },
   "runs/2026-09-16-ratchet-v3-wave/z-ai__glm-5.2__B.jsonl": {
-   "reason": "TRANSPORT, not refusal, and this is the availability blocker showing up as a file. The model was pinned to a backend that stopped serving it -- 25 HTTP 404s and zero successes in twenty-seven hours -- so the collector opened a file per cell and wrote nothing to it. The model is NOT delisted: the OpenRouter catalogue lists 30 live endpoints for it and our pin is simply not among them. No re-collect on a live backend is part of this release, so these cells are absent from the wave's analysis.",
+   "reason": "TRANSPORT, not refusal, and this is the availability blocker showing up as a file. The model was pinned to a backend that stopped serving it -- 25 HTTP 404s and zero successes in twenty-seven hours -- so the collector opened a file per cell and wrote nothing to it. The model is NOT delisted: the OpenRouter catalogue lists 30 live endpoints for it and our pin is simply not among them. These wave cells stay empty because the wave is frozen; the cells were completed on the same backend on 2026-09-25 in runs/2026-09-25-wave-completion/ (PREREG-2026-09-25-wave-completion.md).",
    "data_elsewhere": null
   },
   "runs/2026-09-16-ratchet-v3-wave/z-ai__glm-5.2__C.jsonl": {
-   "reason": "as above -- glm-5.2 stale pin",
+   "reason": "as above -- glm-5.2 stale pin Completed 2026-09-25 in runs/2026-09-25-wave-completion/ (PREREG-2026-09-25-wave-completion.md).",
    "data_elsewhere": null
   },
   "runs/2026-09-16-ratchet-v3-wave/z-ai__glm-5.2__E.jsonl": {
-   "reason": "as above -- glm-5.2 stale pin",
+   "reason": "as above -- glm-5.2 stale pin Completed 2026-09-25 in runs/2026-09-25-wave-completion/ (PREREG-2026-09-25-wave-completion.md).",
    "data_elsewhere": null
   },
   "runs/2026-09-16-ratchet-v3-wave/z-ai__glm-5.2__F000.jsonl": {
-   "reason": "as above -- glm-5.2 stale pin",
+   "reason": "as above -- glm-5.2 stale pin Completed 2026-09-25 in runs/2026-09-25-wave-completion/ (PREREG-2026-09-25-wave-completion.md).",
    "data_elsewhere": null
   },
   "runs/2026-09-16-ratchet-v3-wave/z-ai__glm-5.2__F001.jsonl": {
-   "reason": "as above -- glm-5.2 stale pin",
+   "reason": "as above -- glm-5.2 stale pin Completed 2026-09-25 in runs/2026-09-25-wave-completion/ (PREREG-2026-09-25-wave-completion.md).",
    "data_elsewhere": null
   },
   "runs/2026-09-16-ratchet-v3-wave/z-ai__glm-5.2__F010.jsonl": {
-   "reason": "as above -- glm-5.2 stale pin",
+   "reason": "as above -- glm-5.2 stale pin Completed 2026-09-25 in runs/2026-09-25-wave-completion/ (PREREG-2026-09-25-wave-completion.md).",
    "data_elsewhere": null
   },
   "runs/2026-09-16-ratchet-v3-wave/hf.co__culturerevolt__gemma-4-12b-heretic-abliterated-GGUF_Q4_K_M__B.jsonl": {
-   "reason": "A LOCAL build, so there is no transport to blame. The cell was opened and the build returned nothing for it. Conditions B and C only; the same build answers N/A/P/D normally, so this is not a model that cannot be run. Undiagnosed, and declared rather than deleted so the next person to look at conditions B and C on local abliterated builds finds it.",
+   "reason": "A LOCAL build, so there is no transport to blame. The cell was opened and the build returned nothing for it. Conditions B and C only; the same build answers N/A/P/D normally, so this is not a model that cannot be run. Undiagnosed, and declared rather than deleted so the next person to look at conditions B and C on local abliterated builds finds it. Completed 2026-09-25 in runs/2026-09-25-wave-completion/ (PREREG-2026-09-25-wave-completion.md).",
    "data_elsewhere": null
   },
   "runs/2026-09-16-ratchet-v3-wave/hf.co__culturerevolt__gemma-4-12b-heretic-abliterated-GGUF_Q4_K_M__C.jsonl": {
-   "reason": "as above -- same local build, condition C",
+   "reason": "as above -- same local build, condition C Completed 2026-09-25 in runs/2026-09-25-wave-completion/ (PREREG-2026-09-25-wave-completion.md).",
    "data_elsewhere": null
   }
  }
