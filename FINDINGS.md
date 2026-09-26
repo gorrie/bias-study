@@ -167,9 +167,9 @@ Of five open-weight families:
 | llama-3.1-8b | **text change not established** — Jaccard 0.339 |
 | mistral-7b | **text change not established** — Jaccard 0.333 |
 | deepseek-r1-distill-7b | stance not computable — 1 shared eligible cell |
-| gemma-2-9b | **text change not established** — Jaccard 0.345; stance unresolvable — 40/40 at the 3.00 midpoint |
+| gemma-2-9b | **text change not established** — Jaccard 0.347; stance unresolvable — 40/40 at the 3.00 midpoint |
 
-0.339, 0.333 and 0.345 sit **inside the 0.303–0.392 band this project measured for one model
+0.339, 0.333 and 0.347 sit **inside the 0.303–0.392 band this project measured for one model
 resampled against itself**. Local runs sample at temperature 0.7 with no seed, so that "rewrite"
 is what resampling alone produces.
 
@@ -180,8 +180,8 @@ unanimous). The 0-byte files are placeholders in the four-family directory. Retr
 `BACKLOG.md` DATA-GEMMA2-ARM-LOST-001.
 
 The verdict above is **stronger than the borrowed-band objection usually allows**. A 2026-09-20
-resample of both Gemma arms on the same weights gives **0.380 stock-vs-stock and 0.377
-ablated-vs-ablated**, against **0.345 between arms** — so for Gemma the same-model band is
+resample of both Gemma arms on the same weights gives **0.381 stock-vs-stock and 0.377
+ablated-vs-ablated**, against **0.347 between arms** — so for Gemma the same-model band is
 measured on Gemma's own weights, and the between-arm value is *below* its own resample noise.
 `STATUS.md`'s bar rule against borrowed floors does not bite here. The website ("about 65 percent
 of the wording rewrites") and the public README ("~70% of the political wording") still state it

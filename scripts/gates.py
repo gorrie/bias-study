@@ -227,6 +227,16 @@ GATES = [
                 "pre-registered 'no floor moves' verdict §6b states and nine gated figures "
                 "read from that cache. A stale cache would keep quoting a verdict the corpus "
                 "no longer supports."),
+    Gate("gemma2_recollect_jaccard.py", ["--check"], tree="study", stage="release",
+         label="4f the Gemma-2 same-weights control still reproduces",
+         covers="the four word-set Jaccard figures the Gemma-2-9B weight-rung claim rests on. "
+                "The between-arm overlap is only evidence of a rewrite if it exceeds what "
+                "resampling the SAME weights produces, and it does not -- 0.347 and 0.341 "
+                "against 0.381 and 0.377, inside the 0.303-0.392 same-model band. A drift here "
+                "would restore a withdrawn claim, so it is gated rather than recomputed by hand. "
+                "Note the expected values are the canonical [a-z]+ tokenizer's; the figures "
+                "published 2026-09-20 used an apostrophe-preserving variant and differ in the "
+                "third decimal."),
     Gate("dose_figure.py", ["--check"], tree="study", stage="release",
          label="4e the dose figure still matches the arms it draws",
          covers="the SVG against the judged records behind it. The figure's job changed when "

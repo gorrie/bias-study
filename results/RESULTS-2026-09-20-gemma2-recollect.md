@@ -1,6 +1,6 @@
 # The Gemma-2-9B arm: the records were never lost, the stance reproduces, and the wording claim does not
 
-**2026-09-20, M5.** `data/2026-09-20-gemma2-recollect/`, held on the collection machine and not in this repository — 40 records, two arms,
+**2026-09-20, M5.** `data/2026-09-20-gemma2-recollect/` — 40 records, two arms,
 `run_local.py`, items T01-Q2…T10-Q2, conditions A and B, position neutral, one sample,
 `transformers-local`, seed 20260527 on both arms. Scored by the local abliterated-Gemma judge
 (`score_inproc_gemma.py`, MLX in-process), output in `scored-abliterated-gemma/`.
@@ -42,10 +42,14 @@ had. Mean word-set Jaccard over the 20 shared cells:
 
 | pairing | Jaccard |
 |---|---:|
-| stock vs abliterated, original run | **0.345** |
-| stock vs abliterated, this run | 0.339 |
-| stock vs stock, **same weights**, resampled | **0.380** |
+| stock vs abliterated, original run | **0.347** |
+| stock vs abliterated, this run | 0.341 |
+| stock vs stock, **same weights**, resampled | **0.381** |
 | abliterated vs abliterated, **same weights**, resampled | **0.377** |
+
+`scripts/gemma2_recollect_jaccard.py --check` recomputes all four rows with the study's
+word tokenizer (`abliteration_effect_check.jaccard`, `[a-z]+`); an apostrophe-preserving
+tokenizer gives 0.345 / 0.339 / 0.380 / 0.377 and the same verdict.
 
 `abliteration_effect_check.py` records the same-model resample band as 0.303–0.392. The
 between-arm figure sits inside it **and below Gemma's own resample noise**. Local runs sample at

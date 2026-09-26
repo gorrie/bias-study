@@ -2,12 +2,13 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-158 script(s). 0 carry no module docstring and are listed at the end.
+159 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
 - **`ablation_wave.py`** — Bring the stock/ablated arm up to the wave protocol. Local GPU, zero API spend.
 - **`extend_manipulation_floor.py`** — Extend the A->D manipulation floor, which the whole paper is measured against.
+- **`gemma2_recollect_jaccard.py`** — Recompute the Gemma-2-9B same-weights Jaccard control the paper quotes.
 - **`ingest_agent_answers.py`** — Ingest an answer sheet produced by an in-harness agent into the standard run format.
 - **`mask_gradient.py`** — The pressure gradient (A-E) on LOCAL stock/ablated pairs, on one judge with the closed models.
 - **`order_floor_wave.py`** — Collect a presentation-order floor UNDER THE WAVE PROTOCOL, so the paper's central comparison stops being cross-protocol.

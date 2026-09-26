@@ -214,6 +214,10 @@ NOT_A_PROCEDURE = {
                               "in the data has no description. Like the other gen_* scripts it "
                               "is run because something changed, not as a step an operator "
                               "chooses between",
+    "gemma2_recollect_jaccard.py": "a RECOMPUTE plus its gate -- it reproduces the four "
+                                   "same-weights Jaccard figures the Gemma-2-9B weight-rung "
+                                   "claim rests on, and `--check` fails when any drifts. Run "
+                                   "when either run changes, not as a step an operator picks",
     "dose_figure.py": "a FIGURE GENERATOR plus its staleness gate -- it redraws the dose chart "
                       "from the judged arms and `--check` fails when the SVG no longer matches "
                       "them. Run when an arm is rescored, not as a step an operator chooses",

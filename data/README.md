@@ -82,7 +82,8 @@ thing.
 | `2026-09-15-g0dm0d3-decomposition` | 800 | 2 | previous | active | named in a script, named in a document |
 | `2026-09-15-paraphrase-spliced` | 360 | 6 | previous | active | named in a script, named in a document |
 | `2026-09-15-reversed-premise-spliced` | 200 | 5 | previous | active | named in a script, named in a document |
-| **46 directories** | **32,543** | | | | |
+| `2026-09-20-gemma2-recollect` | 80 | 2 | previous | active | named in a script, named in a document |
+| **47 directories** | **32,623** | | | | |
 <!-- /GEN:corpus-inventory-data -->
 
 `instrument` is read off each record's own fields, not inferred from the directory name.

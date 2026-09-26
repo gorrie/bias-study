@@ -407,6 +407,12 @@ KNOWN = {
         "Same collection, same missing manifest discipline. 3 files, 60 records.",
     ("2026-05-27-abliteration-gemma2", "no-manifest"):
         "Same collection, same missing manifest discipline. 2 files, 40 records.",
+    ("2026-09-20-gemma2-recollect", "no-manifest"):
+        "run_local.py writes no manifest, and none was derived from the files. Complete on "
+        "independent evidence: 40 records, 2 arms x 10 items x conditions A/B x 1 sample, "
+        "seed 20260527 on every record, the design RESULTS-2026-09-20-gemma2-recollect.md "
+        "recorded on the day of collection; gemma2_recollect_jaccard.py --check reproduces "
+        "its four figures from these files.",
     ("2026-05-27-g0dm0d3", "no-manifest"):
         "Same collection, same missing manifest discipline. 6 files, 60 records.",
     ("2026-05-27-reversed-premise", "model-count-mismatch"):

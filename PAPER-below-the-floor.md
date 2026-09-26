@@ -792,8 +792,8 @@ a third of their word sets, read at the time as most of the wording rewritten. T
 went through four verdicts: withdrawn, when two samples of one model at the same temperature
 proved to share about as few words (0.303–0.392); reinstated, when a greedy control seemed to
 rule that out; undercut, when the greedy control's own value, 0.306, fell inside the resampling
-band; and settled on Gemma's own weights, where stock against ablated shares 0.339 of words and
-the same weights resampled against themselves share 0.380 and 0.377. Only qwen2.5-7b, at 0.276,
+band; and settled on Gemma's own weights, where stock against ablated shares 0.341 of words and
+the same weights resampled against themselves share 0.381 and 0.377. Only qwen2.5-7b, at 0.276,
 falls outside the band, so a rewrite is established on one family of five. The stance half is a
 bound on a compressed scale — open 7–9B models sit at the midpoint before anything is done to
 them, and Gemma-2-9B scored exactly 3 on all forty records under an independent judge, which is
@@ -2029,7 +2029,7 @@ reader can discount the exploratory rows as they see fit.
 ## 8. Data and reproduction
 
 Raw runs, every script, and the full record of what was withdrawn are in the repository, except
-the Gemma-2-9B re-collection and the refusal dose series named in §8.2. The
+the refusal dose series named in §8.2. The
 instrument is [`data/ratchet-battery.json`](data/ratchet-battery.json) — 32 forced-choice items in 16 mirrored pairs, written by
 the author and MIT-licensed with the rest of the repository. It ships in full: there is no fetch step,
 no carve-out, and the item text and the response text both publish. A study whose argument is that a
@@ -2056,6 +2056,7 @@ python scripts/intensity_by_claim.py       # §5.5 top-box use by claim type
 python scripts/jurisdiction_gradient.py    # §5.6
 python scripts/crossover_jurisdiction.py   # §5.6 loyalty crossover; null_audit.py for its bound
 python scripts/rung2_contrast.py           # §5.7
+python scripts/gemma2_recollect_jaccard.py # §3.7
 python scripts/omission_arms.py            # §5.8; item_omission.py --matrix for the three-way test
 python scripts/partials_sensitivity.py     # §5.8 re-collection sensitivity
 python scripts/null_audit.py               # §5.9 and every null's detection limit
@@ -2100,8 +2101,7 @@ no claim about another study rests on our own notes rather than on the paper.
 ### 8.1 Where each arm is pre-registered and reported
 
 Every battery collection this paper reports has a pre-registration committed before its first
-call; the Gemma-2-9B re-collection is the exception, and its records are held on the collection
-machine rather than in this repository. Where a
+call; the Gemma-2-9B re-collection is the exception. Where a
 results document exists it is named beside the section.
 
 | arm | pre-registered | reported |

@@ -223,15 +223,14 @@ from [`runs/`](runs/), so a disagreement between the two is a bug worth an issue
 
 | not shipped | why | what cannot be recomputed here |
 |---|---|---|
-| `2026-09-20-gemma2-recollect` | collected on a separate local machine and held there | the Gemma-2-9B stock-against-abliterated wording overlap in §3.7 and [`RESULTS-2026-09-20-gemma2-recollect.md`](results/RESULTS-2026-09-20-gemma2-recollect.md) (Jaccard 0.339 / 0.380 / 0.377) |
 | `refusal-ablation` | it carries verbatim XSTest prompts, a third party's text | the refusal dose series; `RESULTS-2026-09-19-dose-response.md`, named in the paper's provenance table, stays in the private tree for the same reason |
 | the 62-item questionnaire and every record collected on it | a third party's licensed text; the forced-choice arm of August and early September ran on it | the withdrawn claims measured on it: the figures [`CORRECTIONS.md`](CORRECTIONS.md) #1–#14 and #29 quote cannot be recomputed here |
 | internal working documents (`STATUS`, backlogs, plans) | process records, not results | nothing in the paper; where [`data/withdrawals.json`](data/withdrawals.json) cites one as evidence, the claim is withdrawn either way |
 | eight `2026-09-08-*` directories | three evidence-collector pilots of a different design on one model, and five residency smokes that returned no records | nothing |
 
-Two figure groups in the paper's §3.7 rest on runs in the table above — the Gemma-2-9B wording
-overlap and the refusal dose series — and nothing else in the paper depends on an absent run. If
-you find a figure that does, that is a bug and an issue is the right response.
+One figure group in the paper's §3.7, the refusal dose series, rests on a run in the table
+above, and nothing else in the paper depends on an absent run. If you find a figure that does,
+that is a bug and an issue is the right response.
 
 ---
 
