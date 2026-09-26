@@ -1785,6 +1785,28 @@ SURFACES = {
     # THE BOOK'S OPENING. "The Proof" restates ch22's lead figures on page one and
     # was the one book surface never registered, so it carried the withdrawn hedge
     # ratio and the Grok persona swing after ch22's own ledger forbade them.
+    # THE TWINS. Quiet Autocomplete ch18 and The Last Antibodies ch17 carried the same
+    # withdrawn claims as Ratchet ch22 (the Gemma/Grok swing, the unmask, hedge-is-the-bias)
+    # and no gate read either, which is how they outlived the ch22 correction. Rewritten on the
+    # released paper 2026-09-26 and registered the same day.
+    "book-qa-ch18": {
+        "path": _find_surface("books", "quiet-autocomplete", "chapters",
+                              "18-the-confidence-score-as-the-decision.md"),
+        "phrases": {
+            "position_manip_median": "moves a model's position by a median of %.3f",
+            "position_order_median": "reprinting the same statements in another order by %.3f",
+            "astra_balance": "declines the whole sheet %s times out of",
+            "astra_balance_runs": "times out of %s, then answers",
+        },
+    },
+    "book-tla-ch17": {
+        "path": _find_surface("books", "the-last-antibodies", "chapters",
+                              "17-the-turn.md"),
+        "phrases": {
+            "astra_balance": "declines the whole sheet %s times out of",
+            "astra_balance_runs": "times out of %s under it",
+        },
+    },
     "book-ratchet-ch00": {
         "path": _find_surface("books", "the-ratchet", "chapters",
                               "00-the-proof.md"),
