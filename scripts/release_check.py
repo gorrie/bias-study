@@ -83,6 +83,8 @@ CHECKS = _checks()
 #: The date the CORRECTIONS read was performed, and the number of entries read that day.
 #: BOTH ARE FROZEN ON PURPOSE. The count of entries in the file today is measured, not typed,
 #: so the two numbers can disagree -- and when they do, the disagreement is the finding.
+#: 2026-09-12: the author read #1-#14. 2026-09-24: a Fable read of #15-#28, which the author
+#: ruled stands in for the human read, added #29-#30 -- VERIFICATION-2026-09-24-corrections-read.md.
 CORRECTIONS_READ_ON = "2026-09-24"
 CORRECTIONS_READ_COUNT = 30
 
@@ -153,8 +155,8 @@ def _corrections_human_check():
 
 
 HUMAN_CHECKS = [
-    "3  every arm at final n or cut  -- ablation arm now n=5; wave 0 has 12 short cells,",
-    "   disclosed and unrepairable without breaking the one-sitting rule",
+    "3  every arm at final n or cut  -- the wave's short cells completed 2026-09-25 (PREREG-",
+    "   2026-09-25-wave-completion); cells that cannot change a verdict are named there and cut",
 ] + _corrections_human_check() + [
     "6  the ours row is generated -- key_numbers --sync-ours writes it. NOT mechanised on\n"
     "     purpose: --sync-ours WRITES, and a release gate that mutates the tree it is\n"
