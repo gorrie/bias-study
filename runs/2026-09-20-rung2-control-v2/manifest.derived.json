@@ -1,7 +1,7 @@
 {
   "THIS_IS_NOT_A_MANIFEST": "Derived after collection from the records themselves. A real manifest declares intent BEFORE collection and can therefore disagree with the data; this cannot. Its only load-bearing parts are files[].sha256, which makes future drift detectable, and config, which the collector wrote at collection time.",
-  "derived_at": "2026-09-25T18:50:46+00:00",
-  "derived_by": "scripts/derive_manifest.py @ 5c0fbb1",
+  "derived_at": "2026-09-26T05:42:00+00:00",
+  "derived_by": "scripts/derive_manifest.py @ e6ab740",
   "run": "2026-09-20-rung2-control-v2",
   "layout": "flat",
   "instrument": {

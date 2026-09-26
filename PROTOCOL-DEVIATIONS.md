@@ -31,6 +31,7 @@ what was done. This is that record for this study, in one place.
 | 2026-09-25 | `PREREG-2026-09-25-rung2-within-depth10.md` | Pre-registration — the within-rung rung-2 contrasts at depth 10 |
 | 2026-09-25 | `PREREG-2026-09-25-same-items-both-paths.md` | Pre-registration — the same 32 propositions through both scoring paths |
 | 2026-09-25 | `PREREG-2026-09-25-serving-path.md` | Pre-registration — access tier as serving path: one model, two pinned backends |
+| 2026-09-25 | `PREREG-2026-09-25-wave-completion.md` | Pre-registration — completing the wave's short cells |
 | — | `PREREG-DRAFT-factions.md` | Pre-registration: the Factions instrument — sector lean as a within-model contrast |
 
 ## Roster amendments

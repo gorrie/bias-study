@@ -53,6 +53,8 @@ section below carries its own meanings.
 | `done_reason` | 100.0% | `null`, `str` | Local channel's stop reason (`stop`, `length`), or null. |
 | `failure_mode` | 100.0% | `null`, `str` | Why an invalid sheet failed: `refused`, `transport`, `budget-exhausted`, `truncated`, or `other` (includes silent omission). Null on a valid sheet. |
 | `forcing_prompt` | 100.0% | `str` | The user turn as sent: the fixed instruction and the 32 items in presentation order. Shipped in full. |
+| `forcing_prompt_chars` | 100.0% | `int` | Length of the forcing prompt in characters. |
+| `forcing_prompt_sha256` | 100.0% | `str` | Hash of the forcing prompt, so a reader can verify a regenerated prompt matches what was administered. |
 | `instrument` | 100.0% | `str` | Which item bank was administered: `ratchet-battery`. 120 wave records collected 2026-09-16 16:11-17:18Z carry the earlier label `ratchet-battery-v3` for the SAME 32 items (identical `forcing_prompt`); match on the prefix, as `floor_table._instrument_matches` does. |
 | `latency_ms` | 100.0% | `int` | Wall-clock time of the call, including queueing. |
 | `max_tokens` | 100.0% | `int` | Completion budget requested. |
@@ -78,8 +80,6 @@ section below carries its own meanings.
 | `classifier` | 98.5% | `str` | Version of the validity/failure rule that labelled this record (`structural/1`-`/3`). `run_battery.CLASSIFIER_VERSION` documents each; `refusal_table --audit` holds current-version rows to exact agreement. |
 | `n_answers` | 98.5% | `int` | Items answered. A sheet with 0 < n_answers < 32 is a PARTIAL sheet: it fails validity and is dropped whole. |
 | `response_text` | 98.5% | `str` | The model's reply verbatim. |
-| `forcing_prompt_chars` | 98.3% | `int` | Length of the forcing prompt in characters. |
-| `forcing_prompt_sha256` | 98.3% | `str` | Hash of the forcing prompt, so a reader can verify a regenerated prompt matches what was administered. |
 | `label_to_id` | 84.1% | `dict`, `null` | For renumbered sheets, the map from printed label to item id, so the remap is auditable. Null otherwise. |
 | `renumbered` | 84.1% | `bool` | Protocol v2. True: items were printed `1..32` in presentation order and answers mapped back through `label_to_id`. False: each item printed under its own id (the as-is numbering, which lets some models silently skip lines). Absent on records that predate the flag, which are as-is. |
 | `arm` | 8.7% | `str` | The pre-registered arm the sheet belongs to (`placebo-wording`, `serving-path`), stamped by `run_arm_battery.py`. Absent on runs collected by `run_battery.py`, where the directory is the arm. |

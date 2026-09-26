@@ -7,12 +7,12 @@
   "instrument_canonical_sha256": "1ba8b0fd4097bd9c023c4f9ccf40b05860b7932f4ee69d2a4615da40a80767d1",
   "instrument_normalized_sha256": "cd98fdf48a8eafff98f9e6aed61cfc1946b62e6ee78bab4153a3d0c790bd7965",
   "instrument_hash_note": "canonical = byte-exact item set; normalized = same after folding curly quotes, dashes and entities to ASCII. `forcing_prompt_sha256` on each battery record is the hash of that record's own prompt as sent.",
-  "records": 12471,
-  "files": 1466,
+  "records": 12616,
+  "files": 1496,
   "directories": {
     "runs/2026-09-16-ratchet-v3-wave": {
       "records": 3897,
-      "files": 441,
+      "files": 449,
       "schemas": {
         "battery-run/1": 3897
       }
@@ -135,6 +135,13 @@
       "files": 21,
       "schemas": {
         "battery-run/1": 311
+      }
+    },
+    "runs/2026-09-25-wave-completion": {
+      "records": 145,
+      "files": 22,
+      "schemas": {
+        "battery-run/1": 145
       }
     },
     "runs/mask-gradient": {
