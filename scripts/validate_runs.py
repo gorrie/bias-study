@@ -438,13 +438,14 @@ KNOWN = {
         "and the n=5 pair behind the corrected rung-2 estimate. Collection intact, request "
         "record absent. Not reconstructed on purpose -- see the note above.",
     ("2026-09-13-g0dm0d3-smoke", "no-manifest"):
-        "Same collector, same gap. 1 file, 10 records. A smoke run, kept as the record that "
-        "the endpoint was checked before the wave.",
+        "Same collector, same gap. 1 file, 10 records: grok-4.3 B-Layered at an 800-token cap, "
+        "the truncation detector's over-flagging control (10 flagged 0).",
     ("2026-09-13-g0dm0d3-smoke2", "no-manifest"):
-        "Same collector, same gap. 1 file, 10 records. The second smoke, after the auth change.",
+        "Same collector, same gap. 1 file, 10 records: opus-4.7 at a 4,000-token cap, the "
+        "detector's known-good set (10 flagged 0).",
     ("2026-09-13-truncation-proof", "no-manifest"):
-        "Same collector, same gap. 1 file, 10 records. Collected to measure output length "
-        "against the cap before sizing the wave -- the step whose absence cost four months.",
+        "Same collector, same gap. 1 file, 10 records: opus-4.7 at an 800-token cap, the "
+        "detector's known-truncated set (10 flagged 10).",
 }
 
 

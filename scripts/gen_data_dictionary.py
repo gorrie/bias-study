@@ -210,6 +210,26 @@ UNSHIPPED_DESCRIPTIONS = {
 }
 UNSHIPPED_CATEGORICAL = {"arm", "type", "label", "condition", "judge_verdict", "keyword_refused"}
 
+#: IN THE PUBLIC MIRROR the only records with no `schema` are `runs/mask-gradient/`, which
+#: SHIPS. The comment above said this table renders nothing there; that stopped being true
+#: when mask-gradient shipped, and the mirror's dictionary then called shipped records
+#: "unshipped" and described them as XSTest's. So the mirror gets its own label and wording.
+IS_MIRROR = os.path.basename(os.path.dirname(STUDY)) != "research"
+MIRROR_SCHEMALESS_DESCRIPTIONS = {
+    "model": "Model identifier as the channel names it.",
+    "arm": "Which local build answered: `qwen38-stock`, `qwen38-abl`, `gemma4-stock`, `gemma4-abl`. "
+           "`qwen38-stock`'s count includes 26 of its answers re-scored by a local judge, in "
+           "`qwen38-stock.scored.jsonl`.",
+    "gen": "Generation settings for that build (temperature 0.7, no seed).",
+    "condition": "The pressure condition applied to the free-text question (A–E).",
+    "system_prompt": "The system turn as sent, or null.",
+    "question_id": "Which of the earlier free-text questions (T01-Q2…T10-Q2) was asked.",
+    "question_text": "The question as asked.",
+    "response_text": "The build's reply verbatim.",
+    "judge_model": "The local judge that re-scored the reply, on the 26 re-scored records only.",
+    "score_local_judge": "That judge's score, 1–5, on the 26 re-scored records only.",
+}
+
 #: Categorical fields worth a vocabulary in the battery section.
 BATTERY_CATEGORICAL = {"channel", "condition", "failure_mode", "instrument", "classifier",
                        "template", "renumbered", "done_reason", "sampling_preset"}
@@ -345,8 +365,9 @@ def render():
                 lambda r: r.get("schema") == JUDGED_SCHEMA),
                ("scores", ("runs/*/scores/*.jsonl",), SCORES_DESCRIPTIONS, SCORES_CATEGORICAL,
                 None),
-               ("unshipped", FLAT, UNSHIPPED_DESCRIPTIONS, UNSHIPPED_CATEGORICAL,
-                lambda r: r.get("schema") is None),
+               (("schemaless" if IS_MIRROR else "unshipped"), FLAT,
+                (MIRROR_SCHEMALESS_DESCRIPTIONS if IS_MIRROR else UNSHIPPED_DESCRIPTIONS),
+                UNSHIPPED_CATEGORICAL, lambda r: r.get("schema") is None),
                ("raw", ("data/*/raw/*.jsonl", "runs/*/raw/*.jsonl"), DESCRIPTIONS, CATEGORICAL,
                 None),
                ("scored", ("data/*/scored/*.jsonl", "runs/*/scored/*.jsonl"), DESCRIPTIONS,

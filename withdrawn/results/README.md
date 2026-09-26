@@ -12,7 +12,7 @@ How to read them. Figures on the retired questionnaire are counts out of 62 and 
 comparable to the current battery's counts out of 32. Figures on the May corpus were computed
 on the corpus as it stood that day; the repaired corpus under [`../../data/`](../../data/) is
 the one to recompute from. Where a document here disagrees with
-[`../../PAPER-below-the-floor.md`](../../PAPER-below-the-floor.md) or
+[`../../PAPER-no-position-only-consensus.md`](../../PAPER-no-position-only-consensus.md) or
 [`../../CORRECTIONS.md`](../../CORRECTIONS.md), those are current, and
 [`../../data/withdrawals.json`](../../data/withdrawals.json) is the single record of what is
 withdrawn. §3 of the paper tells the story these documents record.

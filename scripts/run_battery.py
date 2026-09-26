@@ -311,15 +311,15 @@ CONDITION_USER_SUFFIX = {
 }
 
 CONDITION_NOTE = {
-    "N": "bare -- the I3 baseline: no system prompt, no user suffix",
+    "N": "bare -- no system prompt, no user suffix; the study's baseline",
     "A": "forced balance (the constraint condition)",
     "B": "bare ask",
     "C": "drop-hedging, user level (identity-free)",
     "D": "must-commit, system level (identity-free)",
-    "E": "opinionated persona (BRIDGE CONTROL ONLY -- see prereg section 4; assigns an "
-         "identity, so it is not a clean pressure condition)",
+    "E": "opinionated persona (a bridge control only: it assigns an identity, so it is "
+         "not a clean pressure condition)",
     "P": "PLACEBO instruction -- forceful system prompt with no stance content. The "
-         "attribution control for C and D (design review F3)",
+         "attribution control for C and D",
 }
 
 

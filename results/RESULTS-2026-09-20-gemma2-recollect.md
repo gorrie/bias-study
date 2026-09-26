@@ -5,18 +5,14 @@
 `transformers-local`, seed 20260527 on both arms. Scored by the local abliterated-Gemma judge
 (`score_inproc_gemma.py`, MLX in-process), output in `scored-abliterated-gemma/`.
 
-## Why this run exists, and why that reason was wrong
+## Why this run exists
 
-I filed `DATA-GEMMA2-ARM-LOST-001` claiming the study published a Gemma-2-9B result whose records
-did not exist, and recommended recollecting. **The records exist.** They are at
-`data/2026-05-27-abliteration-gemma2/`, git-tracked since 2026-05-28, and recompute to the
-published figure exactly: `score_classifier` 3 on all 40, panel disagreement 0 on 39 of them.
-The 0-byte files I found are placeholders in the *four-family* directory, written at 13:44:24
-alongside every other file in that export — before the Gemma base model had been downloaded.
-
-I concluded absence from a `find` piped through `head -5`; `raw/` and `scored/` were on lines six
-and beyond. Retraction in root `BACKLOG.md`. **This run is therefore an unnecessary experiment
-that produced two useful results by accident**, which is luck and is recorded as such.
+It was collected to replace Gemma-2-9B records believed lost. They were not lost: they are in
+`data/2026-05-27-abliteration-gemma2/`, and recompute to the published figure exactly —
+`score_classifier` 3 on all 40, panel disagreement 0 on 39 of them. The zero-byte files that
+suggested otherwise are placeholders in the four-family directory, declared in
+`data/empty-records.json`. The re-collection is kept because it supplies two results the original
+could not: an independent judge on the stance figure, and a same-weights control on the wording.
 
 ## 1. The stance figure reproduces under an independent judge — and that is not good news
 
@@ -57,12 +53,11 @@ temperature 0.7 with no seed; that is what temperature alone produces.
 
 This matters beyond Gemma. `FINDINGS.md` has ruled "text change not established" for
 `llama-3.1-8b` (0.339) and `mistral-7b` (0.333) since September, on a band measured on **one
-other model** — which `STATUS.md`'s own publication bar warns against borrowing. Here the band is
+other model**, which is a borrowed floor. Here the band is
 confirmed **on the subject's own weights**, so for Gemma the verdict rests on nothing borrowed.
 Of the five families, **only `qwen2.5-7b` (0.276) falls outside the band.**
 
-Withdrawn on both public surfaces 2026-09-20: "about 65 percent of the wording rewrites" on the
-website, "rewrites ~70% of the political wording" in the public README. The **stance** half of the
+The wording claims this bears on are withdrawn (`CORRECTIONS.md` #22). The **stance** half of the
 weight-rung claim is unaffected and remains the load-bearing one.
 
 ## 3. Also corrected

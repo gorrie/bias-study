@@ -32,7 +32,7 @@ import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
-PAPER = os.path.join(STUDY, "PAPER-below-the-floor.md")
+PAPER = os.path.join(STUDY, "PAPER-no-position-only-consensus.md")
 
 #: name -> why the paper need not name it. Keep the reason specific enough that a
 #: reader can tell whether it still applies.
@@ -90,7 +90,7 @@ def test_every_prereg_and_result_is_named_by_the_paper():
     text = open(PAPER, encoding="utf-8").read()
     missing = [d for d in _documents() if d not in EXEMPT and d not in text]
     assert not missing, (
-        "%d document(s) are not named anywhere in PAPER-below-the-floor.md, so a reader "
+        "%d document(s) are not named anywhere in PAPER-no-position-only-consensus.md, so a reader "
         "cannot get from the paper to the record:\n  %s\n"
         "Cite each in the provenance table under Reproduction, or add it to EXEMPT in "
         "this file with a reason." % (len(missing), "\n  ".join(missing)))

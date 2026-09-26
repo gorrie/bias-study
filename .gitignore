@@ -56,3 +56,5 @@ data/_aggregated/vendor_arcs.md
 # Weight-rung working dirs (large; regenerated locally, never committed)
 abliteration-output/
 models/
+# gen_artifact_manifest.py's local hash cache
+.artifact-hash-cache.json

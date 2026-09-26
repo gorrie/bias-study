@@ -227,7 +227,7 @@ GATES = [
                 "pre-registered 'no floor moves' verdict §6b states and nine gated figures "
                 "read from that cache. A stale cache would keep quoting a verdict the corpus "
                 "no longer supports."),
-    Gate("gemma2_recollect_jaccard.py", ["--check"], tree="study", stage="release",
+    Gate("gemma2_recollect_jaccard.py", ["--check"], tree="either", stage="release",
          label="4f the Gemma-2 same-weights control still reproduces",
          covers="the four word-set Jaccard figures the Gemma-2-9B weight-rung claim rests on. "
                 "The between-arm overlap is only evidence of a rewrite if it exceeds what "

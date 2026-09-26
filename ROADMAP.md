@@ -3,7 +3,7 @@
 > **HISTORICAL — written for the retired design.** The items below were planned against the
 > free-text questionnaire retired on 2026-09-16, and the floors they quote are counts on that
 > design, not on the present 32-item battery. What the current release measures, and what it
-> does not, is stated in [`PAPER-below-the-floor.md`](PAPER-below-the-floor.md) §9. Kept because
+> does not, is stated in [`PAPER-no-position-only-consensus.md`](PAPER-no-position-only-consensus.md) §9. Kept because
 > a plan published in advance is only worth anything if it stays published.
 
 What is not in this repository yet, what it needs, and why it is not here. Published in advance

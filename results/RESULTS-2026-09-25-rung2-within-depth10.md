@@ -35,15 +35,14 @@ mirrored pairs of (critic − defender)/2. Bold: survives BH.
 
 ## Against the predictions
 
-**Manipulation check: passed.** Restricted to runs 1–5, the computation reproduces the
-`RESEARCH-BACKLOG.md` §16 depth-5 table. Eight of ten values match to the printed digit; the
-other two are the same number rounded the other way (−0.0875 printed −0.087 there and −0.088
-here; +0.0125 printed +0.013 and +0.012).
+**Manipulation check: passed.** Restricted to runs 1–5, the computation reproduces the depth-5
+contrasts computed when the control was collected, among them `grok-4.3`'s +0.256 and −0.225:
+eight of ten to the printed digit, the other two the same number rounded the other way.
 
 **P1 (direction) — killed by its own rule.** Of the four depth-5 cells that carried the lead,
 two keep their sign in runs 6–10 and two do not: the directive's effect on `gpt-6-astra`
 (+0.044) and `gpt-6-astra-pro` (+0.062) recurs; the two `grok-4.3` cells, which were the largest
-in the backlog table (+0.256 and −0.225), fall to −0.006 and reverse to +0.156. Fewer than three
+at depth 5 (+0.256 and −0.225), fall to −0.006 and reverse to +0.156. Fewer than three
 of four kept their sign. The "directive up, persona back down" pattern was mostly the first five
 `grok-4.3` sheets.
 

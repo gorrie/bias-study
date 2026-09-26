@@ -2,7 +2,7 @@
 
 WHY THIS FILE EXISTS
 --------------------
-`key_numbers.py` checks prose twice. `--check` reads `PAPER-below-the-floor.md`; `--check-website`
+`key_numbers.py` checks prose twice. `--check` reads `PAPER-no-position-only-consensus.md`; `--check-website`
 and `--check-release` read the surfaces in `SURFACES`. They share the registry, the phrase
 templates and the values -- and they are separate loops, written months apart, which have
 silently disagreed about what counts as a match.

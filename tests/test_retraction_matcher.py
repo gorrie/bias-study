@@ -3,7 +3,7 @@
 "rewrites ~70% of the political wording" was registered as RETRACTED on 2026-09-13. On
 2026-09-20 it was still asserted on three live surfaces and the gate was green on all three:
 
-    PAPER-below-the-floor.md      "rewrites ~70% of political wording"          (no "the")
+    PAPER-no-position-only-consensus.md      "rewrites ~70% of political wording"          (no "the")
     dispatches/alignment-mask.md  "roughly 70% of the political wording changes"
     dispatches/gemma-delta.md     "roughly 70% of the political wording changes"
 

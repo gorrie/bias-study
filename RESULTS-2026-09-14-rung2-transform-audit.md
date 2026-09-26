@@ -3,7 +3,7 @@
 > **HISTORICAL — the retired design's pipeline rung.** An audit of the proxy-based, judge-scored
 > rung 2 on the ten-question free-text instrument. The present study re-collected rung 2 on the
 > 32-item battery through its own transport, with no proxy; that result is in
-> [`PAPER-below-the-floor.md`](PAPER-below-the-floor.md). Kept as the record of why the proxy
+> [`PAPER-no-position-only-consensus.md`](PAPER-no-position-only-consensus.md). Kept as the record of why the proxy
 > arm was abandoned.
 
 **2026-09-14.** Audited from the records already on disk — no new calls — and confirmed against

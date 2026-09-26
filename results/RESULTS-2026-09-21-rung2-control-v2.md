@@ -66,8 +66,7 @@ finding, and it is printed with the table.
 - **It is not evidence that rung 2 does nothing.** Twenty-eight contrasts sit under their own
   model's order floor, which bounds them rather than zeroing them. An undetectable effect and
   an absent one are not the same finding — this paper argues that about other people's work.
-- **It does not migrate the corpus.** Seventy sheets of v2 sit beside a v1 corpus; this is not
-  `RESEARCH-BACKLOG` §17.
+- **It does not migrate the corpus.** Seventy sheets of v2 sit beside a v1 corpus.
 - **The declared token-cap difference stands.** The arms ran at `max_tokens` 8192 and the
   control at 40960. Measured: **0 arm sheets came within 95% of their cap**, so the difference
   is declared and, on this data, not doing anything.

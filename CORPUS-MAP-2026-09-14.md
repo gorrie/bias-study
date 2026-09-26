@@ -245,7 +245,7 @@ collection time, which no budget fixes.
 > Re-counted across the whole corpus — 30,089 records, every non-derived run — nine records
 > end on a closed markdown link while flagged severed: five cells, two models, three runs, and
 > none within 95% of its cap (highest 48%, lowest 17%). Two of the nine are `gpt-4.1` in
-> `2026-09-13-i3-phase0`, the live forced-choice instrument, so registering one cell was not
+> `2026-09-13-i3-phase0`, the judge-scored frame-and-placebo arm, so registering one cell was not
 > containing the problem; it was hiding it inside the data the current study depends on.
 >
 > `eligibility.looks_truncated_text` now treats a closed markdown link as an ending, which is

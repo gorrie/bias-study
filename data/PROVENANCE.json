@@ -388,7 +388,7 @@
    "corpus": "previous",
    "status": "active",
    "role": "fixture",
-   "why": "ten sheets against the G0DM0D3 proxy, before that design was dropped for going direct. Superseded by the rung-2 arm, kept as the record of what the proxy returned",
+   "why": "ten grok-4.3 B-Layered sheets at an 800-token cap: the truncation detector's over-flagging control, a terse model finishing inside the cap (10 flagged 0)",
    "documents": [
     "withdrawn/results/RESULTS-2026-09-13-pipeline-rung-replicate.md"
    ]
@@ -405,7 +405,7 @@
    "corpus": "previous",
    "status": "active",
    "role": "fixture",
-   "why": "as above, the second proxy attempt",
+   "why": "ten opus-4.7 sheets at a 4,000-token cap: the detector's known-good set (10 flagged 0)",
    "documents": [
     "withdrawn/results/RESULTS-2026-09-13-pipeline-rung-replicate.md"
    ]

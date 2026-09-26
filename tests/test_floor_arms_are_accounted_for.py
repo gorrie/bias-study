@@ -158,7 +158,7 @@ def test_the_endpoint_ranking_paragraph_agrees_with_the_floors_table():
     assert others[0] < 4, "another nuisance row now reaches 4: %r" % (nuisance,)
 
     paper = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                         "PAPER-below-the-floor.md")
+                         "PAPER-no-position-only-consensus.md")
     text = io.open(paper, encoding="utf-8").read()
     tied = sorted(k for k, v in nuisance.items() if v == others[0])
     words = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven"}

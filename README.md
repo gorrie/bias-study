@@ -11,7 +11,7 @@ comparing two variants of one release. There is no language model anywhere in th
 path. Each answer is recorded as an item id and a chosen position, so no judge's lean can enter
 a score.
 
-- **Paper:** [`PAPER-below-the-floor.md`](PAPER-below-the-floor.md)
+- **Paper:** [`PAPER-no-position-only-consensus.md`](PAPER-no-position-only-consensus.md)
 - **Instrument:** [`data/ratchet-battery.json`](data/ratchet-battery.json), shipped in full
 - **Corpus:** [`runs/`](runs/), every record the paper's figures are computed from
 - **Corrections:** [`CORRECTIONS.md`](CORRECTIONS.md). Read it before quoting anything here.
@@ -38,10 +38,10 @@ factor carrying no information.
 
 ### 2. Refusal is elicited, not intrinsic
 
-Across 64 models measured under both arms there are 88 refusals in 837 runs where the prompt
+Across 64 models measured under both arms there are 128 refusals in 1478 runs where the prompt
 carries no directive, against 1284 runs where it carries one — 55 of those runs are refusals.
-Of the models measured under both arms, 9 decline all 32 items without a directive; give those
-same models a firm instruction and **8 of them stop**. The ninth declines under every condition
+Of the models measured under both arms, 10 decline all 32 items without a directive; give those
+same models a firm instruction and **9 of them stop**. The tenth declines under every condition
 and is not a switch. Separately, 3 other models decline only under a firm instruction — two
 under the commitment directive and one, `phi4`, only under the content-free placebo. A refusal
 rate reported as a property of a model is substantially a property of the sentence the
@@ -171,7 +171,7 @@ their methods well enough that the audit was possible at all; the floors do not 
 effects are absent, only that they cannot be told apart from factors held fixed, and the remedy
 is a re-analysis rather than a retraction.
 
-The same audit is applied to this study. It has corrected **30** claims of its own,
+The same audit is applied to this study. It has corrected **31** claims of its own,
 each recorded in [`CORRECTIONS.md`](CORRECTIONS.md) with what was claimed, when, and what
 replaced it. Every withdrawn claim is registered in
 [`data/withdrawals.json`](data/withdrawals.json), and the build fails if one is asserted again
@@ -226,10 +226,10 @@ from [`runs/`](runs/), so a disagreement between the two is a bug worth an issue
 | `refusal-ablation` | it carries verbatim XSTest prompts, a third party's text | the refusal dose series; `RESULTS-2026-09-19-dose-response.md`, named in the paper's provenance table, stays in the private tree for the same reason |
 | the 62-item questionnaire and every record collected on it | a third party's licensed text; the forced-choice arm of August and early September ran on it | the withdrawn claims measured on it: the figures [`CORRECTIONS.md`](CORRECTIONS.md) #1–#14 and #29 quote cannot be recomputed here |
 | internal working documents (`STATUS`, backlogs, plans) | process records, not results | nothing in the paper; where [`data/withdrawals.json`](data/withdrawals.json) cites one as evidence, the claim is withdrawn either way |
-| eight `2026-09-08-*` directories | three evidence-collector pilots of a different design on one model, and five residency smokes that returned no records | nothing |
+| eight `2026-09-08-*` directories | a fake-backend development fixture, a pilot of a different design on one model, an offline exporter output, and five residency smokes that returned no records | nothing |
 
-One figure group in the paper's §3.7, the refusal dose series, rests on a run in the table
-above, and nothing else in the paper depends on an absent run. If you find a figure that does,
+The refusal-direction figures in the paper's §3.7 — the XSTest calibration and the dose series —
+rest on a run in the table above, and nothing else in the paper depends on an absent run. If you find a figure that does,
 that is a bug and an issue is the right response.
 
 ---
@@ -243,7 +243,7 @@ Every file at the top of this repository is listed here, in one of three groups.
 
 | path | what it is |
 |---|---|
-| [`PAPER-below-the-floor.md`](PAPER-below-the-floor.md) | the paper |
+| [`PAPER-no-position-only-consensus.md`](PAPER-no-position-only-consensus.md) | the paper |
 | [`CORRECTIONS.md`](CORRECTIONS.md) | every claim corrected, with what replaced it — read before quoting |
 | [`data/ratchet-battery.json`](data/ratchet-battery.json) | the instrument, 32 items in 16 mirrored pairs |
 | [`ITEM-READ-2026-09-16-ratchet-battery.md`](ITEM-READ-2026-09-16-ratchet-battery.md) | the author's signed read of those 32 items, which gated collection |
@@ -256,7 +256,6 @@ Every file at the top of this repository is listed here, in one of three groups.
 | [`PRIOR-WORK-CORRECTIONS.md`](PRIOR-WORK-CORRECTIONS.md) | the controls audit of other studies |
 | [`PROTOCOL-DEVIATIONS.md`](PROTOCOL-DEVIATIONS.md) | what was planned against what was done, generated |
 | [`prereg/`](prereg/) | the pre-registrations, each committed before its data |
-| [`RELEASE-2026-09-07.md`](RELEASE-2026-09-07.md) | the release checklist [`scripts/release_check.py`](scripts/release_check.py) runs; its arm inventory is generated |
 | [`CITATION.cff`](CITATION.cff), [`.zenodo.json`](.zenodo.json) | the citation record a DOI mints from |
 | [`VERSIONING.md`](VERSIONING.md) | releases are dated, not numbered |
 | [`MANIFEST.json`](MANIFEST.json) | the export manifest: instrument and corpus hashes |
@@ -274,6 +273,7 @@ on these.
 | [`CORRECTIONS-2026-09-08.md`](CORRECTIONS-2026-09-08.md), [`CORRECTIONS-2026-09-17-labels.md`](CORRECTIONS-2026-09-17-labels.md), [`CORRECTIONS-2026-09-17-power.md`](CORRECTIONS-2026-09-17-power.md), [`CORRECTIONS-2026-09-18-bootstrap.md`](CORRECTIONS-2026-09-18-bootstrap.md), [`corrections/`](corrections/) | dated correction records; the paper and [`data/withdrawals.json`](data/withdrawals.json) cite them |
 | [`CORPUS-MAP-2026-09-14.md`](CORPUS-MAP-2026-09-14.md) | what each run of the earlier corpus is for, after its repair |
 | [`VERIFICATION-2026-09-24-corrections-read.md`](VERIFICATION-2026-09-24-corrections-read.md) | how the corrections ledger was read before release, entry by entry |
+| [`RELEASE-2026-09-07.md`](RELEASE-2026-09-07.md) | the release checklist, and the record of the 2026-09-07 release on the retired design; the checklist [`scripts/release_check.py`](scripts/release_check.py) runs and its generated arm inventory are current |
 | [`ADVERSARIAL-REVIEW.md`](ADVERSARIAL-REVIEW.md) | the May 2026 self-review; its verdicts are dated and several are superseded |
 | [`results/`](results/) | dated results documents |
 | [`skills/`](skills/), [`agents/`](agents/) | the procedures the study was run by |

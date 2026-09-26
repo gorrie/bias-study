@@ -63,7 +63,7 @@ def test_generated_blocks_carry_no_replacement_characters():
     replicator can reproduce every floor and every detection limit without it, and this test
     has nothing to check until they have it.
     """
-    paper = os.path.join(STUDY, "PAPER-below-the-floor.md")
+    paper = os.path.join(STUDY, "PAPER-no-position-only-consensus.md")
     if not os.path.exists(paper):
         return
     text = io.open(paper, encoding="utf-8").read()
@@ -388,7 +388,7 @@ def test_no_generated_markdown_table_ships_inside_a_code_fence():
     import io
     import os
     paper = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                         "PAPER-below-the-floor.md")
+                         "PAPER-no-position-only-consensus.md")
     text = io.open(paper, encoding="utf-8").read().replace("\r\n", "\n")
     blocks = re.findall(r"<!-- GEN:(\w+) -->(.*?)<!-- /GEN:\1 -->", text, re.S)
     assert blocks, "no generated blocks found -- this test would check nothing"

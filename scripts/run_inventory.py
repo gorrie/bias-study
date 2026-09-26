@@ -53,9 +53,10 @@ FIXTURES = {
     # test into a floor. Declared rather than deleted -- each is the evidence for a parameter
     # the wave then used.
     "2026-09-16-ratchet-v3-wave-budget-probe":
-        "the 36-sheet probe that MEASURED the token budget the wave runs at, rather than "
-        "assuming one. Its answer is the --max-tokens every later run carries; the sheets "
-        "themselves are not a measurement of any model's position",
+        "36 sheets on 2026-09-16 that MEASURED the token budget the wave runs at, rather than "
+        "assuming one, plus 35 later single-sheet probes of models added to the roster "
+        "(2026-09-17 to 09-19). Its answer is the --max-tokens every later run carries; the "
+        "sheets themselves are not a measurement of any model's position",
     "2026-09-18-bce-smoke":
         "seven sheets confirming conditions B, C and E render and parse before the panel-wide "
         "pass bought them",
@@ -72,10 +73,10 @@ FIXTURES = {
     # published denominator is not a probe. RESEARCH-BACKLOG 22 carries the general case --
     # the declared fixtures already in `runs/` are swept the same way.
     "2026-09-13-g0dm0d3-smoke":
-        "ten sheets against the G0DM0D3 proxy, before that design was dropped for going "
-        "direct. Superseded by the rung-2 arm, kept as the record of what the proxy returned",
+        "ten grok-4.3 B-Layered sheets at an 800-token cap: the truncation detector's "
+        "over-flagging control, a terse model finishing inside the cap (10 flagged 0)",
     "2026-09-13-g0dm0d3-smoke2":
-        "as above, the second proxy attempt",
+        "ten opus-4.7 sheets at a 4,000-token cap: the detector's known-good set (10 flagged 0)",
     "2026-09-13-truncation-proof":
         "ten sheets demonstrating that a truncated response comes back with "
         "finish_reason 'stop' through the proxy -- the evidence for LEARNINGS #4, which is "

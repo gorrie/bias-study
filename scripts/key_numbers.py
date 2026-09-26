@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The paper's load-bearing numbers, computed -- and a check that its prose still matches them.
 
-Every table in PAPER-below-the-floor.md is generated. The prose around those tables is not,
+Every table in PAPER-no-position-only-consensus.md is generated. The prose around those tables is not,
 and it quotes them: "twenty items of 62", "the same p90, 14 items either way", "which moves 9".
 Those are hand-typed numbers sitting beside generated ones in a paper whose entire argument is
 that hand-typed numbers go stale. On 2026-09-01 the frontier order sweep landed, the order
@@ -29,7 +29,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
-PAPER = os.path.join(STUDY, "PAPER-below-the-floor.md")
+PAPER = os.path.join(STUDY, "PAPER-no-position-only-consensus.md")
 sys.path.insert(0, HERE)
 
 import floor_table as F      # noqa: E402
@@ -371,13 +371,19 @@ def matched_arms():
     runs and 38 refusals. Stale by one collection, ungated, and sitting in the paper's opening
     argument, which is the combination this whole paper is about.
 
-    Arms are defined the way the sentence describes them: A and B carry no directive to commit
-    (A asks for balance, B asks bare), D and P do (D demands commitment, P is the content-free
-    placebo). C and E are excluded because they are not part of that contrast.
+    Arms are defined the way the sentence describes them: N, A and B carry no directive to
+    commit (N is the bare question with no system prompt, A asks for balance, B adds "What do
+    you think?"), D and P do (D demands commitment, P is the content-free placebo). C and E are
+    excluded because they are not part of that contrast.
+
+    N WAS MISSING until 2026-09-26. The arm was defined on the May design, where B was the bare
+    ask; on the battery the bare condition is N, and B is the suffixed question. So the study's
+    own no-prompt baseline -- 673 runs, 40 refusals, and one model that declines under N alone
+    -- sat in neither arm of the sentence that says refusal needs no directive.
     """
     rows = R.load(REFUSAL_EXCLUDE)
     scoreable = [r for r in rows if R.classify(r) in ("valid", "refused")]
-    no_dir, directive = {"A", "B"}, {"D", "P"}
+    no_dir, directive = {"N", "A", "B"}, {"D", "P"}
     in_arm = {a: {r.get("model") for r in scoreable if r.get("condition") in a}
               for a in (frozenset(no_dir), frozenset(directive))}
     both = in_arm[frozenset(no_dir)] & in_arm[frozenset(directive)]
@@ -891,15 +897,8 @@ def out_of_panel_records():
     rate off the table. Ungated until 2026-09-23 (backlog R4).
     """
     import refusal_table as _RT
-    total = 0
-    for name in getattr(_RT, "OUT_OF_PANEL", {}):
-        d = _run_dir(name)
-        if not os.path.isdir(d):
-            continue
-        for p in glob.glob(os.path.join(d, "**", "*.jsonl"), recursive=True):
-            with io.open(p, encoding="utf-8", errors="replace") as fh:
-                total += sum(1 for line in fh if line.strip())
-    return total or None
+    # One implementation, refusal_table's: responses only (not their scored/ copies), both roots.
+    return _RT._out_of_panel_records()["records"] or None
 
 
 def unattributable_sheets():
@@ -3157,7 +3156,7 @@ def _claim_pattern(phrase):
     "rewrites ~70% of the political wording" was still asserted on three surfaces on
     2026-09-20 and the gate was green on all three:
 
-        PAPER-below-the-floor.md   "rewrites ~70% of political wording"        (no "the")
+        PAPER-no-position-only-consensus.md   "rewrites ~70% of political wording"        (no "the")
         dispatches/alignment-mask  "roughly 70% of the political wording changes"
         dispatches/gemma-delta     "roughly 70% of the political wording changes"
 

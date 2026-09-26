@@ -802,7 +802,8 @@ A stance null measured against an unestablished rewrite is uninterpretable in ei
 > **Corrected 2026-09-20: "Gemma-2-9B's raw files are 0 bytes" was wrong.** The records are in
 > `data/2026-05-27-abliteration-gemma2/`, tracked since 2026-05-28. Read, the arm's between-arm
 > Jaccard is **0.345**, a re-collection gives 0.339, and the same weights resampled against
-> themselves give 0.380 / 0.377 — so Gemma joins llama and mistral inside the resampling band, and
+> themselves give 0.380 / 0.377 (an apostrophe-preserving tokenizer; the study's own gives
+> 0.347 / 0.341 / 0.381 / 0.377, `gemma2_recollect_jaccard.py`) — so Gemma joins llama and mistral inside the resampling band, and
 > the verdict above ("confirmed on one family") stands on four readable families rather than
 > three. `results/RESULTS-2026-09-20-gemma2-recollect.md`; `FINDINGS.md` carries the same note.
 
@@ -1037,7 +1038,7 @@ repository could ever open them.
 
 **Why it survived, and this is the part worth reading.** The correction that withdrew the five
 was written in the private tree and never copied to this one, while `power.py` and
-`PAPER-below-the-floor.md` here were updated to *cite* it — seven references to a file a reader
+`PAPER-no-position-only-consensus.md` here were updated to *cite* it — seven references to a file a reader
 of this repository could not open. Separately, `key_numbers.RETRACTED` gates withdrawn phrases
 against every surface, and it was never handed "3 of 5 published nulls", "undecided rather than
 refuted", or "Drift did not replicate at scale". So `--check-release` passed, repeatedly, over a
@@ -1092,6 +1093,22 @@ survivors are judge-sensitive — `openai/gpt-4.1` +0.21 to +0.69 and `deepseek/
 +0.14 to +0.86, a factor of three each; both findings' subjects sat on the panel that scored
 them — and are reported as suggestive. The "+0.03 to +0.60" range was stale as well.
 `judge_lean.py --per-finding`.
+
+### 31. "88 refusals in 837 runs where the prompt carries no directive" — restated 2026-09-26
+
+**Published:** the README's second result, the paper's §5.4, and three evilrobots.lol pages:
+"88 refusals in 837 runs where the prompt carries no directive, against 1284 runs where it
+carries one — 55 of those runs are refusals. 9 models decline it without a directive; give those
+same models a firm instruction and 8 of them stop." **Restated:** 2026-09-26.
+
+The no-directive arm was defined as conditions A and B, on the premise that B is the bare
+question. That was true of the May design and is not true of the battery, where the bare
+question is condition N and B adds "What do you think?". So the study's own no-prompt baseline —
+673 runs, 40 refusals, and one model, `deepseek/deepseek-v4-flash`, that declines under N alone —
+sat in neither arm. With N in the arm: **128 refusals in 1478 runs** without a directive against
+55 in 1284 with one; **10 models** decline without a directive and **9** of them stop under a firm
+instruction; the tenth declines under every condition. The claim's direction and the directive
+side are unchanged. `key_numbers.matched_arms` now defines the arm as N, A and B.
 
 ---
 

@@ -1,7 +1,7 @@
 # Correction, 2026-09-18 — the position estimator rejected half of all true nulls
 
 > **WITHDRAWN: "a content-free placebo significantly moves measured position on 16 of 37
-> models."** Published in `PAPER-below-the-floor.md` §1, `README.md`, `PLAN.md` and
+> models."** Published in `PAPER-no-position-only-consensus.md` §1, `README.md`, `PLAN.md` and
 > `FINDINGS-2026-09-17-battery.md` on 2026-09-17/18. It was the paper's lead finding for
 > roughly nine hours. The correct figure under a calibrated estimator is **4 of 39**, against
 > a false-positive rate of **6.2%** — which on 39 models is about 2.4 models expected by

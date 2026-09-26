@@ -39,7 +39,7 @@ try:
 except Exception:
     pass
 
-PAPER = os.path.join(STUDY, "PAPER-below-the-floor.md")
+PAPER = os.path.join(STUDY, "PAPER-no-position-only-consensus.md")
 
 #: Numbers that are not claims about the corpus. Each pattern is anchored on the shape that
 #: makes it inert, never on the digits themselves -- "2024" is a year in `Röttger (2024)` and

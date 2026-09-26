@@ -87,7 +87,8 @@
    "of_record": "2026-06-11",
    "date_note": "Technology in Society 87:103431, accepted 10 Jun, published 11 Jun 2026",
    "pairs_in_hand": true,
-   "political_instrument": true
+   "political_instrument": true,
+   "reference": "Naser, M. Z. (2026). Tracing moral value drift across large language model generations and their societal implications. *Technology in Society*, 87, 103431. https://doi.org/10.1016/j.techsoc.2026.103431"
   },
   {
    "id": "sakhawat2026",
@@ -140,7 +141,8 @@
    "of_record": null,
    "date_note": "arXiv 2601.06194; preprint",
    "pairs_in_hand": true,
-   "political_instrument": true
+   "political_instrument": true,
+   "reference": "Sakhawat, A., Islam, T., Farhin, T., Raiyan, S. R., Mahmud, H., & Hasan, M. K. (2026). Political Alignment in Large Language Models: A Multidimensional Audit of Psychometric Identity and Behavioral Bias. arXiv:2601.06194."
   },
   {
    "id": "rottger2024",
@@ -192,7 +194,8 @@
    "of_record": "2024-08-11",
    "date_note": "arXiv 2402.16786 Feb 2024; ACL Aug 2024",
    "pairs_in_hand": true,
-   "political_instrument": true
+   "political_instrument": true,
+   "reference": "Röttger, P., Hofmann, V., Pyatkin, V., Hinck, M., Kirk, H., Schütze, H., & Hovy, D. (2024). Political Compass or Spinning Arrow? Towards More Meaningful Evaluations for Values and Opinions in Large Language Models. In *Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)* (pp. 15295–15311). https://doi.org/10.18653/v1/2024.acl-long.816"
   },
   {
    "id": "motoki2024",
@@ -243,7 +246,8 @@
    "of_record": "2024-01",
    "date_note": "Public Choice, online Aug 2023, issue Jan 2024",
    "pairs_in_hand": false,
-   "political_instrument": true
+   "political_instrument": true,
+   "reference": "Motoki, F., Pinho Neto, V., & Rodrigues, V. (2024). More human than human: measuring ChatGPT political bias. *Public Choice*, 198(1–2), 3–23. https://doi.org/10.1007/s11127-023-01097-2"
   },
   {
    "id": "liu2025",
@@ -296,7 +300,8 @@
    "of_record": "2025-02-10",
    "date_note": "Humanit Soc Sci Commun 12:179, 10 Feb 2025",
    "pairs_in_hand": true,
-   "political_instrument": true
+   "political_instrument": true,
+   "reference": "Liu, Y., Panwang, Y., & Gu, C. (2025). “Turning right”? An experimental study on the political value shift in large language models. *Humanities and Social Sciences Communications*, 12, 179. https://doi.org/10.1057/s41599-025-04465-z"
   },
   {
    "id": "rozado2024",
@@ -348,7 +353,8 @@
    "of_record": "2024-07-31",
    "date_note": "PLOS ONE, received Mar 2024, published 31 Jul 2024",
    "pairs_in_hand": true,
-   "political_instrument": true
+   "political_instrument": true,
+   "reference": "Rozado, D. (2024). The political preferences of LLMs. *PLOS ONE*, 19(7), e0306621. https://doi.org/10.1371/journal.pone.0306621"
   },
   {
    "id": "dominguezolmedo2024",
@@ -398,7 +404,8 @@
    "of_record": "2024-12-10",
    "date_note": "arXiv 2306.07951 Jun 2023; NeurIPS Dec 2024",
    "pairs_in_hand": null,
-   "political_instrument": true
+   "political_instrument": true,
+   "reference": "Dominguez-Olmedo, R., Hardt, M., & Mendler-Dünner, C. (2024). Questioning the Survey Responses of Large Language Models. In *Advances in Neural Information Processing Systems 37* (NeurIPS 2024). arXiv:2306.07951."
   },
   {
    "id": "kamal2025",
@@ -449,7 +456,8 @@
    "of_record": "2025-12",
    "date_note": "arXiv 2506.22493 Jun 2025; IJCNLP-AACL Dec 2025",
    "pairs_in_hand": true,
-   "political_instrument": true
+   "political_instrument": true,
+   "reference": "Kamal, S., Prakash, L. P. Y., Rafiuddin, S. M., Rakib, M., Sen, A., & Ray Choudhury, S. (2025). A Detailed Factor Analysis for the Political Compass Test: Navigating Ideologies of Large Language Models. In *Proceedings of IJCNLP-AACL 2025 (Short Papers)* (pp. 284–303). arXiv:2506.22493."
   },
   {
    "id": "cen",
@@ -502,7 +510,8 @@
    "of_record": null,
    "date_note": "arXiv 2509.18446; no peer-reviewed venue found",
    "pairs_in_hand": true,
-   "political_instrument": true
+   "political_instrument": true,
+   "reference": "Cen, S. H., Ilyas, A., Driss, H., Park, C., Hopkins, A., Podimata, C., & Mądry, A. (2025). Large-Scale, Longitudinal Study of Large Language Models During the 2024 US Election Season. arXiv:2509.18446."
   },
   {
    "id": "aipolcom",
@@ -543,7 +552,8 @@
    "of_record": null,
    "date_note": "rolling observatory, collection window opens 2026-07-29",
    "pairs_in_hand": null,
-   "political_instrument": true
+   "political_instrument": true,
+   "reference": "aipolcom.net (2026). A rolling public observatory of language-model responses to the Political Compass test, collected 2026-07-29 to 2026-08-29. https://aipolcom.net"
   },
   {
    "id": "ours",
@@ -634,7 +644,8 @@
     "recommendation": "work evaluating LLMs with prompting-based methods would benefit from reporting a range of performance across plausible prompt formats"
    },
    "pairs_in_hand": null,
-   "political_instrument": false
+   "political_instrument": false,
+   "reference": "Sclar, M., Choi, Y., Tsvetkov, Y., & Suhr, A. (2024). Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design or: How I learned to start worrying about prompt formatting. In *The Twelfth International Conference on Learning Representations* (ICLR 2024). arXiv:2310.11324."
   },
   {
    "id": "messing2026",
@@ -685,7 +696,8 @@
     "reported_mde": "naive standard errors are 40-60% smaller than the TEE-corrected SE"
    },
    "pairs_in_hand": false,
-   "political_instrument": false
+   "political_instrument": false,
+   "reference": "Messing, S. (2026). Hidden Measurement Error in LLM Pipelines Distorts Annotation, Evaluation, and Benchmarking. arXiv:2604.11581."
   },
   {
    "id": "barmettler2026",
@@ -726,7 +738,8 @@
     "provenance": "arXiv HTML full text, read 2026-09-20. Added because PLAN step 10 identified it as an independent large-n result that this study must cite rather than race."
    },
    "pairs_in_hand": true,
-   "political_instrument": true
+   "political_instrument": true,
+   "reference": "Barmettler, J. P. (2026). Progressive in Principle, Centrist in Practice: LLM Political Bias Is Instrument-Dependent. arXiv:2606.00048."
   },
   {
    "id": "tornberg2026",
@@ -768,7 +781,8 @@
     "provenance": "arXiv HTML full text, read 2026-09-20. Added because PLAN step 10 names it, and because its finding is adjacent to ours: it shows the instrument responds to WHO is asking, where we show it responds to HOW the items are printed. Neither subsumes the other and both are nuisance terms in the same measurement."
    },
    "pairs_in_hand": true,
-   "political_instrument": true
+   "political_instrument": true,
+   "reference": "Törnberg, P., & Schimmel, M. (2026). Political Bias Audits of LLMs Capture Sycophancy to the Inferred Auditor. arXiv:2604.27633."
   }
  ],
  "timeline_context": [

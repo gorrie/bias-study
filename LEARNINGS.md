@@ -715,7 +715,7 @@ that motivated it.
 
 > The freeze above broke a generated paper block the hour it was written. `floor_table.py`
 > globbed `runs/2026-08-30-ablation-pairs/*` and treated every entry as a model pair directory,
-> so `manifest.derived.json` appeared in `PAPER-below-the-floor.md` as an ablation arm —
+> so `manifest.derived.json` appeared in `PAPER-no-position-only-consensus.md` as an ablation arm —
 > *"ELIGIBLE but produced no arm-matched condition — investigate, this has no recorded reason"*.
 > A generated block invented a model out of a sidecar file, and phrased it as a mystery. Any
 > stray file would have done it. Glob for what you mean: `if os.path.isdir(d)`.
@@ -1121,7 +1121,7 @@ it published what it measured.**
 
 ## 75. A read-modify-write over minutes will silently eat an edit made in those minutes
 
-`gen_paper.py` reads `PAPER-below-the-floor.md` whole, runs twelve subprocesses — one of them
+`gen_paper.py` reads `PAPER-no-position-only-consensus.md` whole, runs twelve subprocesses — one of them
 a 4000-draw bootstrap over every pair — and then overwrites the file with the copy it read.
 That gap is minutes wide.
 
@@ -1232,7 +1232,7 @@ pairs, so the record does not say what they answered. That exclusion is right, i
 implemented, and it counts the drop.
 
 The paper did not mention it. Not in §9, not anywhere: `grep -i unattributable
-PAPER-below-the-floor.md` returned nothing on 2026-09-21.
+PAPER-no-position-only-consensus.md` returned nothing on 2026-09-21.
 
 §5 of that same paper objects to Liu deleting any sheet containing one unusable answer, and to
 Barmettler imputing missing values to the neutral midpoint. The objection is not that they

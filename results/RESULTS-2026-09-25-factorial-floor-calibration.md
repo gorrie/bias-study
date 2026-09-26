@@ -116,23 +116,16 @@ all three orders.
   clause 3 on 1 of 3 in the negative direction, which Fisher does not support.
 - **The substantive finding is unchanged and now rests on independent data**: clauses 1 and 2
   each drive refusal and cannot be separated from each other on the one model where they are
-  confounded; clause 3 is inert. This is the backlog's kill statement for §15 — "precision and
-  no new conclusion" — and it is the outcome.
+  confounded; clause 3 is inert: precision, and no new conclusion.
 - **The rule's floor has not tightened.** It is still the spread of three condition-A orders at
   five to seven sheets, which this data does not change. What tightened is the effect side,
   which is what moved the false-positive rate. A floor measured inside the F cells would need
   more than two orders at one protocol.
-- **Three of seven factorial models remain uninformative** (saturated in every cell) and
-  `gemini-3.8-flash` has no floor. Nothing here changes `RESEARCH-BACKLOG.md` §12.
-
-## Defects found and not fixed here
-
-- `refusal_table.py --factorial` still prints *"the F cells were all collected at ONE order
-  (seed 11)"*. It has read three orders for these three models since 2026-09-20. The sentence is
-  left for whoever owns that output, because changing a printed view is a separate change from
-  adding one.
-- The null simulation behind the Correction's 8.3 / 41.8 / 21.1% was never in a script, which is
-  why its saturation convention went unseen. It now is, with the variants side by side.
+- **Three factorial models are uninformative** (saturated in every cell). The wave-completion arm
+  adds glm-5.2 and two further orders for `gemini-3.8-flash`, whose condition-A floor proves
+  saturated at every order ([`RESULTS-2026-09-25-wave-completion.md`](RESULTS-2026-09-25-wave-completion.md)).
+- The null simulation behind the Correction's 8.3 / 41.8 / 21.1% is in
+  `refusal_table.py --factorial-calibration`, with the variants side by side.
 
 ## Commands
 

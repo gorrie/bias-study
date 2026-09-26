@@ -52,7 +52,7 @@
 
 - **`add_controls_2026_09.py`** — Add the four controls this project's own 2026-09-05 work identified, to the audit matrix.
 - **`controls_audit.py`** — Render the controls matrix from data/controls-audit.json. Nothing restates it in prose.
-- **`gen_paper.py`** — Fill the generated blocks in PAPER-below-the-floor.md by running the analysis scripts.
+- **`gen_paper.py`** — Fill the generated blocks in PAPER-no-position-only-consensus.md by running the analysis scripts.
 - **`gen_script_inventory.py`** — Generate SCRIPTS.md from the scripts' own docstrings. Never hand-maintained.
 - **`generate_charts.py`** — Generate X-launch chart assets from sweep + ci_analysis output.
 - **`key_numbers.py`** — The paper's load-bearing numbers, computed -- and a check that its prose still matches them.

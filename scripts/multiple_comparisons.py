@@ -3,7 +3,7 @@
 
 WHY THIS EXISTS
 ---------------
-`PAPER-below-the-floor.md` says the results rest on *"a Benjamini-Hochberg correction over the
+`PAPER-no-position-only-consensus.md` says the results rest on *"a Benjamini-Hochberg correction over the
 whole family of 153 contrasts"*. Two things are wrong with that sentence and both are the kind
 this study convicts other papers of.
 

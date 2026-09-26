@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fill the generated blocks in PAPER-below-the-floor.md by running the analysis scripts.
+"""Fill the generated blocks in PAPER-no-position-only-consensus.md by running the analysis scripts.
 
 The paper asserts that factors nobody controls for move as much as the effects everybody
 reports. It would be an embarrassment for that paper to contain a hand-typed number, and the
@@ -26,7 +26,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
-PAPER = os.path.join(STUDY, "PAPER-below-the-floor.md")
+PAPER = os.path.join(STUDY, "PAPER-no-position-only-consensus.md")
 PY = sys.executable
 
 # block name -> (script, args, how to trim the output)

@@ -52,7 +52,7 @@ across a threshold and nothing would have caught it.
 commit**. The message was:
 
 ```
-STALE blocks in PAPER-below-the-floor.md: floors
+STALE blocks in PAPER-no-position-only-consensus.md: floors
 ```
 
 A name and no diff. Eliminating suspects by hand cost far more than the fix: the gitignored

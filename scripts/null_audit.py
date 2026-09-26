@@ -278,12 +278,19 @@ def main(argv=None):
     n_models = 0
     if os.path.isdir(run_dir):
         recs = PA.load_records(run_dir)
-        n_models = len({r["model"] for r in recs})
+        # THE MODELS THE PREDICTION IS SCORED ON: those with a valid sheet under both A and N,
+        # the contrast the direction is read from. Counting every model with records gave 63
+        # against the verdict's 61, so the detection limit was stated for a population the
+        # verdict does not cover.
+        by = {}
+        for r in recs:  # load_records returns valid sheets only
+            by.setdefault(r["model"], set()).add(r.get("condition"))
+        n_models = sum(1 for conds in by.values() if {"A", "N"} <= conds)
     if n_models:
         pi = mde_any_negative(n_models)
         computed += 1
         print("  1. PREDICTION 3 -- 'direction differs in sign across models'")
-        print("     observed: every model positive, 0 negative of %d" % n_models)
+        print("     observed: 0 negative, of the %d models with valid A and N sheets" % n_models)
         print("     MDE     : %.1f%% -- if that share of models truly pointed the other way," %
               (100 * pi))
         print("               this design would have seen at least one %d%% of the time."

@@ -107,6 +107,10 @@ def by_seed(records, condition):
 
 
 def main(argv=None):
+    # A Windows console is cp1252; the table prints U+2212, and a release run on this machine
+    # died on it and read as a refusal.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--run", default="2026-09-16-ratchet-v3-wave")
     ap.add_argument("--draws", type=int, default=4000)

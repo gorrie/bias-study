@@ -85,11 +85,8 @@ loses the priority date would cost more than it buys.
 
 Corrections are therefore **additive**. Every claim this study published and then withdrew is in
 `CORRECTIONS.md` with the date it went out, the date it came back, and what replaced it —
-**30 entries** as of 2026-09-24. This said seven for as long as there were fourteen, which
-is a small irony in a file arguing that the record has to be additive: the count was typed once
-and the entries kept arriving. It is now gated by `key_numbers.py --check-release`, which is what
-caught it at fifteen the day entry 16 landed, and again at eighteen when entries 19–23 went in.
-The commits that carried the retracted claims stay in the log.
+**31 entries**. The count is gated by `key_numbers.py --check-release`, so it cannot fall
+behind the ledger. The commits that carried the retracted claims stay in the log.
 
 Entries 19–23 are the 2026-09-13 withdrawals, which reached this ledger two days late. They are
 the largest single correction the study has made — they include its **title** — and the reason

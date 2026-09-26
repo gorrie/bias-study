@@ -43,7 +43,7 @@
    "documents": [
     "CORRECTIONS-2026-09-17-labels.md",
     "LEARNINGS.md",
-    "PAPER-below-the-floor.md",
+    "PAPER-no-position-only-consensus.md",
     "prereg/PREREG-2026-09-18-omission-orders.md",
     "prereg/PREREG-2026-09-20-rung2-control-v2.md",
     "prereg/PREREG-2026-09-24-partials-renumbered.md",
@@ -65,7 +65,7 @@
    "corpus": "current",
    "status": "active",
    "role": "fixture",
-   "why": "the 36-sheet probe that MEASURED the token budget the wave runs at, rather than assuming one. Its answer is the --max-tokens every later run carries; the sheets themselves are not a measurement of any model's position",
+   "why": "36 sheets on 2026-09-16 that MEASURED the token budget the wave runs at, rather than assuming one, plus 35 later single-sheet probes of models added to the roster (2026-09-17 to 09-19). Its answer is the --max-tokens every later run carries; the sheets themselves are not a measurement of any model's position",
    "documents": [
     "prereg/README.md"
    ]
@@ -228,7 +228,7 @@
    "role": "documented",
    "why": "named in a study document",
    "documents": [
-    "PAPER-below-the-floor.md",
+    "PAPER-no-position-only-consensus.md",
     "prereg/PREREG-2026-09-18-omission-orders.md",
     "prereg/README.md",
     "results/RESULTS-2026-09-21-omission-pinned.md"
@@ -270,7 +270,7 @@
    "role": "documented",
    "why": "named in a study document",
    "documents": [
-    "PAPER-below-the-floor.md",
+    "PAPER-no-position-only-consensus.md",
     "prereg/README.md",
     "results/RESULTS-2026-09-21-omission-pinned.md"
    ]

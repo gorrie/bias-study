@@ -3,7 +3,7 @@
 > **HISTORICAL — the retired design, not the paper.** This is what the study had learned by
 > 2026-09-13, on the free-text, judge-scored design that was retired on 2026-09-16. Every count
 > below is a count on that design and does not rescale to the present 32-item battery. The
-> current findings are in [`PAPER-below-the-floor.md`](PAPER-below-the-floor.md); anything here
+> current findings are in [`PAPER-no-position-only-consensus.md`](PAPER-no-position-only-consensus.md); anything here
 > that has since been withdrawn or narrowed is recorded in [`CORRECTIONS.md`](CORRECTIONS.md).
 > It was the study's internal findings record and ships with this release as the record of
 > what the retired design found; entries narrowed since carry dated notes below.
@@ -176,16 +176,14 @@ is what resampling alone produces.
 **Gemma corrected 2026-09-20.** This row read "arm does not exist — raw files are 0 bytes", which
 was wrong: the records are at `data/2026-05-27-abliteration-gemma2/` in the mirror, tracked since
 2026-05-28, and they recompute to the published stance figure exactly (3.00 on all 40, 39
-unanimous). The 0-byte files are placeholders in the four-family directory. Retraction in root
-`BACKLOG.md` DATA-GEMMA2-ARM-LOST-001.
+unanimous). The 0-byte files are placeholders in the four-family directory.
 
 The verdict above is **stronger than the borrowed-band objection usually allows**. A 2026-09-20
 resample of both Gemma arms on the same weights gives **0.381 stock-vs-stock and 0.377
 ablated-vs-ablated**, against **0.347 between arms** — so for Gemma the same-model band is
-measured on Gemma's own weights, and the between-arm value is *below* its own resample noise.
-`STATUS.md`'s bar rule against borrowed floors does not bite here. The website ("about 65 percent
-of the wording rewrites") and the public README ("~70% of the political wording") still state it
-as established.
+measured on Gemma's own weights, and the between-arm value is *below* its own resample noise, so
+the rule against borrowing a floor from another model does not bite here. The wording claim was
+withdrawn from the website and the README on 2026-09-20 (`CORRECTIONS.md` #22).
 
 Also: two independent abliterations of one base disagree by 8/9/9 versus 0/2/0, so movement
 belongs to **which third-party build was downloaded**, not to abliteration as an operation.

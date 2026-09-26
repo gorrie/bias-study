@@ -161,7 +161,7 @@ STATUS_ROWS = {
     "7–14B open-weight models, 2024 generation": "presentation order, local open-weight",
     "frontier API models, 2026": "presentation order, frontier API",
 }
-PAPER_DOC = os.path.join(STUDY, "PAPER-below-the-floor.md")
+PAPER_DOC = os.path.join(STUDY, "PAPER-no-position-only-consensus.md")
 
 
 def status_rows(doc=None):

@@ -93,7 +93,7 @@ RETIRED_MARKERS = (
 #: unlikely to grow: what ships, and what directs the work. Everything else in this tree is a
 #: record of a study that had 62 items, and it is supposed to say so.
 NUMERIC_SURFACES = (
-    "PAPER-below-the-floor.md",
+    "PAPER-no-position-only-consensus.md",
     "README.md",
     "CITATION.cff",
     "PLAN.md",
@@ -160,7 +160,7 @@ ALLOWED = {
         "administered. Every hit is a third-party title or method.",
     "LITERATURE-2026-08-31-noise-floor-controls.md":
         "as above -- what other people controlled for, and on what.",
-    "PAPER-below-the-floor.md":
+    "PAPER-no-position-only-consensus.md":
         "its BIBLIOGRAPHY describes each cited study's instrument (Kamal, Roettger, Rozado, "
         "Wright, Bucan). The paper's statement of ITS OWN instrument was corrected on "
         "2026-09-17 and names the author's battery; the remaining hits are citations and a "

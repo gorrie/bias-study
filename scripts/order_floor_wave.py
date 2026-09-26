@@ -4,7 +4,7 @@ comparison stops being cross-protocol.
 
 WHAT THIS EXISTS TO SETTLE
 --------------------------
-`PAPER-below-the-floor.md` §3 compares the deliberate manipulation against presentation order
+`PAPER-no-position-only-consensus.md` §3 compares the deliberate manipulation against presentation order
 and then says the comparison is unsettled. It is unsettled for a specific, fixable reason: the
 two rows were collected differently.
 

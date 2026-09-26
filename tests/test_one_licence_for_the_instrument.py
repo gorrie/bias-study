@@ -43,7 +43,7 @@ SCOPED = (
     "scripts/export_scrubbed.py",
     "skills/study-operations/refresh.py",
     "README.md",
-    "PAPER-below-the-floor.md",
+    "PAPER-no-position-only-consensus.md",
     "CITATION.cff",
 )
 

@@ -631,32 +631,43 @@ def print_switch(per_model, totals):
     return 0
 
 
+def _response_records(run_dir):
+    """Response records in one run directory: `raw/` and flat files, never `scored/` or
+    `scores/`, which hold judged copies of the same responses and counted them twice."""
+    import glob as _glob
+    import os as _os
+    n = 0
+    for p in _glob.glob(_os.path.join(run_dir, "**", "*.jsonl"), recursive=True):
+        parts = _os.path.relpath(p, run_dir).replace("\\", "/").split("/")
+        if any(x in ("scores",) or x.startswith("scored") for x in parts[:-1]):
+            continue
+        with open(p, encoding="utf-8", errors="replace") as fh:
+            n += sum(1 for line in fh if line.strip())
+    return n
+
+
 def _out_of_panel_records():
     """How many records the panel rule removes, and which collection is the biggest.
 
-    Counted rather than asserted, because the header used to report a count of DIRECTORIES and
-    a reader has no way to turn 14 into a volume. It is 5,647 against 3,897 kept: the rule
-    excludes more than it analyses, which is a fact a reader is entitled to before they quote a
-    refusal rate off this table.
+    ONE IMPLEMENTATION: key_numbers.out_of_panel_records reads this. Until 2026-09-26 there
+    were two, and both counted every jsonl line, so a judged collection's `scored/` copies
+    counted each response twice (the frame-and-placebo arm read 3,200 for 1,600 responses)
+    and this copy, reading `runs/` alone, missed the out-of-panel runs in `data/`. Runs are
+    resolved across both roots by name.
     """
-    import glob as _glob
-    import os as _os
     out, largest = 0, None
     for name in OUT_OF_PANEL:
-        d = _os.path.join(_SP.STUDY_DIR, "runs", name)
-        n = 0
-        for p in _glob.glob(_os.path.join(d, "**", "*.jsonl"), recursive=True):
-            with open(p, encoding="utf-8", errors="replace") as fh:
-                n += sum(1 for line in fh if line.strip())
+        try:
+            d = str(_SP.run_path(name))
+        except Exception:
+            continue
+        n = _response_records(d)
         out += n
         if n and (largest is None or n > largest[1]):
             largest = (name, n)
     panel = 0
     for name in PANEL:
-        d = _os.path.join(_SP.STUDY_DIR, "runs", name)
-        for p in _glob.glob(_os.path.join(d, "**", "*.jsonl"), recursive=True):
-            with open(p, encoding="utf-8", errors="replace") as fh:
-                panel += sum(1 for line in fh if line.strip())
+        panel += _response_records(str(_SP.run_path(name)))
     return {"records": out, "largest": largest, "panel_records": panel}
 
 
@@ -841,7 +852,7 @@ def main():
         print("Refusal rate by vendor and condition, recomputed from `runs/`. A refusal is a "
               "sheet declining all %d items: prose returned, zero answers, budget intact. Each "
               "cell is the rate, with the runs it is computed over in brackets. The panel is "
-              "`%s`; the %d other battery collections are outside it by rule "
+              "`%s`; the %d other collections are outside it by rule "
               "(`refusal_table.OUT_OF_PANEL`)."
               % (n_items, ", ".join(sorted(PANEL)), len(OUT_OF_PANEL)))
         print()
