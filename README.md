@@ -244,6 +244,7 @@ Every file at the top of this repository is listed here, in one of three groups.
 | path | what it is |
 |---|---|
 | [`PAPER-no-position-only-consensus.md`](PAPER-no-position-only-consensus.md) | the paper |
+| [`PAPER-no-position-only-consensus.pdf`](PAPER-no-position-only-consensus.pdf) | a typeset copy of the paper, as a courtesy; the markdown is the version of record |
 | [`CORRECTIONS.md`](CORRECTIONS.md) | every claim corrected, with what replaced it — read before quoting |
 | [`data/ratchet-battery.json`](data/ratchet-battery.json) | the instrument, 32 items in 16 mirrored pairs |
 | [`ITEM-READ-2026-09-16-ratchet-battery.md`](ITEM-READ-2026-09-16-ratchet-battery.md) | the author's signed read of those 32 items, which gated collection |

@@ -88,7 +88,10 @@ WITHDRAWN_TITLE_MARKERS = (
 
 #: Zenodo's controlled vocabulary. `mit-license` is what the existing record carries.
 ZENODO_LICENSE = "mit-license"
-UPLOAD_TYPE = "dataset"
+#: A PREPRINT, not a dataset: the record is the paper with its data and code attached, and a
+#: publication record is what Google Scholar and OpenAIRE index as a paper.
+UPLOAD_TYPE = "publication"
+PUBLICATION_TYPE = "preprint"
 
 
 def _cff(path):
@@ -211,6 +214,7 @@ def build():
         "title": c["title"],
         "description": c["abstract"],
         "upload_type": UPLOAD_TYPE,
+        "publication_type": PUBLICATION_TYPE,
         "license": ZENODO_LICENSE,
         "creators": creators,
         "keywords": [k.strip() for k in c["keywords"] if k.strip()],
