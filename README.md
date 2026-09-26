@@ -1,5 +1,7 @@
 # No position, only consensus
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22719011.svg)](https://doi.org/10.5281/zenodo.22719011)
+
 **What political instruments actually measure in language models.**
 
 Studies of political position in language models report how far a model moves under a
