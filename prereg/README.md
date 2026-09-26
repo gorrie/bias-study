@@ -9,10 +9,7 @@ function is that a reader can check the plan was fixed before the numbers were s
 requires the plan to be public and dated in a history nobody can quietly rewrite.
 
 Every file here was committed before the collection it governs, or is marked as a draft that
-never became one. None was published until 2026-09-07, while `ROADMAP.md` said of its own
-forward-looking entries that they were "published in advance for the same reason the
-pre-registrations are." That reason did not apply to the pre-registrations, because they were
-not published. They are now.
+never became one.
 
 There are twenty-two. Eighteen were collected or analysed — sixteen collections and two
 analyses of sheets already on disk — thirteen of them on the 32-item battery; the

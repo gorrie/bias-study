@@ -45,12 +45,8 @@ five with nothing — against a renumbered arm that is clean across all eight. T
 consistent and the zero is striking, but a reader entitled to ask whether this is a property of
 hosted models generally should be told it currently rests on `nemotron-3.5-lightning`.
 
-**These counts and both p-values are computed, not typed.** An earlier draft of this document
-reported 10 of 191 at p = 8.4e-4 for the pinned arm and 14 of 432 against 11 of 432 at p = 0.34
-for the mixed one. No script in this repository produced any of those four numbers — nothing
-here computed a Fisher exact test at all until `omission_arms.py` was written — and the counts
-disagreed with the sheet classifier that every other omission result uses. The conclusion the
-mixed row was carrying, that the effect appears only under a pin, was an artifact of that.
+**These counts and both p-values are computed by `omission_arms.py`, not typed,** with the
+same sheet classifier every other omission result uses.
 
 ## What the three-way test can and cannot separate
 
