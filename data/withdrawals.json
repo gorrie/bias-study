@@ -276,7 +276,9 @@
       "phrases": [
         "a median of 5 of 62 propositions",
         "sets a detection limit of 11",
-        "a median of 5 propositions and a p90 of 11"
+        "a median of 5 propositions and a p90 of 11",
+        "median disagreement 5 of 62",
+        "giving a detection limit of 11"
       ],
       "published": true,
       "published_in": [

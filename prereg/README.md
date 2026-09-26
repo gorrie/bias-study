@@ -14,7 +14,8 @@ forward-looking entries that they were "published in advance for the same reason
 pre-registrations are." That reason did not apply to the pre-registrations, because they were
 not published. They are now.
 
-There are twenty-one. Seventeen were collected, twelve of them on the 32-item battery; the
+There are twenty-one. Seventeen were collected or analysed — fifteen collections and two
+analyses of sheets already on disk — twelve of them on the 32-item battery; the
 earlier ones ran on the questionnaire the study retired on 2026-09-16 or on the judge-scored
 design, and the claims measured on those are withdrawn with those designs, as the table records.
 Four were never collected: two superseded by the instrument change, one superseded the same day

@@ -186,6 +186,7 @@
    "role": "documented",
    "why": "named in a study document",
    "documents": [
+    "README.md",
     "prereg/PREREG-2026-09-20-rung2-control-v2.md",
     "prereg/PREREG-2026-09-25-rung2-within-depth10.md",
     "prereg/README.md",
@@ -208,7 +209,9 @@
    "status": "active",
    "role": "fixture",
    "why": "three sheets confirming the rebuilt rung-2 collector reached OpenRouter directly, after the proxy design was dropped",
-   "documents": []
+   "documents": [
+    "README.md"
+   ]
   },
   "2026-09-20-omission-hosted-pinned": {
    "records": 384,

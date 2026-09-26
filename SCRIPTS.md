@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-157 script(s). 0 carry no module docstring and are listed at the end.
+158 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -164,6 +164,7 @@
 - **`placebo_wording.py`** — Is the placebo's behaviour a property of its sentence, or of any content-free instruction?
 - **`position_analysis.py`** — I3 Phase 4 estimator: position, consistency and acquiescence on a mirrored bank.
 - **`probe_budget.py`** — Measure the token budget the WHOLE roster needs, before collecting a wave.
+- **`refresh_numbers.py`** — Re-run every number the study publishes, and say WHAT MOVED.
 - **`refusal_structure.py`** — Is whole-instrument refusal all-or-nothing, and which models do it?
 - **`refusal_suite_summary.py`** — Both model pairs of the XSTest-style refusal suite, with clustered intervals.
 - **`release_check.py`** — Run RELEASE-2026-09-07.md's release checklist instead of asserting it.

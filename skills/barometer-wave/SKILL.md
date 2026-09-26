@@ -380,3 +380,15 @@ python scripts/gen_readme.py && python scripts/key_numbers.py --check-release
 - `scripts/chart_intervention_budget.py` — the practitioner-facing scale
 - `scripts/key_numbers.py` — every generated number and the phrase each surface uses
 - `data/modal-noise.json` — cached estimator floor; regenerate, never hand-edit
+
+## The targeted arms of 2026-09-25
+
+Each was pre-registered before its first call; the collector writes the manifest first.
+
+- `scripts/run_arm_battery.py` — collects the second placebo wording and the serving-path arm.
+- `scripts/run_both_paths.py` — the 32 propositions as open questions, scored by the judge panel,
+  beside the same models' forced-choice sheets.
+- `scripts/local_gradient.py` — the pressure gradient on stock and ablated local builds, on the
+  battery with a bare baseline, a placebo, three orders and five seeds per cell.
+- `scripts/mask_gradient.py` — the superseded first attempt at the local gradient, kept so
+  `runs/mask-gradient/` names the tool that wrote it. Do not use it for new collection.

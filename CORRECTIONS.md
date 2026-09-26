@@ -857,6 +857,12 @@ publication decision and is not settled by this entry.
 absent the README must carry the disclaimer, and if the run is ever exported the disclaimer must
 go. A sentence about what ships cannot drift from what ships when a test reads both.
 
+**Resolved 2026-09-25.** The run is exported to
+[`data/2026-09-15-g0dm0d3-decomposition/`](data/2026-09-15-g0dm0d3-decomposition/), and
+`scripts/pipeline_decomposition.py` recomputes both figures exactly: `B-Godmode` +0.45
+[+0.10, +0.78] and `B-Autotune` −0.08 [−0.26, +0.09]. The description above is of the
+repository before that date.
+
 ### 25. Judge scores on responses that were empty — corrected 2026-09-08, ledgered 2026-09-12
 
 **Published:** from the May collection onward, in every reader over the judge-scored corpus.
@@ -976,9 +982,9 @@ own evidence destroys the evidence. The corrected banner says which run to read 
 `-spliced` view for figures, the bare May run when you mean to see what was originally
 collected — instead of telling readers the fix is somewhere they cannot reach.
 
-**Genuinely absent, and separately disclosed:** the three rung-2 and decomposition runs named
-in the map are not in this tree. That is entry 24, gated by
-`tests/test_decomposition_claim_matches_reality.py`.
+**Genuinely absent at the time, and separately disclosed:** the decomposition run named in the
+map was not in this tree. That is entry 24, gated by
+`tests/test_decomposition_claim_matches_reality.py`; the run was exported on 2026-09-25.
 
 This is the defect the map itself is about — a stated corpus that is not the corpus on disk —
 appearing in the banner of the document written to prevent it. A disclosure is a claim, and it

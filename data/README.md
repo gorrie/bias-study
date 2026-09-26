@@ -119,6 +119,8 @@ sections. What each later directory is for is recorded in
 | `2026-09-13-g0dm0d3-replicate`, `-replicate-baseline` | rung 2 re-collected with five replicates per cell, and its same-sitting plain-B baseline (`PREREG-2026-09-13-pipeline-rung.md`) |
 | `2026-09-14-g0dm0d3-baseline-4k` | the same baseline re-collected at a recorded 4,000-token budget; the corpus map records why that replacement was reverted |
 | `2026-09-14-g0dm0d3-proxy-control` | plain condition B sent through the G0DM0D3 proxy with every transform off: the cost of the path itself |
+| `2026-09-15-g0dm0d3-decomposition` | the pipeline rung decomposed in one sitting: `B-Proxy`, `B-Godmode`, `B-Autotune` and `B-Layered` on two frontier models, 800 records. Read by `scripts/pipeline_decomposition.py` |
+| `2026-09-13-g0dm0d3-smoke`, `2026-09-13-g0dm0d3-smoke2` | ten sheets each, the truncation detector's known-good validation sets (grok @800, opus @4000). Fixtures, not measurements |
 | `2026-09-13-i3-phase0` | I3 Phase 0: four models, 3,200 records, the frame-and-placebo design of `PREREG-2026-09-13-frame-and-placebo.md`. Its B−A contrast is withdrawn; see below |
 | `2026-09-13-truncation-proof` | ten sheets showing that a response severed by the proxy comes back with `finish_reason: stop`. Evidence, not a measurement |
 | `2026-09-14-recollect-*` | the twelve repair runs: cells of the May runs re-asked at 4,000 tokens where the original was severed or empty. Each record names the run it repairs |
@@ -240,9 +242,9 @@ Three states, not two, and the distinction matters if you are counting refusals:
 | `False` | `no-classifier-score` | `False` | real text, no score: mostly substantive refusals |
 
 That last row is not a defect and must not be dropped. A model returning an essay about why it
-will not answer is a result in this study: 148 refusals in 1,076 no-directive runs against 4 in
-907 directive runs is a published finding, and the original pipeline discarded exactly those
-records as collection errors. Count them; do not average them.
+will not answer is a result in this study, and the original pipeline discarded exactly those
+records as collection errors. On the battery the pattern is 88 refusals in 837 runs without a
+directive against 55 in 1,284 with one (paper §5.4). Count them; do not average them.
 
 Ineligible rows are in the file, flagged, not filtered. `--eligible-only` drops them if you
 insist, and the manifest still reports what went, because a cleaned corpus that silently omits

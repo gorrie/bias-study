@@ -22,7 +22,7 @@ The inventory below is generated from the records themselves. Do not edit it by 
 | `2026-09-18-paraphrase` | 448 | 46 | `ratchet-battery` | active | named in a script, named in a document |
 | `2026-09-18-roster-smoke` | 22 | 22 | `ratchet-battery` | active | named in a script, named in a document |
 | `2026-09-19-rung2-elicitation` | 280 | 7 | `ratchet-battery` | active | named in a script, named in a document |
-| `2026-09-19-rung2-smoke` | 3 | 1 | `ratchet-battery` | active | named in a script |
+| `2026-09-19-rung2-smoke` | 3 | 1 | `ratchet-battery` | active | named in a script, named in a document |
 | `2026-09-20-omission-hosted-pinned` | 384 | 8 | `ratchet-battery` | active | named in a script, named in a document |
 | `2026-09-20-rung2-control-v2` | 70 | 7 | `ratchet-battery` | active | named in a script, named in a document |
 | `2026-09-21-omission-nemotron-phala` | 48 | 1 | `ratchet-battery` | active | named in a script, named in a document |
@@ -67,10 +67,10 @@ call of the arm they govern; each results document names the script that compute
 | `2026-09-20-omission-hosted-pinned` | the hosted omission arm re-collected with each model pinned to one backend, 8 models, 12 orders, conditions N and P | same file, Amendment 1 | [`RESULTS-2026-09-21-omission-pinned.md`](../results/RESULTS-2026-09-21-omission-pinned.md) |
 | `2026-09-21-omission-nemotron-phala` | one model's omission cell re-collected on a second pinned backend (48 sheets) | same file | same file |
 | `2026-09-18-paraphrase` | ten semantics-preserving wordings of the forcing instruction (`template` T01–T10) at one order, condition N, 46 models: the paraphrase floor | [`PREREG-2026-09-18-paraphrase.md`](../prereg/PREREG-2026-09-18-paraphrase.md) | [`RESULTS-2026-09-21-paraphrase.md`](../results/RESULTS-2026-09-21-paraphrase.md) |
-| `2026-09-19-rung2-elicitation` | rung 2 of the escalation ladder: the G0DM0D3 elicitation arms (`G-*`) and sampling presets (`S-*`) over condition B, seven models, ten sheets per cell | [`PREREG-2026-09-13-pipeline-rung.md`](../prereg/PREREG-2026-09-13-pipeline-rung.md) | [`RESULTS-2026-09-21-rung2-control-v2.md`](../results/RESULTS-2026-09-21-rung2-control-v2.md), [`RESULTS-2026-09-25-rung2-within-depth10.md`](../results/RESULTS-2026-09-25-rung2-within-depth10.md) |
+| `2026-09-19-rung2-elicitation` | rung 2 of the escalation ladder: the G0DM0D3 elicitation arms (`G-*`) and sampling presets (`S-*`) over condition B, seven models, ten sheets per cell | the rung's design is [`PREREG-2026-09-13-pipeline-rung.md`](../prereg/PREREG-2026-09-13-pipeline-rung.md); the same-protocol control it is scored against is [`PREREG-2026-09-20-rung2-control-v2.md`](../prereg/PREREG-2026-09-20-rung2-control-v2.md) | [`RESULTS-2026-09-21-rung2-control-v2.md`](../results/RESULTS-2026-09-21-rung2-control-v2.md), [`RESULTS-2026-09-25-rung2-within-depth10.md`](../results/RESULTS-2026-09-25-rung2-within-depth10.md) |
 | `2026-09-19-rung2-smoke` | three sheets confirming the rebuilt rung-2 collector reached OpenRouter directly. A fixture | — | — |
 | `2026-09-20-rung2-control-v2` | the plain condition-B control for rung 2 at protocol v2, matched on model and order | [`PREREG-2026-09-20-rung2-control-v2.md`](../prereg/PREREG-2026-09-20-rung2-control-v2.md) | [`RESULTS-2026-09-21-rung2-control-v2.md`](../results/RESULTS-2026-09-21-rung2-control-v2.md) |
-| `2026-09-24-partials-renumbered` | the wave's dropped partial sheets (0 < answers < 32) re-collected under the renumbered protocol, 13 models, to test whether any floor moves | [`PREREG-2026-09-24-partials-renumbered.md`](../prereg/PREREG-2026-09-24-partials-renumbered.md) | the paper, section 6b |
+| `2026-09-24-partials-renumbered` | the wave's dropped partial sheets (0 < answers < 32) re-collected under the renumbered protocol, 13 models, to test whether any floor moves | [`PREREG-2026-09-24-partials-renumbered.md`](../prereg/PREREG-2026-09-24-partials-renumbered.md) | the paper, §5.8 |
 | `2026-09-25-local-gradient` | the pressure gradient (N, A, P, D, C, E) on stock and abliterated local builds: Qwen3.8-27B, Gemma-4-12B and Qwen2.5-14B families, 12 builds, 1,080 sheets. `smoke/` and `replicate/` hold the pre-registration's smoke and replicate sheets; `analysis.json` caches the report | [`PREREG-2026-09-25-local-gradient.md`](../prereg/PREREG-2026-09-25-local-gradient.md) | [`RESULTS-2026-09-25-local-gradient.md`](../results/RESULTS-2026-09-25-local-gradient.md) |
 | `2026-09-25-local-gradient-judged` | the judged half of the same arm: 600 free-text answers on ten earlier questions from two Qwen3.8-27B builds, scored by two local judges (`scores/`), with the judge calibration and the budget cut recorded before any score existed | same file | same file |
 | `2026-09-25-placebo-wording` | a second content-free placebo, P2, beside P and N: 10 models, three orders, five draws | [`PREREG-2026-09-25-placebo-wording.md`](../prereg/PREREG-2026-09-25-placebo-wording.md) | [`RESULTS-2026-09-25-placebo-wording.md`](../results/RESULTS-2026-09-25-placebo-wording.md) |
@@ -102,8 +102,9 @@ are not comparable: no figure computed from 32 items may be set beside one compu
 earlier question set. Side-flip counts are not linear in item count, and treating them as if
 they were is the specific error this study is organised against.
 
-No claim computed from a directory in this root has been withdrawn. The sheets that were
-withdrawn from the wave's panel are in [`../withdrawn/`](../withdrawn/README.md), with the reason
+The directories here remain active, and the claims computed from them that were later
+withdrawn are registered in [`../data/withdrawals.json`](../data/withdrawals.json). The sheets
+that were withdrawn from the wave's panel are in [`../withdrawn/`](../withdrawn/README.md), with the reason
 for each, and are read by nothing here.
 
 ## How to load it

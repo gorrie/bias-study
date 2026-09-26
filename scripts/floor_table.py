@@ -1953,7 +1953,7 @@ def floor_order_wave_by_class():
         if pairs:
             note = ("item order only, one sitting, %s"
                     % ("2025-26 models served over an API, most of them open weights -- at or "
-                       "under the modal's own sampling error (p90 3), so this row is close to "
+                       "under the modal's own sampling error, so this row is close to "
                        "unmeasurable"
                        if want_api else
                        "7-14B open-weight builds of the 2024 generation, run LOCALLY at Q4 -- "

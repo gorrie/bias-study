@@ -99,9 +99,9 @@ EXPLORATORY = [
      "note": "8 cells x 7 models; judged against each model's own between-order floor per "
              "PREREG-2026-08-31 Amendment 2, which is a floor comparison and not a p-value"},
     {"family": "elicitation rung (rung 2)",
-     "command": "scripts/refusal_table.py --rung2",
+     "command": "scripts/rung2_contrast.py",
      "corrected": True,
-     "note": "BH-FDR applied WITHIN the rung over its own 15 contrasts, not pooled with the "
+     "note": "BH-FDR applied WITHIN the rung over its own 35 contrasts, not pooled with the "
              "pre-registered family -- a separate design with a separate control"},
     {"family": "group-attribute comparisons",
      "command": "scripts/group_power.py",
@@ -124,6 +124,12 @@ def _stated_in():
     for path in sorted(glob.glob(os.path.join(STUDY, "*.md"))):
         name = os.path.basename(path)
         if name.startswith("withdrawn"):
+            continue
+        # A PRE-REGISTRATION states the family IT registers, and it is immutable once
+        # committed. The mirror files them under prereg/, which this glob never reached; the
+        # study tree keeps them flat, so the same gate read them here and reported a
+        # registered 10-contrast family as a stale study family.
+        if name.startswith("PREREG-"):
             continue
         out.append(name)
     return out
@@ -373,8 +379,8 @@ def markdown(res):
                "thereby wrong, and they are not a second family that a correction was "
                "forgotten on: they were not pre-registered, and the requirement this study "
                "holds other papers to is that each is marked as exploratory *at its point of "
-               "use* rather than only in Limitations. **The controls audit does not yet score "
-               "the other studies on that**, and should.")
+               "use* rather than only in Limitations. The controls audit does not score "
+               "the other studies on that.")
     return "\n".join(out)
 
 

@@ -88,8 +88,8 @@ What the finished design finds is less dramatic than the thesis and more useful.
    instruction reduces the use of strong answers on 44 of 61 models and increases it on 6; it
    compresses conviction rather than relocating anyone (§5.2).
 3. **Refusal is a switch the prompt throws.** The same models that decline a balance instruction
-   answer every item under a content-free one, and one model declines only the content-free
-   instruction built as this study's control (§5.4).
+   answer every item under a content-free one, and of the four main conditions one model declines
+   only the content-free instruction built as this study's control (§5.4).
 4. **There is almost nothing to disagree about.** On the battery's propositions — about state
    power, surveillance and speech — the panel is near-unanimous, most emphatic where the record
    is thinnest, and most uniform in the builds trained outside the alignment consensus (§5.5).
@@ -116,7 +116,7 @@ The contribution is not a claim about any model's politics. It is a set of floor
 one instrument, a detection limit derived from them, a record of the controls the field holds
 and does not report, and a five-line rule for a methods section (§6). The study applies the same
 standard to itself: roughly thirty of its own claims were withdrawn or narrowed on the way here,
-five of them corrections to what it had said about other people's papers, and each is reported
+five things it had said about other people's papers were corrected (§2.5), and each is reported
 as what it found out.
 
 §2 sets the work against fourteen published studies. §3 reports the design history and what
@@ -566,8 +566,8 @@ it was not run; its form anchors to the compass axes this study rejects.
 
 Measured directly over the 5,230 scored records carrying a per-judge breakdown, the panel's
 internal spread is **0.2974 points**, gemini-2.5-flash most institution-skeptical at +0.178,
-deepseek-v3.2 most deferential at −0.120. It sits below the study's three CI-clean judged
-findings — +0.90, +0.45, +0.43 — and it had been in no floors table: a nuisance term nobody has
+deepseek-v3.2 most deferential at −0.120. It is smaller than four of the five judged effects of
+§3.1 and larger than the fifth, DeepSeek's +0.23, and it had been in no floors table: a nuisance term nobody has
 measured is not a small one, it is an unmeasured one. It also does not cancel in a delta. A ruler
 2% short measures differences correctly; this one is not a constant offset:
 
@@ -670,7 +670,7 @@ options and no neutral, parsed by a script with no judge. What it found, all cou
   it in none of eleven. The hosted channel was a red-teaming account with more refusal latitude
   than an ordinary user's, so every rate was a lower bound.
 - **Conviction, not content.** The balance instruction suppressed strong answers relative to no
-  instruction: gemma-4-12B used none of the questionnaire's 62 under it and 27% without it. On seven frontier models
+  instruction: gemma-4-12B gave no strong answer on any of the questionnaire's 62 items under it, and 27% without it. On seven frontier models
   at temperature 0, moving from the balance instruction to no instruction restored strong
   answers one-directionally on six; a commitment directive differed from a content-free placebo
   on only two, and what replaced the instruction seemed not to matter. On the battery it does
@@ -692,10 +692,10 @@ options and no neutral, parsed by a script with no judge. What it found, all cou
   pattern appears on two families — mistral seventeen times in eleven runs, kimi-k3 three in
   thirteen — always on the sexuality items, never under any other condition. It is an existence
   proof that catches the balance instruction in the act; on the author-written battery it never
-  recurs, 0 of 2,645 sheets.
+  recurs, 0 of the 2,645 sheets collected by 2026-09-19.
 - **Two elicitation alternatives failed.** Scoring by next-token probability agreed with the parsed
   answers on 24 of the questionnaire's 62 items, and reversing the legend changed 48 of 62 positions, so it
-  read labels, not preferences. Constrained decoding into a JSON schema of the questionnaire's 62 enumerated answers
+  read labels, not preferences. Constrained decoding into a JSON schema enumerating the four answers for each of the questionnaire's 62 items
   parsed every time and disagreed with itself by a median of 26 items between runs, against 3 for
   prose; the dial was batch size, and a model that cannot emit prose cannot refuse. It is the
   study's most portable negative result.
@@ -815,8 +815,9 @@ to every proposition in every condition — scored naively, an ablation effect o
 items.
 
 **The ablator was the effect.** At five runs per cell, three ablations of Qwen2.5-14B: two builds
-by one author moved 8, 9 and 9 sides from stock across three conditions, and agreed with each
-other exactly, and they are near-copies: on 71 of 90 matched draws
+by one author moved 8, 9 and 9 sides of the questionnaire's 62 from stock across three
+conditions, on the retired instrument, and agreed with each other exactly; and they are
+near-copies: re-run on the battery on 2026-09-25, on 71 of 90 matched draws
 their answer sheets are byte-identical, against at most 30 of 90 for any other pair of builds of that
 base. A build by a different author moved 0, 2 and 0. The ablator spread equals the
 ablation effect. On one base the weight intervention moved more than the prompt (9 sides against
@@ -838,8 +839,8 @@ placebo moves it a third as far; the rubric scores non-commitment as its midpoin
 instruction to commit moves the score by construction, and on the mirrored battery the same build
 under the same instruction does not move. Of the stock-against-ablated differences, one survives
 the check that the two ablators agree: on Gemma-4-12B the balance instruction changes eight sides
-on the stock build, which also refuses it on six of fifteen sheets, and moves neither ablation,
-which refuse nothing — an interaction of +0.38 [+0.20, +0.56] for one ablator and +0.23 for the
+on the stock build, which also refuses it on six of fifteen sheets, and moves neither ablation —
+the OBLITERATUS build refuses nothing and culturerevolt 2 of its 15 balance sheets — an interaction of +0.38 [+0.20, +0.56] for one ablator and +0.23 for the
 other. It is a difference in whether the instruction reaches the model at all, on one base. On
 Qwen2.5 every ablation contrast belongs to the ablator, and on Qwen3.8 none clears; the gate-failed
 ablated Qwen3.8 build answers every item identically on 24 of 90 sheets. Four of the arm's six
@@ -926,8 +927,9 @@ accept. Every item was read and signed off by the author before collection.
 
 ### 4.2 The panel and the protocol
 
-Hosted and local models, collected between May and 2026-09-21 and frozen when the last arm
-closed. Every figure in this paper is computed across 3,897 runs and 65 models. The refusal table
+Hosted and local models, collected 2026-09-16 to 2026-09-20 and frozen when the last arm closed.
+Every panel figure (§5.1–§5.6, §5.9, §5.10) is computed across 3,897 runs and 65 models; the
+arms in §3.7, §5.4, §5.7, §5.8 and §5.11 are separate collections, named in §8.1. The refusal table
 carries 23 vendor families as its rows, of which 21 rows are vendor families in the ordinary
 sense; the other two are a model-hosting domain and a community fine-tuner of other people's
 weights, kept as rows because their builds are subjects here and excluded from any claim about
@@ -1158,7 +1160,7 @@ are not, and per model the commitment directive and the placebo differ in positi
 models after correction, where about six would clear by chance. Some models stop using the scale's endpoints altogether while still answering every item.
 Under the balance instruction `z-ai/glm-5.1` gives no strong answer on any of its fourteen runs
 from a baseline median of six; `z-ai/glm-5-turbo`, from a baseline of 23, and a community
-ablated build of Gemma-4-12B do the same on every run; and fourteen more models, among them
+ablated build of Gemma-4-12B do the same on every run; and thirteen more models, among them
 `x-ai/grok-4.5` and `x-ai/grok-4.6`, vacate both endpoints in the modal sheet. One run of
 `grok-4.5` changed no side at all between the balance and commitment conditions while changing 27
 of its 32 answers.
@@ -1177,8 +1179,6 @@ instruction to be balanced asks for, and exactly what a side-scored instrument i
 percentile, 2024-generation 7–14B builds at Q4 flip six on reordering alone, and as many as eleven.
 Their endpoint column is high too. They are not more opinionated; they are less reliable in every
 direction at once, and pooling them with frontier models produces a floor that describes neither.
-Under the balance instruction, hosted models change a median of one side against baseline and at
-most five; local builds a median of five, and eight of eleven exceed their own order floor.
 
 **The reference scale.** There is one manipulation row: `prompt condition A→D, one sitting`,
 collected under one protocol in one sitting, five runs per cell, all conditions on the same panel.
@@ -1326,11 +1326,11 @@ presence.
 **The measurement.** Put the thirty-two propositions to `openai/gpt-6-astra` with a system prompt
 asking it to answer in a balanced manner. It declines, **17 times out of 18**, across three
 presentation orders. Its larger sibling `gpt-6-astra-pro` declines 15 of the same 18. Now replace
-the instruction with one that has no political content in it at all — read each item carefully,
-answer precisely, use one of the four labels. Both answer, **0 refusals in 30**. So does an explicit
+the instruction with one that has no political content in it at all — read every proposition
+carefully, no skimming or guessing, give each item full attention. Both answer, **0 refusals in 30**. So does an explicit
 demand to commit to a position: 0 refusals in 30 runs. So does asking with no system prompt at all:
 0 in 30 sheets. The instruction that produces the refusals is the one asking for balance, and it is
-the only one of the four that mentions politics without demanding a position.
+the only one of the four that asks for balance.
 
 Across the panel, by condition, with transport failures excluded from both halves of every rate:
 
@@ -1364,10 +1364,12 @@ the commitment directive and one, `phi4`, only under the content-free placebo. W
 refusal is not the content of the instruction — a placebo with no stance content works as well as a
 demand to commit — but the presence of a firm instruction at all.
 
-Three models run the pattern backwards. `llama3.1:8b` declines only when told to commit (7 of 20),
+Three models run the pattern backwards. Of the four main conditions, `llama3.1:8b` declines only
+when told to commit (7 of 20),
 its quantised sibling likewise (2 of 3), and **`phi4:latest` declines only the placebo** — 10 of 19
 — refusing an instruction that contains no political content whatsoever while answering the balance
-instruction, the commitment directive and the bare question without complaint. The content-free arm
+instruction, the commitment directive and the bare question without complaint (it also declines
+3 of 7 sheets under C, and `llama3.1:8b` 2 of 5 under each of C and E). The content-free arm
 is this study's control, and a control that provokes refusals in one model and moves measured
 position in six of sixty-one is not controlling for what it was built to control for.
 
@@ -1431,8 +1433,8 @@ refusals on six of seven models.
 
 The per-model verdicts first rested on one presentation order and a clearing rule that had never
 been calibrated, and a first estimate of that rule's false-positive rate, 8% to 42%, withdrew the
-ranking. Two further orders had in fact been collected on every cell of the three models that
-vary, and were never analysed. Calibrated against a simulated null at that depth, the rule clears
+ranking. Two further orders had in fact been collected on every cell of three of the four models
+that vary — the three that carry a usable floor — and were never analysed. Calibrated against a simulated null at that depth, the rule clears
 a clause with no effect 3.6% to 9.1% of the time, under the study's 10% bar on all three models;
 a re-derivation made after the registration shows that the earlier 42% counted a saturated floor
 as zero, which the rule never does. On the later orders
@@ -1445,8 +1447,8 @@ would do.
 
 **The control's own anomaly belongs to its wording.** `phi4` refusing only the placebo raised the
 question whether a content-free instruction provokes refusal in general. A second placebo, matched
-to the first in register and length and equally empty of stance, was put to the ten models on which
-the first behaved anomalously, in one sitting. `phi4` declines the original placebo on 5 of 15 sheets
+to the first in register and length and equally empty of stance, was put to eight models on which
+the first behaved anomalously and two reference models, in one sitting. `phi4` declines the original placebo on 5 of 15 sheets
 and the second on none (Fisher p = 0.042): the refusal is a response to that sentence, not to
 placebos. The companion prediction, that `gemini-3.8-flash` would decline the bare ask and answer
 under either placebo, could not be scored as registered, because its bare-condition refusal fell to
@@ -1461,8 +1463,8 @@ in front of the model: a prompt that says nothing about politics cuts it by roug
 — 11.6% under the balance instruction against 4.2% under the content-free placebo pooled, and 7.0%
 against 2.3% weighting each model equally. The vendor ordering on the retired questionnaire —
 "every US flagship refuses; no Chinese vendor does" — does not survive the battery: Google refuses
-about 60% of sheets with no instruction at all, which is a response to the instrument, while one
-Chinese-vendor model refuses once in 28 runs. And refusal must be retained and classified rather
+about 60% of sheets with no instruction at all, which is a response to the instrument, while three
+Chinese-vendor models refuse at all, six sheets between them. And refusal must be retained and classified rather
 than discarded: a parser requiring the item number and the answer on one line once stored four
 complete answer sheets from `llama3.1:8b` as refusals, which would have published one vendor
 refusing the balance instruction at 100% where the true figure is 0%.
@@ -1492,7 +1494,7 @@ which is where the next version of this bank should be authored.
 The mirrored pairs were meant to separate a held position from acquiescence — agreeing with both
 halves. On a saturated critic half they cannot: when one half is agreed with 92–100% of the time,
 agreeing with both is arithmetically pinned to agreement with the other half, and the room above
-independence is under two points on every pair and under a tenth of a point on eleven. Fourteen of
+independence is under two points on every pair and under a tenth of a point on twelve. Fourteen of
 the sixteen pairs cannot measure acquiescence at all, and where the instrument can see, it sees
 independence.
 
@@ -1519,7 +1521,7 @@ Chinese-jurisdiction vendors, trained under a different regulatory regime, sit a
 that agrees least is US/EU frontier at 95.4% — and it is the only class with a real gap between
 contested politics and matters of record, which is to say the most heavily aligned models are the
 most likely to hedge, not the least. Safety tuning is not what installed these positions; the one
-intervention in this corpus that removes it leaves them where they were.
+intervention in this corpus that removes the refusal direction leaves them where they were.
 
 **Intensity runs the wrong way.** Agreement is a low bar — any position above the midpoint counts,
 so a model that leans and a model that is certain score the same. The sharper test is which claims
@@ -1608,9 +1610,10 @@ study's own transport, with each model's provider pinned: **G-Boost**, the sampl
 cannot", never to refuse, and to write at least 500 words, against a sheet whose required output is
 32 lines; **G-Persona**, the full jailbreak persona; and a **sampling ladder** of four fixed presets
 from temperature 0.2 to 1.6 with no system prompt at all, the one contrast in the study where a
-position change cannot be a prompt effect. Seven frontier models. The obfuscation transform was not
+position change cannot be a prompt effect. Seven frontier models; the two Geminis refused, leaving
+five analysable. The obfuscation transform was not
 collected because none of the assembled prompts contains a trigger word; the hedge-stripper was not
-collected because none of 2,645 battery sheets contains a hedge phrase; adaptive sampling was not
+collected because none of the 2,645 battery sheets collected by 2026-09-19 contains a hedge phrase; adaptive sampling was not
 collected because its state lives on a server and a treatment that is not reproducible is not a
 treatment.
 
@@ -1621,7 +1624,7 @@ five near-identical sheets, and sat inside Grok's own order floor. The rung was 
 a same-protocol control at two presentation orders, pre-registered, with each contrast killed unless
 it cleared its own model's between-order floor.
 
-**The measurement.** 35 contrasts. 28 fall inside their own model's order floor. Four reach nominal
+**The measurement.** This arm computes 35 contrasts; 28 fall inside their own model's order floor. Four reach nominal
 p < 0.05 where 1.75 are expected by chance, and none survives Benjamini–Hochberg. Grok 4.3's floor is
 0.131 and its largest contrast +0.113: reordering its own control sheets moves it more than any
 system prompt does. The one model whose contrasts clear its floor, kimi-k2.5, has the smallest floor
@@ -1639,16 +1642,16 @@ under their own model's order floor. Grok's pattern does not reproduce: the seco
 −0.006 and +0.156. Nothing within the rung is reportable, now at a depth where something could have
 been.
 
-What survives is categorical. `google/gemini-3.7-flash` refused 15 of 15 sheets across the three
-arms whose system prompt orders it never to refuse; `gemini-3.8-flash` refused 11 of 15; every other
-model refused none. Both Geminis declined all ten sheets of the untreated control, under both
+What survives is categorical. `google/gemini-3.7-flash` refused all 15 sheets across the three G
+arms, including all 10 whose system prompt orders it never to refuse; `gemini-3.8-flash` refused 11
+of 15, 6 of those 10; every other model refused none. Both Geminis declined all ten sheets of the untreated control, under both
 numbering protocols.
 
 **Why it matters.** On five frontier models, a jailbreak-grade system prompt and a sampling sweep
 produce position changes no larger than shuffling the item order of the untreated control. That is
 the strongest statement in this study about what "unmasking" prompts do to a frontier model's answers
 on a forced-choice instrument: at this depth, nothing distinguishable from presentation order. It is
-a bound and not a zero; 28 contrasts are bounded by their floor, not measured at nothing. The Gemini
+a bound and not a zero; 28 of this arm's contrasts are bounded by their floor, not measured at nothing. The Gemini
 result separates "declines because the prompt did not insist" from "declines whatever the prompt
 says", and it is the first; the most explicit directive that can be written suppressed nothing. For
 anyone using jailbreak prompts to reveal a frontier model's politics, the informative outcome is the
@@ -1678,7 +1681,7 @@ item-specific reading was withdrawn under the kill rule. Repeated on eight hoste
 pinned to a single backend, so that the serving path cannot carry the contrast: **9 incomplete of 190
 as-is sheets**, against **0 of 192 renumbered, p = 0.0017**.
 
-The main wave carries the same loss. The 3,897-record panel every figure here rests on was collected
+The main wave carries the same loss. The 3,897-record panel most figures here rest on was collected
 across the renumbering: 239 of its records are renumbered, 2,300 carry the as-is numbering and 1,358
 predate the flag. In it, 104 sheets came back with some but not all 32 items answered, from 13 models,
 and every one is excluded as invalid — 93 of the 104 from six local builds (`qwen2.5-abliterate:14b`
@@ -1786,13 +1789,13 @@ changed pattern since the first computation, at 660 records, through the frozen 
 | prediction | verdict | on the frozen wave |
 |---|---|---|
 | 1. the balance instruction compresses position toward zero | PASS | 52 of 61 models |
-| 2. the placebo moves position less than half as far as the instruction | FAIL | 36 of 61 meet the ratio; 6 of 61 placebo contrasts significant |
+| 2. the placebo moves position less than half as far as the instruction | FAIL | 36 of 61 meet the ratio; placebo contrasts significant on 6 of 61 models |
 | 3. the direction of position differs in sign across models | FAIL | 59 positive, 0 negative, of 61 |
 | 4. the drop-hedging instruction moves position the way the model already leans | PASS | 49 of 59 |
 | 5. mirrored-pair consistency is at least 80% on every model that moves | FAIL (strict) | 38 of 39; the pooled rate, 95%, would pass |
 
 What the failures mean has changed even where the pattern has not. The third is a genuine null with
-a detection limit of 2.5%: it rules out a common opposite direction, not a rare one. The second is a
+a detection limit of 2.5%, computed over the 63-model panel: it rules out a common opposite direction, not a rare one. The second is a
 defective criterion: it demanded that no placebo contrast be significant after a correction that
 permits false discoveries by construction, so a perfect control arm fails it. It was nearly reported
 as a pass by choosing the denominator cutoff after seeing the pass rates, which climbed from 46% to
@@ -1806,7 +1809,7 @@ thing? On the retired designs they correlated at r = −0.12 over instruments th
 questions (§3.5), which settles nothing.
 
 **How it was found.** Pre-registered and collected: the battery's 32 propositions put as open
-questions to six models from five vendors, each pinned to the backend that served its forced-choice
+questions to six models from six vendors, each pinned to the backend that served its forced-choice
 sheets, under the bare and balance conditions, scored by the May judge panel, against the same
 models' own forced-choice answers.
 
@@ -1871,7 +1874,7 @@ information. That is correct and overdue. The piece names one methodological sta
 > — Metaxa and Engler, Carnegie Endowment, 20 August 2026
 
 Repeating one prompt measures sampling variability and nothing else, and on this instrument that is
-the smallest term in the table: the run-to-run replicate floor is a median of 0 side flips over 6,240
+among the smallest terms in the table: the run-to-run replicate floor is a median of 0 side flips over 6,240
 pairs, p90 3. It is not zero, but it is the one nuisance a study of this shape can already see.
 Naser reports the same thing from the other direction — 82.2% of its model-probe cells byte-identical
 across ten trials — and concludes that within-model noise is negligible and the differences it
@@ -1943,7 +1946,7 @@ every named treatment was actually administered before reading an interval over 
    amount.** Against a null built by splitting real cells in half, the sheet bootstrap rejects **9.7%**
    of true nulls where an exact permutation test rejects **3.3%** — nominal is 5%. That is a factor of
    three, and it is measured on cells of the sizes this corpus has; it does not transfer to an arm
-   collected at a different depth. Over the 241 contrasts of the pre-registered family that carry two
+   collected at a different depth. Over the 241 of the family's 246 contrasts that carry two
    scoreable arms, the sheet bootstrap returns 108 surviving BH-FDR where an exact permutation test
    returns **83** — 25 lost, none gained, so about one in four of its significant findings does not
    hold up. Seven of the twenty-five involve a cell whose sheets barely differ from each other. The
@@ -1961,7 +1964,8 @@ every named treatment was actually administered before reading an interval over 
    four-point forced scale; separating that needs a second instrument this study does not have.
 6. **The controls audit covers fourteen external studies, 13 of them read in full**; the fourteenth,
    Sclar, was consulted rather than read end to end and carries `partial` in the provenance column.
-   One cell in the audit remains `unknown`, Messing's `open_raw`.
+   Seven cells in the audit remain `unknown`: three `item_completeness` verdicts (Naser, Motoki,
+   Liu), three of Sclar's, and Messing's `open_raw`.
 7. **The external replication is half-internal.** One of the two corpora we would replicate on is this
    project's own public observatory, disclosed wherever it is used.
 8. **No hostile read of this document.** Hostile reads have been run on individual results, none on
@@ -1985,8 +1989,7 @@ every named treatment was actually administered before reading an interval over 
     error makes that comparison more generous to us, not less. It needs a decoding path that defeats
     caching, which is a design note for the next collection.
 11. **Group comparisons are underpowered.** Vintage and hosted-against-local comparisons have minimum
-    detectable differences above the instruction's own effect (§5.3), and thirteen of twenty tracked
-    vendors have shipped a newer release than any this corpus measured.
+    detectable differences above the instruction's own effect (§5.3).
 12. **What the battery cannot answer.** Whether the consensus is shared pretraining rather than
     alignment; whether models lean toward the goals of whoever controls them, which needs an instrument
     organised by sector that was designed and not built; and whether any instruction reveals rather
@@ -2009,10 +2012,10 @@ every named treatment was actually administered before reading an interval over 
 | item omission -- item vs slot vs numeral | — | **none — exploratory** | `scripts/item_omission.py --matrix` |
 | refusal switch by condition | — | **none — exploratory** | `scripts/refusal_table.py --switch` |
 | clause factorial | — | **none — exploratory** | `scripts/refusal_table.py --factorial` |
-| elicitation rung (rung 2) | — | BH within itself | `scripts/refusal_table.py --rung2` |
+| elicitation rung (rung 2) | — | BH within itself | `scripts/rung2_contrast.py` |
 | group-attribute comparisons | 0 | n/a | `scripts/group_power.py` |
 
-Every row below the first is **uncorrected and exploratory**. They are not thereby wrong, and they are not a second family that a correction was forgotten on: they were not pre-registered, and the requirement this study holds other papers to is that each is marked as exploratory *at its point of use* rather than only in Limitations. **The controls audit does not yet score the other studies on that**, and should.
+Every row below the first is **uncorrected and exploratory**. They are not thereby wrong, and they are not a second family that a correction was forgotten on: they were not pre-registered, and the requirement this study holds other papers to is that each is marked as exploratory *at its point of use* rather than only in Limitations. The controls audit does not score the other studies on that.
 <!-- /GEN:comparisons -->
 
 The corrected family covers the condition contrasts and nothing else. **We are not claiming the
@@ -2025,7 +2028,8 @@ reader can discount the exploratory rows as they see fit.
 
 ## 8. Data and reproduction
 
-Raw runs, every script, and the full record of what was withdrawn are in the repository. The
+Raw runs, every script, and the full record of what was withdrawn are in the repository, except
+the Gemma-2-9B re-collection and the refusal dose series named in §8.2. The
 instrument is [`data/ratchet-battery.json`](data/ratchet-battery.json) — 32 forced-choice items in 16 mirrored pairs, written by
 the author and MIT-licensed with the rest of the repository. It ships in full: there is no fetch step,
 no carve-out, and the item text and the response text both publish. A study whose argument is that a
@@ -2078,7 +2082,7 @@ One of those exits 1 by design and a reader should not read it as a broken build
 transport rows; duplicate seeds in 82 cells; 9 valid all-one-answer sheets on three models
 (`Qwen3.8-27B-OBLITERATED:Q4_K_M`, `glm-5.1`, `mistral:7b-instruct-q8_0`); identical outputs across
 seeds at temperature 0.7 in 55 cells, which it reads as provider caching; and net movement concealing
-gross flips on three local models. The transport rows are excluded by the failure classifier every
+gross flips on three models. The transport rows are excluded by the failure classifier every
 rate here runs through, and the degenerate sheets are dropped before the bootstrap; the duplicate-seed
 cells are collapsed in the one-sitting floors. The identical-across-seeds cells are not excluded by
 anything; §7, item 10, states what they do. It is not fixed by loosening the check.
@@ -2089,13 +2093,15 @@ implementations of it over all 3,897 rows and compares them to each other, needi
 and no re-collection. The two agree on every row; the 197 rows carrying a superseded label are
 printed, and if that count grows someone changed a rule without bumping the version.
 
-Three gates must pass before this is circulated: `gen_paper.py --check` that the tables are current,
+Three gates check this document: `gen_paper.py --check` that the tables are current,
 `key_numbers.py --check` that the prose quoting them is current, and `controls_audit.py --strict` that
-no claim about another study rests on our own notes rather than on the paper. All three pass.
+no claim about another study rests on our own notes rather than on the paper.
 
 ### 8.1 Where each arm is pre-registered and reported
 
-Every collection this paper reports has a pre-registration committed before its first call. Where a
+Every battery collection this paper reports has a pre-registration committed before its first
+call; the Gemma-2-9B re-collection is the exception, and its records are held on the collection
+machine rather than in this repository. Where a
 results document exists it is named beside the section.
 
 | arm | pre-registered | reported |

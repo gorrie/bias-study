@@ -139,7 +139,12 @@ CORRECTED_AGREEMENT = {"items": 715, "exact": 0.827, "unanimous": 0.710, "mean_a
 #:     the same as knowing why the two differ.
 #:
 #: Exporting the 638 would have regressed a verified gate in the tree that runs it.
-REPAIRED_AGREEMENT = {"items": 636, "exact": 0.853, "unanimous": 0.761, "mean_abs_diff": 0.198}
+#:
+#: 636 became 623 on 2026-09-25, when the corpus was re-spliced under the corroborated
+#: truncation rule (`eligibility.is_truncated`: a short fragment counts as truncated only when
+#: it also spent the token budget). That is the figure paper §3.2 quotes, "86% and 78% over
+#: 623 items", measured in the mirror.
+REPAIRED_AGREEMENT = {"items": 623, "exact": 0.859, "unanimous": 0.778, "mean_abs_diff": 0.189}
 
 #: ALL THREE ARE ACCEPTED, and the gate says which it matched. Each corresponds to a corpus a
 #: reader can actually be holding: the corpus as published, the same corpus with the eligibility

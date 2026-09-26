@@ -573,7 +573,7 @@ def print_switch(per_model, totals):
     print("REFUSAL BY CONDITION -- per model, transport excluded")
     print("")
     print("  N = no system prompt   A = answer in a balanced manner")
-    print("  P = content-free instruction (read carefully, use one of the four labels)")
+    print("  P = content-free instruction (read every proposition carefully; no skimming or guessing)")
     print("  D = commit to a position")
     print("")
     for cond in SWITCH_CONDITIONS:

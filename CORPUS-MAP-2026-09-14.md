@@ -19,10 +19,10 @@ The views were last re-spliced on 2026-09-25, after `scripts/eligibility.py` beg
 short fragment that spent its whole token budget as truncated. The table under *Derived corpora*
 is measured off the records under the rule as it stands, so it moves when the rule does.
 
-What is absent from this repository: the rung-2 decomposition arm
-`2026-09-15-g0dm0d3-decomposition`, named below, and the two results documents that read it
-together with the transform audit. `CORRECTIONS.md` entry 24 discloses the absence and
-`tests/test_decomposition_claim_matches_reality.py` gates it.
+The rung-2 decomposition arm `2026-09-15-g0dm0d3-decomposition`, named below, ships in
+[`data/`](data/2026-09-15-g0dm0d3-decomposition/), and `scripts/pipeline_decomposition.py`
+recomputes its figures; `CORRECTIONS.md` entry 24 records when it was absent, and
+`tests/test_decomposition_claim_matches_reality.py` ties the README to what ships.
 
 ---
 
@@ -165,7 +165,7 @@ a recorded cap, which is what `2026-09-15-g0dm0d3-decomposition` collected.
 | run | what it controls for | result |
 |---|---|---|
 | `2026-09-14-g0dm0d3-proxy-control` | the proxy path: plain condition B sent through G0DM0D3 with every transform off, against the same direct-to-OpenRouter baseline | the path costs +0.06 on Opus and −0.14 on Grok, both spanning zero |
-| `2026-09-15-g0dm0d3-decomposition` | what B-Layered's effect is made of, and the cross-sitting drift above: `B-Proxy`, `B-Godmode`, `B-Autotune` and `B-Layered`, all four collected in one sitting so no contrast crosses a day | collected 2026-09-15, 800 records, 2 models, in the private study tree; not in this repository. The NARROWED block above is its result |
+| `2026-09-15-g0dm0d3-decomposition` | what B-Layered's effect is made of, and the cross-sitting drift above: `B-Proxy`, `B-Godmode`, `B-Autotune` and `B-Layered`, all four collected in one sitting so no contrast crosses a day | collected 2026-09-15, 800 records, 2 models, in [`data/`](data/2026-09-15-g0dm0d3-decomposition/). The NARROWED block above is its result |
 
 The proxy control was collected because the pipeline arm goes through the proxy and its
 baseline does not, so all six `vs plain B` contrasts confounded the named transform with the

@@ -6,7 +6,7 @@
 > [`PAPER-below-the-floor.md`](PAPER-below-the-floor.md). Kept as the companion to
 > [`RESULTS-2026-09-14-rung2-transform-audit.md`](RESULTS-2026-09-14-rung2-transform-audit.md).
 
-**2026-09-15.** `runs/2026-09-15-g0dm0d3-decomposition` — four conditions, two models, ten
+**2026-09-15.** [`data/2026-09-15-g0dm0d3-decomposition`](data/2026-09-15-g0dm0d3-decomposition/) — four conditions, two models, ten
 questions, five samples, **all collected in one sitting** so no contrast crosses a day.
 
 ```bash

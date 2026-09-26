@@ -205,7 +205,7 @@ from [`runs/`](runs/), so a disagreement between the two is a bug worth an issue
 - **[`data/`](data/)** holds the instrument, the declarations the analysis reads (which runs form the
   refusal panel, which losses are declared, which claims are withdrawn), and every earlier corpus,
   including the May 2026 judge-scored study.
-- Each root carries a generated [`README.md`](README.md) and a [`PROVENANCE.json`](data/PROVENANCE.json) giving every run's status,
+- Each root carries a generated README ([`runs/`](runs/README.md), [`data/`](data/README.md)) and a `PROVENANCE.json` ([`runs/`](runs/PROVENANCE.json), [`data/`](data/PROVENANCE.json)) giving every run's status,
   so a withdrawn arm is labelled on disk and not only in prose.
   [`DATA-DICTIONARY.md`](DATA-DICTIONARY.md) documents every field;
   [`PROTOCOL-DEVIATIONS.md`](PROTOCOL-DEVIATIONS.md) records what was planned against what was
@@ -229,8 +229,9 @@ from [`runs/`](runs/), so a disagreement between the two is a bug worth an issue
 | internal working documents (`STATUS`, backlogs, plans) | process records, not results | nothing in the paper; where [`data/withdrawals.json`](data/withdrawals.json) cites one as evidence, the claim is withdrawn either way |
 | eight `2026-09-08-*` directories | three evidence-collector pilots of a different design on one model, and five residency smokes that returned no records | nothing |
 
-No figure in the paper depends on an absent run. If you find one that does, that is a bug and
-an issue is the right response.
+Two figure groups in the paper's §3.7 rest on runs in the table above — the Gemma-2-9B wording
+overlap and the refusal dose series — and nothing else in the paper depends on an absent run. If
+you find a figure that does, that is a bug and an issue is the right response.
 
 ---
 
@@ -320,11 +321,19 @@ Cite this study using [`CITATION.cff`](CITATION.cff).
 
 ## Licence
 
-**MIT**, for code, run records and documents alike. See [`LICENSE`](LICENSE). Two carve-outs,
-both matters of ownership rather than preference:
+**MIT**, for code, run records and documents alike. See [`LICENSE`](LICENSE). Four carve-outs,
+all matters of ownership rather than preference:
 
 - **The retired 62 propositions** are a third party's licensed work and are not in this
   repository at all. [`scripts/check_corpus.py`](scripts/check_corpus.py) gates their absence on every release.
 - **Model outputs.** The response text inside the run records was produced by each vendor's
   model and their terms govern it; MIT covers the corpus as assembled, scored and structured
   here.
+- **The G0DM0D3 system prompts.** The `system_prompt` field of the records in
+  [`runs/2026-09-19-rung2-elicitation/`](runs/2026-09-19-rung2-elicitation/) and
+  [`runs/2026-09-19-rung2-smoke/`](runs/2026-09-19-rung2-smoke/) carries the G0DM0D3 project's
+  jailbreak persona verbatim, because the prompt is the treatment. That text is G0DM0D3's and is
+  licensed AGPL-3.0 by its authors, not MIT.
+- **The Röttger et al. answer extractor.** `extract_choice` in
+  [`scripts/replicate_rottger.py`](scripts/replicate_rottger.py) is ported from the authors'
+  published code, which is their work under CC BY 4.0; the attribution is in the script.

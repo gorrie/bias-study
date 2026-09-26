@@ -162,3 +162,16 @@ For the evidence-concordance readout specifically:
   axis-free position readout behind `results/RESULTS-2026-08-29-evidence-concordance.md`. It
   shipped to this repository on 2026-09-16; until then that published result named a script a
   reader could not run.
+
+## Reading the targeted arms and the re-analyses
+
+- `scripts/placebo_wording.py` and `scripts/serving_path.py` — the two arms `run_arm_battery.py`
+  collects, each against its own floor; `scripts/arm_sheets.py` is their shared reader.
+- `scripts/both_paths.py` — whether the judged and forced-choice paths agree on the same items
+  (paper §5.11).
+- `scripts/drift_battery.py` — version drift on the battery against the same-version null.
+  Exploratory.
+- `scripts/liu_missingness.py --deposit <dir>` — how much of Liu et al.'s shift missingness
+  alone produces; needs their deposit.
+- `scripts/refresh_numbers.py` — re-runs every published number and prints what moved. Run it
+  before any surface is regenerated, not after.

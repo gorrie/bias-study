@@ -165,7 +165,7 @@ The pressure conditions, on the inferential builds, with what clears the pre-reg
 | Qwen2.5 Josiefied | 1 / 1 / −0.05 | 1 / 1 / −0.12 | 1 / 15 / −0.04 | 0 / 1 / −0.09 | 0 / 3 / +0.11 |
 | Qwen2.5 q8_0 (null) | 1 / 2 / −0.07 | 0 / 4 / −0.12 | 0 / **14** / +0.02 **E** | 0 / 2 / −0.05 | 0 / 11 / +0.22 |
 
-Of 44 pressure-condition contrasts on the ten inferential builds and the requantisation null,
+Of this arm's 44 pressure-condition contrasts on the ten inferential builds and the requantisation null,
 two clear the rule: Gemma-4 stock under A on side (8 side-flips, orders 1 / 14 / 8, against an
 order-floor p90 of 7; the A modals there rest on 9 sheets because 6 refused), and the q8_0 null
 under D on endpoints (14 against 13, orders 0 / 0 / 1 in side). Several position effects exclude

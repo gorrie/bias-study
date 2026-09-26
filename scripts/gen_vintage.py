@@ -92,6 +92,12 @@ LOCAL_VINTAGE = {
         ("2026-03-10", "Gemma 4 12B"),
     "huihui_ai/phi4-abliterated:latest": ("2024-12-12", "Phi-4 14B"),
     "huihui_ai/qwen2.5-abliterate:14b": ("2024-09-19", "Qwen2.5 14B"),
+    # The 2026-09-25 local gradient's builds, dated by the same rule: the base named in the tag.
+    "hf.co/mradermacher/Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M":
+        ("2024-09-19", "Qwen2.5 14B"),
+    "hf.co/mradermacher/Josiefied-Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M":
+        ("2024-09-19", "Qwen2.5 14B"),
+    "huihui-qwen38-27b-abliterated-uddw:Q4_K_M": ("2026-08-14", "Qwen3.8 27B"),
 }
 
 #: Hosted listings the catalogue does not date, resolved by hand against the dated sibling

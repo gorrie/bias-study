@@ -161,6 +161,27 @@
       "served": "local",
       "source": "upstream release, recorded by hand"
     },
+    "hf.co/mradermacher/Josiefied-Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M": {
+      "band": "2024-or-earlier",
+      "base": "Qwen2.5 14B",
+      "released": "2024-09-19",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "hf.co/mradermacher/Qwen2.5-14B-Instruct-abliterated-v2-GGUF:Q4_K_M": {
+      "band": "2024-or-earlier",
+      "base": "Qwen2.5 14B",
+      "released": "2024-09-19",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
+    "huihui-qwen38-27b-abliterated-uddw:Q4_K_M": {
+      "band": "2026",
+      "base": "Qwen3.8 27B",
+      "released": "2026-08-14",
+      "served": "local",
+      "source": "upstream release, recorded by hand"
+    },
     "huihui_ai/phi4-abliterated:latest": {
       "band": "2024-or-earlier",
       "base": "Phi-4 14B",
@@ -468,5 +489,5 @@
       "source": "openrouter catalogue"
     }
   },
-  "taken": "2026-09-21"
+  "taken": "2026-09-25"
 }

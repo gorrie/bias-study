@@ -22,12 +22,10 @@ in our own data, each with the diagnostic and what it cost us — see
 2. **Quote the design, not the author.** The entries describe what a paper does and does not
    measure. They do not characterise intent, competence or motive.
 3. **Offer the remedy.** Where the data to fix the gap is already in the authors' hands, say so.
-   **Seven of the twelve studies below are in that position**, two demonstrably are not, and for
-   three nobody has established it either way — which `--gaps` now prints as three numbers
-   instead of one list. This said "six" until 2026-09-12, against a list that rendered seven,
-   because the list was selected on whether a study *reported* a same-version null and on
-   whether someone had happened to write a note about it, rather than on whether the pairs are
-   in its design. Two studies were missing from it for want of a note.
+   **Nine of the fourteen studies below are in that position**, two demonstrably are not, and for
+   three it cannot be established from the published record — which `--gaps` prints as three
+   numbers. The list is selected on whether the pairs are in a study's design, not on whether
+   the study reported a same-version null.
 4. **Be reproducible.** Every figure here recomputes: `python scripts/controls_audit.py --gaps`
    for the audit, `python scripts/ablation_analysis.py` for the weight-rung result.
 5. **State what is NOT claimed.** A study that does not run a control is not thereby wrong. It is
@@ -38,28 +36,25 @@ in our own data, each with the diagnostic and what it cost us — see
 
 ---
 
-## 1. The same-version null: absent from all twelve studies audited
+## 1. The same-version null: absent from all fourteen studies audited
 
-**Artifact:** twelve external studies of political position in language models, audited against
-thirteen controls. **Eleven of the twelve are read in full rather than from a summary** — the
-last three were re-read on 2026-09-11, which is also when `--strict` stopped being able to
-reject any verdict here for thin provenance.
+**Artifact:** fourteen external studies of political position and evaluation measurement in
+language models, audited against fourteen controls. **Thirteen of the fourteen are read in full
+rather than from a summary**, and `--strict` rejects any verdict here resting on thin provenance.
 
-The twelfth is **`sclar2024`**, and its record has said `provenance: partial` throughout: the
-abstract and PDF were consulted on 2026-09-11, the full text was not read end to end, and the
-record says so. It is in the table as a methodological reference on prompt-format sensitivity,
-not as a political-position study; the columns that would need a full read to score fairly are
-marked `n/a` with the reason given, and **its numbers must never be quoted as if they bound
-this instrument.** This sentence said "all twelve" until 2026-09-16 — a hand-typed count
-disagreeing with the generated record two files away, which is the defect this document exists
-to catalogue in other people's work. `tests/test_prior_work_counts.py` now reads both.
+The fourteenth is **`sclar2024`**, and its record says `provenance: partial`: the abstract and
+PDF were consulted, the full text was not read end to end, and the record says so. It is in the
+table as a methodological reference on prompt-format sensitivity, not as a political-position
+study; the columns that would need a full read to score fairly are marked `n/a` with the reason
+given, and **its numbers must never be quoted as if they bound this instrument.**
+`tests/test_prior_work_counts.py` holds this count to the generated record.
 **Reproduce:** `python scripts/controls_audit.py` (matrix), `--gaps` (tallies and per-study text).
 
 A **same-version null** asks what two measurements differ by when *nothing about the model has
 changed* — same version, different snapshot date, size, tier, or serving mode. Without it, an
 observed difference between two model versions has nothing to be scored against.
 
-**Tally across the twelve, on the distribution form of that control:**
+**Tally across the fourteen, on the distribution form of that control:**
 
 <!-- GEN:tally_samever -- python scripts/gen_readme.py -->
 | control | yes | partial | no | n/a | unknown |
@@ -69,23 +64,23 @@ observed difference between two model versions has nothing to be scored against.
 | `reported_mde` — A minimum detectable effect, power analysis, or explicit resolution limit reported alongside the effects | 2 | 2 | **9** | – | 1 |
 <!-- /GEN:tally_samever -->
 
-**Not one of the twelve reports a same-version null as a distribution.** Ten are scored `no`
-and the control does not apply to the other two. Six report no same-version pair of any kind,
-not even one used informally. Eight report no detection limit of any kind.
+**Not one of the fourteen reports a same-version null as a distribution.** Eleven are scored
+`no`, one is `partial` (`tornberg2026`), and the control does not apply to the other two. Seven
+report no same-version pair of any kind, not even one used informally. Nine report no detection
+limit of any kind. Among the twelve political-instrument studies — leaving out `sclar2024` and
+`messing2026` — ten are scored `no`, and that is the number worth quoting.
 
-Three of those cells read `unknown` until 2026-09-12, because three studies had been scored
-from method-and-results retrievals rather than read end to end. Reading them turned two into
-genuine absences and the third into an `n/a`. The headline got stronger, which is not the
-reason it was checked — an absence claim sourced from what a reviewer happened to read is the
-same defect this file documents in other people's work, one level up.
+Every `no` rests on a read of the paper end to end, not a retrieval of its methods and results:
+a retrieval can show a control is absent from what was retrieved, not that it is absent from
+the work.
 
-**What this study measures for comparison:** 97 same-version pairs, median disagreement **5 of 62**
-forced-choice propositions, giving a detection limit of **11**. Presentation order alone reaches
-p90 **14** and a maximum of **24** items on 2024-generation open-weight models, and p90 **6** on
-2026 frontier models. Any claimed political shift smaller than the relevant floor is inside the
-instrument's own noise, whatever its p-value.
+**What this study measures for comparison**, on its own 32-item battery: 24 same-version pairs,
+side-flips median 1, p90 1, maximum 2, giving a detection limit of **3**. Presentation order
+across the panel has p90 5 and a maximum of 12, and a pooled detection limit of **7**. Any
+claimed political shift smaller than the relevant floor is inside the instrument's own noise,
+whatever its p-value (paper §5.1, §5.3).
 
-### Seven of them can fix this from data they already hold
+### Nine of them can fix this from data they already hold
 
 This is the constructive half, and it is why the file exists. In each case the pairs required are
 already inside the published design:
@@ -100,10 +95,8 @@ already inside the published design:
 | `sakhawat2026` | Size siblings from one release sit side by side in Table 7 — `gpt-4.1-nano`, `gpt-4.1-mini` and `gpt-4.1`, and the `gpt-5` family likewise. They are entries in a ranking, never a null, so the normalized-drift figure has nothing to be scored against. |
 | `rozado2024` | The same-version siblings are **excluded on purpose, and he says so** — left out in favour of variety across model families. That is a stated sampling rationale, openly given. The consequence is that the comparison capable of bounding model-to-model difference is the one the analysis leaves out. Note what this does not say: his published data **does** contain same-version pairs — Grok in fun mode against Grok in regular mode among them — so they are absent from the reasoning, not from the corpus. The comparison point offered instead is what the paper calls a *reference fake model data point*, a synthetic random-answer respondent, which bounds nothing about model-to-model comparison. |
 
-> The `rozado2024` entry read differently until 2026-09-06. It said the pairs were designed out
-> "to make the sample look more varied," which imputes a motive to a rationale the author states
-> openly. It was reworded. The methodological point does not need it, and neither does any other
-> entry here.
+| `barmettler2026` | The cohort of 66 models necessarily contains size and generation siblings of one release. They are rows in a ranking, never a null. |
+| `tornberg2026` | Its T=0 replicate and three T=1.0 replicates are same-version repeated administrations, used as a control on the condition effects, and it reports a centre and spread over many cells ("mean within-cell standard deviation in WD(Dem) is 0.021; the median is 0.000"). No upper percentile is given, so a single observed shift still cannot be scored against it: the one `partial` in the column. |
 
 **The remedy, in one line:** compute the disagreement across the same-version pairs already in
 the sample, report it as a median and an upper percentile, and score the headline transitions
@@ -121,7 +114,9 @@ A growing amount of work uses off-the-shelf abliterated weights as if the ablite
 controlled edit — measure the stock model, measure the abliterated model, attribute the
 difference to removing the refusal direction.
 
-Three independent abliterations of one base, all quant-matched Q4_K_M, n=5 at temperature 0.7:
+Three independent abliterations of one base, all quant-matched Q4_K_M, n=5 at temperature 0.7,
+measured on the retired 62-item questionnaire (counts below are side-flips out of the
+questionnaire's 62 and do not rescale to the battery's 32; paper §3.7):
 
 | build | author | stock → ablated (A / D / P) | vs floor 3 |
 |---|---|---:|---|
@@ -147,13 +142,14 @@ stopping rule, is **outcome 4: movement under abliteration is not separable from
 the particular ablator**. Any single-ablator result, including the one this study published and
 withdrew (`CORRECTIONS.md` #8), is a statement about the build.
 
-Said precisely, because the imprecise version was published here until 2026-09-12: on two of the
-three usable bases nothing clears the floor. On the third, qwen25-14b, **two of its three
-ablations move position by 8 to 9 items of 62 and do clear it** — and the disagreement between
-those ablations is 8 to 9 items as well. So the movement is real and unattributable, not absent.
-This section previously read "abliteration does not measurably move political stance on any of
-the three usable bases", which is a null, and a null is exactly what an unbounded measurement is
-not. Section 1 of this document is about that distinction.
+Said precisely: on two of the three usable bases nothing clears the floor. On the third,
+qwen25-14b, **two of its three ablations move position by 8 to 9 of the questionnaire's 62 items
+and do clear it** — and the disagreement between those ablations is 8 to 9 items as well. So the
+movement is real and unattributable, not absent; "abliteration does not move political stance"
+would be a null, and a null is exactly what an unbounded measurement is not. Section 1 of this
+document is about that distinction. On the battery, the 2026-09-25 local gradient re-measured
+this with each ablator's floor, and one stock-against-ablated difference survives, on one base
+(paper §3.7).
 
 **The remedy:** use at least two independently-authored ablations of the same base, quant-matched
 to the stock arm, and report their disagreement alongside the effect. If the two ablators differ
@@ -161,10 +157,9 @@ by as much as the intervention, there is no intervention to report.
 
 ## 3. The scoring layer: five studies put a model in it, and none reports what that model's own lean is
 
-**Added 2026-09-11**, after re-reading **all twelve** in full for four controls that were
-`unknown` across the whole matrix until that day. These four columns are complete: no study is
-`unknown` on any of them. Each was added on 2026-09-05 and every one was found by **failing it
-ourselves** — which is why they are columns and not a paragraph.
+These four columns are scored from a read of every study in full, and no study is `unknown` on
+any of them. Every one was found by **failing it ourselves** — which is why they are columns and
+not a paragraph.
 **Reproduce:** `python scripts/controls_audit.py --gaps`.
 
 <!-- GEN:tally_scoring -- python scripts/gen_readme.py -->
@@ -196,7 +191,7 @@ share of responses that reached that second stage, which is the figure that woul
 much of the result the fallback decided: if it is a handful, the label "parsing" is fair; if it
 is a third, it is a scoring layer with no provenance. So unlike `rottger2024` and `rozado2024`,
 where both roles are named and merely not reconciled, here a reader cannot establish whether
-the scorer was one of the thirteen subjects. That is the one `no` on self-judging disclosure.
+the scorer was one of its fourteen model snapshots. That is the one `no` on self-judging disclosure.
 
 In the other cases the scorer is drawn from the same family as a subject. Only `messing2026`
 states it outright — "Three LLM judge models (GPT-4o, Gemini 2.0 Flash, Claude Haiku 4.5) and
@@ -221,14 +216,10 @@ most skeptical and most deferential judge**, against five published CI-clean eff
 +0.90, +0.4333, +0.3000 and +0.2333. The spread is larger than the smallest of them and lands
 within nine thousandths of the second smallest — and we had never computed it.
 
-That sentence read "larger than two of our own five published effects" until 2026-09-12. It was
-wrong, and it was wrong in the direction that made the self-criticism sound better: `judge_lean.py`
-printed the comparison as a typed literal rather than computing it, five documents copied the
-literal, and at two decimal places 0.29 against 0.30 is invisible. The script computes the count
-now. A file that convicts other people of trusting a typed number had its sharpest sentence
-about itself typed. Two of our five CI-clean findings
-were self-judged with nothing disclosing it until 2026-09-05. The column exists because of that,
-not because of anybody else.
+On the repaired corpus the spread is **0.2974** (paper §3.2): smaller than four of the five
+judged effects and larger than the fifth. `judge_lean.py` computes the comparison rather than
+printing it. Two of our five CI-clean findings were self-judged, which the study now discloses
+beside each; the column exists because of that, not because of anybody else.
 
 **The remedy, and it is cheap for anyone already holding the data:** score a fixed set of
 responses under each judge separately and report the spread between them. It requires no new
@@ -238,7 +229,7 @@ number a reader can compare against the effect.
 ### The one control where we are behind
 
 `longitudinal` — the same subject re-measured over calendar time, as opposed to a cross-section
-of versions taken on one date. **Ten of the twelve do not do it. One does: `cen`, querying 12
+of versions taken on one date. **Twelve of the fourteen do not do it. One does: `cen`, querying 12
 models near-daily from July to November 2024**, and `aipolcom` earns a `partial` for a rolling
 collection with named re-collection dates. Our own row is `partial` too: the forced-choice
 corpus spans six days, which is not a time series.
@@ -290,7 +281,7 @@ arcs survive as directional claims.
 statistic this way. Doing so would require re-reading each paper's analysis code or a statement
 of the aggregation step, and most do not publish either — which is itself the finding available
 here: **the aggregation step between "we measured these versions" and "this is the drift" is
-usually not stated.** The related and *established* gap is in section 1: seven studies hold
+usually not stated.** The related and *established* gap is in section 1: nine studies hold
 same-version pairs and read them as transitions rather than as a baseline. This section is
 narrower and about arithmetic, and we are the only study we can prove got it wrong.
 
@@ -303,7 +294,7 @@ measurements at a single version. If the second number is larger, the first is n
 - **It does not claim any of these studies reached a false conclusion.** A study without a
   negative control is *unbounded*, not wrong. Several of the effects audited here may well be
   real; the point is that nothing in the published design can tell the reader which.
-- **It does not rank the studies.** The audit matrix has thirteen columns and this study is
+- **It does not rank the studies.** The audit matrix has fourteen columns and this study is
   "no" or "partial" in some of them too. The matrix prints our own row for exactly that reason.
 - **It does not survive its own floors automatically.** Where this study's effects fall under its
   floors, they are recorded as undecided — see `CORRECTIONS.md` and the `README` headline block.

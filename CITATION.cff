@@ -8,8 +8,7 @@
 #   doi:            the Zenodo CONCEPT doi, which always resolves to the newest release --
 #                   not the per-version doi. Reserve it in Zenodo before the first Release so
 #                   it can be written here, rather than added in a follow-up.
-#   date-released:  the actual release date. It read 2026-09-20 for a day, which was the date
-#                   an earlier title was settled and not a release of anything.
+#   date-released:  the actual release date.
 #
 # Every figure below is recomputed by `check_citation.py` against the live corpus and the
 # release is refused if one has moved, because this file is the only place in the repository
@@ -74,7 +73,4 @@ keywords:
   - forced-choice instruments
   - presentation order
   - political bias evaluation
-# date-released: SET AT MINT. Removed 2026-09-21 -- it carried 2026-09-20, the date an
-#                earlier title was settled, while the header six lines up said this field
-#                must be set on the day of release. A citation record contradicting its own
-#                instructions is worse than an absent field.
+# date-released: SET AT MINT.
