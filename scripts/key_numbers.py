@@ -1774,9 +1774,10 @@ SURFACES = {
         "path": _find_surface("books", "the-ratchet", "chapters",
                               "22-the-cat-or-the-dog.md"),
         "phrases": {
+            # The two medians (0.131 / 0.088) left the prose 2026-09-27 when the section was
+            # rewritten for a lay reader; the comparison now prints as their ratio.
             "corpus_runs": "%s answer sheets",
-            "position_manip_median": "position by a median of %.3f",
-            "position_order_median": "in a different order moves it by %.3f",
+            "position_ratio": "moves a typical model only %.1f times as far",
             "audit_external": "Of %s published studies",
             "astra_balance": "declines the sheet %s times out of",
             "astra_balance_runs": "times out of %s. Replace it",
@@ -1812,8 +1813,8 @@ SURFACES = {
                               "00-the-proof.md"),
         "phrases": {
             "corpus_runs": "%s answer sheets",
-            "position_order_median": "the median model moves %.3f",
-            "position_manip_median": "the fairness instruction moves it %.3f",
+            # 2026-09-27 lay rewrite: the two medians print as their ratio, as in ch22.
+            "position_ratio": "moves a typical model only %.1f times as far",
             "audit_external": "Of %s published studies",
             "astra_balance": "declines the sheet %s times out of",
             "astra_balance_runs": "times out of %s. Replace it",
