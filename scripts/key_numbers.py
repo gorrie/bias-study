@@ -2055,6 +2055,19 @@ SURFACES = {
     #: static/tech/barometer/barometer.json, which tools/gen-barometer.py reads through build()
     #: and floors() -- so the layout cannot drift. The PROSE above the layout types three numbers
     #: (panel size, the two MDEs), and those are gated here like every other typed copy.
+    # THE EXPERIMENT, /tech/experiment/, rebuilt 2026-09-28 on the released study. Its prose
+    # restates the GEN:position lead in the study's own words; the game itself reads the same
+    # rows live from data/position-floor.json in the release and types nothing. Registered the
+    # day it was written, so the twin cannot drift a correction behind the paper.
+    "website-experiment": {
+        "path": _find_surface("website", "content", "tech", "experiment", "_index.md"),
+        "phrases": {
+            "position_manip_median": "moves a model's position by a median of %.3f",
+            "position_manip_pairs": "over %d models, one pair each",
+            "position_order_median": "reprinting the same statements in another order by %.3f",
+            "position_ratio": "median effect is %.1f times the median produced by",
+        },
+    },
     "website-barometer": {
         "path": _find_surface("website", "content", "tech", "barometer.md"),
         "phrases": {
