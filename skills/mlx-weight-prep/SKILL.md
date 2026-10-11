@@ -1,6 +1,6 @@
 ---
 name: mlx-weight-prep
-description: Convert Hugging Face safetensors weights (typically already-abliterated outputs from abliteration-run) into MLX fp16 format on Apple Silicon, ready to load via mlx_lm. Codifies the path that cleared the Gemma-2-9B SVD bug on M5 (the 4090's MKL SSYEVD failed; Apple's Accelerate/LAPACK didn't). Use when prepping an abliterated model for abliterated-judge-sweep on macOS, or when adding a new family to the M5 reference set.
+description: Convert Hugging Face safetensors weights (abliterated outputs from abliteration-run, or abliteration-on-mps for Gemma-2) into MLX fp16 format on Apple Silicon, ready to load via mlx_lm. Codifies the path that cleared the Gemma-2-9B SVD bug on M5 (the 4090's MKL SSYEVD failed; Apple's Accelerate/LAPACK didn't). Use when prepping an abliterated model for abliterated-judge-sweep on macOS, or when adding a new family to the M5 reference set.
 ---
 
 # mlx-weight-prep
@@ -11,8 +11,9 @@ when it doesn't — this skill documents the specific path that survives.
 
 This skill is also the **only macOS-side workaround** for the 4090's Gemma-2 SVD failure:
 PyTorch's MPS backend with `PYTORCH_ENABLE_MPS_FALLBACK=1` routes `linalg.eigh` to
-Accelerate/LAPACK, which doesn't share the MKL SSYEVD bug. That's how the fifth family
-(Gemma-2-9B) made it into the dissociation table.
+Accelerate/LAPACK, which doesn't share the MKL SSYEVD bug. That's how Gemma-2-9B got built at all.
+(The May "dissociation table" it entered is withdrawn: Gemma falls inside its own resample
+band, `CORRECTIONS.md` #22.)
 
 ## TRIGGER when
 - You have a fresh OBLITERATUS output (under `$ABLIT_OUT/<family>-abliterated/`) and need
@@ -36,7 +37,7 @@ Accelerate/LAPACK, which doesn't share the MKL SSYEVD bug. That's how the fifth 
    in `mlx-core`). Confirm with `python -c "import mlx_lm; print(mlx_lm.__version__)"`.
 2. Source weights present at a known path. The reference layout is
    `$MODELS_HF/<family>-abliterated/` (HF format, from
-   `abliteration-run`).
+   `abliteration-run`, or `abliteration-on-mps` for Gemma-2).
 3. Target directory: `$MODELS_MLX/<family>-abliterated-mlx/`. Created by the conversion
    command; do not pre-create with stale contents.
 4. Disk: each fp16 9B model is ~17 GB. Free space >= 30 GB for safety (conversion
@@ -119,7 +120,8 @@ Expect a response containing "Paris". Two failure modes to watch for:
   `abliteration-run` for this family — do NOT use the broken weights as a judge.
 - **Garbled / repetitive output** (e.g. "Paris Paris Paris…"): the abliteration was
   too aggressive (probably `--method aggressive`, which trips the SSYEVD bug AND can
-  destabilize the model). Re-run with `--method advanced` and `--n-directions 8`.
+  destabilize the model). Re-run with `--method advanced` at a LOWER dose (`--n-directions` 2 or 4; 8 is the strongest
+  and is where coherence started to break).
 
 ### 5. Register the path
 
@@ -128,9 +130,9 @@ Set `ABLITERATED_MODEL_PATH` to the converted directory, or pass `--model-path` 
 `MODEL_LABEL` and the skill's preconditions section so recorded judge metadata stays accurate.
 
 ## Hard lessons (do not relearn)
-- **Gemma-2 cannot be abliterated on CUDA + MKL** as of OBLITERATUS pinned commit; the
+- **Gemma-2 cannot be abliterated on CUDA + MKL** as of OBLITERATUS 205d28a; the
   `linalg.eigh` call hits `SSYEVD` returning negative status. Apple's Accelerate/LAPACK
-  doesn't share the bug — that's why Gemma-2-9B is in the dissociation table at all.
+  doesn't share the bug — that's why Gemma-2-9B could be built at all.
   Do NOT try to "fix" this on the 4090; it's a backend bug.
 - **`--method aggressive` is broken** on the same SSYEVD path. Use `--method advanced
   --n-directions 8` for dose-response on the strength axis. This is documented in
@@ -146,7 +148,7 @@ Set `ABLITERATED_MODEL_PATH` to the converted directory, or pass `--model-path` 
 ## Cross-references
 - Upstream: `abliteration-run` produces the HF source weights this skill consumes.
 - Downstream: `abliterated-judge-sweep` consumes the MLX output.
-- Hard-lesson context: `results/WRITEUP-2026-05-26.md` §4.2 (the dissociation
-  table where Gemma-2 became the fifth family) and `ADVERSARIAL-REVIEW.md` item 5.
+- Hard-lesson context: `ADVERSARIAL-REVIEW.md` item 5. (`results/WRITEUP-2026-05-26.md` is
+  superseded; the dissociation it reported is withdrawn — `CORRECTIONS.md` #22, paper §3.7.)
 - Orchestrator: `bias-barometer` agent invokes this implicitly via `abliteration-run` on
   the macOS path.

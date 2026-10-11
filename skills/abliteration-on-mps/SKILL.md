@@ -38,9 +38,12 @@ abliteration can complete.
 2. OBLITERATUS installed in the project venv:
    ```bash
    git clone https://github.com/elder-plinius/OBLITERATUS ~/external/OBLITERATUS
+   git -C ~/external/OBLITERATUS checkout 205d28a   # pinned, see below
    pip install -e ~/external/OBLITERATUS
    pip install -r ~/external/OBLITERATUS/requirements-apple.txt
    ```
+   Pin: OBLITERATUS revision **205d28a** — the revision the study verified builds the n=1 dose cleanly (perplexity 6.844). `d6af36f` and `04b8ec6` build a destroyed model at n=1 (`LEARNINGS.md` #61); newer revisions are unvalidated until rebuilt and smoke-gated. The drivers do not record the revision; write
+   `git -C ~/external/OBLITERATUS rev-parse HEAD` into the run directory yourself.
 3. HF base weights present locally (e.g. `models/gemma-2-9b-it/`).
 4. The `PYTORCH_ENABLE_MPS_FALLBACK=1` env var must be set — Gemma-2's SVD
    step hits a `linalg.eigh` MPS edge case that needs the LAPACK fallback.
@@ -82,7 +85,7 @@ PYTORCH_ENABLE_MPS_FALLBACK=1 \
   --out-root abliteration-output \
   --doses 1,2,8 \
   --max-seq-length 512 \
-  --stall-timeout 600 \
+  --stall-timeout 1500 \
   --max-attempts 3 \
   > supervisor.log 2>&1 &
 disown
@@ -272,4 +275,5 @@ flinch calibration.
 - [`abliteration-run`](../abliteration-run/SKILL.md) — the Docker/CUDA path for non-Gemma-2 families on a CUDA box.
 - [`mlx-weight-prep`](../mlx-weight-prep/SKILL.md) — converts each healthy dose's HF dir to MLX for serving.
 - [`abliterated-judge-sweep`](../abliterated-judge-sweep/SKILL.md) — consumes the MLX-converted dose to measure flinch.
-- The Wash docs in the internal working copy: `TIER-B-DESIGN.md` (why we run a dose-series at all), `PROTOCOL.md` (the analysis rules), `HANDOFF-M5.md` (the M5 run sequence).
+- What the dose series measured, and how to read it: paper §3.7 (XSTest refusal, judge-scored) and
+  `results/RESULTS-2026-09-18-dose-series-preflight.md`.

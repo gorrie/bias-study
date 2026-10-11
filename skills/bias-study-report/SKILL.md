@@ -1,9 +1,14 @@
 ---
 name: bias-study-report
-description: Turn scored bias-study runs into defensible statistics and writeup-ready tables — bootstrap CIs, Benjamini-Hochberg FDR, length control, inter-judge agreement, the abliteration effect-check (Jaccard), and escalation-ladder monotonicity (prompt-delta vs pipeline-delta vs abliteration-delta). Use after scoring any run, before updating the writeup. Enforces "a delta is a finding only if its CI excludes zero."
+description: Turn scored bias-study runs into defensible statistics and writeup-ready tables — bootstrap CIs, Benjamini-Hochberg FDR, length control, inter-judge agreement, the abliteration effect-check (Jaccard), and the per-rung deltas (the ladder-monotonicity claim is withdrawn, CORRECTIONS.md #21). Applies to the judge-scored instrument (V1, withdrawn May 2026 design) — for the live 32-item battery use barometer-wave. Use after scoring a judged run, before updating the writeup. Enforces "a delta is a finding only if its CI excludes zero."
 ---
 
 # bias-study-report
+
+> **Scope.** This procedure scores the judge-scored instrument (V1, the May 2026 1–5 panel
+> design), which the released paper withdrew. Use it to reproduce or audit V1 numbers. For the
+> live 32-item forced-choice battery use [`barometer-wave`](../barometer-wave/SKILL.md); the
+> paper is `PAPER-no-position-only-consensus.md`.
 
 The statistics and reporting layer for the bias study. Run it after `scripts/score.py` on any
 run. Companion: `README.md` and the writeup in `results/` for the framing each number supports.
@@ -64,11 +69,11 @@ run. Companion: `README.md` and the writeup in `results/` for the framing each n
 4. **Abliteration effect-check (weight rung only).** For any stock/abliterated pair, compute the
    word-set Jaccard plus the length / hedge / refusal deltas. This guards against the
    uninterpretable null: a flat stance is only a finding if the ablation actually *changed* the
-   text (Jaccard around 0.3 = it did; high Jaccard + flat stance = uninterpretable).
-5. **Ladder monotonicity.** For each open-weight model, check prompt-delta <= pipeline-delta <=
-   abliteration-delta with CIs; report where the ladder holds and where it breaks. The current
-   headline: abliteration-delta is about zero on *stance* despite a heavy *text* rewrite — the
-   refusal direction and institutional lean are dissociable.
+   text (0.303–0.392 is the band one model produces resampled against itself (`CORRECTIONS.md` #22), so only a Jaccard below that floor shows the text changed (qwen2.5-7b, 0.276, is the one confirmed case); inside the band + flat stance = uninterpretable).
+5. **Per-rung deltas.** Report prompt-, pipeline- and abliteration-deltas with CIs, each on its
+   own. Do NOT claim monotonicity: no model is measured on all three rungs and the ladder is not
+   one axis (`CORRECTIONS.md` #21, paper §3.8). The May "dissociation" headline is withdrawn
+   and narrowed (`CORRECTIONS.md` #22, paper §3.7).
 6. **Drift / barometer diff.** `scripts/drift_report.py <run>` writes the single-run drift
    summary; `scripts/drift_timeseries.py` joins per-model results across all runs into the
    longitudinal time series (the cross-vendor arcs). This diff against the prior quarter is the
@@ -159,7 +164,8 @@ not as an obstacle to route around. Its companions, each also runnable alone:
 For the evidence-concordance readout specifically:
 
 - `scripts/evidence_concordance.py` — scores an answer set on evidence-concordance, the
-  axis-free position readout behind `results/RESULTS-2026-08-29-evidence-concordance.md`. It
+  axis-free position readout behind `withdrawn/results/RESULTS-2026-08-29-evidence-concordance.md`
+  (working notes, not a finding). It
   shipped to this repository on 2026-09-16; until then that published result named a script a
   reader could not run.
 
