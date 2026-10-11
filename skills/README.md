@@ -25,7 +25,7 @@ The study changed design as it went. Every skill says which design it serves:
 |-------|--------|--------------|
 | [`bias-study-prep`](bias-study-prep/SKILL.md) | live | Pre-flight: validates the live battery, runs the pre-run gates, snapshots the noise floors, records a dated prep-state file. Run before every study run. |
 | [`barometer-wave`](barometer-wave/SKILL.md) | live | Collects and verifies a battery wave end to end — fixed panel, shuffled-order arm, stock-vs-ablated arm — then the floors, model cards and publication gates. |
-| [`abliteration-run`](abliteration-run/SKILL.md) | live | Builds a stock-vs-abliterated pair with OBLITERATUS (pinned at 205d28a) in the Docker/CUDA path. |
+| [`abliteration-run`](abliteration-run/SKILL.md) | live | Builds a stock-vs-abliterated pair with current OBLITERATUS in the Docker/CUDA path, recording the revision and smoke-gating the build. |
 | [`abliteration-on-mps`](abliteration-on-mps/SKILL.md) | live | The same build on Apple Silicon through the Python driver. Required for Gemma-2 (the CUDA/MKL eigensolver fails). |
 | [`mlx-weight-prep`](mlx-weight-prep/SKILL.md) | live | Converts HF safetensors from either abliteration skill into MLX fp16. |
 | [`g0dm0d3-pipeline`](g0dm0d3-pipeline/SKILL.md) | historical procedure | Rung 2. Executed; the proxy path this skill describes was abandoned. Read its status block first. |
@@ -71,9 +71,9 @@ Then, from a Claude Code session opened on this repo, invoke a skill by name (e.
   whichever way you like (`cp .env.example .env`).
 - **Models and abliteration outputs live wherever you point two env vars** — `$MODELS_DIR` and
   `$ABLIT_OUT` (weight builds only).
-- **Cite, don't vendor.** OBLITERATUS and G0DM0D3 are external. OBLITERATUS is pinned at
-  `205d28a` (`d6af36f` and `04b8ec6` build a destroyed model at one direction). G0DM0D3 has no pin
-  yet: record the commit you ran.
+- **Cite, don't vendor.** OBLITERATUS and G0DM0D3 are external. Use current versions and
+  record the commit you ran with every output. Known bad: OBLITERATUS `d6af36f` and `04b8ec6`
+  build a destroyed model at one direction. The study's own builds used OBLITERATUS `205d28a`.
 - **Secrets never ship.** Keys and `.env` files stay local; scan before any push.
 - **Cross-platform.** The pipeline is plain Python. Windows / Git-Bash notes (e.g.
   `MSYS_NO_PATHCONV=1` before `docker run`) are called out as asides with their POSIX

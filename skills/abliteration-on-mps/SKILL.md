@@ -38,12 +38,14 @@ abliteration can complete.
 2. OBLITERATUS installed in the project venv:
    ```bash
    git clone https://github.com/elder-plinius/OBLITERATUS ~/external/OBLITERATUS
-   git -C ~/external/OBLITERATUS checkout 205d28a   # pinned, see below
    pip install -e ~/external/OBLITERATUS
    pip install -r ~/external/OBLITERATUS/requirements-apple.txt
    ```
-   Pin: OBLITERATUS revision **205d28a** — the revision the study verified builds the n=1 dose cleanly (perplexity 6.844). `d6af36f` and `04b8ec6` build a destroyed model at n=1 (`LEARNINGS.md` #61); newer revisions are unvalidated until rebuilt and smoke-gated. The drivers do not record the revision; write
-   `git -C ~/external/OBLITERATUS rev-parse HEAD` into the run directory yourself.
+   Use current OBLITERATUS. Record the revision you built with (`git -C ~/external/OBLITERATUS rev-parse HEAD`)
+   next to every output — `abliteration_metadata.json` does not record it — and smoke-gate every
+   build (`scripts/dose_smoke_gate.py`). Two revisions are known bad: `d6af36f` and `04b8ec6` build a
+   destroyed model at one direction (`LEARNINGS.md` #61). For reference, the study's own builds used
+   `205d28a`.
 3. HF base weights present locally (e.g. `models/gemma-2-9b-it/`).
 4. The `PYTORCH_ENABLE_MPS_FALLBACK=1` env var must be set — Gemma-2's SVD
    step hits a `linalg.eigh` MPS edge case that needs the LAPACK fallback.

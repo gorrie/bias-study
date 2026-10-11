@@ -1,6 +1,6 @@
 ---
 name: abliteration-run
-description: Run an OBLITERATUS refusal-direction abliteration end-to-end against an open-weight model and produce a stock-vs-abliterated pair for the bias study. Codifies the proven download→verify→fp16-abliterate-offline (OBLITERATUS pinned at 205d28a)→coherence-smoke path; measure the pair with barometer-wave and XSTest. Use when adding a new open-weight vendor family to the abliteration leg, or re-running it for a quarterly barometer pass.
+description: Run an OBLITERATUS refusal-direction abliteration end-to-end against an open-weight model and produce a stock-vs-abliterated pair for the bias study. Codifies the proven download→verify→fp16-abliterate-offline→coherence-smoke path; measure the pair with barometer-wave and XSTest. Use when adding a new open-weight vendor family to the abliteration leg, or re-running it for a quarterly barometer pass.
 ---
 
 # abliteration-run
@@ -29,9 +29,11 @@ family of five, and on the retired questionnaire the apparent effect belonged to
    `python scripts/dl_model.py <hf_repo> <home>/models/<name>` — resume-until-valid,
    validates every safetensors shard. A download that *starts* is not one that *finishes*.
 2. **Abliterate offline** in the `obliteratus:gpu` container (advanced/SVD, the proven path).
-   Build that image from OBLITERATUS revision **205d28a** — the revision the study verified builds the n=1 dose cleanly (perplexity 6.844). `d6af36f` and `04b8ec6` build a destroyed model at n=1 (`LEARNINGS.md` #61); newer revisions are unvalidated until rebuilt and smoke-gated. Record the revision
-   (`git -C <OBLITERATUS> rev-parse HEAD`) next to the output; `abliteration_metadata.json`
-   does not record it.
+   Use current OBLITERATUS. Record the revision you built with (`git -C <OBLITERATUS> rev-parse HEAD`)
+   next to every output — `abliteration_metadata.json` does not record it — and smoke-gate every
+   build (`scripts/dose_smoke_gate.py`). Two revisions are known bad: `d6af36f` and `04b8ec6` build a
+   destroyed model at one direction (`LEARNINGS.md` #61). For reference, the study's own builds used
+   `205d28a`.
    ```
    MSYS_NO_PATHCONV=1 docker run --rm --gpus all -e HF_HUB_OFFLINE=1 \
      -v <home>/models:/models -v <home>/obliteratus-output:/output \

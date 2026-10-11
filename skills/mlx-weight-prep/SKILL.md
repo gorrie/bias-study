@@ -130,7 +130,7 @@ Set `ABLITERATED_MODEL_PATH` to the converted directory, or pass `--model-path` 
 `MODEL_LABEL` and the skill's preconditions section so recorded judge metadata stays accurate.
 
 ## Hard lessons (do not relearn)
-- **Gemma-2 cannot be abliterated on CUDA + MKL** as of OBLITERATUS 205d28a; the
+- **Gemma-2 cannot be abliterated on CUDA + MKL** in the study's builds (OBLITERATUS 205d28a, for reference); the
   `linalg.eigh` call hits `SSYEVD` returning negative status. Apple's Accelerate/LAPACK
   doesn't share the bug — that's why Gemma-2-9B could be built at all.
   Do NOT try to "fix" this on the 4090; it's a backend bug.
