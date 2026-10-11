@@ -1,6 +1,6 @@
 ---
 name: barometer-wave
-description: Run and verify a forced-choice barometer wave end-to-end — the fixed-panel repeat measurement (wave.py), the shuffled-order arm (order_floor_wave.py), the stock-vs-ablated arm (ablation_wave.py), then the floors, the estimator floor, the per-model cards and every publication gate. Use when collecting a new wave, extending a floor onto more models, re-running the ablation arm, or checking that a collection actually landed. This is the barometer's repeatability procedure; the judge-scored ladder skills (api-judge-sweep, abliteration-run, cross-method-analysis) cover the May 2026 instrument instead.
+description: Run and verify a forced-choice barometer wave end-to-end — the fixed-panel repeat measurement (wave.py), the shuffled-order arm (order_floor_wave.py), the stock-vs-ablated arm (ablation_wave.py), then the floors, the estimator floor, the per-model cards and every publication gate. Use when collecting a new wave, extending a floor onto more models, re-running the ablation arm, or checking that a collection actually landed. This is the barometer's repeatability procedure. abliteration-run / abliteration-on-mps build the ablated arm; the judge-sweep skills cover only the withdrawn May 2026 instrument.
 ---
 
 # barometer-wave

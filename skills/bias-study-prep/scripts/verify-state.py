@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-"""bias-study-prep: lightweight verify (no pulls, no rebuilds).
+"""bias-study-prep: lightweight verify (no pull, no gates).
 
-Use this between full refresh runs to quickly re-check protocol-file
-presence, toolchain location, and env vars without the time cost of
-git pulls or EPUB rebuilds. Useful for "did anything change since I
-last ran refresh.py?" checks.
+Use this between full refresh runs to re-check the protocol files, the live instrument, env vars
+and -- with --rung -- the external tool a rung uses, without running the pre-run gates. Useful
+for "did anything change since I last ran refresh.py?" checks.
 """
 from __future__ import annotations
 
+import argparse
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -18,28 +17,33 @@ SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from refresh import (  # noqa: E402
-    BIAS_STUDY_DIR,
-    REPOS,
+    TOOLS,
     log,
+    verify_compass,
     verify_env,
     verify_protocol_dir,
-    verify_toolchain,
+    verify_tool,
 )
 
 
-def main() -> int:
-    log("INFO ", "bias-study-prep: verify-state (lightweight)")
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description="Lightweight bias-study pre-flight: no pull, no gates.")
+    ap.add_argument("--rung", action="append", choices=sorted(TOOLS), default=[],
+                    help="also check the external tool this rung uses (repeatable)")
+    args = ap.parse_args(argv)
 
+    log("INFO ", "bias-study-prep: verify-state (lightweight)")
     state = {
         "protocol": verify_protocol_dir(),
-        "toolchain": verify_toolchain(REPOS["G0DM0D3"], REPOS["OBLITERATUS"]),
+        "compass": verify_compass(),
+        "toolchain": {rung: verify_tool(rung) for rung in args.rung},
         "env": verify_env(),
     }
 
     all_ok = (
         state["protocol"]["status"] == "ok"
-        and state["toolchain"]["g0dm0d3"].get("present", False)
-        and state["toolchain"]["obliteratus"].get("present", False)
+        and state["compass"]["status"] == "ok"
+        and all(t.get("status") == "ok" for t in state["toolchain"].values())
         and state["env"]["all_required_ok"]
     )
 

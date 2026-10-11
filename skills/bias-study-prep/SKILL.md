@@ -1,6 +1,6 @@
 ---
 name: bias-study-prep
-description: Pre-run refresh and sanity check for the LLM bias study. Validates the live forced-choice instrument (the authored battery, data/ratchet-battery.json: 32 items in 16 mirrored pairs — contiguous ids, every pair one inserted "not", counts matching its own declaration, one sentence each), runs the seven pre-run gates, and snapshots every noise floor's pair count so a collection that lands nowhere is detectable. Also pulls the repo, checks the legacy judge-scored protocol files, verifies the OpenRouter key is reachable and — for the heavier rungs — the OBLITERATUS / G0DM0D3 toolchain, then records a dated prep-state file. Run before every study run to guarantee reproducibility against a known-good state.
+description: Pre-run refresh and sanity check for the LLM bias study. Validates the live forced-choice instrument (the authored battery, data/ratchet-battery.json: 32 items in 16 mirrored pairs — contiguous ids, every pair reciprocal with one critic and one defender frame, counts matching its own declaration, one sentence each), runs the pre-run gates, and snapshots every noise floor's pair count so a collection that lands nowhere is detectable. Also pulls the study tree, checks the legacy judge-scored protocol files, checks the OpenRouter key is set, records the OBLITERATUS / G0DM0D3 revision when a weight or pipeline rung is requested, warns if an installed skill is a copy rather than a link, then records a dated prep-state file. Run before every study run to guarantee reproducibility against a known-good state.
 ---
 
 # bias-study-prep
@@ -32,10 +32,10 @@ that speak to the current instrument. If you only have time for part of this, it
   cp .env.example .env   # then edit OPENROUTER_API_KEY=...
   ```
 - **Only if running the weight rung** (`abliteration-run`): Docker + an NVIDIA GPU (or an
-  Apple-Silicon machine), a local checkout of OBLITERATUS, and a built GPU image. See the
-  `abliteration-run` skill and `README.md` for upstream URLs and pinned commits.
+  Apple-Silicon machine), a current checkout of OBLITERATUS, and a built GPU image. See the
+  `abliteration-run` skill. Pass `--rung weights` so the revision is recorded.
 - **Only if running the pipeline rung** (`g0dm0d3-pipeline`): a local checkout of G0DM0D3 and
-  its server running. See the `g0dm0d3-pipeline` skill.
+  its server running. See the `g0dm0d3-pipeline` skill. Pass `--rung pipeline`.
 
 ## TRIGGER when
 
@@ -60,9 +60,8 @@ the invocation is correct. `check_skill_docs.py` gates it now. The retracted pat
 rather than quoted here on purpose: the gate reads backticked paths, so re-typing a dead one
 inside its own correction would keep the gate red forever.)*
 
-1. **Update the repo.** `git pull` on a clean working tree so the run records which commit it
-   ran against. If you are also running the pipeline or weight rungs, update those upstream
-   checkouts (OBLITERATUS / G0DM0D3) and note their commit hashes too.
+1. **Update the study tree.** `git pull` on a clean working tree so the run records which
+   commit it ran against (`--no-pull` skips it). Nothing else is pulled or built.
 2. **Sanity-check the legacy protocol directory** (`protocol/`): confirm `questions.md`,
    `rubric.md`, `schema.md`, `run-protocol.md`, `aggregation-rules.md`, and
    `vendor-enrollment-brief.md` are all present and non-empty. These are the spec the
@@ -91,15 +90,16 @@ inside its own correction would keep the gate red forever.)*
    - the item file, `scripts/run_battery.py` and `scripts/test_sheet_parser.py` are present;
    - **ids are contiguous** — answers are keyed by item id, so a gap silently misaligns every
      comparison;
-   - **every pair is a clean negation**: the two halves differ by exactly one inserted "not"
-     and nothing else. This is the invariant that makes a mirror a mirror. An earlier build
-     *derived* each negation by inserting "not" after the first auxiliary, and on one item that
-     auxiliary sat in a subordinate clause — it produced a *different* proposition that
-     collected and scored cleanly. Identity is decidable; grammar is not;
+   - **every pair is a well-formed mirror**: the two halves point at each other
+     (`mirror_of`), share a `pair_no` and a `topic`, and take one critic and one defender
+     frame. The halves are a claim and its opposing framing written by hand, not a sentence
+     and its negation. (Until 2026-10-10 this step checked for one inserted "not" — the
+     withdrawn 60-item bank's shape — and rejected all 16 live pairs, while its tests passed
+     on fixtures of the wrong shape. A test now reads the real file.);
    - **the file agrees with its own declared `counts`**, rather than with a number typed into
      the gate. A constant here ages into a false alarm the day the instrument legitimately
      changes, which is exactly what happened;
-   - **frames are balanced** (30 critic / 30 defender) — the acquiescence control is that the
+   - **frames are balanced** (16 critic / 16 defender) — the acquiescence control is that the
      affirmative half is the critic side on half the pairs, so a model that simply agrees more
      than it disagrees cannot manufacture a frame gap;
    - each proposition is **exactly one sentence**, which the sheet prompt and the parser both
@@ -107,7 +107,7 @@ inside its own correction would keep the gate red forever.)*
 
    If the retired third-party file is still on disk it is reported as a warning, not an error:
    it is gitignored, and `check_corpus.py` is the gate that actually matters.
-4. **Run the seven pre-run gates.** All must *already* pass before new runs land: if the paper
+4. **Run the pre-run gates.** All must *already* pass before new runs land: if the paper
    disagrees with the data now, adding runs makes the disagreement harder to attribute rather
    than easier.
    - `scripts/gen_paper.py --check` — every generated table matches `runs/`
@@ -124,9 +124,9 @@ inside its own correction would keep the gate red forever.)*
      gaps; it asks each model once at a 65,536 ceiling so the number measured is what the
      model *wants*. **Set the collection budget to twice the measured maximum**, not to it:
      `deepseek-v4-flash` probed at 10,871 tokens and then used **20,367** in the wave.
-   - `check_no_fork.py` — no script exists in two trees with different content. **Private
-     working tree only**: it compares this mirror against the working study, so it lives on
-     the side that can see both and is not shipped here. Skip it when prepping from a clone.
+   - `scripts/check_no_fork.py` — no script exists in two trees with different content. It
+     compares this repository against the working study, so only the maintainer can run it;
+     on a clone it exits 2, NOT APPLICABLE, and `refresh.py` reports it as skipped.
    - `scripts/check_skill_procedures.py` — **the documented commands actually run.**
      `check_skill_docs.py` verifies that a path a skill names exists and a flag it names is
      real; it cannot see a command that resolves and then fails. This executes the read-only
@@ -171,7 +171,10 @@ inside its own correction would keep the gate red forever.)*
    - Then run `scripts/collection_check.py <run>` on the smoke output. It is §4 made
      executable, and it refuses rather than warning.
 
-6. **Verify the heavier toolchain only if those rungs are in scope:**
+6. **Check the external tool only for the rung in scope** (`--rung pipeline` / `--rung weights`).
+   `refresh.py` records the tool's revision in prep-state and refuses OBLITERATUS `d6af36f` /
+   `04b8ec6`, which build a destroyed model at one direction. Use current versions; a build is
+   trusted because it passed its smoke gate. Beyond what the script checks:
    - Pipeline rung: the G0DM0D3 server starts and answers a health check — **and then prove
      each condition's transform actually fires**, with
      `python scripts/pipeline_transform_audit.py --live`. A health check says the server is
@@ -194,9 +197,10 @@ inside its own correction would keep the gate red forever.)*
 ## How to invoke
 
 ```bash
-python skills/bias-study-prep/scripts/refresh.py
+python skills/bias-study-prep/scripts/refresh.py                  # prompt-rung / battery run
+python skills/bias-study-prep/scripts/refresh.py --rung weights   # also record OBLITERATUS
 
-# check-only, no pull or build:
+# check-only, no pull and no gates:
 python skills/bias-study-prep/scripts/verify-state.py
 
 # the skill's own tests:
@@ -282,7 +286,7 @@ skills/bias-study-prep/
 ├── learnings.md        accumulated run notes
 └── scripts/
     ├── refresh.py          end-to-end pre-flight
-    ├── verify-state.py     sanity checks only, no pull or build
+    ├── verify-state.py     sanity checks only, no pull and no gates
     ├── log-prep-state.py   writes the audit-trail file
-    └── test_refresh.py     10 tests: instrument validation and the floor snapshot
+    └── test_refresh.py     instrument (incl. the real battery), gates, protocol location, installed-skill links, floors
 ```

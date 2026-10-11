@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """bias-study-prep: end-to-end pre-study refresh.
 
-Pulls relevant repos, rebuilds reference EPUBs, verifies toolchain health,
-checks env vars, writes a dated prep-state.json file under the bias-study
-runs/ directory.
+Pulls the study tree, checks the live instrument and the pre-run gates, records the revision of
+the external tool for any requested rung (--rung weights / --rung pipeline), checks env vars,
+snapshots the floors, and writes a dated prep-state.json under the study's runs/ directory.
 
 Exit codes:
     0 = clean (study may proceed)
@@ -17,7 +17,6 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -25,15 +24,16 @@ from pathlib import Path
 WORKSPACE = Path(os.environ.get("BIAS_STUDY_WORKSPACE", Path.home()))
 CLAUDE_TOOLS = Path(os.environ.get("CLAUDE_TOOLS", Path.home() / "claude"))
 
-REPOS = {
-    "publishing-tools": WORKSPACE / "publishing-tools",
-    "books/evil-robots": WORKSPACE / "books" / "evil-robots",
-    "books/the-ratchet": WORKSPACE / "books" / "the-ratchet",
-    "evil-robots-series": WORKSPACE / "evil-robots-series",
-    "fires-series": WORKSPACE / "fires-series",
-    "G0DM0D3": CLAUDE_TOOLS / "G0DM0D3",
-    "OBLITERATUS": CLAUDE_TOOLS / "OBLITERATUS",
+# External tools, checked only when the rung that uses them is requested (--rung). Their
+# revision is RECORDED, not required: use current versions, and a build is trusted because it
+# passed its smoke gate, not because it came from an old commit. Paths are overridable.
+TOOLS = {
+    "pipeline": ("G0DM0D3", Path(os.environ.get("G0DM0D3_DIR", CLAUDE_TOOLS / "G0DM0D3"))),
+    "weights": ("OBLITERATUS", Path(os.environ.get("OBLITERATUS_DIR", CLAUDE_TOOLS / "OBLITERATUS"))),
 }
+
+# Revisions measured to build a destroyed model at one direction (LEARNINGS.md #61).
+KNOWN_BAD_OBLITERATUS = ("d6af36f", "04b8ec6")
 
 def _resolve_study_dir():
     """The study tree this skill should operate on.
@@ -67,12 +67,12 @@ BIAS_STUDY_DIR = _resolve_study_dir()
 # on these says nothing about a forced-choice run, which is how this skill came to pass
 # vacuously in front of a collection it did not check.
 LEGACY_PROTOCOL_FILES = [
-    "README.md",
     "questions.md",
     "rubric.md",
     "schema.md",
     "run-protocol.md",
     "aggregation-rules.md",
+    "vendor-enrollment-brief.md",
 ]
 
 # What a FORCED-CHOICE run actually depends on.
@@ -124,6 +124,7 @@ PRE_RUN_GATES = [
     # public mirror, two of them at the statistics layer -- the private ci_analysis.py kept an
     # order-dependent bootstrap the mirror had already fixed. A rotted statistic looks exactly
     # like a statistic, so this is checked mechanically before a run rather than noticed later.
+    # Exits 2 (NOT APPLICABLE) anywhere but the maintainer side, which sees both trees.
     ("no_fork", ["scripts/check_no_fork.py"]),
     # Added 2026-09-15, the day a wave was collected at a budget nobody had
     # measured against the roster.
@@ -145,9 +146,12 @@ PRE_RUN_GATES = [
     # without --run reports coverage and exits 0 only when every model on the
     # frozen panel has been probed.
     ("budget_probe", ["scripts/probe_budget.py"]),
+    # The documented commands actually run, and every script a shipped document names exists.
+    # SKILL.md listed both as pre-run gates while this list never ran them; the first run of
+    # each, 2026-10-10, failed on a skill naming scripts the public repository does not ship.
+    ("skill_procedures", ["scripts/check_skill_procedures.py"]),
+    ("named_scripts", ["scripts/check_named_scripts.py"]),
 ]
-
-EPUB_BOOKS = ["books/evil-robots", "books/the-ratchet"]
 
 REQUIRED_ENV = ["OPENROUTER_API_KEY"]
 OPTIONAL_ENV = [
@@ -206,16 +210,24 @@ def git_pull_repo(name: str, path: Path) -> dict:
     return result
 
 
+def protocol_dir() -> Path:
+    """The public repository keeps the protocol files in protocol/; the working study keeps
+    them at its root. Checking only the root failed every clone of the public repository."""
+    sub = BIAS_STUDY_DIR / "protocol"
+    return sub if sub.is_dir() else BIAS_STUDY_DIR
+
+
 def verify_protocol_dir() -> dict:
-    result = {"path": str(BIAS_STUDY_DIR), "files": {}}
-    if not BIAS_STUDY_DIR.exists():
+    pdir = protocol_dir()
+    result = {"path": str(pdir), "files": {}}
+    if not pdir.exists():
         result["status"] = "missing"
-        log("ERROR", f"protocol dir missing: {BIAS_STUDY_DIR}")
+        log("ERROR", f"protocol dir missing: {pdir}")
         return result
 
     all_ok = True
     for fn in LEGACY_PROTOCOL_FILES:
-        fp = BIAS_STUDY_DIR / fn
+        fp = pdir / fn
         sha = file_sha256(fp)
         if sha is None:
             result["files"][fn] = {"status": "missing"}
@@ -245,9 +257,14 @@ def verify_compass() -> dict:
     Rewritten 2026-09-15 for the instrument change. It asserted "expected 62, 1..62" against a
     third-party item set that has since been removed from the study, so the first prep run
     after the change would have FAILED ON THE INSTRUMENT BEING CORRECT. The invariants below
-    are the ones the authored bank actually has, and they are stronger than a count: a mirrored
-    pair whose halves do not differ by exactly one inserted "not" is not a mirror, and the
-    frame gap measured on it is a different question wearing the same name.
+    are the ones the authored bank actually has, and they are stronger than a count.
+
+    Corrected 2026-10-10. This checked that each pair's halves differ by one inserted "not" --
+    the shape of the 60-item bank withdrawn on 2026-09-16. The live bank's pairs are a claim and
+    its opposing framing, written by hand, so that rule failed all 16 live pairs: the gate
+    rejected the correct instrument, while its tests passed on fixtures shaped like the
+    withdrawn one. A mirror is now what the bank declares and can be decided: the two halves
+    point at each other, share a pair number and a topic, and take opposite frames.
 
     The name is kept so `prep-state` keys, the SKILL.md procedure and every existing test keep
     resolving; what it verifies is the live instrument.
@@ -301,25 +318,27 @@ def verify_compass() -> dict:
                 broken.append((iid, "mirror_of points nowhere"))
                 continue
             seen.update({iid, int(mid)})
-            a, b = (it.get("text") or "").split(), (other.get("text") or "").split()
-            longer, shorter = (a, b) if len(a) >= len(b) else (b, a)
-            if len(longer) - len(shorter) != 1:
-                broken.append((iid, "halves differ by %d words" % (len(longer) - len(shorter))))
+            if other.get("mirror_of") is None or int(other["mirror_of"]) != iid:
+                broken.append((iid, "mirror_of is not reciprocal"))
                 continue
-            removed = [w for w in longer if w not in shorter] or ["?"]
-            rest = [w for w in longer if w != "not"]
-            if removed[0] != "not" or rest != [w for w in shorter if w != "not"]:
-                broken.append((iid, "the difference is not a single inserted 'not'"))
+            if it.get("pair_no") != other.get("pair_no"):
+                broken.append((iid, "halves carry different pair_no"))
+                continue
+            if it.get("topic") != other.get("topic"):
+                broken.append((iid, "halves carry different topics"))
+                continue
+            if {it.get("frame"), other.get("frame")} != {"critic", "defender"}:
+                broken.append((iid, "halves are not one critic and one defender frame"))
                 continue
             pairs.append((iid, int(mid)))
         result["n_pairs"] = len(pairs)
         result["broken_pairs"] = broken
         if broken:
             result["status"] = "failed"
-            log("ERROR", f"{len(broken)} pair(s) are not clean negations: {broken[:4]}")
+            log("ERROR", f"{len(broken)} pair(s) are not well-formed mirrors: {broken[:4]}")
         else:
             log("OK   ", f"instrument: {len(items)} items, {len(pairs)} mirrored pairs, "
-                         f"every pair one inserted 'not'")
+                         f"every pair reciprocal, one critic and one defender frame")
 
         # THE BANK DECLARES ITS OWN SIZE; check the file against its declaration
         # rather than against a number typed here. The previous version of this
@@ -373,29 +392,56 @@ def run_pre_run_gates() -> dict:
     """Every gate must already pass before new runs land."""
     out = {"gates": {}, "status": "ok"}
     for name, argv in PRE_RUN_GATES:
-        # A gate whose script is not in THIS tree is skipped, loudly, rather than failing the
-        # run. Exactly one gate is in that position and it is there by design: check_no_fork.py
-        # compares the public mirror against the private working study, so it can only run on
-        # the side that can see both, and shipping it would name a private repository in a
-        # public artifact. Before this, a clone of the public repo ran every gate, hit a
-        # missing file, and ended on "FAILED -- bias study MUST NOT proceed", which reads as
-        # "this study does not verify" when it means "you are not the maintainer".
+        # A gate whose script is not in this tree is skipped, loudly, rather than failing the run.
         script = BIAS_STUDY_DIR / argv[0]
         if not script.exists():
             out["gates"][name] = {"exit": 0, "skipped": True,
                                   "last": f"{argv[0]} not present in this tree -- skipped"}
-            log("SKIP ", f"gate {name}: {argv[0]} is not in this tree. This is expected on a "
-                         f"clone of the public mirror; it is a maintainer-side check.")
+            log("SKIP ", f"gate {name}: {argv[0]} is not in this tree.")
             continue
         code, stdout, stderr = run([sys.executable] + argv, cwd=BIAS_STUDY_DIR)
         tail = (stdout or stderr or "").strip().splitlines()
         out["gates"][name] = {"exit": code, "last": tail[-1][:160] if tail else ""}
         if code == 0:
             log("OK   ", f"gate {name}: {out['gates'][name]['last']}")
+        elif code == 2:
+            # The gates' own convention: 2 is NOT APPLICABLE -- never a pass, never a failure.
+            # check_no_fork.py returns it on any tree that cannot see both the working study and
+            # the public mirror, which treating every non-zero exit as failure turned into a
+            # "MUST NOT proceed" on every clone.
+            out["gates"][name]["not_applicable"] = True
+            log("SKIP ", f"gate {name}: not applicable here (exit 2): "
+                         f"{out['gates'][name]['last']}")
         else:
             out["status"] = "failed"
             log("ERROR", f"gate {name} FAILED (exit {code}): "
                          f"{out['gates'][name]['last']}")
+    return out
+
+
+def check_installed_skills() -> dict:
+    """Warn when an installed skill is a COPY of one in this tree rather than a link to it.
+
+    Added 2026-10-10. Four of these skills had been installed by copying, as the old README
+    said to. The copies drifted both ways: two carried corrections that existed in no
+    repository, the others were weeks stale, and nothing noticed. A link cannot drift.
+    Not fatal: a machine may install nothing, and that is fine.
+    """
+    out = {"skills": {}, "status": "ok"}
+    installed = Path(os.environ.get("CLAUDE_SKILLS_DIR", Path.home() / ".claude" / "skills"))
+    here = Path(__file__).resolve().parents[2]          # this tree's skills/
+    for src in sorted(p for p in here.iterdir() if (p / "SKILL.md").is_file()):
+        dst = installed / src.name
+        if not dst.exists():
+            continue
+        linked = dst.resolve() == src.resolve()
+        out["skills"][src.name] = "linked" if linked else "copy"
+        if not linked:
+            out["status"] = "warn"
+            log("WARN ", f"{dst} is a copy, not a link to {src} -- it will drift. Replace it "
+                         f"with a link (see skills/README.md).")
+    if out["status"] == "ok":
+        log("OK   ", f"installed skills: {len(out['skills'])} linked, none copied")
     return out
 
 
@@ -441,72 +487,24 @@ def snapshot_floors() -> dict:
     return out
 
 
-def build_epub(book_path: str) -> dict:
-    full = WORKSPACE / book_path
-    result = {"book": book_path}
-    if not full.exists():
+def verify_tool(rung: str) -> dict:
+    """Presence and revision of the external tool a requested rung uses. Records, never pins."""
+    name, path = TOOLS[rung]
+    result = {"tool": name, "path": str(path)}
+    if not (path / ".git").exists():
         result["status"] = "missing"
-        log("ERROR", f"book missing: {book_path}")
+        log("ERROR", f"{name} not found at {path} (set {name}_DIR)")
         return result
-
-    # sys.executable first: the interpreter already running this IS a valid interpreter, and
-    # falling back to a PATH lookup can pick a different one than the caller intended. The old
-    # fallback was one machine's MSYS path, which on any other host is simply a missing file.
-    python_exe = sys.executable or shutil.which("python3") or shutil.which("python")
-    build_py = WORKSPACE / "publishing-tools" / "build.py"
-    if not build_py.exists():
-        result["status"] = "build-script-missing"
-        log("ERROR", f"build.py not found at {build_py}")
+    rc, out, _ = run(["git", "rev-parse", "HEAD"], cwd=path)
+    result["revision"] = out if rc == 0 else None
+    result["status"] = "ok"
+    rev = result["revision"] or ""
+    if name == "OBLITERATUS" and any(rev.startswith(bad) for bad in KNOWN_BAD_OBLITERATUS):
+        result["status"] = "known-bad-revision"
+        log("ERROR", f"{name} at {rev[:12]}: this revision builds a destroyed model at one "
+                     f"direction (LEARNINGS.md #61). Update it.")
         return result
-
-    log("INFO ", f"building EPUB: {book_path} (this may take 1-3 minutes)")
-    rc, out, err = run([python_exe, str(build_py), book_path], cwd=WORKSPACE)
-
-    # build.py uses exit code 0 = READY, 1 = NEEDS FIX, 2 = FAILED
-    if rc == 0:
-        result["status"] = "ready"
-        epub_path = full / "output" / f"{full.name}.epub"
-        result["epub_sha256"] = file_sha256(epub_path)
-        result["epub_size"] = epub_path.stat().st_size if epub_path.exists() else None
-        log("OK   ", f"{book_path}: STATUS READY ({result.get('epub_size', 0)} bytes)")
-    elif rc == 1:
-        result["status"] = "needs-fix"
-        result["build_output_tail"] = out[-500:] if out else ""
-        log("ERROR", f"{book_path}: STATUS NEEDS FIX (rc={rc})")
-    else:
-        result["status"] = "failed"
-        result["build_output_tail"] = out[-500:] if out else ""
-        result["build_error_tail"] = err[-500:] if err else ""
-        log("ERROR", f"{book_path}: STATUS FAILED (rc={rc})")
-
-    return result
-
-
-def verify_toolchain(g0_path: Path, obl_path: Path) -> dict:
-    """Verify G0DM0D3 + OBLITERATUS health. Lightweight — checks for presence
-    of expected directories / config files, not deep dependency resolution.
-    """
-    result = {"g0dm0d3": {}, "obliteratus": {}}
-
-    if g0_path.exists() and (g0_path / ".git").exists():
-        result["g0dm0d3"]["present"] = True
-        # Look for SOMETHING that signals the repo is intact
-        markers = ["README.md", "package.json", "pyproject.toml", "requirements.txt"]
-        result["g0dm0d3"]["markers_present"] = [m for m in markers if (g0_path / m).exists()]
-        log("OK   ", f"G0DM0D3 present at {g0_path}, markers: {result['g0dm0d3']['markers_present']}")
-    else:
-        result["g0dm0d3"]["present"] = False
-        log("ERROR", f"G0DM0D3 not found at {g0_path}")
-
-    if obl_path.exists() and (obl_path / ".git").exists():
-        result["obliteratus"]["present"] = True
-        markers = ["README.md", "requirements.txt", "pyproject.toml", "setup.py"]
-        result["obliteratus"]["markers_present"] = [m for m in markers if (obl_path / m).exists()]
-        log("OK   ", f"OBLITERATUS present at {obl_path}, markers: {result['obliteratus']['markers_present']}")
-    else:
-        result["obliteratus"]["present"] = False
-        log("ERROR", f"OBLITERATUS not found at {obl_path}")
-
+    log("OK   ", f"{name} at {rev[:12] or '?'} -- recorded in prep-state; smoke-gate every build")
     return result
 
 
@@ -541,84 +539,83 @@ def write_prep_state(state: dict, run_dir: Path) -> Path:
     return out_path
 
 
-def main() -> int:
-    started = datetime.datetime.utcnow().isoformat() + "Z"
+def pull_study() -> dict:
+    """Bring the study tree itself up to date. The only repository a run depends on."""
+    return git_pull_repo("study", BIAS_STUDY_DIR)
+
+
+def main(argv: list[str] | None = None) -> int:
+    import argparse  # noqa: PLC0415
+    ap = argparse.ArgumentParser(description="Pre-run refresh and sanity check for the bias study.")
+    ap.add_argument("--rung", action="append", choices=sorted(TOOLS), default=[],
+                    help="also check the external tool this rung uses (repeatable)")
+    ap.add_argument("--no-pull", action="store_true", help="do not git pull the study tree")
+    args = ap.parse_args(argv)
+
+    started = datetime.datetime.now(datetime.timezone.utc).isoformat()
     today = datetime.date.today().isoformat()
     run_dir = BIAS_STUDY_DIR / "runs" / today
 
     log("INFO ", f"bias-study-prep starting at {started}")
+    log("INFO ", f"study tree: {BIAS_STUDY_DIR}")
     log("INFO ", f"target run dir: {run_dir}")
 
     state = {
-        "skill_version": "1.1.0",
+        "skill_version": "1.2.0",
         "started_at": started,
         "target_run_date": today,
-        "repos": {},
+        "rungs": args.rung,
+        "study": {},
         "protocol": {},
-        "epubs": {},
         "toolchain": {},
         "env": {},
         "compass": {},
         "gates": {},
         "floors_before": {},
+        "installed_skills": {},
     }
 
-    # 1. Git pulls
-    log("INFO ", "=== Step 1: git pull ===")
-    for name, path in REPOS.items():
-        state["repos"][name] = git_pull_repo(name, path)
+    log("INFO ", "=== Step 1: study tree ===")
+    if args.no_pull:
+        state["study"] = {"status": "ok", "skipped": True}
+        log("SKIP ", "git pull skipped (--no-pull)")
+    else:
+        state["study"] = pull_study()
 
-    repos_ok = all(r.get("status") == "ok" for r in state["repos"].values())
-
-    # 2. Protocol dir check
-    log("INFO ", "=== Step 2: protocol directory ===")
+    log("INFO ", "=== Step 2: legacy protocol files ===")
     state["protocol"] = verify_protocol_dir()
 
-    # 3. EPUB rebuild
-    log("INFO ", "=== Step 3: reference EPUB rebuild ===")
-    for book in EPUB_BOOKS:
-        state["epubs"][book] = build_epub(book)
+    log("INFO ", "=== Step 3: external tools for the requested rungs ===")
+    for rung in args.rung:
+        state["toolchain"][rung] = verify_tool(rung)
+    if not args.rung:
+        log("SKIP ", "no --rung requested; G0DM0D3 and OBLITERATUS not checked")
 
-    epubs_ok = all(b.get("status") == "ready" for b in state["epubs"].values())
-
-    # 4. Toolchain health
-    log("INFO ", "=== Step 4: G0DM0D3 + OBLITERATUS ===")
-    state["toolchain"] = verify_toolchain(REPOS["G0DM0D3"], REPOS["OBLITERATUS"])
-
-    toolchain_ok = (
-        state["toolchain"]["g0dm0d3"].get("present", False)
-        and state["toolchain"]["obliteratus"].get("present", False)
-    )
-
-    # 5. Env vars
-    log("INFO ", "=== Step 5: env vars ===")
+    log("INFO ", "=== Step 4: env vars ===")
     state["env"] = verify_env()
 
-    # 6. The FORCED-CHOICE instrument -- the one a run now actually uses.
-    log("INFO ", "=== Step 6: forced-choice instrument ===")
+    log("INFO ", "=== Step 5: forced-choice instrument ===")
     state["compass"] = verify_compass()
 
-    # 7. Gates must already pass before new runs land.
-    log("INFO ", "=== Step 7: pre-run gates ===")
+    log("INFO ", "=== Step 6: pre-run gates ===")
     state["gates"] = run_pre_run_gates()
 
-    # 8. Floor pair counts BEFORE the run, so a collection that lands nowhere is a
-    #    subtraction rather than something nobody notices. See snapshot_floors.
-    log("INFO ", "=== Step 8: floor snapshot ===")
+    # Floor pair counts BEFORE the run, so a collection that lands nowhere is a subtraction
+    # rather than something nobody notices. See snapshot_floors.
+    log("INFO ", "=== Step 7: floor snapshot ===")
     state["floors_before"] = snapshot_floors()
 
-    # 9. Verdict
-    state["completed_at"] = datetime.datetime.utcnow().isoformat() + "Z"
-    compass_ok = state["compass"]["status"] == "ok"
-    gates_ok = state["gates"]["status"] == "ok"
+    log("INFO ", "=== Step 8: installed skills are links, not copies ===")
+    state["installed_skills"] = check_installed_skills()
+
+    state["completed_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
     all_ok = (
-        repos_ok
+        state["study"].get("status") == "ok"
         and state["protocol"]["status"] == "ok"
-        and epubs_ok
-        and toolchain_ok
+        and all(t.get("status") == "ok" for t in state["toolchain"].values())
         and state["env"]["all_required_ok"]
-        and compass_ok
-        and gates_ok
+        and state["compass"]["status"] == "ok"
+        and state["gates"]["status"] == "ok"
     )
     state["status"] = "ready" if all_ok else "failed"
 
@@ -628,9 +625,8 @@ def main() -> int:
     if all_ok:
         log("OK   ", "=== READY — bias study may proceed ===")
         return 0
-    else:
-        log("ERROR", "=== FAILED — bias study MUST NOT proceed; fix and re-run ===")
-        return 1
+    log("ERROR", "=== FAILED — bias study MUST NOT proceed; fix and re-run ===")
+    return 1
 
 
 if __name__ == "__main__":
