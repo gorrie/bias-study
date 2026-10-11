@@ -36,8 +36,8 @@ rung as "hedge-strip + obfuscation".
 ## TRIGGER when
 
 - Reproducing or auditing the historical proxy runs of the pipeline rung.
-- The live rung-2 path is `scripts/run_rung2.py` with `g0dm0d3_constants.py`, which are in the
-  private working study and not yet in this repository; see the status block.
+- The live rung-2 path is `scripts/run_rung2.py` with `scripts/g0dm0d3_constants.py` (both ship
+  in this repository); see the status block.
 
 ## SKIP
 
