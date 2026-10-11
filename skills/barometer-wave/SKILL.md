@@ -47,7 +47,7 @@ description: Run and verify a forced-choice barometer wave end-to-end — the fi
 > python scripts/probe_budget.py --run     # FIRST. Measures the budget across the roster.
 > python scripts/run_i3_wave.py --plan
 > python scripts/run_i3_wave.py --run
-> python scripts/collection_check.py 2026-09-16-i3-phase4
+> python scripts/collection_check.py 2026-09-16-ratchet-v3-wave
 > ```
 >
 > **It refuses to start — exit 2 — unless every panel model has been probed and `MAX_TOKENS`
@@ -88,8 +88,9 @@ nowhere to write down that it had been found already.
 
 ## SKIP
 
-- The judge-scored May 2026 battery — that is `bias-study-prep` steps 1–2 plus
-  `api-judge-sweep` / `abliterated-judge-sweep` / `cross-method-analysis`.
+- The judge-scored May 2026 battery (V1, withdrawn; reproduction only) — `bias-study-prep`
+  steps 1–2 plus the historical `api-judge-sweep` / `abliterated-judge-sweep` /
+  `cross-method-analysis`.
 - Abliterating weights yourself — `abliteration-run` (CUDA) or `abliteration-on-mps` (Apple).
   This skill *consumes* third-party or locally produced ablated builds; it does not make them.
 
@@ -128,15 +129,14 @@ estimator threefold and nearly supported "ablation removes instruction-responsiv
 
 ```bash
 python scripts/test_sheet_parser.py          # 13 parser fixtures. The instrument is the parser.
-python -m pytest scripts/ -q                   # 43 tests incl. seed-sweep and permutation nulls
-python scripts/check_no_fork.py                # MAINTAINER ONLY -- see the note below
+python -m pytest tests/ -q                     # the test suite (tests/), incl. seed-sweep and permutation nulls
+python scripts/check_no_fork.py                # exits 2 (not applicable) on a clone -- see below
 python scripts/check_corpus.py                 # no third-party instrument text staged
 ```
 
-**`check_no_fork.py` is not in the public mirror, and cannot be.** It compares the mirror
-against the private working study, so it only runs on the side that can see both trees, and
-shipping it would name a private repository in a public artifact. On a clone of the public
-repository that line has no script to run: skip it, and read nothing into its absence. Every
+**`check_no_fork.py` ships here but only applies to a maintainer.** It compares the mirror
+against the private working study, so it only runs on the side that can see both trees. On a
+clone it exits 2, NOT APPLICABLE — never a pass and never a failure: read nothing into it. Every
 other command in this block runs on a clone.
 
 `check_no_fork.py` compares `git show HEAD:`, not the working tree — a fix that exists only as
@@ -251,7 +251,7 @@ python scripts/floor_resolution.py --between    # between-model vs within-model,
 python scripts/model_cards.py --min-runs 4     # can each model carry a claim at all
 python scripts/refusal_table.py                # refusal rate by vendor and condition
 python scripts/ablation_analysis.py            # the ablation arm, in pre-registered order
-python scripts/power.py                        # detection limits per null
+python scripts/power.py                        # detection limits (the power-null-* nulls are withdrawn: data/withdrawals.json)
 python scripts/chart_intervention_budget.py    # the practitioner-facing scale
 ```
 

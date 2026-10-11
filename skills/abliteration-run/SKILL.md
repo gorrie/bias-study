@@ -1,6 +1,6 @@
 ---
 name: abliteration-run
-description: Run an OBLITERATUS refusal-direction abliteration end-to-end against an open-weight model and produce stock-vs-abliterated bias-study data. Codifies the proven download→verify→fp16-abliterate-offline→coherence-smoke→A/B-run toolchain (the weight rung of the bias-study escalation ladder). Use when adding a new open-weight vendor family to the abliteration leg, or re-running it for a quarterly barometer pass.
+description: Run an OBLITERATUS refusal-direction abliteration end-to-end against an open-weight model and produce a stock-vs-abliterated pair for the bias study. Codifies the proven download→verify→fp16-abliterate-offline (OBLITERATUS pinned at 205d28a)→coherence-smoke path; measure the pair with barometer-wave and XSTest. Use when adding a new open-weight vendor family to the abliteration leg, or re-running it for a quarterly barometer pass.
 ---
 
 # abliteration-run

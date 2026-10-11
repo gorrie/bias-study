@@ -1,9 +1,20 @@
 ---
 name: cross-method-analysis
-description: Consume the outputs of all judgement-tool methods (the 4 API-based ones from api-judge-sweep + Method 2 from abliterated-judge-sweep) and produce the cross-method contamination-delta tables, per-record disagreement plots, and the headline "consensus is/isn't robust" verdict. Use after both sweep skills have completed; this is what feeds the writeup section and the public permalink.
+description: HISTORICAL (V1, withdrawn judge-scored design; reproduction/audit only, not a current measurement). Consume the outputs of all judgement-tool methods (the 4 API-based ones from api-judge-sweep + Method 2 from abliterated-judge-sweep) and produce the cross-method contamination-delta tables, per-record disagreement plots, (the "consensus robust" verdict it was built for is withdrawn). Use only to reproduce or audit the V1 sweep.
 ---
 
 # cross-method-analysis
+
+> **HISTORICAL — V1, withdrawn design. Reproduction and audit only; do not run this as a
+> current measurement.** It scores the May 2026 judge-panel instrument the released paper
+> withdrew. Paper §3.2 (`PAPER-no-position-only-consensus.md`): none of the judge tests
+> measures political lean — abliterating a judge tests its refusal reflex. High judge agreement
+> is not the absence of a judge lean (`CORRECTIONS.md` #5), and "robust under every judge" is
+> withdrawn (`CORRECTIONS.md` #30). The live instrument is the 32-item battery:
+> [`barometer-wave`](../barometer-wave/SKILL.md).
+> Known breakage: step 2 redirects `cross_method_report.py` stdout to JSON, but the script
+> prints a text table and writes its JSON to the aggregate directory instead. Do not "update
+> the writeup" `results/WRITEUP-2026-05-26.md`: it is superseded (`CORRECTIONS.md` #16).
 
 The pre-registered comparison. For each record, we have up to 5 scored versions (the
 ULTRAPLINIAN-4 primary + four/five judgement-tool methods). The deltas between them

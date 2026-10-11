@@ -1,76 +1,82 @@
 # Skills and the orchestrator agent
 
 This directory holds the [Claude Code](https://docs.claude.com/en/docs/claude-code) **skills**
-that run the bias study, plus a sibling `../agents/bias-barometer.md` **agent** that orchestrates
-the whole thing. They are operating procedures — not extra code. They tell Claude Code (or a
-human) how to drive the scripts in `../scripts/` against the protocol in `../protocol/`, in the
-right order, with the right discipline.
+that run the bias study, plus a sibling `../agents/bias-barometer.md` **agent**. They are
+operating procedures — not extra code. They tell Claude Code (or a human) how to drive the
+scripts in `../scripts/` against the protocol in `../protocol/`, in the right order, with the
+right discipline.
 
-You do not need any of this to reproduce the study: the `README.md` at the repo root has the
-plain four-command pipeline. These files are for running the *full* multi-rung study as a
-repeatable instrument, and for re-running it on a cadence.
+You do not need any of this to check the study: the `README.md` at the repo root has the
+Reproduce block. These files are for running the study again as a repeatable instrument.
 
-## The nine skills
+## Which design a skill applies to
 
-| Skill | Rung / role | What it does |
-|-------|-------------|--------------|
-| [`bias-study-prep`](bias-study-prep/SKILL.md) | pre-flight | Pulls the repo, checks the protocol files, verifies the OpenRouter key (and the heavier toolchain if needed), and records a dated prep-state snapshot. Run before every study run. |
-| [`g0dm0d3-pipeline`](g0dm0d3-pipeline/SKILL.md) | rung 2 (pipeline) | Applies elicitation-layer force (hedge-strip + obfuscation) via a G0DM0D3 server, layered up to each model's coherence ceiling. **Specified, not yet executed** in the published data. |
-| [`abliteration-run`](abliteration-run/SKILL.md) | rung 3 (weights, CUDA) | Ablates the refusal direction via OBLITERATUS in the Docker/CUDA path. Use on Linux/Windows with a working CUDA GPU. |
-| [`abliteration-on-mps`](abliteration-on-mps/SKILL.md) | rung 3 (weights, Apple Silicon) | Same end-product as `abliteration-run`, but the Python-driver path that survives the M5's silent CLI degradation. Required for Gemma-2 (the 4090's MKL SVD fails). |
-| [`mlx-weight-prep`](mlx-weight-prep/SKILL.md) | weights → macOS | Converts HF safetensors (from either abliteration skill) into MLX fp16 on Apple Silicon. |
-| [`abliterated-judge-sweep`](abliterated-judge-sweep/SKILL.md) | judgement-tool Method 2 | Re-scores every record with an abliterated open-weight model as the JUDGE. Tests whether judge alignment (not just system-under-test alignment) carried bias into the consensus. In-process MLX on Apple Silicon, lockfile-protected, OOM-resilient. |
-| [`api-judge-sweep`](api-judge-sweep/SKILL.md) | judgement-tool Methods 4–7 | Runs grok-solo, adversarial-pair, reversed-rubric, and blind-condition methods via OpenRouter. Sibling to abliterated-judge-sweep; can run in parallel on a different host. |
-| [`cross-method-analysis`](cross-method-analysis/SKILL.md) | judgement-tool synthesis | Consumes all judgement-tool methods' outputs and produces the contamination-delta tables, charts, and the pre-registered "consensus robust / not robust" verdict. |
-| [`bias-study-report`](bias-study-report/SKILL.md) | analysis | Turns scored runs into defensible numbers — bootstrap CIs, FDR, length control, inter-judge agreement, the abliteration effect-check, ladder monotonicity, and the quarter-over-quarter drift diff. |
+The study changed design as it went. Every skill says which design it serves:
 
-The prompt rung (rung 1) is just `scripts/run_study.py` and needs no skill — see the root
-`README.md`.
+- **Live** — the 32-item forced-choice battery (`data/ratchet-battery.json`, 16 mirrored pairs)
+  and the XSTest refusal suite.
+- **Historical** — the May 2026 judge-scored 1–5 panel (V1), withdrawn by the released paper
+  (`PAPER-no-position-only-consensus.md`). Historical skills are kept so the withdrawn numbers
+  can be reproduced and audited. Do not run them as a current measurement.
+
+## The ten skills
+
+| Skill | Design | What it does |
+|-------|--------|--------------|
+| [`bias-study-prep`](bias-study-prep/SKILL.md) | live | Pre-flight: validates the live battery, runs the pre-run gates, snapshots the noise floors, records a dated prep-state file. Run before every study run. |
+| [`barometer-wave`](barometer-wave/SKILL.md) | live | Collects and verifies a battery wave end to end — fixed panel, shuffled-order arm, stock-vs-ablated arm — then the floors, model cards and publication gates. |
+| [`abliteration-run`](abliteration-run/SKILL.md) | live | Builds a stock-vs-abliterated pair with OBLITERATUS (pinned at 205d28a) in the Docker/CUDA path. |
+| [`abliteration-on-mps`](abliteration-on-mps/SKILL.md) | live | The same build on Apple Silicon through the Python driver. Required for Gemma-2 (the CUDA/MKL eigensolver fails). |
+| [`mlx-weight-prep`](mlx-weight-prep/SKILL.md) | live | Converts HF safetensors from either abliteration skill into MLX fp16. |
+| [`g0dm0d3-pipeline`](g0dm0d3-pipeline/SKILL.md) | historical procedure | Rung 2. Executed; the proxy path this skill describes was abandoned. Read its status block first. |
+| [`bias-study-report`](bias-study-report/SKILL.md) | historical | Statistics for judge-scored runs: CIs, FDR, length control, the effect-check against the self-resample floor, per-rung deltas. |
+| [`api-judge-sweep`](api-judge-sweep/SKILL.md) | historical | The four API judge methods of the V1 cross-judge sweep. |
+| [`abliterated-judge-sweep`](abliterated-judge-sweep/SKILL.md) | historical | V1 Method 2: an abliterated model as the judge. |
+| [`cross-method-analysis`](cross-method-analysis/SKILL.md) | historical | Synthesis of the V1 judge sweep. |
 
 ## The orchestrator agent
 
-[`../agents/bias-barometer.md`](../agents/bias-barometer.md) ties the rungs together. It runs the
-full three-rung force-escalation ladder end to end — prep -> prompt -> pipeline -> weights ->
-score -> report -> drift diff -> publish — and re-runs it on a quarterly cadence, diffing each
-pass against the prior quarter to maintain a longitudinal record of model-bias drift. Use it to
-execute a complete pass, add a vendor or model, or run a quarterly "barometer" update.
+[`../agents/bias-barometer.md`](../agents/bias-barometer.md) was written for the three-rung
+force-escalation ladder. The ladder-monotonicity claim is withdrawn (`CORRECTIONS.md` #21): no
+model is measured on all three rungs. Use the live skills above directly.
 
-## How to use them with Claude Code
+## Installing them for Claude Code
 
-These files follow the Claude Code skill / agent conventions. To make them invocable, copy them
-into your Claude configuration (or point your project config at this directory):
+Install by **linking**, never by copying. A copied skill stops receiving fixes the moment it is
+copied, and drift between an installed copy and this directory has already cost this study
+corrections that existed in no repository. Copying also breaks `bias-study-prep`: its
+`scripts/refresh.py` locates the study from its own path.
 
 ```bash
-# skills -> ~/.claude/skills/<name>/SKILL.md
-mkdir -p ~/.claude/skills
-cp -r skills/* ~/.claude/skills/   # the README is harmless; skill loaders ignore non-skill dirs
-
-# agent -> ~/.claude/agents/<name>.md
-mkdir -p ~/.claude/agents
-cp agents/bias-barometer.md ~/.claude/agents/
+# from the repo root, macOS / Linux
+for d in skills/*/; do ln -s "$PWD/$d" ~/.claude/skills/"$(basename "$d")"; done
 ```
 
-Then, from a Claude Code session opened on this repo:
+```bat
+:: Windows (cmd), from the repo root -- directory junctions need no admin rights
+for /d %d in (skills\*) do mklink /J "%USERPROFILE%\.claude\skills\%~nxd" "%CD%\%d"
+```
 
-- Invoke a skill by name, e.g. `/bias-study-prep`, or just ask ("prep the bias study", "run the
-  weight rung on Qwen2.5-7B", "report the latest run with CIs").
-- Invoke the agent for a full pass ("run a quarterly bias-barometer pass").
+Link only the skills you need; the historical ones are safe to leave uninstalled. Edit skills
+here, never in `~/.claude/skills`.
 
-You can also read any `SKILL.md` as a runbook and execute the steps by hand — every step maps to
-a script in `../scripts/` or a documented command.
+Then, from a Claude Code session opened on this repo, invoke a skill by name (e.g.
+`/bias-study-prep`) or just ask ("prep the bias study", "collect a battery wave"). Any
+`SKILL.md` also reads as a runbook you can follow by hand.
 
 ## Conventions these files assume
 
-- **All paths are repo-relative.** Run from the repo root. Runs live under `data/<date>/`.
-- **The OpenRouter key resolves from the environment, then a repo-root `.env`, then
-  a repo-root `.env`** — set it whichever way you like (`cp .env.example .env`).
+- **All paths are repo-relative.** Run from the repo root.
+- **The OpenRouter key resolves from the environment, then a repo-root `.env`** — set it
+  whichever way you like (`cp .env.example .env`).
 - **Models and abliteration outputs live wherever you point two env vars** — `$MODELS_DIR` and
-  `$ABLIT_OUT` (weight rung only).
-- **Cite, don't vendor.** OBLITERATUS and G0DM0D3 are external; clone them from upstream at the
-  pinned commits listed in the root `README.md`.
+  `$ABLIT_OUT` (weight builds only).
+- **Cite, don't vendor.** OBLITERATUS and G0DM0D3 are external. OBLITERATUS is pinned at
+  `205d28a` (`d6af36f` and `04b8ec6` build a destroyed model at one direction). G0DM0D3 has no pin
+  yet: record the commit you ran.
 - **Secrets never ship.** Keys and `.env` files stay local; scan before any push.
-- **Cross-platform.** The pipeline is plain Python. Windows / Git-Bash–specific notes (e.g.
+- **Cross-platform.** The pipeline is plain Python. Windows / Git-Bash notes (e.g.
   `MSYS_NO_PATHCONV=1` before `docker run`) are called out as asides with their POSIX
   equivalents.
-- **Doc-reality discipline.** Never describe a rung as run until the records carry its real
-  field values. The pipeline rung is currently planned, not executed — the files say so.
+- **Doc-reality discipline.** Never describe a rung or a finding as current until the records
+  and the corrections ledger say so.

@@ -1,6 +1,6 @@
 ---
 name: bias-study-report
-description: Turn scored bias-study runs into defensible statistics and writeup-ready tables — bootstrap CIs, Benjamini-Hochberg FDR, length control, inter-judge agreement, the abliteration effect-check (Jaccard), and the per-rung deltas (the ladder-monotonicity claim is withdrawn, CORRECTIONS.md #21). Applies to the judge-scored instrument (V1, withdrawn May 2026 design) — for the live 32-item battery use barometer-wave. Use after scoring a judged run, before updating the writeup. Enforces "a delta is a finding only if its CI excludes zero."
+description: Turn scored bias-study runs into defensible statistics and writeup-ready tables — bootstrap CIs, Benjamini-Hochberg FDR, length control, inter-judge agreement, the abliteration effect-check (Jaccard), and the per-rung deltas (the ladder-monotonicity claim is withdrawn, CORRECTIONS.md item 21). Applies to the judge-scored instrument (V1, withdrawn May 2026 design) — for the live 32-item battery use barometer-wave. Use after scoring a judged run, before updating the writeup. Enforces "a delta is a finding only if its CI excludes zero."
 ---
 
 # bias-study-report

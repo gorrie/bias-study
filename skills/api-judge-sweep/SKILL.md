@@ -1,9 +1,19 @@
 ---
 name: api-judge-sweep
-description: Run the four API-based judgement-tool methods (grok-solo, adversarial-pair, reversed-rubric, blind-condition) across the entire bias-study dataset via OpenRouter. Sibling to abliterated-judge-sweep — together they form the full judgement-tool cross-method sweep. Use to run the API methods on a host with internet access (the 4090 or any laptop), in parallel with Method 2 if you have both machines available.
+description: HISTORICAL (V1, withdrawn judge-scored design; reproduction/audit only, not a current measurement). Run the four API-based judgement-tool methods (grok-solo, adversarial-pair, reversed-rubric, blind-condition) across the entire bias-study dataset via OpenRouter. Sibling to abliterated-judge-sweep — together they form the full judgement-tool cross-method sweep. Use to run the API methods on a host with internet access (the 4090 or any laptop), in parallel with Method 2 if you have both machines available.
 ---
 
 # api-judge-sweep
+
+> **HISTORICAL — V1, withdrawn design. Reproduction and audit only; do not run this as a
+> current measurement.** It scores the May 2026 judge-panel instrument the released paper
+> withdrew. Paper §3.2 (`PAPER-no-position-only-consensus.md`): none of the judge tests
+> measures political lean — abliterating a judge tests its refusal reflex. High judge agreement
+> is not the absence of a judge lean (`CORRECTIONS.md` #5), and "robust under every judge" is
+> withdrawn (`CORRECTIONS.md` #30). The live instrument is the 32-item battery:
+> [`barometer-wave`](../barometer-wave/SKILL.md).
+> Known breakage: the driver reads `runs/$run/raw`, but the May runs are under `data/` in
+> this repository, so it will not skip finished work and will re-spend API money.
 
 The four API-based judgement-tool methods. Each tests a different bias-source hypothesis
 against the ULTRAPLINIAN-4 consensus median:
@@ -118,7 +128,7 @@ the score.py `--rescore` change in commit 9935d0a).
 
 ```bash
 # Wait for the run to finish (one-shot):
-until grep -q "ALL METHODS DONE" logs/api-judge-sweep.log; do sleep 60; done
+until grep -q "judge-methods sweep finished" logs/api-judge-sweep.log; do sleep 60; done
 
 # Or stream completions:
 tail -F logs/api-judge-sweep.log | grep -E --line-buffered "SKIP|scored|Total:|method=|Error"

@@ -27,20 +27,22 @@ rung as "hedge-strip + obfuscation".
 ## Prerequisites
 
 - A local checkout of **G0DM0D3** (an OpenAI-compatible elicitation server), referenced — not
-  vendored. Clone it at the pinned commit in this repo's `README.md` and run it per its README.
+  vendored. No commit is pinned yet: record the commit you used (`git -C <G0DM0D3> rev-parse HEAD`)
+  next to the run, and run it per its README.
 - The OpenRouter key, supplied to the G0DM0D3 server via *its own* environment/`.env` so it can
   proxy the upstream models. Never commit that file.
 - This repo's prompt-rung runner (`scripts/run_study.py`) and scorer (`scripts/score.py`).
 
 ## TRIGGER when
 
-- Executing the pipeline rung of the study.
-- A full three-rung pass is wanted, not just prompt + weights.
+- Reproducing or auditing the historical proxy runs of the pipeline rung.
+- The live rung-2 path is `scripts/run_rung2.py` with `g0dm0d3_constants.py`, which are in the
+  private working study and not yet in this repository; see the status block.
 
 ## SKIP
 
 - If only the prompt or weight rungs are needed.
-- Any claim that this leg has run until the records carry real `g0dm0d3_pipeline` values.
+- Any claim that the proxy path measured "hedge-strip + obfuscation": it did not (status block).
 
 ## The server (reference)
 

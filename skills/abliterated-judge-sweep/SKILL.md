@@ -1,9 +1,17 @@
 ---
 name: abliterated-judge-sweep
-description: Run Method 2 of the judgement-tool sweep — re-score the entire bias-study dataset using an abliterated open-weight model as the JUDGE (not as a system-under-test). Tests whether judge alignment was inflating consensus scores. In-process MLX on Apple Silicon, single-instance lockfile, OOM-resilient, skip-existing by default. Use when running Method 2 cross-judge contamination check, adding a new abliterated-judge family, or recovering from a stalled Method 2 sweep.
+description: HISTORICAL (V1, withdrawn judge-scored design; reproduction/audit only, not a current measurement). Run Method 2 of the judgement-tool sweep — re-score the entire bias-study dataset using an abliterated open-weight model as the JUDGE (not as a system-under-test). Tests the judge's refusal reflex, not its political lean (paper section 3.2). In-process MLX on Apple Silicon, single-instance lockfile, OOM-resilient, skip-existing by default. Use when running Method 2 cross-judge contamination check, adding a new abliterated-judge family, or recovering from a stalled Method 2 sweep.
 ---
 
 # abliterated-judge-sweep
+
+> **HISTORICAL — V1, withdrawn design. Reproduction and audit only; do not run this as a
+> current measurement.** It scores the May 2026 judge-panel instrument the released paper
+> withdrew. Paper §3.2 (`PAPER-no-position-only-consensus.md`): none of the judge tests
+> measures political lean — abliterating a judge tests its refusal reflex. High judge agreement
+> is not the absence of a judge lean (`CORRECTIONS.md` #5), and "robust under every judge" is
+> withdrawn (`CORRECTIONS.md` #30). The live instrument is the 32-item battery:
+> [`barometer-wave`](../barometer-wave/SKILL.md).
 
 Method 2 of the bias-study judgement-tool sweep (pre-registered rubric score 4.10 — the
 highest among implementable methods). Re-scores every record in every run using an
