@@ -1,6 +1,6 @@
 ---
 name: g0dm0d3-pipeline
-description: Run the bias-study PIPELINE rung — elicitation-layer force via the G0DM0D3 OpenAI-compatible server (hedge-strip + obfuscation transforms), layered up to a per-model functionality ceiling with a coherence guard. Sits between prompt-unmask and weight-abliteration on the escalation ladder. STATUS — specified, not yet executed: this skill is the build/run procedure for that work package.
+description: Run the bias-study PIPELINE rung — elicitation-layer force via the G0DM0D3 OpenAI-compatible server. Sits between prompt-unmask and weight-abliteration on the escalation ladder. STATUS — EXECUTED (2026-05-27, 2026-09-13, 2026-09-15 through the proxy; 2026-09-19/20 on the study's own transport via scripts/run_rung2.py, which is the live path). Read the status block before running anything.
 ---
 
 # g0dm0d3-pipeline
@@ -11,9 +11,18 @@ the institutional-skepticism stance moves where prompt force alone does not. It 
 elicitation analog of abliteration for models you can *call* but not *reweight*, which makes it
 the only lever (short of red-team access) for the closed frontier the weight rung cannot reach.
 
-**STATUS: not yet executed.** The `g0dm0d3_pipeline` record field is null in all current runs.
-This skill documents the procedure so the leg can be run and the records populated honestly.
-Until a run carries real `g0dm0d3_pipeline` values, do **not** describe this leg as run.
+**STATUS: executed, and what it measured is not what this page originally described.**
+Through the proxy: Parseltongue fired on 0 of 240 requests (the questions contain none of its 53
+trigger words); STM runs after generation and edits the model's answer (45 of 60 Opus records),
+so it is not a prompt transform; the active ingredient of the "layered" stack is the godmode
+system prompt, which moved Grok 4.3 +0.45 and Claude Opus 4.7 not at all
+(`RESULTS-2026-09-14-rung2-transform-audit.md`, `RESULTS-2026-09-15-rung2-decomposed.md`).
+The proxy was then abandoned — it discards the caller's system message and fakes token counts
+and finish reasons — and the rung re-run on the battery through `scripts/run_rung2.py`, with
+the constants read from the checkout by `g0dm0d3_constants.py`
+(`RESULTS-2026-09-21-rung2-control-v2.md`: 0 of 35 contrasts survive; 28 sit inside their own
+model's order floor). The procedure below is the historical proxy path; do not describe the
+rung as "hedge-strip + obfuscation".
 
 ## Prerequisites
 

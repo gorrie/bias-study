@@ -7,7 +7,11 @@ description: Run an OBLITERATUS refusal-direction abliteration end-to-end agains
 
 The weight rung of the bias-study force-escalation ladder: ablate the refusal
 direction from an open-weight model and measure whether the institutional-skepticism
-*stance* moves (it doesn't — that's the dissociation finding). Full toolchain reference:
+*stance* moves. On the judged scale the shift was at most 0.2, which is a BOUND on a compressed
+scale, not a demonstrated absence; the side-flip form of that null is WITHDRAWN
+(`data/withdrawals.json`, `power-null-ablation-stance`), the wording-rewrite half holds on one
+family of five, and on the retired questionnaire the apparent effect belonged to the ablator
+(8/9/9 vs 0/2/0). Read PAPER-below-the-floor.md §3.7 before quoting any result from this rung. Full toolchain reference:
 `DEVELOPER.md` §3–§4 in this repo.
 
 ## TRIGGER when

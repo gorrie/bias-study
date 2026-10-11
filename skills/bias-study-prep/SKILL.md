@@ -1,6 +1,6 @@
 ---
 name: bias-study-prep
-description: Pre-run refresh and sanity check for the LLM bias study. Validates the live forced-choice instrument (the authored 30-pair mirrored bank — contiguous ids, every pair one inserted "not", counts matching its own declaration, one sentence each), runs the seven pre-run gates, and snapshots every noise floor's pair count so a collection that lands nowhere is detectable. Also pulls the repo, checks the legacy judge-scored protocol files, verifies the OpenRouter key is reachable and — for the heavier rungs — the OBLITERATUS / G0DM0D3 toolchain, then records a dated prep-state file. Run before every study run to guarantee reproducibility against a known-good state.
+description: Pre-run refresh and sanity check for the LLM bias study. Validates the live forced-choice instrument (the authored battery, data/ratchet-battery.json: 32 items in 16 mirrored pairs — contiguous ids, every pair one inserted "not", counts matching its own declaration, one sentence each), runs the seven pre-run gates, and snapshots every noise floor's pair count so a collection that lands nowhere is detectable. Also pulls the repo, checks the legacy judge-scored protocol files, verifies the OpenRouter key is reachable and — for the heavier rungs — the OBLITERATUS / G0DM0D3 toolchain, then records a dated prep-state file. Run before every study run to guarantee reproducibility against a known-good state.
 ---
 
 # bias-study-prep
