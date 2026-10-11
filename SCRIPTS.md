@@ -2,7 +2,7 @@
 
 **Generated from the scripts' own docstrings by `scripts/gen_script_inventory.py`. Do not edit.** Rebuild after adding a script; `--check` exits 1 when this file is stale.
 
-160 script(s). 0 carry no module docstring and are listed at the end.
+162 script(s). 0 carry no module docstring and are listed at the end.
 
 ## Collection
 
@@ -133,6 +133,7 @@
 - **`floor_resolution.py`** — What a modal-vs-modal floor can actually resolve, and which factor is bigger ON THE SAME MODELS.
 - **`frame_gap.py`** — Does the judged instrument measure a POSITION, or agreement with the FRAME?
 - **`frontier_extend.py`** — Extend the one-sitting arms onto the CURRENT frontier, which the frozen panel excludes.
+- **`g0dm0d3_constants.py`** — The G0DM0D3 transform constants, PARSED from its source. Never retyped.
 - **`gates.py`** — The one registry of every gate this study has, and where each one runs.
 - **`gen_artifact_manifest.py`** — Checksum the large binaries the study depends on, so they can travel outside git.
 - **`gen_corpus_docs.py`** — Fill the generated tables in the per-corpus-root READMEs. `--check` exits 1 on drift.
@@ -178,6 +179,7 @@
 - **`run_dose_series.py`** — The Wash — Experiment 1 dose-series driver.
 - **`run_inventory.py`** — Every run directory, what is in it, and what reads it.
 - **`run_local.py`** — run_local.py — Run the bias question set against a LOCAL transformers model (stock or OBLITERATUS-abliterated), writing raw JSONL in the study schema so `score.py` / `aggregate.py` / `ci_analysis.py` consume it unchanged.
+- **`run_rung2.py`** — run_rung2.py -- the ELICITATION rung, on the study's own instrument and its own transport.
 - **`rung2_contrast.py`** — Arm minus control across TWO run directories, with the v2 floor and an exact test.
 - **`serving_path.py`** — One model, two pinned backends: does the serving path move side, conviction or position?
 - **`splice_corpus.py`** — Write a repaired corpus the ANALYSIS can actually read.
